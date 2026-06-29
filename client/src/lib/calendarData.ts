@@ -76,8 +76,10 @@ export const MEETING_TYPES: Record<MeetingType, Meeting> = {
     businesses: ["chiro", "crossfit", "realty"],
     label: "Quarterly Strategic Offsite",
     shortLabel: "Offsite",
-    duration: "Half–Full Day",
+    duration: "Afternoon (post-gym)",
     agenda: [
+      "Morning: Coach CrossFit class + clean up as usual",
+      "Afternoon: Head offsite (hotel lobby, café, or rented space)",
       "Review past 90 days: Wins & Learns for each business",
       "Set 3–7 'Rocks' (goals) for next 90 days per business",
       "Chiropractic: Longevity & growth strategy",
@@ -120,10 +122,15 @@ const MONTH_NAMES = [
 const WEEKLY_DAY = 2;
 // Daily huddle: Mon-Fri (1-5)
 // Monthly review: first Tuesday of each month
-// Quarterly: Jan, Apr, Jul, Oct — first full week Tuesday
+// Quarterly: Jan, Apr, Jul, Oct — first Friday of the month (chiro closed Fridays)
 
 function isFirstTuesdayOfMonth(date: Date): boolean {
   if (date.getDay() !== 2) return false;
+  return date.getDate() <= 7;
+}
+
+function isFirstFridayOfMonth(date: Date): boolean {
+  if (date.getDay() !== 5) return false;
   return date.getDate() <= 7;
 }
 
@@ -172,8 +179,9 @@ export function generateCalendar(): CalendarMonth[] {
           meetings.push("monthly");
         }
 
-        // Quarterly offsite: first Tuesday of Jan, Apr, Jul, Oct
-        if (dow === WEEKLY_DAY && isFirstTuesdayOfMonth(date) && isQuarterlyMonth(m)) {
+        // Quarterly offsite: first Friday of Jan, Apr, Jul, Oct
+        // (Chiropractic office is closed Fridays; gym class + clean in morning, offsite in afternoon)
+        if (dow === 5 && isFirstFridayOfMonth(date) && isQuarterlyMonth(m)) {
           meetings.push("quarterly");
         }
       }
