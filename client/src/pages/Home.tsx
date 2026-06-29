@@ -17,7 +17,6 @@ import {
 } from "@/lib/calendarData";
 
 const DOW_LABELS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
-
 const MEETING_ORDER: MeetingType[] = ["quarterly", "monthly", "weekly", "daily"];
 
 function MeetingDot({ type }: { type: MeetingType }) {
@@ -26,7 +25,10 @@ function MeetingDot({ type }: { type: MeetingType }) {
   return (
     <span
       className={`inline-block rounded-full flex-shrink-0 ${isQuarterly ? "w-2 h-2" : "w-1.5 h-1.5"}`}
-      style={{ backgroundColor: m.color, boxShadow: isQuarterly ? `0 0 4px ${m.color}` : undefined }}
+      style={{
+        backgroundColor: m.color,
+        boxShadow: isQuarterly ? `0 0 4px ${m.color}` : undefined,
+      }}
       title={m.label}
     />
   );
@@ -43,23 +45,17 @@ function DayCell({
   isSelected: boolean;
   highlightType: MeetingType | null;
 }) {
-  if (!day) {
-    return <div className="h-10" />;
-  }
+  if (!day) return <div className="h-10" />;
 
   const isHighlighted = highlightType ? day.meetings.includes(highlightType) : false;
   const hasMeetings = day.meetings.length > 0 && !day.isWeekend;
   const hasQuarterly = day.meetings.includes("quarterly");
   const hasMonthly = day.meetings.includes("monthly");
-
-  // Sort meetings for display: quarterly first (most prominent)
   const sortedMeetings = MEETING_ORDER.filter((t) => day.meetings.includes(t));
 
   return (
     <div
-      className={`
-        h-10 rounded-md flex flex-col items-center justify-between py-1 px-0.5 relative
-        transition-all duration-150
+      className={`h-10 rounded-md flex flex-col items-center justify-between py-1 px-0.5 relative transition-all duration-150
         ${day.isWeekend ? "opacity-30" : ""}
         ${day.isToday ? "ring-1 ring-white/50" : ""}
         ${isSelected ? "ring-1 ring-white/60" : ""}
@@ -78,7 +74,10 @@ function DayCell({
           : hasMeetings
           ? "oklch(1 0 0 / 3%)"
           : "transparent",
-        borderColor: isHighlighted && highlightType ? MEETING_TYPES[highlightType].color + "50" : undefined,
+        borderColor:
+          isHighlighted && highlightType
+            ? MEETING_TYPES[highlightType].color + "50"
+            : undefined,
       }}
       onClick={() => hasMeetings && onSelect(day)}
     >
@@ -118,7 +117,6 @@ function MonthGrid({
   selectedDay: CalendarDay | null;
   highlightType: MeetingType | null;
 }) {
-  // Count special days in this month
   const quarterlyDays = month.days.filter((d) => d && d.meetings.includes("quarterly")).length;
   const monthlyDays = month.days.filter((d) => d && d.meetings.includes("monthly")).length;
 
@@ -127,7 +125,9 @@ function MonthGrid({
       className="rounded-xl p-3 flex flex-col gap-2"
       style={{
         backgroundColor: "oklch(0.17 0.022 240)",
-        border: quarterlyDays > 0 ? "1px solid rgba(244,63,94,0.25)" : "1px solid oklch(1 0 0 / 6%)",
+        border: quarterlyDays > 0
+          ? "1px solid rgba(244,63,94,0.25)"
+          : "1px solid oklch(1 0 0 / 6%)",
       }}
     >
       <div className="flex items-center justify-between">
@@ -141,7 +141,11 @@ function MonthGrid({
           {quarterlyDays > 0 && (
             <span
               className="text-[9px] px-1.5 py-0.5 rounded font-semibold"
-              style={{ backgroundColor: "rgba(244,63,94,0.2)", color: "#FDA4AF", fontFamily: "'Space Grotesk', sans-serif" }}
+              style={{
+                backgroundColor: "rgba(244,63,94,0.2)",
+                color: "#FDA4AF",
+                fontFamily: "'Space Grotesk', sans-serif",
+              }}
             >
               OFFSITE
             </span>
@@ -149,7 +153,11 @@ function MonthGrid({
           {monthlyDays > 0 && quarterlyDays === 0 && (
             <span
               className="text-[9px] px-1.5 py-0.5 rounded font-semibold"
-              style={{ backgroundColor: "rgba(20,184,166,0.15)", color: "#5EEAD4", fontFamily: "'Space Grotesk', sans-serif" }}
+              style={{
+                backgroundColor: "rgba(20,184,166,0.15)",
+                color: "#5EEAD4",
+                fontFamily: "'Space Grotesk', sans-serif",
+              }}
             >
               FINANCE
             </span>
@@ -184,6 +192,67 @@ function MonthGrid({
   );
 }
 
+function BusinessBlock({
+  block,
+  meetingColor,
+}: {
+  block: { business: string; duration: string; startOffset: string; endOffset: string; focus: string; items: string[] };
+  meetingColor: string;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const biz = BUSINESSES[block.business as keyof typeof BUSINESSES];
+
+  return (
+    <div
+      className="rounded-lg overflow-hidden"
+      style={{ border: `1px solid ${biz.color}30`, backgroundColor: `${biz.color}08` }}
+    >
+      <button
+        className="w-full flex items-center gap-2.5 px-3 py-2.5 text-left hover:bg-white/5 transition-colors"
+        onClick={() => setExpanded((v) => !v)}
+      >
+        <span className="text-base leading-none flex-shrink-0">{biz.icon}</span>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <span
+              className="text-xs font-bold"
+              style={{ color: biz.color, fontFamily: "'Space Grotesk', sans-serif" }}
+            >
+              {biz.shortName}
+            </span>
+            <span
+              className="text-[10px] px-1.5 py-0.5 rounded font-mono"
+              style={{
+                backgroundColor: `${biz.color}20`,
+                color: biz.color,
+                fontFamily: "'JetBrains Mono', monospace",
+              }}
+            >
+              {block.duration}
+            </span>
+            <span className="text-[10px] text-white/30 font-mono" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+              {block.startOffset}–{block.endOffset}
+            </span>
+          </div>
+          <p className="text-[10px] text-white/45 mt-0.5 truncate">{block.focus}</p>
+        </div>
+        <span className="text-white/30 text-xs flex-shrink-0">{expanded ? "▲" : "▼"}</span>
+      </button>
+      {expanded && (
+        <div className="px-3 pb-3 flex flex-col gap-1.5">
+          <div className="w-full h-px mb-1" style={{ backgroundColor: `${biz.color}20` }} />
+          {block.items.map((item: string, i: number) => (
+            <div key={i} className="flex gap-2 items-start">
+              <span className="flex-shrink-0 mt-0.5" style={{ color: biz.color, fontSize: "10px" }}>›</span>
+              <p className="text-[11px] text-white/65 leading-relaxed">{item}</p>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function DetailPanel({
   day,
   onClose,
@@ -202,6 +271,7 @@ function DetailPanel({
 
   return (
     <div className="flex flex-col gap-4">
+      {/* Header */}
       <div className="flex items-start justify-between">
         <div>
           <p
@@ -219,23 +289,28 @@ function DetailPanel({
         </div>
         <button
           onClick={onClose}
-          className="text-white/30 hover:text-white/70 transition-colors text-xl leading-none mt-0.5 w-6 h-6 flex items-center justify-center rounded hover:bg-white/10"
+          className="text-white/30 hover:text-white/70 transition-colors text-xl leading-none w-6 h-6 flex items-center justify-center rounded hover:bg-white/10"
         >
           ×
         </button>
       </div>
 
-      <div className="flex flex-col gap-3">
-        {sortedMeetings.map((type) => {
-          const m = MEETING_TYPES[type];
-          return (
-            <div
-              key={type}
-              className="rounded-xl p-4 flex flex-col gap-3"
-              style={{ backgroundColor: m.bgColor, border: `1px solid ${m.color}35` }}
-            >
+      {/* Each meeting type */}
+      {sortedMeetings.map((type) => {
+        const m = MEETING_TYPES[type];
+        return (
+          <div
+            key={type}
+            className="rounded-xl flex flex-col gap-3"
+            style={{ backgroundColor: m.bgColor, border: `1px solid ${m.color}30` }}
+          >
+            {/* Meeting header */}
+            <div className="px-4 pt-4 flex flex-col gap-1">
               <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: m.color, boxShadow: `0 0 6px ${m.color}80` }} />
+                <span
+                  className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                  style={{ backgroundColor: m.color, boxShadow: `0 0 6px ${m.color}80` }}
+                />
                 <span
                   className="font-bold text-sm"
                   style={{ color: m.textColor, fontFamily: "'Space Grotesk', sans-serif" }}
@@ -243,49 +318,61 @@ function DetailPanel({
                   {m.label}
                 </span>
                 <span
-                  className="ml-auto text-xs px-2 py-0.5 rounded"
+                  className="ml-auto text-[10px] px-2 py-0.5 rounded font-mono"
                   style={{
                     backgroundColor: `${m.color}20`,
                     color: m.textColor,
                     fontFamily: "'JetBrains Mono', monospace",
                   }}
                 >
-                  {m.duration}
+                  {m.totalDuration}
                 </span>
               </div>
-              <div className="flex flex-col gap-1.5">
-                {m.agenda.map((item, i) => (
-                  <div key={i} className="flex gap-2 items-start">
-                    <span className="text-white/30 mt-0.5 flex-shrink-0 text-xs">›</span>
-                    <p className="text-xs text-white/65 leading-relaxed">{item}</p>
-                  </div>
-                ))}
+              <p className="text-[10px] text-white/40 leading-relaxed">{m.overview}</p>
+              <div className="flex items-center gap-1.5 mt-0.5">
+                <span className="text-[9px] text-white/25">🕐</span>
+                <span className="text-[10px] text-white/35 italic">{m.suggestedTime}</span>
               </div>
             </div>
-          );
-        })}
-      </div>
 
-      {/* Business coverage note */}
-      <div
-        className="rounded-lg p-3"
-        style={{ backgroundColor: "oklch(0.20 0.018 240)", border: "1px solid oklch(1 0 0 / 8%)" }}
-      >
-        <p
-          className="text-[10px] text-white/35 uppercase tracking-wider mb-2"
-          style={{ fontFamily: "'Space Grotesk', sans-serif" }}
-        >
-          Businesses Covered
-        </p>
-        <div className="flex flex-col gap-1.5">
-          {Object.entries(BUSINESSES).map(([key, biz]) => (
-            <div key={key} className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: biz.color }} />
-              <span className="text-xs text-white/60">{biz.name}</span>
+            {/* Per-business time blocks */}
+            <div className="px-3 flex flex-col gap-2">
+              <p
+                className="text-[9px] font-bold text-white/25 uppercase tracking-widest px-1"
+                style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+              >
+                Time Breakdown by Business
+              </p>
+              {m.timeBlocks.map((block, i) => (
+                <BusinessBlock key={i} block={block} meetingColor={m.color} />
+              ))}
             </div>
-          ))}
-        </div>
-      </div>
+
+            {/* Shared items */}
+            {m.sharedItems.length > 0 && (
+              <div className="px-3 pb-4 flex flex-col gap-1.5">
+                <p
+                  className="text-[9px] font-bold text-white/25 uppercase tracking-widest px-1"
+                  style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+                >
+                  All-Business Items
+                </p>
+                <div
+                  className="rounded-lg px-3 py-2.5 flex flex-col gap-1.5"
+                  style={{ backgroundColor: "oklch(1 0 0 / 5%)", border: "1px solid oklch(1 0 0 / 8%)" }}
+                >
+                  {m.sharedItems.map((item, i) => (
+                    <div key={i} className="flex gap-2 items-start">
+                      <span className="text-white/30 flex-shrink-0 text-xs mt-0.5">›</span>
+                      <p className="text-[11px] text-white/60 leading-relaxed">{item}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -306,7 +393,7 @@ function LegendItem({
 
   return (
     <div
-      className={`flex items-start gap-3 p-3 rounded-lg cursor-pointer transition-all duration-150`}
+      className="flex items-start gap-3 p-3 rounded-lg cursor-pointer transition-all duration-150"
       onMouseEnter={onHover}
       onMouseLeave={onLeave}
       style={{
@@ -316,7 +403,10 @@ function LegendItem({
     >
       <span
         className="w-2.5 h-2.5 rounded-full flex-shrink-0 mt-0.5"
-        style={{ backgroundColor: m.color, boxShadow: isActive ? `0 0 6px ${m.color}` : undefined }}
+        style={{
+          backgroundColor: m.color,
+          boxShadow: isActive ? `0 0 6px ${m.color}` : undefined,
+        }}
       />
       <div className="flex flex-col gap-0.5 min-w-0 flex-1">
         <div className="flex items-center justify-between gap-2">
@@ -333,7 +423,7 @@ function LegendItem({
             ×{count}/yr
           </span>
         </div>
-        <span className="text-[10px] text-white/35">{m.duration}</span>
+        <span className="text-[10px] text-white/35">{m.totalDuration}</span>
       </div>
     </div>
   );
@@ -363,7 +453,10 @@ export default function Home() {
         <div className="flex items-center gap-3">
           <div
             className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
-            style={{ background: "linear-gradient(135deg, #10B981 0%, #0EA5E9 100%)", boxShadow: "0 0 16px rgba(16,185,129,0.3)" }}
+            style={{
+              background: "linear-gradient(135deg, #10B981 0%, #0EA5E9 100%)",
+              boxShadow: "0 0 16px rgba(16,185,129,0.3)",
+            }}
           >
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
               <rect x="2" y="2" width="6" height="6" rx="1.5" fill="white" fillOpacity="0.95" />
@@ -410,7 +503,6 @@ export default function Home() {
           className="w-60 flex-shrink-0 flex flex-col gap-4 p-4 overflow-y-auto"
           style={{ borderRight: "1px solid oklch(1 0 0 / 8%)" }}
         >
-          {/* Meeting Types Legend */}
           <div>
             <p
               className="text-[10px] font-bold text-white/25 uppercase tracking-widest mb-1 px-1"
@@ -419,7 +511,7 @@ export default function Home() {
               Meeting Types
             </p>
             <p className="text-[10px] text-white/20 px-1 mb-2 leading-relaxed">
-              Hover to highlight · Click day for agenda
+              Hover to highlight · Click day for full breakdown
             </p>
             <div className="flex flex-col gap-0.5">
               {(["quarterly", "monthly", "weekly", "daily"] as MeetingType[]).map((type) => (
@@ -443,26 +535,29 @@ export default function Home() {
               Your Businesses
             </p>
             <div className="flex flex-col gap-1">
-              {Object.entries(BUSINESSES).map(([key, biz]) => (
+              {(Object.entries(BUSINESSES) as [keyof typeof BUSINESSES, typeof BUSINESSES[keyof typeof BUSINESSES]][]).map(([key, biz]) => (
                 <div
                   key={key}
                   className="flex items-center gap-2.5 px-3 py-2 rounded-lg"
                   style={{ backgroundColor: "oklch(0.17 0.022 240)" }}
                 >
                   <span className="text-base leading-none">{biz.icon}</span>
-                  <p
-                    className="text-xs font-medium text-white/75 flex-1"
-                    style={{ fontFamily: "'Space Grotesk', sans-serif" }}
-                  >
-                    {biz.shortName}
-                  </p>
+                  <div className="flex-1 min-w-0">
+                    <p
+                      className="text-xs font-medium text-white/75"
+                      style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+                    >
+                      {biz.shortName}
+                    </p>
+                    <p className="text-[9px] text-white/30 truncate">{biz.tagline}</p>
+                  </div>
                   <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: biz.color }} />
                 </div>
               ))}
             </div>
           </div>
 
-          {/* The Golden Rule */}
+          {/* Golden Rule */}
           <div
             className="rounded-xl p-3.5"
             style={{ backgroundColor: "rgba(244,63,94,0.08)", border: "1px solid rgba(244,63,94,0.2)" }}
@@ -474,7 +569,9 @@ export default function Home() {
               ★ The Golden Rule
             </p>
             <p className="text-[11px] text-white/55 leading-relaxed">
-              When an issue arises outside a meeting, <strong className="text-white/80">add it to the Issues List</strong> — don't discuss it. It waits for the next scheduled meeting.
+              When an issue arises outside a meeting,{" "}
+              <strong className="text-white/80">add it to the Issues List</strong> — don't discuss
+              it. It waits for the next scheduled meeting.
             </p>
           </div>
 
@@ -490,14 +587,16 @@ export default function Home() {
               Why This Works
             </p>
             <p className="text-[11px] text-white/50 leading-relaxed">
-              APA research: unstructured task-switching costs up to <strong className="text-white/75">40% of productive time</strong>. Structured cadence eliminates that loss.
+              APA research: unstructured task-switching costs up to{" "}
+              <strong className="text-white/75">40% of productive time</strong>. Structured cadence
+              eliminates that loss.
             </p>
           </div>
         </aside>
 
-        {/* Main Calendar Area */}
+        {/* Main Calendar */}
         <main className="flex-1 overflow-y-auto p-5 flex flex-col gap-4">
-          {/* Cadence Summary Strip */}
+          {/* Summary Strip */}
           <div className="grid grid-cols-4 gap-3">
             {(["daily", "weekly", "monthly", "quarterly"] as MeetingType[]).map((type) => {
               const m = MEETING_TYPES[type];
@@ -526,7 +625,7 @@ export default function Home() {
                     </span>
                     <span className="text-xs text-white/35">per year</span>
                   </div>
-                  <span className="text-[10px] text-white/30">{m.duration} each session</span>
+                  <span className="text-[10px] text-white/30">{m.totalDuration} each session</span>
                 </div>
               );
             })}
@@ -549,7 +648,7 @@ export default function Home() {
         {/* Right Detail Panel */}
         {selectedDay && (
           <aside
-            className="w-72 flex-shrink-0 p-4 overflow-y-auto"
+            className="w-80 flex-shrink-0 p-4 overflow-y-auto"
             style={{ borderLeft: "1px solid oklch(1 0 0 / 8%)" }}
           >
             <DetailPanel day={selectedDay} onClose={() => setSelectedDay(null)} />
@@ -562,17 +661,11 @@ export default function Home() {
         className="px-5 py-2.5 flex items-center justify-between flex-shrink-0"
         style={{ borderTop: "1px solid oklch(1 0 0 / 8%)" }}
       >
-        <span
-          className="text-[10px] text-white/20"
-          style={{ fontFamily: "'JetBrains Mono', monospace" }}
-        >
+        <span className="text-[10px] text-white/20" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
           Framework: EOS Meeting Pulse + Rockefeller Habits
         </span>
-        <span
-          className="text-[10px] text-white/20"
-          style={{ fontFamily: "'JetBrains Mono', monospace" }}
-        >
-          Hover legend to highlight · Click days to view agenda
+        <span className="text-[10px] text-white/20" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+          Hover legend to highlight · Click days to view full agenda
         </span>
       </footer>
     </div>
