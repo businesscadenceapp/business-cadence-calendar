@@ -17,6 +17,9 @@ import {
   markCardSeen,
   archiveCard,
   deleteBoardCard,
+  getAgendaTemplate,
+  getAllAgendaTemplates,
+  upsertAgendaTemplate,
 } from "./db";
 
 const meetingTypeSchema = z.enum(["daily", "weekly", "monthly", "quarterly"]);
@@ -155,6 +158,48 @@ Keep the tone warm but professional. This summary will be saved under this speci
         const summary = (response.choices[0]?.message?.content as string) ?? "Summary could not be generated.";
         await saveSummary(input.dateKey, input.meetingType, summary);
         return { summary };
+      }),
+  }),
+
+  /** Agenda template management — get and save custom agenda items per business per meeting type. */
+  agendaTemplate: router({
+    /** Get all saved templates (for the Settings page). */
+    getAll: publicProcedure.query(async () => {
+      const templates = await getAllAgendaTemplates();
+      return { templates };
+    }),
+
+    /** Get the template for a specific business + meeting type (used by the calendar detail panel). */
+    get: publicProcedure
+      .input(z.object({
+        business: z.enum(["chiropractic", "crossfit", "realty"]),
+        meetingType: z.enum(["daily", "weekly", "monthly", "quarterly"]),
+      }))
+      .query(async ({ input }) => {
+        const items = await getAgendaTemplate(input.business, input.meetingType);
+        return { items };
+      }),
+
+    /** Save a customized agenda template. Requires password verification on the frontend. */
+    save: publicProcedure
+      .input(z.object({
+        business: z.enum(["chiropractic", "crossfit", "realty"]),
+        meetingType: z.enum(["daily", "weekly", "monthly", "quarterly"]),
+        items: z.array(z.object({
+          key: z.string(),
+          label: z.string().min(1).max(200),
+          sortOrder: z.number(),
+        })),
+        updatedBy: z.enum(["Matt", "Lynn"]),
+        password: z.string(),
+      }))
+      .mutation(async ({ input }) => {
+        const sitePassword = process.env.SITE_PASSWORD ?? "";
+        if (!sitePassword || input.password !== sitePassword) {
+          throw new Error("Incorrect password. Changes not saved.");
+        }
+        await upsertAgendaTemplate(input.business, input.meetingType, input.items, input.updatedBy);
+        return { success: true };
       }),
   }),
 

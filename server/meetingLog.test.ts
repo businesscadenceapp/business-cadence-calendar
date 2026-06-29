@@ -113,7 +113,7 @@ describe("meetingLog.toggleItem", () => {
       completed: true,
     });
     expect(db.upsertMeetingLog).toHaveBeenCalledWith("2026-01-06", "weekly", "");
-    expect(db.toggleAgendaItem).toHaveBeenCalledWith(3, "weekly-chiro-0", true);
+    expect(db.toggleAgendaItem).toHaveBeenCalledWith(3, "weekly-chiro-0", true, undefined);
     expect(result.success).toBe(true);
   });
 });
@@ -131,8 +131,10 @@ describe("meetingLog.generateSummary", () => {
       dateKey: "2026-01-06",
       meetingType: "weekly",
       notes: "Discussed patient retention",
-      completedItems: ["Chiropractic: Scorecard review"],
-      allItems: ["Chiropractic: Scorecard review", "CrossFit: Member count"],
+      items: [
+        { label: "Chiropractic: Scorecard review", completed: true, comment: "All metrics green" },
+        { label: "CrossFit: Member count", completed: false },
+      ],
       businessContext: "Weekly Level 10",
     });
     expect(llm.invokeLLM).toHaveBeenCalled();

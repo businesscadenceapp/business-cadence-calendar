@@ -36,3 +36,10 @@
 - [x] Password gate: backend tRPC route to validate password and return session token
 - [x] Password gate: frontend lock screen shown before any content
 - [x] Password gate: remember authentication in localStorage so re-entry not needed per device
+- [x] Custom agenda: database table for agenda templates (per business, per meeting type)
+- [x] Custom agenda: backend tRPC routes (get templates, save templates)
+- [x] Custom agenda: Settings page with per-business per-meeting-type editor
+- [x] Custom agenda: password re-entry required before saving changes
+- [x] Custom agenda: calendar detail panel uses custom items when available, defaults otherwise
+- [x] Custom agenda: past meeting logs preserve their original items unchanged
+- [ ] Snapshot agenda item labels into each meeting log on first edit (so past logs are immune to template changes)\n- [ ] Render historical meeting logs from saved per-log label snapshots\n

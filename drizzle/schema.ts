@@ -83,3 +83,21 @@ export const boardCards = mysqlTable("board_cards", {
 
 export type BoardCard = typeof boardCards.$inferSelect;
 export type InsertBoardCard = typeof boardCards.$inferInsert;
+
+/**
+ * Stores customized agenda item templates per business per meeting type.
+ * itemsJson is a JSON array of { key: string, label: string, sortOrder: number }.
+ * One row per (business, meetingType) pair — upserted on save.
+ */
+export const agendaTemplates = mysqlTable("agenda_templates", {
+  id: int("id").autoincrement().primaryKey(),
+  business: mysqlEnum("business", ["chiropractic", "crossfit", "realty"]).notNull(),
+  meetingType: mysqlEnum("meetingType", ["daily", "weekly", "monthly", "quarterly"]).notNull(),
+  itemsJson: text("itemsJson").notNull(), // JSON: Array<{ key: string; label: string; sortOrder: number }>
+  updatedBy: mysqlEnum("updatedBy", ["Matt", "Lynn"]).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type AgendaTemplate = typeof agendaTemplates.$inferSelect;
+export type InsertAgendaTemplate = typeof agendaTemplates.$inferInsert;

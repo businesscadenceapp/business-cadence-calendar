@@ -320,6 +320,13 @@ function BusinessBlock({
   );
 }
 
+// Map calendarData BusinessKey to DB business enum
+const BIZ_TO_DB: Record<string, "chiropractic" | "crossfit" | "realty"> = {
+  chiro: "chiropractic",
+  crossfit: "crossfit",
+  realty: "realty",
+};
+
 function MeetingSection({
   type,
   day,
@@ -338,6 +345,25 @@ function MeetingSection({
   const [notesLoaded, setNotesLoaded] = useState(false);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const commentTimers = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
+
+  // Fetch custom templates for each business in this meeting type
+  const templateQueries = m.timeBlocks.map((block) => {
+    const dbBiz = BIZ_TO_DB[block.business] ?? "chiropractic";
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    return trpc.agendaTemplate.get.useQuery(
+      { business: dbBiz, meetingType: type as "daily" | "weekly" | "monthly" | "quarterly" },
+      { staleTime: 60_000 }
+    );
+  });
+
+  // Build effective blocks: use custom items if saved, otherwise use defaults
+  const effectiveBlocks = m.timeBlocks.map((block, i) => {
+    const customItems = templateQueries[i]?.data?.items;
+    if (customItems && customItems.length > 0) {
+      return { ...block, items: customItems.map((ci: { label: string }) => ci.label) };
+    }
+    return block;
+  });
 
   // Load existing log data
   const { data: logData } = trpc.meetingLog.get.useQuery(
@@ -398,9 +424,9 @@ function MeetingSection({
   }, [dateKey, type]);
 
   const handleGenerateSummary = useCallback(() => {
-    // Build the full items list with completed state and comments
+    // Build the full items list with completed state and comments using effectiveBlocks
     const items: { label: string; completed: boolean; comment?: string }[] = [];
-    m.timeBlocks.forEach(block => {
+    effectiveBlocks.forEach(block => {
       const bizName = BUSINESSES[block.business as keyof typeof BUSINESSES].shortName;
       block.items.forEach((item, i) => {
         const itemKey = `${type}-${block.business}-${i}`;
@@ -424,10 +450,10 @@ function MeetingSection({
         },
       }
     );
-  }, [dateKey, type, notes, itemStates, m]);
+  }, [dateKey, type, notes, itemStates, effectiveBlocks, m]);
 
-  const totalItems = m.timeBlocks.reduce((acc, b) => acc + b.items.length, 0);
-  const completedCount = m.timeBlocks.reduce((acc, b) =>
+  const totalItems = effectiveBlocks.reduce((acc, b) => acc + b.items.length, 0);
+  const completedCount = effectiveBlocks.reduce((acc, b) =>
     acc + b.items.filter((_, i) => itemStates.get(`${type}-${b.business}-${i}`)?.completed === true).length, 0
   );
   const progressPct = totalItems > 0 ? Math.round((completedCount / totalItems) * 100) : 0;
@@ -475,7 +501,7 @@ function MeetingSection({
         <p className="text-[9px] font-bold text-white/25 uppercase tracking-widest px-1" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
           Time Breakdown by Business
         </p>
-        {m.timeBlocks.map((block, i) => (
+        {effectiveBlocks.map((block, i) => (
           <BusinessBlock
             key={i}
             block={block}
@@ -765,6 +791,19 @@ export default function Home() {
           >
             <span>📋</span>
             Command Board
+          </Link>
+          <Link
+            href="/settings"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all hover:opacity-90"
+            style={{
+              background: "oklch(1 0 0 / 6%)",
+              border: "1px solid oklch(1 0 0 / 12%)",
+              color: "oklch(1 0 0 / 45%)",
+              fontFamily: "'Space Grotesk', sans-serif",
+            }}
+          >
+            <span>⚙️</span>
+            Agenda Settings
           </Link>
           <span
             className="text-sm font-mono font-bold text-white/25 tracking-widest"

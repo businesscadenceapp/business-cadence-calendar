@@ -7,6 +7,7 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import PasswordGate from "./components/PasswordGate";
 import Home from "./pages/Home";
 import Board from "./pages/Board";
+import Settings from "./pages/Settings";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -14,6 +15,7 @@ function Router() {
     <Switch>
       <Route path={"/"} component={Home} />
       <Route path={"/board"} component={Board} />
+      <Route path={"/settings"} component={Settings} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />

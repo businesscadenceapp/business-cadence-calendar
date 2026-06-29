@@ -1,6 +1,6 @@
 import { eq, and } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, meetingLogs, agendaItems, MeetingLog, AgendaItem, boardCards, type BoardCard, type InsertBoardCard } from "../drizzle/schema";
+import { InsertUser, users, meetingLogs, agendaItems, MeetingLog, AgendaItem, boardCards, agendaTemplates, type BoardCard, type InsertBoardCard } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -219,4 +219,59 @@ export async function deleteBoardCard(id: number): Promise<void> {
   const db = await getDb();
   if (!db) return;
   await db.delete(boardCards).where(eq(boardCards.id, id));
+}
+
+// ─── Agenda Template helpers ──────────────────────────────────────────────────
+
+export type AgendaTemplateItem = { key: string; label: string; sortOrder: number };
+
+export async function getAgendaTemplate(
+  business: "chiropractic" | "crossfit" | "realty",
+  meetingType: "daily" | "weekly" | "monthly" | "quarterly"
+): Promise<AgendaTemplateItem[] | null> {
+  const db = await getDb();
+  if (!db) return null;
+  const rows = await db
+    .select()
+    .from(agendaTemplates)
+    .where(and(eq(agendaTemplates.business, business), eq(agendaTemplates.meetingType, meetingType)))
+    .limit(1);
+  if (rows.length === 0) return null;
+  try { return JSON.parse(rows[0].itemsJson) as AgendaTemplateItem[]; } catch { return null; }
+}
+
+export async function getAllAgendaTemplates(): Promise<
+  Array<{ business: string; meetingType: string; items: AgendaTemplateItem[]; updatedBy: string; updatedAt: Date }>
+> {
+  const db = await getDb();
+  if (!db) return [];
+  const rows = await db.select().from(agendaTemplates);
+  return rows.map((r) => ({
+    business: r.business,
+    meetingType: r.meetingType,
+    items: (() => { try { return JSON.parse(r.itemsJson); } catch { return []; } })(),
+    updatedBy: r.updatedBy,
+    updatedAt: r.updatedAt,
+  }));
+}
+
+export async function upsertAgendaTemplate(
+  business: "chiropractic" | "crossfit" | "realty",
+  meetingType: "daily" | "weekly" | "monthly" | "quarterly",
+  items: AgendaTemplateItem[],
+  updatedBy: "Matt" | "Lynn"
+): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  const existing = await db
+    .select()
+    .from(agendaTemplates)
+    .where(and(eq(agendaTemplates.business, business), eq(agendaTemplates.meetingType, meetingType)))
+    .limit(1);
+  const itemsJson = JSON.stringify(items);
+  if (existing.length > 0) {
+    await db.update(agendaTemplates).set({ itemsJson, updatedBy }).where(eq(agendaTemplates.id, existing[0].id));
+  } else {
+    await db.insert(agendaTemplates).values({ business, meetingType, itemsJson, updatedBy });
+  }
 }
