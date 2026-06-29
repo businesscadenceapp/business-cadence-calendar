@@ -4,7 +4,8 @@
  * Fonts: Space Grotesk (display), Inter (body), JetBrains Mono (numbers)
  */
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback, useRef, useEffect } from "react";
+import { trpc } from "@/lib/trpc";
 import {
   generateCalendar,
   MEETING_TYPES,
@@ -195,11 +196,19 @@ function MonthGrid({
 function BusinessBlock({
   block,
   meetingColor,
+  dateKey,
+  meetingType,
+  completedKeys,
+  onToggle,
 }: {
   block: { business: string; duration: string; startOffset: string; endOffset: string; focus: string; items: string[] };
   meetingColor: string;
+  dateKey: string;
+  meetingType: MeetingType;
+  completedKeys: Set<string>;
+  onToggle: (itemKey: string, completed: boolean) => void;
 }) {
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(true);
   const biz = BUSINESSES[block.business as keyof typeof BUSINESSES];
 
   return (
@@ -214,24 +223,20 @@ function BusinessBlock({
         <span className="text-base leading-none flex-shrink-0">{biz.icon}</span>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <span
-              className="text-xs font-bold"
-              style={{ color: biz.color, fontFamily: "'Space Grotesk', sans-serif" }}
-            >
+            <span className="text-xs font-bold" style={{ color: biz.color, fontFamily: "'Space Grotesk', sans-serif" }}>
               {biz.shortName}
             </span>
             <span
               className="text-[10px] px-1.5 py-0.5 rounded font-mono"
-              style={{
-                backgroundColor: `${biz.color}20`,
-                color: biz.color,
-                fontFamily: "'JetBrains Mono', monospace",
-              }}
+              style={{ backgroundColor: `${biz.color}20`, color: biz.color, fontFamily: "'JetBrains Mono', monospace" }}
             >
               {block.duration}
             </span>
             <span className="text-[10px] text-white/30 font-mono" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
               {block.startOffset}–{block.endOffset}
+            </span>
+            <span className="ml-auto text-[10px] text-white/25" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+              {block.items.filter((_,i) => completedKeys.has(`${meetingType}-${block.business}-${i}`)).length}/{block.items.length}
             </span>
           </div>
           <p className="text-[10px] text-white/45 mt-0.5 truncate">{block.focus}</p>
@@ -241,14 +246,291 @@ function BusinessBlock({
       {expanded && (
         <div className="px-3 pb-3 flex flex-col gap-1.5">
           <div className="w-full h-px mb-1" style={{ backgroundColor: `${biz.color}20` }} />
-          {block.items.map((item: string, i: number) => (
-            <div key={i} className="flex gap-2 items-start">
-              <span className="flex-shrink-0 mt-0.5" style={{ color: biz.color, fontSize: "10px" }}>›</span>
-              <p className="text-[11px] text-white/65 leading-relaxed">{item}</p>
-            </div>
-          ))}
+          {block.items.map((item: string, i: number) => {
+            const itemKey = `${meetingType}-${block.business}-${i}`;
+            const isChecked = completedKeys.has(itemKey);
+            return (
+              <label
+                key={i}
+                className="flex gap-2.5 items-start cursor-pointer group"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <button
+                  type="button"
+                  onClick={() => onToggle(itemKey, !isChecked)}
+                  className="flex-shrink-0 mt-0.5 w-3.5 h-3.5 rounded border flex items-center justify-center transition-all"
+                  style={{
+                    borderColor: isChecked ? biz.color : `${biz.color}50`,
+                    backgroundColor: isChecked ? biz.color : "transparent",
+                  }}
+                >
+                  {isChecked && (
+                    <svg width="8" height="6" viewBox="0 0 8 6" fill="none">
+                      <path d="M1 3L3 5L7 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  )}
+                </button>
+                <p className={`text-[11px] leading-relaxed transition-colors ${
+                  isChecked ? "text-white/30 line-through" : "text-white/65 group-hover:text-white/80"
+                }`}>{item}</p>
+              </label>
+            );
+          })}
         </div>
       )}
+    </div>
+  );
+}
+
+function MeetingSection({
+  type,
+  day,
+  dateKey,
+}: {
+  type: MeetingType;
+  day: CalendarDay;
+  dateKey: string;
+}) {
+  const m = MEETING_TYPES[type];
+  const [notes, setNotes] = useState("");
+  const [completedKeys, setCompletedKeys] = useState<Set<string>>(new Set());
+  const [summary, setSummary] = useState<string | null>(null);
+  const [summaryDate, setSummaryDate] = useState<Date | null>(null);
+  const [notesLoaded, setNotesLoaded] = useState(false);
+  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Load existing log data
+  const { data: logData } = trpc.meetingLog.get.useQuery(
+    { dateKey, meetingType: type },
+    { staleTime: 30_000 }
+  );
+
+  useEffect(() => {
+    if (logData && !notesLoaded) {
+      setNotes(logData.log?.notes ?? "");
+      setSummary(logData.log?.aiSummary ?? null);
+      setSummaryDate(logData.log?.summaryGeneratedAt ?? null);
+      const keys = new Set<string>(logData.agendaItems.filter(a => a.completed).map(a => a.itemKey));
+      setCompletedKeys(keys);
+      setNotesLoaded(true);
+    }
+  }, [logData, notesLoaded]);
+
+  const saveNotes = trpc.meetingLog.saveNotes.useMutation();
+  const toggleItem = trpc.meetingLog.toggleItem.useMutation();
+  const generateSummary = trpc.meetingLog.generateSummary.useMutation();
+
+  const handleNotesChange = useCallback((val: string) => {
+    setNotes(val);
+    if (saveTimer.current) clearTimeout(saveTimer.current);
+    saveTimer.current = setTimeout(() => {
+      saveNotes.mutate({ dateKey, meetingType: type, notes: val });
+    }, 800);
+  }, [dateKey, type]);
+
+  const handleToggle = useCallback((itemKey: string, completed: boolean) => {
+    setCompletedKeys(prev => {
+      const next = new Set(prev);
+      if (completed) next.add(itemKey); else next.delete(itemKey);
+      return next;
+    });
+    toggleItem.mutate({ dateKey, meetingType: type, itemKey, completed });
+  }, [dateKey, type]);
+
+  const handleGenerateSummary = useCallback(() => {
+    const allItems: string[] = [];
+    m.timeBlocks.forEach(block => {
+      block.items.forEach((item, i) => {
+        allItems.push(`${BUSINESSES[block.business as keyof typeof BUSINESSES].shortName}: ${item}`);
+      });
+    });
+    m.sharedItems.forEach(item => allItems.push(item));
+    const completedItemLabels = allItems.filter((_, i) => {
+      // match by position across all blocks
+      let idx = 0;
+      for (const block of m.timeBlocks) {
+        for (let bi = 0; bi < block.items.length; bi++) {
+          if (idx === i) return completedKeys.has(`${type}-${block.business}-${bi}`);
+          idx++;
+        }
+      }
+      return false;
+    });
+    generateSummary.mutate(
+      {
+        dateKey,
+        meetingType: type,
+        notes,
+        completedItems: completedItemLabels,
+        allItems,
+        businessContext: m.label,
+      },
+      {
+        onSuccess: (data) => {
+          setSummary(data.summary);
+          setSummaryDate(new Date());
+        },
+      }
+    );
+  }, [dateKey, type, notes, completedKeys, m]);
+
+  const totalItems = m.timeBlocks.reduce((acc, b) => acc + b.items.length, 0);
+  const completedCount = m.timeBlocks.reduce((acc, b) =>
+    acc + b.items.filter((_, i) => completedKeys.has(`${type}-${b.business}-${i}`)).length, 0
+  );
+  const progressPct = totalItems > 0 ? Math.round((completedCount / totalItems) * 100) : 0;
+
+  return (
+    <div
+      className="rounded-xl flex flex-col gap-3"
+      style={{ backgroundColor: m.bgColor, border: `1px solid ${m.color}30` }}
+    >
+      {/* Meeting header */}
+      <div className="px-4 pt-4 flex flex-col gap-1">
+        <div className="flex items-center gap-2">
+          <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: m.color, boxShadow: `0 0 6px ${m.color}80` }} />
+          <span className="font-bold text-sm" style={{ color: m.textColor, fontFamily: "'Space Grotesk', sans-serif" }}>
+            {m.label}
+          </span>
+          <span
+            className="ml-auto text-[10px] px-2 py-0.5 rounded font-mono"
+            style={{ backgroundColor: `${m.color}20`, color: m.textColor, fontFamily: "'JetBrains Mono', monospace" }}
+          >
+            {m.totalDuration}
+          </span>
+        </div>
+        <p className="text-[10px] text-white/40 leading-relaxed">{m.overview}</p>
+        <div className="flex items-center gap-1.5 mt-0.5">
+          <span className="text-[9px] text-white/25">🕐</span>
+          <span className="text-[10px] text-white/35 italic">{m.suggestedTime}</span>
+        </div>
+        {/* Progress bar */}
+        <div className="mt-2 flex items-center gap-2">
+          <div className="flex-1 h-1 rounded-full" style={{ backgroundColor: "oklch(1 0 0 / 8%)" }}>
+            <div
+              className="h-1 rounded-full transition-all duration-300"
+              style={{ width: `${progressPct}%`, backgroundColor: m.color }}
+            />
+          </div>
+          <span className="text-[10px] font-mono" style={{ color: m.color, fontFamily: "'JetBrains Mono', monospace" }}>
+            {completedCount}/{totalItems}
+          </span>
+        </div>
+      </div>
+
+      {/* Per-business time blocks with checkboxes */}
+      <div className="px-3 flex flex-col gap-2">
+        <p className="text-[9px] font-bold text-white/25 uppercase tracking-widest px-1" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+          Time Breakdown by Business
+        </p>
+        {m.timeBlocks.map((block, i) => (
+          <BusinessBlock
+            key={i}
+            block={block}
+            meetingColor={m.color}
+            dateKey={dateKey}
+            meetingType={type}
+            completedKeys={completedKeys}
+            onToggle={handleToggle}
+          />
+        ))}
+      </div>
+
+      {/* Shared items */}
+      {m.sharedItems.length > 0 && (
+        <div className="px-3 flex flex-col gap-1.5">
+          <p className="text-[9px] font-bold text-white/25 uppercase tracking-widest px-1" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+            All-Business Items
+          </p>
+          <div className="rounded-lg px-3 py-2.5 flex flex-col gap-1.5" style={{ backgroundColor: "oklch(1 0 0 / 5%)", border: "1px solid oklch(1 0 0 / 8%)" }}>
+            {m.sharedItems.map((item, i) => (
+              <div key={i} className="flex gap-2 items-start">
+                <span className="text-white/30 flex-shrink-0 text-xs mt-0.5">›</span>
+                <p className="text-[11px] text-white/60 leading-relaxed">{item}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Notes section */}
+      <div className="px-3 flex flex-col gap-1.5">
+        <div className="flex items-center justify-between px-1">
+          <p className="text-[9px] font-bold text-white/25 uppercase tracking-widest" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+            Meeting Notes
+          </p>
+          {saveNotes.isPending && (
+            <span className="text-[9px] text-white/20 italic">saving…</span>
+          )}
+          {!saveNotes.isPending && notes.length > 0 && (
+            <span className="text-[9px] text-white/20">✓ saved</span>
+          )}
+        </div>
+        <textarea
+          value={notes}
+          onChange={(e) => handleNotesChange(e.target.value)}
+          placeholder="Type your meeting notes here… decisions made, issues raised, action items…"
+          rows={4}
+          className="w-full rounded-lg px-3 py-2.5 text-[11px] text-white/75 placeholder-white/20 resize-none focus:outline-none transition-colors"
+          style={{
+            backgroundColor: "oklch(1 0 0 / 5%)",
+            border: `1px solid ${m.color}25`,
+            fontFamily: "'Inter', sans-serif",
+            lineHeight: "1.6",
+          }}
+          onFocus={(e) => (e.target.style.borderColor = `${m.color}60`)}
+          onBlur={(e) => (e.target.style.borderColor = `${m.color}25`)}
+        />
+      </div>
+
+      {/* AI Summary section */}
+      <div className="px-3 pb-4 flex flex-col gap-2">
+        <div className="flex items-center justify-between px-1">
+          <p className="text-[9px] font-bold text-white/25 uppercase tracking-widest" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+            AI Summary
+          </p>
+          {summaryDate && (
+            <span className="text-[9px] text-white/20">
+              {new Date(summaryDate).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+            </span>
+          )}
+        </div>
+
+        {summary ? (
+          <div
+            className="rounded-lg px-3 py-3 flex flex-col gap-2"
+            style={{ backgroundColor: `${m.color}10`, border: `1px solid ${m.color}25` }}
+          >
+            <p className="text-[11px] text-white/70 leading-relaxed">{summary}</p>
+            <button
+              onClick={handleGenerateSummary}
+              disabled={generateSummary.isPending}
+              className="self-start text-[10px] px-2.5 py-1 rounded transition-all hover:opacity-80 disabled:opacity-40"
+              style={{ backgroundColor: `${m.color}20`, color: m.textColor, fontFamily: "'Space Grotesk', sans-serif" }}
+            >
+              {generateSummary.isPending ? "Regenerating…" : "↺ Regenerate"}
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={handleGenerateSummary}
+            disabled={generateSummary.isPending}
+            className="w-full rounded-lg px-3 py-3 text-[11px] font-medium transition-all hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2"
+            style={{
+              backgroundColor: `${m.color}15`,
+              border: `1px dashed ${m.color}40`,
+              color: m.textColor,
+              fontFamily: "'Space Grotesk', sans-serif",
+            }}
+          >
+            {generateSummary.isPending ? (
+              <><span className="animate-spin">⟳</span> Generating AI Summary…</>
+            ) : (
+              <>✦ Generate AI Summary</>
+            )}
+          </button>
+        )}
+      </div>
     </div>
   );
 }
@@ -267,6 +549,7 @@ function DetailPanel({
     year: "numeric",
   });
 
+  const dateKey = `${day.date.getFullYear()}-${String(day.date.getMonth() + 1).padStart(2, "0")}-${String(day.date.getDate()).padStart(2, "0")}`;
   const sortedMeetings = MEETING_ORDER.filter((t) => day.meetings.includes(t));
 
   return (
@@ -274,16 +557,10 @@ function DetailPanel({
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
-          <p
-            className="text-[10px] text-white/35 uppercase tracking-widest mb-1"
-            style={{ fontFamily: "'Space Grotesk', sans-serif" }}
-          >
+          <p className="text-[10px] text-white/35 uppercase tracking-widest mb-1" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
             Scheduled for
           </p>
-          <h2
-            className="text-sm font-bold text-white leading-tight"
-            style={{ fontFamily: "'Space Grotesk', sans-serif" }}
-          >
+          <h2 className="text-sm font-bold text-white leading-tight" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
             {dateStr}
           </h2>
         </div>
@@ -295,84 +572,10 @@ function DetailPanel({
         </button>
       </div>
 
-      {/* Each meeting type */}
-      {sortedMeetings.map((type) => {
-        const m = MEETING_TYPES[type];
-        return (
-          <div
-            key={type}
-            className="rounded-xl flex flex-col gap-3"
-            style={{ backgroundColor: m.bgColor, border: `1px solid ${m.color}30` }}
-          >
-            {/* Meeting header */}
-            <div className="px-4 pt-4 flex flex-col gap-1">
-              <div className="flex items-center gap-2">
-                <span
-                  className="w-2.5 h-2.5 rounded-full flex-shrink-0"
-                  style={{ backgroundColor: m.color, boxShadow: `0 0 6px ${m.color}80` }}
-                />
-                <span
-                  className="font-bold text-sm"
-                  style={{ color: m.textColor, fontFamily: "'Space Grotesk', sans-serif" }}
-                >
-                  {m.label}
-                </span>
-                <span
-                  className="ml-auto text-[10px] px-2 py-0.5 rounded font-mono"
-                  style={{
-                    backgroundColor: `${m.color}20`,
-                    color: m.textColor,
-                    fontFamily: "'JetBrains Mono', monospace",
-                  }}
-                >
-                  {m.totalDuration}
-                </span>
-              </div>
-              <p className="text-[10px] text-white/40 leading-relaxed">{m.overview}</p>
-              <div className="flex items-center gap-1.5 mt-0.5">
-                <span className="text-[9px] text-white/25">🕐</span>
-                <span className="text-[10px] text-white/35 italic">{m.suggestedTime}</span>
-              </div>
-            </div>
-
-            {/* Per-business time blocks */}
-            <div className="px-3 flex flex-col gap-2">
-              <p
-                className="text-[9px] font-bold text-white/25 uppercase tracking-widest px-1"
-                style={{ fontFamily: "'Space Grotesk', sans-serif" }}
-              >
-                Time Breakdown by Business
-              </p>
-              {m.timeBlocks.map((block, i) => (
-                <BusinessBlock key={i} block={block} meetingColor={m.color} />
-              ))}
-            </div>
-
-            {/* Shared items */}
-            {m.sharedItems.length > 0 && (
-              <div className="px-3 pb-4 flex flex-col gap-1.5">
-                <p
-                  className="text-[9px] font-bold text-white/25 uppercase tracking-widest px-1"
-                  style={{ fontFamily: "'Space Grotesk', sans-serif" }}
-                >
-                  All-Business Items
-                </p>
-                <div
-                  className="rounded-lg px-3 py-2.5 flex flex-col gap-1.5"
-                  style={{ backgroundColor: "oklch(1 0 0 / 5%)", border: "1px solid oklch(1 0 0 / 8%)" }}
-                >
-                  {m.sharedItems.map((item, i) => (
-                    <div key={i} className="flex gap-2 items-start">
-                      <span className="text-white/30 flex-shrink-0 text-xs mt-0.5">›</span>
-                      <p className="text-[11px] text-white/60 leading-relaxed">{item}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        );
-      })}
+      {/* Each meeting type as its own interactive section */}
+      {sortedMeetings.map((type) => (
+        <MeetingSection key={type} type={type} day={day} dateKey={dateKey} />
+      ))}
     </div>
   );
 }

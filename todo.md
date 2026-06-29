@@ -1,0 +1,24 @@
+# Business Cadence Calendar — TODO
+
+- [x] Yearly calendar view with all 12 months
+- [x] Color-coded meeting type dots (Daily Huddle, Weekly L10, Monthly Finance, Quarterly Offsite)
+- [x] Left sidebar with meeting type legend and business list
+- [x] Summary strip showing annual meeting counts
+- [x] Day click to open detail panel
+- [x] Per-business time breakdown in detail panel (collapsible blocks)
+- [x] Quarterly Offsite moved to first Friday of quarter months
+- [x] Quarterly Offsite highlighted with red border and OFFSITE badge
+- [x] Hover legend to highlight meeting type across calendar
+- [x] Upgrade to full-stack (database + backend + user auth)
+- [x] Database schema: meeting_logs and agenda_items tables
+- [x] Backend tRPC routes: get, saveNotes, toggleItem, generateSummary
+- [x] Interactive agenda checkboxes per business block
+- [x] Progress bar showing completion per meeting type
+- [x] Auto-saving notes textarea (debounced 800ms)
+- [x] AI summary generation via LLM, persisted to database
+- [x] Summary regeneration button
+- [x] All vitest tests passing (6 tests)
+- [ ] ICS export for Google/Apple Calendar import
+- [ ] Printable one-page yearly summary PDF
+- [ ] Issues List tracker (shared notepad for mid-week issues)
+- [ ] Per-business KPI scorecard templates
