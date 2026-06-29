@@ -32,3 +32,7 @@
 - [x] Command Board: business tag filter (All / Chiropractic / CrossFit / Realty)
 - [x] Command Board: "Seen ✓" acknowledgment button per card
 - [x] Command Board: navigation tab between Calendar and Board views
+- [x] Password gate: store SITE_PASSWORD as secret env variable
+- [x] Password gate: backend tRPC route to validate password and return session token
+- [x] Password gate: frontend lock screen shown before any content
+- [x] Password gate: remember authentication in localStorage so re-entry not needed per device

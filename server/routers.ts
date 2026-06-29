@@ -4,6 +4,7 @@ import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, router } from "./_core/trpc";
 import { invokeLLM } from "./_core/llm";
+import { ENV } from "./_core/env";
 import {
   getMeetingLog,
   upsertMeetingLog,
@@ -154,6 +155,18 @@ Keep the tone warm but professional. This summary will be saved under this speci
         const summary = (response.choices[0]?.message?.content as string) ?? "Summary could not be generated.";
         await saveSummary(input.dateKey, input.meetingType, summary);
         return { summary };
+      }),
+  }),
+
+  /** Password gate — validates the shared site password. */
+  gate: router({
+    verify: publicProcedure
+      .input(z.object({ password: z.string() }))
+      .mutation(({ input }) => {
+        // Read at call time so tests can override process.env.SITE_PASSWORD via beforeAll
+        const sitePassword = process.env.SITE_PASSWORD ?? "";
+        const correct = sitePassword.length > 0 && input.password === sitePassword;
+        return { success: correct };
       }),
   }),
 
