@@ -21,10 +21,10 @@
 - [x] Per-agenda-item inline comment fields (auto-saved, debounced)
 - [x] AI summary uses item comments + notes combined
 - [x] Green dot indicator on calendar days with saved logs
-- [ ] ICS export for Google/Apple Calendar import
-- [ ] Printable one-page yearly summary PDF
-- [ ] Issues List tracker (shared notepad for mid-week issues)
-- [ ] Per-business KPI scorecard templates
+- [ ] ICS export for Google/Apple Calendar import (future enhancement)
+- [ ] Printable one-page yearly summary PDF (future enhancement)
+- [ ] Issues List tracker (shared notepad for mid-week issues) (future enhancement)
+- [ ] Per-business KPI scorecard templates (future enhancement)
 - [x] Command Board: database schema (board_cards table with author, type, business, content, seenAt)
 - [x] Command Board: backend tRPC routes (list, create, markSeen, delete)
 - [x] Command Board: UI page with Updates and Issues sections
@@ -42,6 +42,6 @@
 - [x] Custom agenda: password re-entry required before saving changes
 - [x] Custom agenda: calendar detail panel uses custom items when available, defaults otherwise
 - [x] Custom agenda: past meeting logs preserve their original items unchanged
-- [ ] Snapshot agenda item labels into each meeting log on first edit (deferred — low priority)
-- [ ] Render historical meeting logs from saved per-log label snapshots (deferred — low priority)
+- [ ] Snapshot agenda item labels into each meeting log on first edit (future enhancement)
+- [ ] Render historical meeting logs from saved per-log label snapshots (future enhancement)
 
