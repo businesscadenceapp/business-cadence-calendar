@@ -42,4 +42,6 @@
 - [x] Custom agenda: password re-entry required before saving changes
 - [x] Custom agenda: calendar detail panel uses custom items when available, defaults otherwise
 - [x] Custom agenda: past meeting logs preserve their original items unchanged
-- [ ] Snapshot agenda item labels into each meeting log on first edit (so past logs are immune to template changes)\n- [ ] Render historical meeting logs from saved per-log label snapshots\n
+- [ ] Snapshot agenda item labels into each meeting log on first edit (deferred — low priority)
+- [ ] Render historical meeting logs from saved per-log label snapshots (deferred — low priority)
+
