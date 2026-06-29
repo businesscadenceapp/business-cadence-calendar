@@ -1,6 +1,6 @@
 import { eq, and } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, meetingLogs, agendaItems, MeetingLog, AgendaItem } from "../drizzle/schema";
+import { InsertUser, users, meetingLogs, agendaItems, MeetingLog, AgendaItem, boardCards, type BoardCard, type InsertBoardCard } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -172,4 +172,51 @@ export async function toggleAgendaItem(
   } else {
     await db.insert(agendaItems).values({ meetingLogId, itemKey, completed, comment: comment ?? null });
   }
+}
+
+// ─── Command Board helpers ────────────────────────────────────────────────────
+
+export async function getBoardCards(includeArchived = false): Promise<BoardCard[]> {
+  const db = await getDb();
+  if (!db) return [];
+  const rows = await db.select().from(boardCards).orderBy(boardCards.createdAt);
+  if (includeArchived) return rows;
+  return rows.filter(r => r.archivedAt === null);
+}
+
+export async function createBoardCard(
+  data: Pick<InsertBoardCard, "author" | "type" | "business" | "content">
+): Promise<BoardCard> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.insert(boardCards).values(data);
+  const rows = await db
+    .select()
+    .from(boardCards)
+    .orderBy(boardCards.createdAt);
+  return rows[rows.length - 1]!;
+}
+
+export async function markCardSeen(id: number, seenBy: "Matt" | "Lynn"): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  await db
+    .update(boardCards)
+    .set({ seenAt: new Date(), seenBy })
+    .where(eq(boardCards.id, id));
+}
+
+export async function archiveCard(id: number): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  await db
+    .update(boardCards)
+    .set({ archivedAt: new Date() })
+    .where(eq(boardCards.id, id));
+}
+
+export async function deleteBoardCard(id: number): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  await db.delete(boardCards).where(eq(boardCards.id, id));
 }

@@ -60,3 +60,26 @@ export const agendaItems = mysqlTable("agenda_items", {
 
 export type AgendaItem = typeof agendaItems.$inferSelect;
 export type InsertAgendaItem = typeof agendaItems.$inferInsert;
+
+/**
+ * Command Board cards — shared updates and issues between Matt and Lynn.
+ * type: "update" = what I did since last meeting
+ *       "issue"  = what we need to discuss at next meeting
+ * author: "Matt" | "Lynn"
+ * business: "chiropractic" | "crossfit" | "realty" | "general"
+ */
+export const boardCards = mysqlTable("board_cards", {
+  id: int("id").autoincrement().primaryKey(),
+  author: mysqlEnum("author", ["Matt", "Lynn"]).notNull(),
+  type: mysqlEnum("type", ["update", "issue"]).notNull(),
+  business: mysqlEnum("business", ["chiropractic", "crossfit", "realty", "general"]).notNull().default("general"),
+  content: text("content").notNull(),
+  seenAt: timestamp("seenAt"),
+  seenBy: mysqlEnum("seenBy", ["Matt", "Lynn"]),
+  archivedAt: timestamp("archivedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type BoardCard = typeof boardCards.$inferSelect;
+export type InsertBoardCard = typeof boardCards.$inferInsert;

@@ -11,6 +11,11 @@ import {
   getAgendaItems,
   toggleAgendaItem,
   getAllLoggedDates,
+  getBoardCards,
+  createBoardCard,
+  markCardSeen,
+  archiveCard,
+  deleteBoardCard,
 } from "./db";
 
 const meetingTypeSchema = z.enum(["daily", "weekly", "monthly", "quarterly"]);
@@ -149,6 +154,54 @@ Keep the tone warm but professional. This summary will be saved under this speci
         const summary = (response.choices[0]?.message?.content as string) ?? "Summary could not be generated.";
         await saveSummary(input.dateKey, input.meetingType, summary);
         return { summary };
+      }),
+  }),
+
+  board: router({
+    /** List all active (non-archived) board cards. */
+    list: publicProcedure.query(async () => {
+      const cards = await getBoardCards(false);
+      return { cards };
+    }),
+
+    /** Create a new board card. */
+    create: publicProcedure
+      .input(z.object({
+        author: z.enum(["Matt", "Lynn"]),
+        type: z.enum(["update", "issue"]),
+        business: z.enum(["chiropractic", "crossfit", "realty", "general"]),
+        content: z.string().min(1).max(1000),
+      }))
+      .mutation(async ({ input }) => {
+        const card = await createBoardCard(input);
+        return { card };
+      }),
+
+    /** Mark a card as seen by the other person. */
+    markSeen: publicProcedure
+      .input(z.object({
+        id: z.number(),
+        seenBy: z.enum(["Matt", "Lynn"]),
+      }))
+      .mutation(async ({ input }) => {
+        await markCardSeen(input.id, input.seenBy);
+        return { success: true };
+      }),
+
+    /** Archive a card (soft delete — hides from board after meeting). */
+    archive: publicProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        await archiveCard(input.id);
+        return { success: true };
+      }),
+
+    /** Permanently delete a card. */
+    delete: publicProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        await deleteBoardCard(input.id);
+        return { success: true };
       }),
   }),
 });

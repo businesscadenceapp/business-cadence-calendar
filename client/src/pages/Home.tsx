@@ -5,6 +5,7 @@
  */
 
 import { useState, useMemo, useCallback, useRef, useEffect } from "react";
+import { Link } from "wouter";
 import { trpc } from "@/lib/trpc";
 import {
   generateCalendar,
@@ -752,6 +753,19 @@ export default function Home() {
               </div>
             ))}
           </div>
+          <Link
+            href="/board"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all hover:opacity-90"
+            style={{
+              background: "linear-gradient(135deg, rgba(59,130,246,0.20), rgba(236,72,153,0.15))",
+              border: "1px solid rgba(59,130,246,0.30)",
+              color: "#93C5FD",
+              fontFamily: "'Space Grotesk', sans-serif",
+            }}
+          >
+            <span>📋</span>
+            Command Board
+          </Link>
           <span
             className="text-sm font-mono font-bold text-white/25 tracking-widest"
             style={{ fontFamily: "'JetBrains Mono', monospace" }}

@@ -18,7 +18,17 @@
 - [x] AI summary generation via LLM, persisted to database
 - [x] Summary regeneration button
 - [x] All vitest tests passing (6 tests)
+- [x] Per-agenda-item inline comment fields (auto-saved, debounced)
+- [x] AI summary uses item comments + notes combined
+- [x] Green dot indicator on calendar days with saved logs
 - [ ] ICS export for Google/Apple Calendar import
 - [ ] Printable one-page yearly summary PDF
 - [ ] Issues List tracker (shared notepad for mid-week issues)
 - [ ] Per-business KPI scorecard templates
+- [x] Command Board: database schema (board_cards table with author, type, business, content, seenAt)
+- [x] Command Board: backend tRPC routes (list, create, markSeen, delete)
+- [x] Command Board: UI page with Updates and Issues sections
+- [x] Command Board: Matt (blue) and Lynn (pink) color coding per card
+- [x] Command Board: business tag filter (All / Chiropractic / CrossFit / Realty)
+- [x] Command Board: "Seen ✓" acknowledgment button per card
+- [x] Command Board: navigation tab between Calendar and Board views

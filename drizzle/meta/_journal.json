@@ -15,6 +15,13 @@
       "when": 1782708871143,
       "tag": "0001_blue_multiple_man",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1782709861572,
+      "tag": "0002_harsh_energizer",
+      "breakpoints": true
     }
   ]
 }
