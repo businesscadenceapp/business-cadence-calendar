@@ -8,6 +8,13 @@
       "when": 1782708282185,
       "tag": "0000_living_nextwave",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1782708871143,
+      "tag": "0001_blue_multiple_man",
+      "breakpoints": true
     }
   ]
 }

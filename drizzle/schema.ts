@@ -53,6 +53,7 @@ export const agendaItems = mysqlTable("agenda_items", {
   meetingLogId: int("meetingLogId").notNull(),
   itemKey: varchar("itemKey", { length: 128 }).notNull(),
   completed: boolean("completed").default(false).notNull(),
+  comment: text("comment"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });

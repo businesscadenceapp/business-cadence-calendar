@@ -40,11 +40,13 @@ function DayCell({
   onSelect,
   isSelected,
   highlightType,
+  hasLog,
 }: {
   day: CalendarDay | null;
   onSelect: (day: CalendarDay) => void;
   isSelected: boolean;
   highlightType: MeetingType | null;
+  hasLog?: boolean;
 }) {
   if (!day) return <div className="h-10" />;
 
@@ -82,20 +84,29 @@ function DayCell({
       }}
       onClick={() => hasMeetings && onSelect(day)}
     >
-      <span
-        className={`text-[10px] leading-none ${
-          day.isToday
-            ? "text-white font-bold"
-            : hasQuarterly
-            ? "text-rose-300 font-semibold"
-            : hasMonthly
-            ? "text-teal-300 font-medium"
-            : "text-white/45"
-        }`}
-        style={{ fontFamily: "'JetBrains Mono', monospace" }}
-      >
-        {day.dayOfMonth}
-      </span>
+      <div className="relative w-full flex justify-center">
+        <span
+          className={`text-[10px] leading-none ${
+            day.isToday
+              ? "text-white font-bold"
+              : hasQuarterly
+              ? "text-rose-300 font-semibold"
+              : hasMonthly
+              ? "text-teal-300 font-medium"
+              : "text-white/45"
+          }`}
+          style={{ fontFamily: "'JetBrains Mono', monospace" }}
+        >
+          {day.dayOfMonth}
+        </span>
+        {hasLog && (
+          <span
+            className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full"
+            style={{ backgroundColor: "#22c55e", boxShadow: "0 0 3px #22c55e" }}
+            title="Meeting logged"
+          />
+        )}
+      </div>
       {hasMeetings && sortedMeetings.length > 0 && (
         <div className="flex gap-0.5 items-center justify-center">
           {sortedMeetings.map((t) => (
@@ -112,11 +123,13 @@ function MonthGrid({
   onSelectDay,
   selectedDay,
   highlightType,
+  loggedDates,
 }: {
   month: CalendarMonth;
   onSelectDay: (day: CalendarDay) => void;
   selectedDay: CalendarDay | null;
   highlightType: MeetingType | null;
+  loggedDates: Set<string>;
 }) {
   const quarterlyDays = month.days.filter((d) => d && d.meetings.includes("quarterly")).length;
   const monthlyDays = month.days.filter((d) => d && d.meetings.includes("monthly")).length;
@@ -175,19 +188,25 @@ function MonthGrid({
             {d}
           </div>
         ))}
-        {month.days.map((day, idx) => (
-          <DayCell
-            key={idx}
-            day={day}
-            onSelect={onSelectDay}
-            isSelected={
-              selectedDay !== null &&
-              day !== null &&
-              selectedDay.date.getTime() === day.date.getTime()
-            }
-            highlightType={highlightType}
-          />
-        ))}
+        {month.days.map((day, idx) => {
+          const dateKey = day
+            ? `${day.date.getFullYear()}-${String(day.date.getMonth() + 1).padStart(2, "0")}-${String(day.date.getDate()).padStart(2, "0")}`
+            : "";
+          return (
+            <DayCell
+              key={idx}
+              day={day}
+              onSelect={onSelectDay}
+              isSelected={
+                selectedDay !== null &&
+                day !== null &&
+                selectedDay.date.getTime() === day.date.getTime()
+              }
+              highlightType={highlightType}
+              hasLog={day ? loggedDates.has(dateKey) : false}
+            />
+          );
+        })}
       </div>
     </div>
   );
@@ -196,20 +215,21 @@ function MonthGrid({
 function BusinessBlock({
   block,
   meetingColor,
-  dateKey,
   meetingType,
-  completedKeys,
+  itemStates,
   onToggle,
+  onCommentChange,
 }: {
   block: { business: string; duration: string; startOffset: string; endOffset: string; focus: string; items: string[] };
   meetingColor: string;
-  dateKey: string;
   meetingType: MeetingType;
-  completedKeys: Set<string>;
+  itemStates: Map<string, { completed: boolean; comment: string }>;
   onToggle: (itemKey: string, completed: boolean) => void;
+  onCommentChange: (itemKey: string, comment: string) => void;
 }) {
   const [expanded, setExpanded] = useState(true);
   const biz = BUSINESSES[block.business as keyof typeof BUSINESSES];
+  const completedCount = block.items.filter((_, i) => itemStates.get(`${meetingType}-${block.business}-${i}`)?.completed).length;
 
   return (
     <div
@@ -236,7 +256,7 @@ function BusinessBlock({
               {block.startOffset}–{block.endOffset}
             </span>
             <span className="ml-auto text-[10px] text-white/25" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-              {block.items.filter((_,i) => completedKeys.has(`${meetingType}-${block.business}-${i}`)).length}/{block.items.length}
+              {completedCount}/{block.items.length}
             </span>
           </div>
           <p className="text-[10px] text-white/45 mt-0.5 truncate">{block.focus}</p>
@@ -244,36 +264,53 @@ function BusinessBlock({
         <span className="text-white/30 text-xs flex-shrink-0">{expanded ? "▲" : "▼"}</span>
       </button>
       {expanded && (
-        <div className="px-3 pb-3 flex flex-col gap-1.5">
-          <div className="w-full h-px mb-1" style={{ backgroundColor: `${biz.color}20` }} />
+        <div className="px-3 pb-3 flex flex-col gap-3">
+          <div className="w-full h-px" style={{ backgroundColor: `${biz.color}20` }} />
           {block.items.map((item: string, i: number) => {
             const itemKey = `${meetingType}-${block.business}-${i}`;
-            const isChecked = completedKeys.has(itemKey);
+            const state = itemStates.get(itemKey) ?? { completed: false, comment: "" };
+            const isChecked = state.completed;
             return (
-              <label
-                key={i}
-                className="flex gap-2.5 items-start cursor-pointer group"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <button
-                  type="button"
-                  onClick={() => onToggle(itemKey, !isChecked)}
-                  className="flex-shrink-0 mt-0.5 w-3.5 h-3.5 rounded border flex items-center justify-center transition-all"
-                  style={{
-                    borderColor: isChecked ? biz.color : `${biz.color}50`,
-                    backgroundColor: isChecked ? biz.color : "transparent",
-                  }}
-                >
-                  {isChecked && (
-                    <svg width="8" height="6" viewBox="0 0 8 6" fill="none">
-                      <path d="M1 3L3 5L7 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                  )}
-                </button>
-                <p className={`text-[11px] leading-relaxed transition-colors ${
-                  isChecked ? "text-white/30 line-through" : "text-white/65 group-hover:text-white/80"
-                }`}>{item}</p>
-              </label>
+              <div key={i} className="flex flex-col gap-1.5">
+                {/* Checkbox row */}
+                <div className="flex gap-2.5 items-start">
+                  <button
+                    type="button"
+                    onClick={() => onToggle(itemKey, !isChecked)}
+                    className="flex-shrink-0 mt-0.5 w-3.5 h-3.5 rounded border flex items-center justify-center transition-all"
+                    style={{
+                      borderColor: isChecked ? biz.color : `${biz.color}50`,
+                      backgroundColor: isChecked ? biz.color : "transparent",
+                    }}
+                  >
+                    {isChecked && (
+                      <svg width="8" height="6" viewBox="0 0 8 6" fill="none">
+                        <path d="M1 3L3 5L7 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    )}
+                  </button>
+                  <p className={`text-[11px] leading-relaxed transition-colors flex-1 ${
+                    isChecked ? "text-white/35 line-through" : "text-white/75"
+                  }`}>{item}</p>
+                </div>
+                {/* Inline comment field — always visible, subtle */}
+                <div className="ml-6">
+                  <input
+                    type="text"
+                    value={state.comment}
+                    onChange={(e) => onCommentChange(itemKey, e.target.value)}
+                    placeholder={isChecked ? "Add a note about this item…" : "Add context or a question…"}
+                    className="w-full rounded px-2.5 py-1.5 text-[10px] text-white/60 placeholder-white/20 focus:outline-none transition-colors"
+                    style={{
+                      backgroundColor: `${biz.color}10`,
+                      border: `1px solid ${biz.color}20`,
+                      fontFamily: "'Inter', sans-serif",
+                    }}
+                    onFocus={(e) => (e.target.style.borderColor = `${biz.color}50`)}
+                    onBlur={(e) => (e.target.style.borderColor = `${biz.color}20`)}
+                  />
+                </div>
+              </div>
             );
           })}
         </div>
@@ -292,12 +329,14 @@ function MeetingSection({
   dateKey: string;
 }) {
   const m = MEETING_TYPES[type];
+  // itemStates: key = itemKey, value = { completed, comment }
+  const [itemStates, setItemStates] = useState<Map<string, { completed: boolean; comment: string }>>(() => new Map());
   const [notes, setNotes] = useState("");
-  const [completedKeys, setCompletedKeys] = useState<Set<string>>(new Set());
   const [summary, setSummary] = useState<string | null>(null);
   const [summaryDate, setSummaryDate] = useState<Date | null>(null);
   const [notesLoaded, setNotesLoaded] = useState(false);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const commentTimers = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
 
   // Load existing log data
   const { data: logData } = trpc.meetingLog.get.useQuery(
@@ -310,14 +349,18 @@ function MeetingSection({
       setNotes(logData.log?.notes ?? "");
       setSummary(logData.log?.aiSummary ?? null);
       setSummaryDate(logData.log?.summaryGeneratedAt ?? null);
-      const keys = new Set<string>(logData.agendaItems.filter(a => a.completed).map(a => a.itemKey));
-      setCompletedKeys(keys);
+      const newMap = new Map<string, { completed: boolean; comment: string }>();
+      logData.agendaItems.forEach(a => {
+        newMap.set(a.itemKey, { completed: a.completed, comment: (a as any).comment ?? "" });
+      });
+      setItemStates(newMap);
       setNotesLoaded(true);
     }
   }, [logData, notesLoaded]);
 
   const saveNotes = trpc.meetingLog.saveNotes.useMutation();
   const toggleItem = trpc.meetingLog.toggleItem.useMutation();
+  const saveItemComment = trpc.meetingLog.saveItemComment.useMutation();
   const generateSummary = trpc.meetingLog.generateSummary.useMutation();
 
   const handleNotesChange = useCallback((val: string) => {
@@ -329,42 +372,50 @@ function MeetingSection({
   }, [dateKey, type]);
 
   const handleToggle = useCallback((itemKey: string, completed: boolean) => {
-    setCompletedKeys(prev => {
-      const next = new Set(prev);
-      if (completed) next.add(itemKey); else next.delete(itemKey);
+    setItemStates(prev => {
+      const next = new Map(prev);
+      const cur = next.get(itemKey) ?? { completed: false, comment: "" };
+      next.set(itemKey, { ...cur, completed });
       return next;
     });
     toggleItem.mutate({ dateKey, meetingType: type, itemKey, completed });
   }, [dateKey, type]);
 
+  const handleCommentChange = useCallback((itemKey: string, comment: string) => {
+    setItemStates(prev => {
+      const next = new Map(prev);
+      const cur = next.get(itemKey) ?? { completed: false, comment: "" };
+      next.set(itemKey, { ...cur, comment });
+      return next;
+    });
+    // Debounce save
+    const existing = commentTimers.current.get(itemKey);
+    if (existing) clearTimeout(existing);
+    commentTimers.current.set(itemKey, setTimeout(() => {
+      saveItemComment.mutate({ dateKey, meetingType: type, itemKey, comment });
+    }, 800));
+  }, [dateKey, type]);
+
   const handleGenerateSummary = useCallback(() => {
-    const allItems: string[] = [];
+    // Build the full items list with completed state and comments
+    const items: { label: string; completed: boolean; comment?: string }[] = [];
     m.timeBlocks.forEach(block => {
+      const bizName = BUSINESSES[block.business as keyof typeof BUSINESSES].shortName;
       block.items.forEach((item, i) => {
-        allItems.push(`${BUSINESSES[block.business as keyof typeof BUSINESSES].shortName}: ${item}`);
+        const itemKey = `${type}-${block.business}-${i}`;
+        const state = itemStates.get(itemKey);
+        items.push({
+          label: `${bizName}: ${item}`,
+          completed: state?.completed ?? false,
+          comment: state?.comment || undefined,
+        });
       });
     });
-    m.sharedItems.forEach(item => allItems.push(item));
-    const completedItemLabels = allItems.filter((_, i) => {
-      // match by position across all blocks
-      let idx = 0;
-      for (const block of m.timeBlocks) {
-        for (let bi = 0; bi < block.items.length; bi++) {
-          if (idx === i) return completedKeys.has(`${type}-${block.business}-${bi}`);
-          idx++;
-        }
-      }
-      return false;
+    m.sharedItems.forEach(item => {
+      items.push({ label: item, completed: false });
     });
     generateSummary.mutate(
-      {
-        dateKey,
-        meetingType: type,
-        notes,
-        completedItems: completedItemLabels,
-        allItems,
-        businessContext: m.label,
-      },
+      { dateKey, meetingType: type, notes, items, businessContext: m.label },
       {
         onSuccess: (data) => {
           setSummary(data.summary);
@@ -372,11 +423,11 @@ function MeetingSection({
         },
       }
     );
-  }, [dateKey, type, notes, completedKeys, m]);
+  }, [dateKey, type, notes, itemStates, m]);
 
   const totalItems = m.timeBlocks.reduce((acc, b) => acc + b.items.length, 0);
   const completedCount = m.timeBlocks.reduce((acc, b) =>
-    acc + b.items.filter((_, i) => completedKeys.has(`${type}-${b.business}-${i}`)).length, 0
+    acc + b.items.filter((_, i) => itemStates.get(`${type}-${b.business}-${i}`)?.completed === true).length, 0
   );
   const progressPct = totalItems > 0 ? Math.round((completedCount / totalItems) * 100) : 0;
 
@@ -428,10 +479,10 @@ function MeetingSection({
             key={i}
             block={block}
             meetingColor={m.color}
-            dateKey={dateKey}
             meetingType={type}
-            completedKeys={completedKeys}
+            itemStates={itemStates}
             onToggle={handleToggle}
+            onCommentChange={handleCommentChange}
           />
         ))}
       </div>
@@ -636,6 +687,16 @@ export default function Home() {
   const calendar = useMemo(() => generateCalendar(), []);
   const [selectedDay, setSelectedDay] = useState<CalendarDay | null>(null);
   const [highlightType, setHighlightType] = useState<MeetingType | null>(null);
+
+  // Fetch all days that have saved meeting logs for the green indicator dot
+  const { data: loggedDatesData } = trpc.meetingLog.getLoggedDates.useQuery(undefined, {
+    staleTime: 60_000,
+    refetchOnWindowFocus: true,
+  });
+  const loggedDatesSet = useMemo(
+    () => new Set<string>(loggedDatesData?.dates ?? []),
+    [loggedDatesData]
+  );
 
   const handleSelectDay = (day: CalendarDay) => {
     setSelectedDay((prev) =>
@@ -843,6 +904,7 @@ export default function Home() {
                 onSelectDay={handleSelectDay}
                 selectedDay={selectedDay}
                 highlightType={highlightType}
+                loggedDates={loggedDatesSet}
               />
             ))}
           </div>

@@ -120,6 +120,15 @@ export async function upsertMeetingLog(
   }
 }
 
+export async function getAllLoggedDates(): Promise<string[]> {
+  const db = await getDb();
+  if (!db) return [];
+  const rows = await db.select({ dateKey: meetingLogs.dateKey }).from(meetingLogs);
+  const seen = new Set<string>();
+  rows.forEach(r => seen.add(r.dateKey));
+  return Array.from(seen);
+}
+
 export async function saveSummary(
   dateKey: string,
   meetingType: MeetingLog["meetingType"],
@@ -148,18 +157,19 @@ export async function getAgendaItems(meetingLogId: number): Promise<AgendaItem[]
 export async function toggleAgendaItem(
   meetingLogId: number,
   itemKey: string,
-  completed: boolean
+  completed: boolean,
+  comment?: string
 ): Promise<void> {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   const existing = await db.select().from(agendaItems)
     .where(and(eq(agendaItems.meetingLogId, meetingLogId), eq(agendaItems.itemKey, itemKey)))
     .limit(1);
+  const updatePayload: Record<string, unknown> = { completed, updatedAt: new Date() };
+  if (comment !== undefined) updatePayload.comment = comment;
   if (existing.length > 0) {
-    await db.update(agendaItems)
-      .set({ completed, updatedAt: new Date() })
-      .where(eq(agendaItems.id, existing[0].id));
+    await db.update(agendaItems).set(updatePayload).where(eq(agendaItems.id, existing[0].id));
   } else {
-    await db.insert(agendaItems).values({ meetingLogId, itemKey, completed });
+    await db.insert(agendaItems).values({ meetingLogId, itemKey, completed, comment: comment ?? null });
   }
 }

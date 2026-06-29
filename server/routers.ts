@@ -10,6 +10,7 @@ import {
   saveSummary,
   getAgendaItems,
   toggleAgendaItem,
+  getAllLoggedDates,
 } from "./db";
 
 const meetingTypeSchema = z.enum(["daily", "weekly", "monthly", "quarterly"]);
@@ -48,62 +49,95 @@ export const appRouter = router({
         return { log };
       }),
 
-    /** Toggle a single agenda item checkbox on/off. */
+    /** Toggle a single agenda item checkbox on/off, and optionally save a comment. */
     toggleItem: publicProcedure
       .input(z.object({
         dateKey: z.string(),
         meetingType: meetingTypeSchema,
         itemKey: z.string(),
         completed: z.boolean(),
+        comment: z.string().optional(),
       }))
       .mutation(async ({ input }) => {
         let log = await getMeetingLog(input.dateKey, input.meetingType);
         if (!log) {
           log = await upsertMeetingLog(input.dateKey, input.meetingType, "");
         }
-        await toggleAgendaItem(log.id, input.itemKey, input.completed);
+        await toggleAgendaItem(log.id, input.itemKey, input.completed, input.comment);
         return { success: true };
       }),
 
-    /** Generate an AI summary from notes and completed items, then persist it. */
+    /** Save just a comment for an item (without changing its completed state). */
+    saveItemComment: publicProcedure
+      .input(z.object({
+        dateKey: z.string(),
+        meetingType: meetingTypeSchema,
+        itemKey: z.string(),
+        comment: z.string(),
+      }))
+      .mutation(async ({ input }) => {
+        let log = await getMeetingLog(input.dateKey, input.meetingType);
+        if (!log) {
+          log = await upsertMeetingLog(input.dateKey, input.meetingType, "");
+        }
+        // Get current completed state to preserve it
+        const items = await getAgendaItems(log.id);
+        const existing = items.find(i => i.itemKey === input.itemKey);
+        await toggleAgendaItem(log.id, input.itemKey, existing?.completed ?? false, input.comment);
+        return { success: true };
+      }),
+
+    /** Get all dateKeys that have at least one saved meeting log (for calendar indicators). */
+    getLoggedDates: publicProcedure
+      .query(async () => {
+        const dates = await getAllLoggedDates();
+        return { dates };
+      }),
+
+    /** Generate an AI summary from notes, completed items, and per-item comments, then persist it. */
     generateSummary: publicProcedure
       .input(z.object({
         dateKey: z.string(),
         meetingType: meetingTypeSchema,
         notes: z.string(),
-        completedItems: z.array(z.string()),
-        allItems: z.array(z.string()),
+        items: z.array(z.object({
+          label: z.string(),
+          completed: z.boolean(),
+          comment: z.string().optional(),
+        })),
         businessContext: z.string(),
       }))
       .mutation(async ({ input }) => {
-        const completedList = input.completedItems.length > 0
-          ? input.completedItems.map(i => `  ✓ ${i}`).join("\n")
-          : "  (none checked)";
-        const pendingItems = input.allItems.filter(i => !input.completedItems.includes(i));
-        const pendingList = pendingItems.length > 0
-          ? pendingItems.map(i => `  ○ ${i}`).join("\n")
-          : "  (all items completed)";
+        const completedLines = input.items
+          .filter(i => i.completed)
+          .map(i => i.comment ? `  ✓ ${i.label}\n     → Note: ${i.comment}` : `  ✓ ${i.label}`)
+          .join("\n");
+        const pendingLines = input.items
+          .filter(i => !i.completed)
+          .map(i => i.comment ? `  ○ ${i.label}\n     → Note: ${i.comment}` : `  ○ ${i.label}`)
+          .join("\n");
 
         const prompt = `You are a business advisor summarizing a ${input.meetingType} meeting for a husband-and-wife co-owner team who run three businesses: New Beginnings Chiropractic (17+ years, anchor business), Evolved CrossFit (2 years, recently profitable), and Bubbles Realty (rental property, targeting $8K net/year).
 
 Meeting date: ${input.dateKey}
-Meeting type: ${input.meetingType.charAt(0).toUpperCase() + input.meetingType.slice(1)} ${input.businessContext}
+Meeting type: ${input.meetingType.charAt(0).toUpperCase() + input.meetingType.slice(1)} — ${input.businessContext}
 
-Completed agenda items:
-${completedList}
+Completed agenda items (with any notes added during the meeting):
+${completedLines || "  (none completed)"}
 
 Pending / not completed:
-${pendingList}
+${pendingLines || "  (all items completed)"}
 
-Notes from the meeting:
-${input.notes || "(no notes entered)"}
+Additional meeting notes:
+${input.notes || "(none)"}
 
-Write a concise, professional summary (3-5 sentences) that:
-1. Highlights what was accomplished and any key decisions made
-2. Notes any items that were not completed and may need follow-up
-3. Ends with one specific, actionable next step for the most pressing issue
+Write a concise, professional summary (4-6 sentences) that:
+1. Opens with what was accomplished across the three businesses
+2. Incorporates any specific notes or comments that were added to individual items
+3. Flags any items that were not completed and may need follow-up next meeting
+4. Ends with one clear, specific action item — who does what by when
 
-Keep the tone warm but professional.`;
+Keep the tone warm but professional. This summary will be saved under this specific meeting day for future reference.`;
 
         const response = await invokeLLM({
           messages: [
