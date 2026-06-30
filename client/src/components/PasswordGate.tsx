@@ -7,6 +7,7 @@ import { useState, useEffect, useRef } from "react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { getBusinessSelection } from "../pages/ClientLogin";
+import BrandLogo from "./BrandLogo";
 
 const STORAGE_KEY = "bcc_auth_v1";
 
@@ -77,26 +78,9 @@ export default function PasswordGate({ children }: { children: React.ReactNode }
       <div className="relative z-10 w-full max-w-sm mx-4">
         {/* Logo / header */}
         <div className="text-center mb-8">
-          <div
-            className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4"
-            style={{
-              background: "linear-gradient(135deg, oklch(0.55 0.18 260) 0%, oklch(0.50 0.20 290) 100%)",
-              boxShadow: "0 0 32px oklch(0.55 0.18 260 / 30%)",
-            }}
-          >
-            <svg width="32" height="32" viewBox="0 0 18 18" fill="none">
-              <rect x="2" y="2" width="6" height="6" rx="1.5" fill="white" fillOpacity="0.95" />
-              <rect x="10" y="2" width="6" height="6" rx="1.5" fill="white" fillOpacity="0.65" />
-              <rect x="2" y="10" width="6" height="6" rx="1.5" fill="white" fillOpacity="0.65" />
-              <rect x="10" y="10" width="6" height="6" rx="1.5" fill="white" fillOpacity="0.35" />
-            </svg>
+          <div className="flex justify-center mb-5">
+            <BrandLogo size="lg" theme="light" />
           </div>
-          <h1
-            className="text-xl font-bold text-white mb-1"
-            style={{ fontFamily: "'Space Grotesk', sans-serif" }}
-          >
-            Business Cadence Calendar
-          </h1>
           {(() => {
             const sel = getBusinessSelection();
             const biz = BUSINESS_LABELS[sel];

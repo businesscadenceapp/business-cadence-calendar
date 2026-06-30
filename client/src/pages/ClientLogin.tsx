@@ -5,6 +5,7 @@
  */
 
 import { useLocation } from "wouter";
+import BrandLogo from "@/components/BrandLogo";
 
 const BUSINESS_STORAGE_KEY = "bcc_selected_business";
 
@@ -89,11 +90,9 @@ export default function ClientLogin() {
       <div className="relative z-10 w-full max-w-lg">
         {/* Header */}
         <div className="text-center mb-10">
-          <img
-            src="/manus-storage/businesscadence-logo-navy-v2_7b54fc45.png"
-            alt="BusinessCadence"
-            className="h-10 w-auto mx-auto mb-6 opacity-90"
-          />
+          <div className="flex justify-center mb-6">
+            <BrandLogo size="lg" theme="light" />
+          </div>
           <h1
             className="text-2xl font-bold text-white mb-2"
             style={{ fontFamily: "'Space Grotesk', sans-serif" }}
