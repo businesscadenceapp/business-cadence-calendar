@@ -72,3 +72,14 @@
 - [x] Pass business context through to the password gate and calendar app
 - [x] Update calendar app Home.tsx to default to the selected business on load
 - [x] Save checkpoint
+
+## Three-Account Authentication System (Phase 4)
+
+- [ ] Add app_users table to drizzle schema (username, hashed password, business scope, role)
+- [ ] Push DB migration and seed three accounts: chiro/subluxation, crossfit/burpee, owner/lynnandmatt901
+- [ ] Update server gate.verify procedure to validate username + password and return scope + session token
+- [ ] Update ClientLogin frontend to send username + password and store scope in session
+- [ ] Update PasswordGate to use new session token with scope
+- [ ] Update calendar app to filter meeting data by business scope from session
+- [ ] Test all three accounts in isolation
+- [ ] Save checkpoint

@@ -12,16 +12,17 @@ import { toast } from "sonner";
 const STORAGE_KEY = "bcc_auth_v1";
 const BUSINESS_STORAGE_KEY = "bcc_selected_business";
 
-export type BusinessSelection = "chiro" | "crossfit" | "all";
+export type BusinessSelection = "chiro" | "crossfit" | "owner";
 
 const USERNAMES: Record<string, BusinessSelection> = {
   "chiro": "chiro",
   "newbeginnings": "chiro",
   "crossfit": "crossfit",
   "evolvedcrossfit": "crossfit",
-  "all": "all",
-  "matt": "all",
-  "lynn": "all",
+  "all": "owner",
+  "matt": "owner",
+  "lynn": "owner",
+  "owner": "owner",
 };
 
 export function saveBusinessSelection(key: BusinessSelection) {
@@ -33,9 +34,9 @@ export function saveBusinessSelection(key: BusinessSelection) {
 export function getBusinessSelection(): BusinessSelection {
   try {
     const stored = localStorage.getItem(BUSINESS_STORAGE_KEY);
-    if (stored === "chiro" || stored === "crossfit" || stored === "all") return stored;
+    if (stored === "chiro" || stored === "crossfit" || stored === "owner") return stored;
   } catch { /* ignore */ }
-  return "all";
+  return "owner";
 }
 
 export default function ClientLogin() {
@@ -49,11 +50,10 @@ export default function ClientLogin() {
   const verify = trpc.gate.verify.useMutation({
     onSuccess: (data) => {
       setIsLoading(false);
-      if (data.success) {
-        // Determine business context from username
-        const normalized = username.trim().toLowerCase().replace(/\s/g, "");
-        const bizKey = USERNAMES[normalized] ?? "all";
-        saveBusinessSelection(bizKey);
+      if (data.success && data.scope) {
+        // Store the scope returned from the server
+        const scope = data.scope as BusinessSelection;
+        saveBusinessSelection(scope);
         try { localStorage.setItem(STORAGE_KEY, "granted"); } catch { /* ignore */ }
         navigate("/app");
       } else {
@@ -77,7 +77,7 @@ export default function ClientLogin() {
     e.preventDefault();
     if (!username.trim() || !password.trim()) return;
     setIsLoading(true);
-    verify.mutate({ password: password.trim() });
+    verify.mutate({ username: username.trim(), password: password.trim() });
   };
 
   return (

@@ -115,3 +115,23 @@ export const waitlistEmails = mysqlTable("waitlist_emails", {
 
 export type WaitlistEmail = typeof waitlistEmails.$inferSelect;
 export type InsertWaitlistEmail = typeof waitlistEmails.$inferInsert;
+
+/**
+ * App users — the three client accounts for the calendar app.
+ * scope: "chiro" = New Beginnings Chiropractic only
+ *        "crossfit" = Evolved CrossFit only
+ *        "owner" = All three businesses (Matt & Lynn)
+ * passwordHash: bcrypt hash of the user's password
+ */
+export const appUsers = mysqlTable("app_users", {
+  id: int("id").autoincrement().primaryKey(),
+  username: varchar("username", { length: 64 }).notNull().unique(),
+  passwordHash: varchar("passwordHash", { length: 255 }).notNull(),
+  scope: mysqlEnum("scope", ["chiro", "crossfit", "owner"]).notNull(),
+  displayName: varchar("displayName", { length: 128 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type AppUser = typeof appUsers.$inferSelect;
+export type InsertAppUser = typeof appUsers.$inferInsert;

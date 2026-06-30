@@ -24,6 +24,10 @@ import {
   getWaitlistCount,
 } from "./db";
 import { notifyOwner } from "./_core/notification";
+import bcrypt from "bcryptjs";
+import { getDb } from "./db";
+import { appUsers } from "../drizzle/schema";
+import { eq } from "drizzle-orm";
 
 const meetingTypeSchema = z.enum(["daily", "weekly", "monthly", "quarterly"]);
 
@@ -206,15 +210,30 @@ Keep the tone warm but professional. This summary will be saved under this speci
       }),
   }),
 
-  /** Password gate — validates the shared site password. */
+  /** Password gate — validates username + password against the app_users table. */
   gate: router({
     verify: publicProcedure
-      .input(z.object({ password: z.string() }))
-      .mutation(({ input }) => {
-        // Read at call time so tests can override process.env.SITE_PASSWORD via beforeAll
-        const sitePassword = process.env.SITE_PASSWORD ?? "";
-        const correct = sitePassword.length > 0 && input.password === sitePassword;
-        return { success: correct };
+      .input(z.object({ username: z.string(), password: z.string() }))
+      .mutation(async ({ input }) => {
+        const username = input.username.trim().toLowerCase();
+        const db = await getDb();
+        if (!db) return { success: false, scope: null };
+        const [user] = await db
+          .select()
+          .from(appUsers)
+          .where(eq(appUsers.username, username))
+          .limit(1);
+
+        if (!user) {
+          // Constant-time comparison to prevent user enumeration
+          await bcrypt.compare(input.password, "$2a$10$invalidhashpadding000000000000000000000000000000000000");
+          return { success: false, scope: null };
+        }
+
+        const correct = await bcrypt.compare(input.password, user.passwordHash);
+        if (!correct) return { success: false, scope: null };
+
+        return { success: true, scope: user.scope, displayName: user.displayName };
       }),
   }),
 

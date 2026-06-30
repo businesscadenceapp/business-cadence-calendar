@@ -332,10 +332,12 @@ function MeetingSection({
   type,
   day,
   dateKey,
+  businessContext,
 }: {
   type: MeetingType;
   day: CalendarDay;
   dateKey: string;
+  businessContext: BusinessSelection;
 }) {
   const m = MEETING_TYPES[type];
   // itemStates: key = itemKey, value = { completed, comment }
@@ -358,13 +360,21 @@ function MeetingSection({
   });
 
   // Build effective blocks: use custom items if saved, otherwise use defaults
-  const effectiveBlocks = m.timeBlocks.map((block, i) => {
-    const customItems = templateQueries[i]?.data?.items;
-    if (customItems && customItems.length > 0) {
-      return { ...block, items: customItems.map((ci: { label: string }) => ci.label) };
-    }
-    return block;
-  });
+  // Then filter by businessContext so each account only sees their own business
+  const effectiveBlocks = m.timeBlocks
+    .map((block, i) => {
+      const customItems = templateQueries[i]?.data?.items;
+      if (customItems && customItems.length > 0) {
+        return { ...block, items: customItems.map((ci: { label: string }) => ci.label) };
+      }
+      return block;
+    })
+    .filter((block) => {
+      if (businessContext === "owner") return true; // owner sees all
+      if (businessContext === "chiro") return block.business === "chiro";
+      if (businessContext === "crossfit") return block.business === "crossfit";
+      return true; // fallback: show all
+    });
 
   // Load existing log data
   const { data: logData } = trpc.meetingLog.get.useQuery(
@@ -617,9 +627,11 @@ function MeetingSection({
 function DetailPanel({
   day,
   onClose,
+  businessContext,
 }: {
   day: CalendarDay;
   onClose: () => void;
+  businessContext: BusinessSelection;
 }) {
   const dateStr = day.date.toLocaleDateString("en-US", {
     weekday: "long",
@@ -653,7 +665,7 @@ function DetailPanel({
 
       {/* Each meeting type as its own interactive section */}
       {sortedMeetings.map((type) => (
-        <MeetingSection key={type} type={type} day={day} dateKey={dateKey} />
+        <MeetingSection key={type} type={type} day={day} dateKey={dateKey} businessContext={businessContext} />
       ))}
     </div>
   );
@@ -864,11 +876,11 @@ export default function Home() {
             </div>
             <div className="flex flex-col gap-1">
               {(Object.entries(BUSINESSES) as [keyof typeof BUSINESSES, typeof BUSINESSES[keyof typeof BUSINESSES]][]).map(([key, biz]) => {
-                const isActive = businessContext === "all" ||
+                const isActive = businessContext === "owner" ||
                   (businessContext === "chiro" && key === "chiro") ||
                   (businessContext === "crossfit" && key === "crossfit");
                 const isFiltered = !isActive;
-                const isSingleSelected = businessContext !== "all" && isActive;
+                const isSingleSelected = businessContext !== "owner" && isActive;
                 return (
                   <div
                     key={key}
@@ -991,7 +1003,7 @@ export default function Home() {
             className="w-80 flex-shrink-0 p-4 overflow-y-auto"
             style={{ borderLeft: "1px solid oklch(1 0 0 / 8%)" }}
           >
-            <DetailPanel day={selectedDay} onClose={() => setSelectedDay(null)} />
+            <DetailPanel day={selectedDay} onClose={() => setSelectedDay(null)} businessContext={businessContext} />
           </aside>
         )}
       </div>
