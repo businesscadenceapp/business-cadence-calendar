@@ -1,85 +1,131 @@
 /**
- * BrandLogo — Inline SVG + text logo for BusinessCadence.
- * Renders crisply at any size on both retina and standard displays.
- * No image file dependency — scales perfectly on mobile and desktop.
+ * BrandLogo — SVG-based logo component matching the approved design:
+ * Navy pill background, double eighth note icon, "BusinessCadence" text.
+ * Renders crisp at any size with no image padding issues.
+ *
+ * Sizes:
+ *   sm  — nav bar on mobile (height ~32px)
+ *   md  — nav bar on desktop (height ~44px)
+ *   lg  — hero section / login portal (height ~64px)
+ *   xl  — large display (height ~88px)
  */
 
 interface BrandLogoProps {
-  /** Controls overall scale. Default: "md" */
   size?: "sm" | "md" | "lg" | "xl";
-  /** Color theme. Default: "dark" (navy on transparent) */
-  theme?: "dark" | "light" | "white";
-  /** Show only the icon, no text */
-  iconOnly?: boolean;
   className?: string;
 }
 
-const SIZE_CONFIG = {
-  sm: { iconSize: 18, fontSize: 15, gap: 6, fontWeight: 600 },
-  md: { iconSize: 24, fontSize: 19, gap: 8, fontWeight: 600 },
-  lg: { iconSize: 32, fontSize: 26, gap: 10, fontWeight: 700 },
-  xl: { iconSize: 44, fontSize: 36, gap: 14, fontWeight: 700 },
+const sizes = {
+  sm: { height: 32, fontSize: 13, noteScale: 0.7, gap: 8, px: 12, py: 6, rx: 8 },
+  md: { height: 44, fontSize: 17, noteScale: 0.95, gap: 10, px: 16, py: 8, rx: 11 },
+  lg: { height: 64, fontSize: 24, noteScale: 1.35, gap: 14, px: 22, py: 12, rx: 16 },
+  xl: { height: 88, fontSize: 32, noteScale: 1.85, gap: 18, px: 28, py: 16, rx: 20 },
 };
 
-const THEME_CONFIG = {
-  dark: { iconColor: "#1E3A5F", textColor: "#1E3A5F", accentColor: "#0D9488" },
-  light: { iconColor: "#FFFFFF", textColor: "#FFFFFF", accentColor: "#5EEAD4" },
-  white: { iconColor: "#FFFFFF", textColor: "#FFFFFF", accentColor: "#A5F3FC" },
-};
+export default function BrandLogo({ size = "md", className = "" }: BrandLogoProps) {
+  const s = sizes[size];
 
-export default function BrandLogo({
-  size = "md",
-  theme = "dark",
-  iconOnly = false,
-  className = "",
-}: BrandLogoProps) {
-  const { iconSize, fontSize, gap, fontWeight } = SIZE_CONFIG[size];
-  const { iconColor, textColor, accentColor } = THEME_CONFIG[theme];
+  // Double eighth note natural dimensions at scale 1: ~22w x 20h
+  const noteW = 22 * s.noteScale;
+  const noteH = 20 * s.noteScale;
+
+  // Approximate text width for "BusinessCadence" at given font size
+  // Inter: ~0.58 char-width ratio
+  const textW = s.fontSize * 0.58 * 16; // "BusinessCadence" = 16 chars
+
+  const totalInnerW = noteW + s.gap + textW;
+  const totalW = totalInnerW + s.px * 2;
+  const totalH = s.height;
+
+  // Note starts at left padding
+  const noteX = s.px;
+  const noteY = (totalH - noteH) / 2;
+
+  // Text starts after note + gap, vertically centered
+  const textX = s.px + noteW + s.gap;
+  const textY = totalH / 2;
+
+  // Scale the note path (designed at 22x20, scale=1)
+  const ns = s.noteScale;
 
   return (
-    <div
-      className={`flex items-center select-none ${className}`}
-      style={{ gap }}
+    <svg
+      width={totalW}
+      height={totalH}
+      viewBox={`0 0 ${totalW} ${totalH}`}
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
       aria-label="BusinessCadence"
+      role="img"
     >
-      {/* Musical note icon — double eighth notes (beamed quavers) */}
-      <svg
-        width={iconSize}
-        height={iconSize}
-        viewBox="0 0 24 24"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-        aria-hidden="true"
-        style={{ flexShrink: 0 }}
-      >
-        {/* Beam connecting the two notes */}
-        <rect x="8.5" y="3" width="9" height="2.2" rx="1.1" fill={iconColor} />
-        {/* Left note stem */}
-        <rect x="8.5" y="3" width="2" height="11" rx="1" fill={iconColor} />
-        {/* Right note stem */}
-        <rect x="15.5" y="3" width="2" height="9" rx="1" fill={iconColor} />
-        {/* Left note head */}
-        <ellipse cx="9.5" cy="15.5" rx="3.2" ry="2.2" transform="rotate(-15 9.5 15.5)" fill={iconColor} />
-        {/* Right note head */}
-        <ellipse cx="16.5" cy="13.5" rx="3.2" ry="2.2" transform="rotate(-15 16.5 13.5)" fill={accentColor} />
-      </svg>
+      {/* Pill background */}
+      <rect
+        x="0"
+        y="0"
+        width={totalW}
+        height={totalH}
+        rx={s.rx}
+        fill="#EEF2FF"
+      />
 
-      {/* Brand text */}
-      {!iconOnly && (
-        <span
-          style={{
-            fontSize,
-            fontWeight,
-            fontFamily: "'Inter', 'Space Grotesk', system-ui, sans-serif",
-            letterSpacing: "-0.02em",
-            lineHeight: 1,
-            whiteSpace: "nowrap",
-          }}
-        >
-          <span style={{ color: textColor, fontWeight: fontWeight - 100 }}>Business</span>
-          <span style={{ color: accentColor, fontWeight }}>Cadence</span>
-        </span>
-      )}
-    </div>
+      {/* Double eighth note (beamed quavers) */}
+      <g transform={`translate(${noteX}, ${noteY})`}>
+        {/* Left note head */}
+        <ellipse
+          cx={3.2 * ns}
+          cy={16.5 * ns}
+          rx={3.2 * ns}
+          ry={2.2 * ns}
+          transform={`rotate(-15, ${3.2 * ns}, ${16.5 * ns})`}
+          fill="#1E3A5F"
+        />
+        {/* Left stem */}
+        <rect
+          x={5.8 * ns}
+          y={4.5 * ns}
+          width={1.6 * ns}
+          height={12 * ns}
+          rx={0.8 * ns}
+          fill="#1E3A5F"
+        />
+        {/* Right note head */}
+        <ellipse
+          cx={14.8 * ns}
+          cy={14 * ns}
+          rx={3.2 * ns}
+          ry={2.2 * ns}
+          transform={`rotate(-15, ${14.8 * ns}, ${14 * ns})`}
+          fill="#1E3A5F"
+        />
+        {/* Right stem */}
+        <rect
+          x={17.4 * ns}
+          y={2 * ns}
+          width={1.6 * ns}
+          height={12 * ns}
+          rx={0.8 * ns}
+          fill="#1E3A5F"
+        />
+        {/* Beam connecting the two stems */}
+        <path
+          d={`M ${5.8 * ns} ${4.5 * ns} L ${19 * ns} ${2 * ns} L ${19 * ns} ${4.8 * ns} L ${5.8 * ns} ${7.3 * ns} Z`}
+          fill="#1E3A5F"
+        />
+      </g>
+
+      {/* Combined text: "Business" regular + "Cadence" bold, no gap */}
+      <text
+        x={textX}
+        y={textY}
+        dominantBaseline="middle"
+        fontFamily="'Inter', 'Helvetica Neue', Arial, sans-serif"
+        fontSize={s.fontSize}
+        fill="#1E3A5F"
+        letterSpacing="-0.3"
+      >
+        <tspan fontWeight="400">Business</tspan><tspan fontWeight="700">Cadence</tspan>
+      </text>
+    </svg>
   );
 }

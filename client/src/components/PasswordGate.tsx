@@ -79,7 +79,7 @@ export default function PasswordGate({ children }: { children: React.ReactNode }
         {/* Logo / header */}
         <div className="text-center mb-8">
           <div className="flex justify-center mb-5">
-            <BrandLogo size="lg" theme="light" />
+            <BrandLogo size="lg" />
           </div>
           {(() => {
             const sel = getBusinessSelection();

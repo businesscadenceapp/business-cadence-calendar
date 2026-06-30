@@ -91,7 +91,7 @@ export default function ClientLogin() {
         {/* Header */}
         <div className="text-center mb-10">
           <div className="flex justify-center mb-6">
-            <BrandLogo size="lg" theme="light" />
+            <BrandLogo size="lg" />
           </div>
           <h1
             className="text-2xl font-bold text-white mb-2"
