@@ -6,8 +6,15 @@
 import { useState, useEffect, useRef } from "react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
+import { getBusinessSelection } from "../pages/ClientLogin";
 
 const STORAGE_KEY = "bcc_auth_v1";
+
+const BUSINESS_LABELS: Record<string, { name: string; icon: string }> = {
+  chiro: { name: "New Beginnings Chiropractic", icon: "🏥" },
+  crossfit: { name: "Evolved CrossFit", icon: "💪" },
+  all: { name: "All Three Businesses", icon: "🗂️" },
+};
 
 export default function PasswordGate({ children }: { children: React.ReactNode }) {
   const [unlocked, setUnlocked] = useState<boolean>(() => {
@@ -90,12 +97,18 @@ export default function PasswordGate({ children }: { children: React.ReactNode }
           >
             Business Cadence Calendar
           </h1>
-          <p
-            className="text-[12px] text-white/35"
-            style={{ fontFamily: "'Inter', sans-serif" }}
-          >
-            New Beginnings Chiropractic · Evolved CrossFit · Bubbles Realty
-          </p>
+          {(() => {
+            const sel = getBusinessSelection();
+            const biz = BUSINESS_LABELS[sel];
+            return biz ? (
+              <p
+                className="text-[12px] text-white/35"
+                style={{ fontFamily: "'Inter', sans-serif" }}
+              >
+                {biz.icon} {biz.name}
+              </p>
+            ) : null;
+          })()}
         </div>
 
         {/* Password card */}

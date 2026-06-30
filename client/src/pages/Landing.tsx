@@ -29,7 +29,7 @@ function Nav() {
         <div className="flex items-center justify-between h-16">
           <Logo />
           {/* Desktop nav */}
-          <div className="hidden md:flex items-center gap-8">
+          <div className="hidden md:flex items-center gap-6">
             <button onClick={() => scrollTo("problem")} className="text-sm text-[#64748B] hover:text-[#1E3A5F] transition-colors">
               The Problem
             </button>
@@ -39,6 +39,12 @@ function Nav() {
             <button onClick={() => scrollTo("story")} className="text-sm text-[#64748B] hover:text-[#1E3A5F] transition-colors">
               Our Story
             </button>
+            <a
+              href="/login"
+              className="text-sm text-[#0D9488] font-medium hover:text-[#0a7a70] transition-colors border border-[#0D9488]/30 px-4 py-2 rounded-lg hover:border-[#0D9488]/60 hover:bg-[#CCFBF1]/40"
+            >
+              Client Login
+            </a>
             <button
               onClick={() => scrollTo("waitlist")}
               className="bg-[#1E3A5F] text-white text-sm font-medium px-5 py-2 rounded-lg hover:bg-[#162d4a] transition-colors active:scale-[0.97]"
@@ -63,12 +69,13 @@ function Nav() {
             )}
           </button>
         </div>
-        {/* Mobile menu */}
+          {/* Mobile menu */}
         {menuOpen && (
           <div className="md:hidden border-t border-[#E2E0DB] py-4 flex flex-col gap-4">
             <button onClick={() => scrollTo("problem")} className="text-sm text-[#64748B] text-left px-2">The Problem</button>
             <button onClick={() => scrollTo("features")} className="text-sm text-[#64748B] text-left px-2">Features</button>
             <button onClick={() => scrollTo("story")} className="text-sm text-[#64748B] text-left px-2">Our Story</button>
+            <a href="/login" className="text-sm text-[#0D9488] font-medium px-2">Client Login</a>
             <button
               onClick={() => scrollTo("waitlist")}
               className="bg-[#1E3A5F] text-white text-sm font-medium px-5 py-2 rounded-lg mx-2"
@@ -518,7 +525,7 @@ function Footer() {
         </div>
         <div className="flex items-center gap-4">
           <p className="text-xs text-[#94A3B8]">© {new Date().getFullYear()} BusinessCadence. All rights reserved.</p>
-          <a href="/app" className="text-xs text-[#E2E0DB] hover:text-[#94A3B8] transition-colors">App</a>
+          <a href="/login" className="text-xs text-[#94A3B8] hover:text-[#1E3A5F] transition-colors">Client Login</a>
         </div>
       </div>
     </footer>

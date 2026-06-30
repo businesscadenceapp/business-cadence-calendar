@@ -62,4 +62,13 @@
 - [x] Add owner notification on new waitlist signup
 - [x] Add smooth scroll animations and micro-interactions
 - [x] Test responsiveness on mobile and tablet
-- [ ] Save checkpoint
+- [x] Save checkpoint
+
+## Client Login Portal (Phase 3)
+
+- [x] Add "Client Login" button/section to the marketing homepage nav and footer
+- [x] Build business selection modal/page: New Beginnings Chiropractic, CrossFit, All Three Businesses
+- [x] Store selected business context in localStorage so the calendar app knows which view to default to
+- [x] Pass business context through to the password gate and calendar app
+- [x] Update calendar app Home.tsx to default to the selected business on load
+- [x] Save checkpoint

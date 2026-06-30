@@ -6,6 +6,7 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import PasswordGate from "./components/PasswordGate";
 import Landing from "./pages/Landing";
+import ClientLogin from "./pages/ClientLogin";
 import Home from "./pages/Home";
 import Board from "./pages/Board";
 import Settings from "./pages/Settings";
@@ -29,6 +30,8 @@ function Router() {
     <Switch>
       {/* Public marketing homepage */}
       <Route path={"/"} component={Landing} />
+      {/* Business selection portal — public, leads to password gate */}
+      <Route path={"/login"} component={ClientLogin} />
       {/* Password-gated calendar app */}
       <Route path={"/app"} component={CalendarApp} />
       <Route path={"/app/:rest*"} component={CalendarApp} />

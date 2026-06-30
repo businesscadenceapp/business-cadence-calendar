@@ -7,6 +7,7 @@
 import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import { Link } from "wouter";
 import { trpc } from "@/lib/trpc";
+import { getBusinessSelection, type BusinessSelection } from "./ClientLogin";
 import {
   generateCalendar,
   MEETING_TYPES,
@@ -714,6 +715,8 @@ export default function Home() {
   const calendar = useMemo(() => generateCalendar(), []);
   const [selectedDay, setSelectedDay] = useState<CalendarDay | null>(null);
   const [highlightType, setHighlightType] = useState<MeetingType | null>(null);
+  // Business context from the login portal — "chiro" shows only chiro, "all" shows everything
+  const [businessContext] = useState<BusinessSelection>(() => getBusinessSelection());
 
   // Fetch all days that have saved meeting logs for the green indicator dot
   const { data: loggedDatesData } = trpc.meetingLog.getLoggedDates.useQuery(undefined, {
@@ -845,32 +848,51 @@ export default function Home() {
 
           {/* Businesses */}
           <div>
-            <p
-              className="text-[10px] font-bold text-white/25 uppercase tracking-widest mb-2 px-1"
-              style={{ fontFamily: "'Space Grotesk', sans-serif" }}
-            >
-              Your Businesses
-            </p>
+            <div className="flex items-center justify-between mb-2 px-1">
+              <p
+                className="text-[10px] font-bold text-white/25 uppercase tracking-widest"
+                style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+              >
+                Your Businesses
+              </p>
+              <a
+                href="/login"
+                className="text-[9px] text-white/25 hover:text-white/50 transition-colors"
+              >
+                Switch
+              </a>
+            </div>
             <div className="flex flex-col gap-1">
-              {(Object.entries(BUSINESSES) as [keyof typeof BUSINESSES, typeof BUSINESSES[keyof typeof BUSINESSES]][]).map(([key, biz]) => (
-                <div
-                  key={key}
-                  className="flex items-center gap-2.5 px-3 py-2 rounded-lg"
-                  style={{ backgroundColor: "oklch(0.17 0.022 240)" }}
-                >
-                  <span className="text-base leading-none">{biz.icon}</span>
-                  <div className="flex-1 min-w-0">
-                    <p
-                      className="text-xs font-medium text-white/75"
-                      style={{ fontFamily: "'Space Grotesk', sans-serif" }}
-                    >
-                      {biz.shortName}
-                    </p>
-                    <p className="text-[9px] text-white/30 truncate">{biz.tagline}</p>
+              {(Object.entries(BUSINESSES) as [keyof typeof BUSINESSES, typeof BUSINESSES[keyof typeof BUSINESSES]][]).map(([key, biz]) => {
+                const isActive = businessContext === "all" ||
+                  (businessContext === "chiro" && key === "chiro") ||
+                  (businessContext === "crossfit" && key === "crossfit");
+                const isFiltered = !isActive;
+                const isSingleSelected = businessContext !== "all" && isActive;
+                return (
+                  <div
+                    key={key}
+                    className="flex items-center gap-2.5 px-3 py-2 rounded-lg transition-opacity"
+                    style={{
+                      backgroundColor: isActive ? "oklch(0.17 0.022 240)" : "oklch(0.15 0.015 240)",
+                      opacity: isFiltered ? 0.35 : 1,
+                      border: isSingleSelected ? `1px solid ${biz.color}40` : "1px solid transparent",
+                    }}
+                  >
+                    <span className="text-base leading-none">{biz.icon}</span>
+                    <div className="flex-1 min-w-0">
+                      <p
+                        className="text-xs font-medium text-white/75"
+                        style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+                      >
+                        {biz.shortName}
+                      </p>
+                      <p className="text-[9px] text-white/30 truncate">{biz.tagline}</p>
+                    </div>
+                    <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: biz.color }} />
                   </div>
-                  <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: biz.color }} />
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 
