@@ -2,8 +2,17 @@ import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { Link } from "wouter";
-import BrandLogo from "@/components/BrandLogo";
 
+// ─── Logo component ────────────────────────────────────────────────────────
+function Logo({ className = "" }: { className?: string }) {
+  return (
+    <img
+      src="/manus-storage/businesscadence-logo-navy-v2_7b54fc45.png"
+      alt="BusinessCadence"
+      className={`h-10 w-auto ${className}`}
+    />
+  );
+}
 
 // ─── Nav ───────────────────────────────────────────────────────────────────
 function Nav() {
@@ -18,7 +27,7 @@ function Nav() {
     <nav className="fixed top-0 left-0 right-0 z-50 bg-[#F8F7F4]/95 backdrop-blur-sm border-b border-[#E2E0DB]">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          <BrandLogo size="sm" />
+          <Logo />
           {/* Desktop nav */}
           <div className="hidden md:flex items-center gap-6">
             <button onClick={() => scrollTo("problem")} className="text-sm text-[#64748B] hover:text-[#1E3A5F] transition-colors">
@@ -161,11 +170,6 @@ function Hero() {
   return (
     <section className="pt-32 pb-20 px-4 text-center bg-[#F8F7F4]">
       <div className="max-w-4xl mx-auto">
-        {/* Logo above hero headline */}
-        <div className="flex justify-center mb-6 animate-fade-in">
-          <BrandLogo size="xl" />
-        </div>
-
         <div className="inline-flex items-center gap-2 bg-[#CCFBF1] text-[#0D9488] text-xs font-semibold px-4 py-1.5 rounded-full mb-8 animate-fade-in">
           <span className="w-1.5 h-1.5 rounded-full bg-[#0D9488] animate-pulse" />
           Coming Soon — Join the Waitlist
@@ -496,11 +500,7 @@ function Footer() {
     <footer className="bg-[#F1F0ED] border-t border-[#E2E0DB] py-10 px-4">
       <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6">
         <div className="flex flex-col items-center sm:items-start gap-1">
-          <img
-            src="/manus-storage/businesscadence-logo-navy-v2_7b54fc45.png"
-            alt="BusinessCadence"
-            className="h-10 w-auto"
-          />
+          <Logo />
           <p className="text-xs text-[#94A3B8] mt-2">Structure your business. Protect your life.</p>
         </div>
         <div className="flex items-center gap-6 text-sm text-[#94A3B8]">
