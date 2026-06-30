@@ -172,7 +172,9 @@ function Hero() {
       <div className="max-w-4xl mx-auto">
         {/* Logo above headline */}
         <div className="flex justify-center mb-8 animate-fade-in">
-          <Logo height={160} />
+          <div style={{ filter: "drop-shadow(0 6px 20px rgba(30,58,95,0.22)) saturate(1.4) brightness(0.92)" }}>
+            <Logo height={220} />
+          </div>
         </div>
 
         <div className="inline-flex items-center gap-2 bg-[#CCFBF1] text-[#0D9488] text-xs font-semibold px-4 py-1.5 rounded-full mb-8 animate-fade-in">
