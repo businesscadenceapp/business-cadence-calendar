@@ -727,8 +727,11 @@ export default function Home() {
   const calendar = useMemo(() => generateCalendar(), []);
   const [selectedDay, setSelectedDay] = useState<CalendarDay | null>(null);
   const [highlightType, setHighlightType] = useState<MeetingType | null>(null);
-  // Business context from the login portal — "chiro" shows only chiro, "all" shows everything
-  const [businessContext] = useState<BusinessSelection>(() => getBusinessSelection());
+  // Business context from the login portal — re-read on every mount so switching accounts works
+  const [businessContext, setBusinessContext] = useState<BusinessSelection>(() => getBusinessSelection());
+  useEffect(() => {
+    setBusinessContext(getBusinessSelection());
+  }, []);
 
   // Fetch all days that have saved meeting logs for the green indicator dot
   const { data: loggedDatesData } = trpc.meetingLog.getLoggedDates.useQuery(undefined, {
