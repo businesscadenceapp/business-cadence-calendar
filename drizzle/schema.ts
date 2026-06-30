@@ -101,3 +101,17 @@ export const agendaTemplates = mysqlTable("agenda_templates", {
 
 export type AgendaTemplate = typeof agendaTemplates.$inferSelect;
 export type InsertAgendaTemplate = typeof agendaTemplates.$inferInsert;
+
+/**
+ * Waitlist email signups for BusinessCadence.com marketing site.
+ * Stores email addresses of interested users before product launch.
+ */
+export const waitlistEmails = mysqlTable("waitlist_emails", {
+  id: int("id").autoincrement().primaryKey(),
+  email: varchar("email", { length: 320 }).notNull().unique(),
+  source: varchar("source", { length: 64 }).default("homepage").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type WaitlistEmail = typeof waitlistEmails.$inferSelect;
+export type InsertWaitlistEmail = typeof waitlistEmails.$inferInsert;

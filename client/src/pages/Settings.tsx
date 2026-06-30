@@ -362,7 +362,7 @@ export default function Settings() {
         {/* Header */}
         <div className="flex items-center gap-4 mb-8">
           <Link
-            href="/"
+            href="/app"
             className="flex items-center gap-2 text-[12px] text-white/35 hover:text-white/60 transition-colors"
             style={{ fontFamily: "'Space Grotesk', sans-serif" }}
           >

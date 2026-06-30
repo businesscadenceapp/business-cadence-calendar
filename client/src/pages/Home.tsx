@@ -780,7 +780,7 @@ export default function Home() {
             ))}
           </div>
           <Link
-            href="/board"
+            href="/app/board"
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all hover:opacity-90"
             style={{
               background: "linear-gradient(135deg, rgba(59,130,246,0.20), rgba(236,72,153,0.15))",
@@ -793,7 +793,7 @@ export default function Home() {
             Command Board
           </Link>
           <Link
-            href="/settings"
+            href="/app/settings"
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all hover:opacity-90"
             style={{
               background: "oklch(1 0 0 / 6%)",

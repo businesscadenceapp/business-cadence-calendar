@@ -1,6 +1,6 @@
 import { eq, and } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, meetingLogs, agendaItems, MeetingLog, AgendaItem, boardCards, agendaTemplates, type BoardCard, type InsertBoardCard } from "../drizzle/schema";
+import { InsertUser, users, meetingLogs, agendaItems, MeetingLog, AgendaItem, boardCards, agendaTemplates, type BoardCard, type InsertBoardCard, waitlistEmails } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -274,4 +274,27 @@ export async function upsertAgendaTemplate(
   } else {
     await db.insert(agendaTemplates).values({ business, meetingType, itemsJson, updatedBy });
   }
+}
+
+/** Add an email to the waitlist. Returns { success, alreadyExists }. */
+export async function addWaitlistEmail(email: string): Promise<{ success: boolean; alreadyExists: boolean }> {
+  const db = await getDb();
+  if (!db) return { success: false, alreadyExists: false };
+  // Check for duplicate
+  const existing = await db
+    .select()
+    .from(waitlistEmails)
+    .where(eq(waitlistEmails.email, email.toLowerCase().trim()))
+    .limit(1);
+  if (existing.length > 0) return { success: true, alreadyExists: true };
+  await db.insert(waitlistEmails).values({ email: email.toLowerCase().trim() });
+  return { success: true, alreadyExists: false };
+}
+
+/** Get total waitlist count for the owner dashboard. */
+export async function getWaitlistCount(): Promise<number> {
+  const db = await getDb();
+  if (!db) return 0;
+  const rows = await db.select().from(waitlistEmails);
+  return rows.length;
 }

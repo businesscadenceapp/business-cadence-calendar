@@ -20,7 +20,10 @@ import {
   getAgendaTemplate,
   getAllAgendaTemplates,
   upsertAgendaTemplate,
+  addWaitlistEmail,
+  getWaitlistCount,
 } from "./db";
+import { notifyOwner } from "./_core/notification";
 
 const meetingTypeSchema = z.enum(["daily", "weekly", "monthly", "quarterly"]);
 
@@ -213,6 +216,38 @@ Keep the tone warm but professional. This summary will be saved under this speci
         const correct = sitePassword.length > 0 && input.password === sitePassword;
         return { success: correct };
       }),
+  }),
+
+  /** Waitlist signup for BusinessCadence.com marketing site. */
+  waitlist: router({
+    /** Submit an email to the waitlist. */
+    join: publicProcedure
+      .input(z.object({ email: z.string().email() }))
+      .mutation(async ({ input }) => {
+        const result = await addWaitlistEmail(input.email);
+        if (!result.success) {
+          throw new Error("Unable to save your email right now. Please try again in a moment.");
+        }
+        if (!result.alreadyExists) {
+          // Notify owner of new signup (non-blocking)
+          try {
+            const count = await getWaitlistCount();
+            await notifyOwner({
+              title: "New BusinessCadence Waitlist Signup",
+              content: `${input.email} just joined the waitlist. Total signups: ${count}.`,
+            });
+          } catch {
+            // Notification failure should not block the user response
+          }
+        }
+        return result;
+      }),
+
+    /** Get total waitlist count (public — used for social proof). */
+    count: publicProcedure.query(async () => {
+      const count = await getWaitlistCount();
+      return { count };
+    }),
   }),
 
   board: router({

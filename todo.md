@@ -45,3 +45,21 @@
 - [ ] Snapshot agenda item labels into each meeting log on first edit (future enhancement)
 - [ ] Render historical meeting logs from saved per-log label snapshots (future enhancement)
 
+
+## BusinessCadence Marketing Homepage (Phase 2)
+
+- [x] Update global color palette to warm off-white system (#F8F7F4 bg, #1E3A5F navy, #0D9488 teal)
+- [x] Update index.css with new design tokens and Google Fonts (Inter)
+- [x] Build top navigation with BusinessCadence logo and CTA button
+- [x] Build Hero section: headline targeting reactive business conversations pain, subheadline, waitlist CTA
+- [x] Build Pain/Problem section: 5 mistakes small business owners make
+- [x] Build Features section: meeting cadence calendar, command board, AI summaries, customizable agendas
+- [x] Build Founder Story section: anonymous co-owning couple story
+- [x] Build Waitlist signup section: email capture form with backend storage
+- [x] Build Footer with logo, tagline, and links
+- [x] Add waitlist_emails table to DB schema and push migration
+- [x] Add waitlist tRPC procedure (submit email, check duplicate)
+- [x] Add owner notification on new waitlist signup
+- [x] Add smooth scroll animations and micro-interactions
+- [x] Test responsiveness on mobile and tablet
+- [ ] Save checkpoint

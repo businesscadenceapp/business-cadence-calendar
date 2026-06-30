@@ -5,17 +5,33 @@ import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import PasswordGate from "./components/PasswordGate";
+import Landing from "./pages/Landing";
 import Home from "./pages/Home";
 import Board from "./pages/Board";
 import Settings from "./pages/Settings";
 
+// Calendar app routes — all protected by the password gate
+function CalendarApp() {
+  return (
+    <PasswordGate>
+      <Switch>
+        <Route path={"/app"} component={Home} />
+        <Route path={"/app/board"} component={Board} />
+        <Route path={"/app/settings"} component={Settings} />
+        <Route component={NotFound} />
+      </Switch>
+    </PasswordGate>
+  );
+}
+
 function Router() {
-  // make sure to consider if you need authentication for certain routes
   return (
     <Switch>
-      <Route path={"/"} component={Home} />
-      <Route path={"/board"} component={Board} />
-      <Route path={"/settings"} component={Settings} />
+      {/* Public marketing homepage */}
+      <Route path={"/"} component={Landing} />
+      {/* Password-gated calendar app */}
+      <Route path={"/app"} component={CalendarApp} />
+      <Route path={"/app/:rest*"} component={CalendarApp} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />
@@ -23,23 +39,13 @@ function Router() {
   );
 }
 
-// NOTE: About Theme
-// - First choose a default theme according to your design style (dark or light bg), than change color palette in index.css
-//   to keep consistent foreground/background color across components
-// - If you want to make theme switchable, pass `switchable` ThemeProvider and use `useTheme` hook
-
 function App() {
   return (
     <ErrorBoundary>
-      <ThemeProvider
-        defaultTheme="light"
-        // switchable
-      >
+      <ThemeProvider defaultTheme="light">
         <TooltipProvider>
           <Toaster />
-          <PasswordGate>
-            <Router />
-          </PasswordGate>
+          <Router />
         </TooltipProvider>
       </ThemeProvider>
     </ErrorBoundary>

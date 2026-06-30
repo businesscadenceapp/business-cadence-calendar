@@ -27,40 +27,79 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+
+  /* Brand colors available as Tailwind utilities */
+  --color-navy: var(--navy);
+  --color-teal: var(--teal);
+  --color-teal-light: var(--teal-light);
+  --color-cream: var(--cream);
+  --color-cream-dark: var(--cream-dark);
 }
 
 :root {
   --radius: 0.5rem;
-  --background: oklch(0.13 0.025 240);
-  --foreground: oklch(0.93 0.01 220);
-  --card: oklch(0.17 0.022 240);
-  --card-foreground: oklch(0.93 0.01 220);
-  --popover: oklch(0.17 0.022 240);
-  --popover-foreground: oklch(0.93 0.01 220);
-  --primary: oklch(0.72 0.18 160);
-  --primary-foreground: oklch(0.13 0.025 240);
-  --secondary: oklch(0.22 0.02 240);
-  --secondary-foreground: oklch(0.85 0.01 220);
-  --muted: oklch(0.20 0.018 240);
-  --muted-foreground: oklch(0.60 0.015 230);
-  --accent: oklch(0.22 0.02 240);
-  --accent-foreground: oklch(0.93 0.01 220);
-  --destructive: oklch(0.65 0.22 25);
-  --destructive-foreground: oklch(0.98 0 0);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 12%);
-  --ring: oklch(0.72 0.18 160);
 
-  /* Business colors */
-  --chiro-color: #10B981;
+  /* ── Brand palette ── */
+  --navy:       #1E3A5F;   /* Slate navy — primary brand, headers, CTAs */
+  --teal:       #0D9488;   /* Deep teal — secondary accent, links, highlights */
+  --teal-light: #CCFBF1;   /* Soft teal tint — hover states, badges */
+  --cream:      #F8F7F4;   /* Warm off-white — page background */
+  --cream-dark: #F1F0ED;   /* Slightly darker — card/panel backgrounds */
+
+  /* ── Semantic tokens (light theme) ── */
+  --background:            oklch(0.978 0.004 80);   /* #F8F7F4 warm off-white */
+  --foreground:            oklch(0.18 0.03 250);    /* #1A1A2E near-black */
+  --card:                  oklch(0.965 0.005 80);   /* #F1F0ED soft card bg */
+  --card-foreground:       oklch(0.18 0.03 250);
+  --popover:               oklch(0.99 0.002 80);
+  --popover-foreground:    oklch(0.18 0.03 250);
+  --primary:               oklch(0.28 0.08 250);    /* Navy #1E3A5F */
+  --primary-foreground:    oklch(0.99 0 0);
+  --secondary:             oklch(0.55 0.12 185);    /* Teal #0D9488 */
+  --secondary-foreground:  oklch(0.99 0 0);
+  --muted:                 oklch(0.94 0.005 80);
+  --muted-foreground:      oklch(0.50 0.02 240);    /* #64748B medium gray */
+  --accent:                oklch(0.94 0.03 185);    /* Soft teal tint */
+  --accent-foreground:     oklch(0.28 0.08 250);
+  --destructive:           oklch(0.62 0.22 25);
+  --destructive-foreground: oklch(0.99 0 0);
+  --border:                oklch(0.88 0.006 80);    /* #E2E0DB warm gray border */
+  --input:                 oklch(0.88 0.006 80);
+  --ring:                  oklch(0.55 0.12 185);
+
+  /* ── Calendar app business colors (preserved) ── */
+  --chiro-color:    #10B981;
   --crossfit-color: #F59E0B;
-  --realty-color: #64748B;
+  --realty-color:   #64748B;
 
-  /* Meeting type colors */
-  --daily-color: #8B5CF6;
-  --weekly-color: #0EA5E9;
-  --monthly-color: #14B8A6;
+  /* ── Calendar app meeting type colors (preserved) ── */
+  --daily-color:     #8B5CF6;
+  --weekly-color:    #0EA5E9;
+  --monthly-color:   #14B8A6;
   --quarterly-color: #F43F5E;
+}
+
+/* Dark theme — used by the calendar app pages */
+.dark {
+  --background:            oklch(0.13 0.025 240);
+  --foreground:            oklch(0.93 0.01 220);
+  --card:                  oklch(0.17 0.022 240);
+  --card-foreground:       oklch(0.93 0.01 220);
+  --popover:               oklch(0.17 0.022 240);
+  --popover-foreground:    oklch(0.93 0.01 220);
+  --primary:               oklch(0.72 0.18 160);
+  --primary-foreground:    oklch(0.13 0.025 240);
+  --secondary:             oklch(0.22 0.02 240);
+  --secondary-foreground:  oklch(0.85 0.01 220);
+  --muted:                 oklch(0.20 0.018 240);
+  --muted-foreground:      oklch(0.60 0.015 230);
+  --accent:                oklch(0.22 0.02 240);
+  --accent-foreground:     oklch(0.93 0.01 220);
+  --destructive:           oklch(0.65 0.22 25);
+  --destructive-foreground: oklch(0.98 0 0);
+  --border:                oklch(1 0 0 / 10%);
+  --input:                 oklch(1 0 0 / 12%);
+  --ring:                  oklch(0.72 0.18 160);
 }
 
 @layer base {
@@ -125,12 +164,50 @@
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: oklch(0.15 0.02 240);
+  background: #F1F0ED;
 }
 ::-webkit-scrollbar-thumb {
-  background: oklch(0.30 0.02 240);
+  background: #CBD5E1;
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: oklch(0.40 0.02 240);
+  background: #94A3B8;
+}
+
+/* Smooth scroll for anchor links */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Landing page animations */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.animate-fade-up {
+  animation: fade-up 0.6s cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+
+.animate-fade-in {
+  animation: fade-in 0.5s ease-out both;
+}
+
+.animation-delay-100 { animation-delay: 0.1s; }
+.animation-delay-200 { animation-delay: 0.2s; }
+.animation-delay-300 { animation-delay: 0.3s; }
+.animation-delay-400 { animation-delay: 0.4s; }
+.animation-delay-500 { animation-delay: 0.5s; }
+.animation-delay-600 { animation-delay: 0.6s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-up,
+  .animate-fade-in {
+    animation: none;
+  }
 }

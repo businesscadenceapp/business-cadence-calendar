@@ -378,7 +378,7 @@ export default function Board() {
         {/* Who am I selector + back link */}
         <div className="flex items-center gap-3">
           <Link
-            href="/"
+            href="/app"
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-medium transition-all hover:opacity-80"
             style={{
               backgroundColor: "oklch(1 0 0 / 6%)",
