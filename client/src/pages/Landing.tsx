@@ -27,7 +27,7 @@ function Nav() {
     <nav className="fixed top-0 left-0 right-0 z-50 bg-[#F8F7F4]/95 backdrop-blur-sm border-b border-[#E2E0DB]">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          <Logo height={36} />
+          <Logo height={46} />
           {/* Desktop nav */}
           <div className="hidden md:flex items-center gap-6">
             <button onClick={() => scrollTo("problem")} className="text-sm text-[#64748B] hover:text-[#1E3A5F] transition-colors">
@@ -172,7 +172,14 @@ function Hero() {
       <div className="max-w-4xl mx-auto">
         {/* Logo above headline */}
         <div className="flex justify-center mb-8 animate-fade-in">
-          <div style={{ filter: "drop-shadow(0 6px 20px rgba(30,58,95,0.22)) saturate(1.4) brightness(0.92)" }}>
+          <div style={{
+            filter:
+              "drop-shadow(0 2px 0px rgba(30,58,95,0.35)) " +
+              "drop-shadow(0 4px 0px rgba(30,58,95,0.25)) " +
+              "drop-shadow(0 8px 0px rgba(30,58,95,0.15)) " +
+              "drop-shadow(0 14px 20px rgba(30,58,95,0.20)) " +
+              "saturate(1.5) brightness(0.90)"
+          }}>
             <Logo height={220} />
           </div>
         </div>
