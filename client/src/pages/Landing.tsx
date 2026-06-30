@@ -335,7 +335,7 @@ const FEATURES = [
       </svg>
     ),
     title: "Built for Multiple Businesses",
-    body: "Running a chiropractic office, a gym, and a rental property? BusinessCadence handles multiple businesses in one place — with separate time allocations and agendas for each.",
+    body: "Running multiple completely different businesses at once? BusinessCadence handles them all in one place — with separate time allocations and agendas for each.",
   },
   {
     icon: (
@@ -436,7 +436,7 @@ function StorySection() {
 
           <div className="space-y-5 text-[#374151] leading-relaxed">
             <p>
-              We own three businesses together — a chiropractic practice, a CrossFit gym, and a rental property. For years, we were that couple: talking about business at dinner, in the car, before bed, and first thing in the morning. Business was everywhere, all the time.
+              We own three completely different businesses together — all running simultaneously, with the same two people at the helm. For years, we were that couple: talking about business at dinner, in the car, before bed, and first thing in the morning. Business was everywhere, all the time.
             </p>
             <p>
               The same issues kept coming up in every conversation. Nothing ever felt fully resolved. And our personal time — the time we were supposed to be <em>us</em>, not business partners — kept getting hijacked by whatever fire was burning that day.
