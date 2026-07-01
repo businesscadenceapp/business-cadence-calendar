@@ -1,4 +1,4 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, boolean, json } from "drizzle-orm/mysql-core";
+import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, boolean, json, double } from "drizzle-orm/mysql-core";
 
 /**
  * Core user table backing auth flow.
@@ -216,3 +216,70 @@ export const meetingScheduleOverrides = mysqlTable("meeting_schedule_overrides",
 
 export type MeetingScheduleOverride = typeof meetingScheduleOverrides.$inferSelect;
 export type InsertMeetingScheduleOverride = typeof meetingScheduleOverrides.$inferInsert;
+
+/**
+ * Employees — staff members whose weekly numbers the owner tracks.
+ * Owned by an account (app_users.id).
+ */
+export const employees = mysqlTable("employees", {
+  id: int("id").autoincrement().primaryKey(),
+  accountId: int("accountId").notNull(), // references app_users.id
+  name: varchar("name", { length: 128 }).notNull(),
+  role: varchar("role", { length: 128 }).notNull(),
+  isActive: boolean("isActive").default(true).notNull(),
+  sortOrder: int("sortOrder").default(0).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Employee = typeof employees.$inferSelect;
+export type InsertEmployee = typeof employees.$inferInsert;
+
+/**
+ * Employee metrics — the KPIs/responsibilities tracked for each employee.
+ * Each employee can have multiple metrics (e.g. "Adjustments this week", "New patients MTD").
+ */
+export const employeeMetrics = mysqlTable("employee_metrics", {
+  id: int("id").autoincrement().primaryKey(),
+  employeeId: int("employeeId").notNull(), // references employees.id
+  label: varchar("label", { length: 256 }).notNull(), // e.g. "Adjustments this week"
+  unit: varchar("unit", { length: 32 }), // e.g. "#", "$", "%"
+  sortOrder: int("sortOrder").default(0).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type EmployeeMetric = typeof employeeMetrics.$inferSelect;
+export type InsertEmployeeMetric = typeof employeeMetrics.$inferInsert;
+
+/**
+ * Weekly reports — one per employee per week.
+ * weekKey format: "YYYY-Www" (ISO week, e.g. "2026-W27")
+ * submittedByOwnerId: the app_users.id of the owner who submitted (on behalf of employee)
+ */
+export const weeklyReports = mysqlTable("weekly_reports", {
+  id: int("id").autoincrement().primaryKey(),
+  employeeId: int("employeeId").notNull(),
+  weekKey: varchar("weekKey", { length: 10 }).notNull(), // "YYYY-Www"
+  submittedAt: timestamp("submittedAt").defaultNow().notNull(),
+  submittedByOwnerId: int("submittedByOwnerId"), // app_users.id
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type WeeklyReport = typeof weeklyReports.$inferSelect;
+export type InsertWeeklyReport = typeof weeklyReports.$inferInsert;
+
+/**
+ * Weekly report entries — one row per metric per report.
+ * value is stored as a float to support both integer counts and decimal percentages.
+ */
+export const weeklyReportEntries = mysqlTable("weekly_report_entries", {
+  id: int("id").autoincrement().primaryKey(),
+  reportId: int("reportId").notNull(),
+  metricId: int("metricId").notNull(),
+  value: double("value").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type WeeklyReportEntry = typeof weeklyReportEntries.$inferSelect;
+export type InsertWeeklyReportEntry = typeof weeklyReportEntries.$inferInsert;

@@ -9,6 +9,7 @@ import { Link } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { getBusinessSelection, type BusinessSelection } from "./ClientLogin";
 import { RecordMeeting } from "@/components/RecordMeeting";
+import WeeklyReportPanel from "@/components/WeeklyReportPanel";
 import {
   generateCalendar,
   MEETING_TYPES,
@@ -632,6 +633,21 @@ function MeetingSection({
           )}
         />
       </div>
+
+      {/* Weekly Report Panel — only shown for weekly meeting type */}
+      {type === "weekly" && (
+        <div className="px-3 pb-4">
+          <div
+            className="rounded-xl p-4"
+            style={{
+              background: "rgba(13,148,136,0.05)",
+              border: "1px solid rgba(13,148,136,0.18)",
+            }}
+          >
+            <WeeklyReportPanel dateKey={dateKey} />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -924,7 +940,7 @@ export default function Home() {
           </div>
 
           {/* Manage Schedule */}
-          <div>
+          <div className="flex flex-col gap-2">
             <Link
               href="/app/schedule"
               className="flex items-center gap-2 w-full px-3 py-2.5 rounded-lg text-[11px] font-semibold transition-all hover:opacity-90"
@@ -937,6 +953,19 @@ export default function Home() {
             >
               <span>📆</span>
               Manage Schedule
+            </Link>
+            <Link
+              href="/app/employees"
+              className="flex items-center gap-2 w-full px-3 py-2.5 rounded-lg text-[11px] font-semibold transition-all hover:opacity-90"
+              style={{
+                background: "rgba(20,184,166,0.10)",
+                border: "1px solid rgba(20,184,166,0.25)",
+                color: "#5EEAD4",
+                fontFamily: "'Space Grotesk', sans-serif",
+              }}
+            >
+              <span>👥</span>
+              Employee Setup
             </Link>
           </div>
 

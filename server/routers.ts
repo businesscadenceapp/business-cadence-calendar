@@ -31,6 +31,11 @@ import {
   addClosedPeriod,
   removeClosedPeriod,
   getMeetingOverrides,
+  getEmployeesWithMetrics,
+  saveEmployee,
+  deactivateEmployee,
+  submitWeeklyReport,
+  getWeeklyReportSummary,
 } from "./db";
 import { generateMeetingSchedule } from "../shared/calendarEngine";
 import { notifyOwner } from "./_core/notification";
@@ -533,6 +538,67 @@ Be concise and specific. If a field has nothing, use an empty array.`,
         return { success: true };
       }),
   }),
-});
+  weeklyReport: router({
+    /** Get all employees with their metrics for the current account. */
+    getEmployees: publicProcedure
+      .input(z.object({ accountId: z.number() }))
+      .query(async ({ input }) => {
+        return getEmployeesWithMetrics(input.accountId);
+      }),
 
+    /** Create or update an employee and their metrics. */
+    saveEmployee: publicProcedure
+      .input(z.object({
+        accountId: z.number(),
+        id: z.number().optional(),
+        name: z.string().min(1),
+        role: z.string().min(1),
+        sortOrder: z.number().optional(),
+        metrics: z.array(z.object({
+          label: z.string().min(1),
+          unit: z.string().optional(),
+          sortOrder: z.number().optional(),
+        })),
+      }))
+      .mutation(async ({ input }) => {
+        const empId = await saveEmployee(input);
+        return { success: true, id: empId };
+      }),
+
+    /** Soft-delete an employee. */
+    deleteEmployee: publicProcedure
+      .input(z.object({ employeeId: z.number(), accountId: z.number() }))
+      .mutation(async ({ input }) => {
+        await deactivateEmployee(input.employeeId, input.accountId);
+        return { success: true };
+      }),
+
+    /** Submit weekly numbers for one employee (owner acting on their behalf). */
+    submitReport: publicProcedure
+      .input(z.object({
+        employeeId: z.number(),
+        weekKey: z.string(), // "YYYY-Www"
+        submittedByOwnerId: z.number(),
+        entries: z.array(z.object({
+          metricId: z.number(),
+          value: z.number(),
+        })),
+      }))
+      .mutation(async ({ input }) => {
+        await submitWeeklyReport(input);
+        return { success: true };
+      }),
+
+    /** Get this week + last week summary for all employees. */
+    getSummary: publicProcedure
+      .input(z.object({
+        accountId: z.number(),
+        weekKey: z.string(),
+        prevWeekKey: z.string(),
+      }))
+      .query(async ({ input }) => {
+        return getWeeklyReportSummary(input.accountId, input.weekKey, input.prevWeekKey);
+      }),
+  }),
+});
 export type AppRouter = typeof appRouter;

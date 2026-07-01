@@ -1,6 +1,6 @@
-import { eq, and, desc } from "drizzle-orm";
+import { eq, and, desc, inArray } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, meetingLogs, agendaItems, MeetingLog, AgendaItem, boardCards, agendaTemplates, type BoardCard, type InsertBoardCard, waitlistEmails, meetingRecordings, type MeetingRecording, businessProfiles, type BusinessProfile, closedPeriods, type ClosedPeriod, meetingScheduleOverrides } from "../drizzle/schema";
+import { InsertUser, users, meetingLogs, agendaItems, MeetingLog, AgendaItem, boardCards, agendaTemplates, type BoardCard, type InsertBoardCard, waitlistEmails, meetingRecordings, type MeetingRecording, businessProfiles, type BusinessProfile, closedPeriods, type ClosedPeriod, meetingScheduleOverrides, employees, employeeMetrics, weeklyReports, weeklyReportEntries, type Employee, type EmployeeMetric, type WeeklyReport, type WeeklyReportEntry } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -458,4 +458,191 @@ export async function getMeetingOverrides(accountId: number): Promise<typeof mee
   const db = await getDb();
   if (!db) return [];
   return db.select().from(meetingScheduleOverrides).where(eq(meetingScheduleOverrides.accountId, accountId));
+}
+
+// ─── Weekly Report Helpers ───────────────────────────────────────────────────
+
+/** Get all active employees with their metrics for an account. */
+export async function getEmployeesWithMetrics(accountId: number): Promise<
+  Array<Employee & { metrics: EmployeeMetric[] }>
+> {
+  const db = await getDb();
+  if (!db) return [];
+  const emps = await db
+    .select()
+    .from(employees)
+    .where(and(eq(employees.accountId, accountId), eq(employees.isActive, true)))
+    .orderBy(employees.sortOrder, employees.id);
+  if (emps.length === 0) return [];
+  const empIds = emps.map((e) => e.id);
+  const metrics = await db
+    .select()
+    .from(employeeMetrics)
+    .where(inArray(employeeMetrics.employeeId, empIds))
+    .orderBy(employeeMetrics.sortOrder, employeeMetrics.id);
+  // Group metrics by employeeId
+  const metricsByEmp = new Map<number, EmployeeMetric[]>();
+  for (const m of metrics) {
+    if (!metricsByEmp.has(m.employeeId)) metricsByEmp.set(m.employeeId, []);
+    metricsByEmp.get(m.employeeId)!.push(m);
+  }
+  return emps.map((e) => ({ ...e, metrics: metricsByEmp.get(e.id) ?? [] }));
+}
+
+/** Upsert an employee and replace all their metrics. Returns the employee id. */
+export async function saveEmployee(data: {
+  accountId: number;
+  id?: number;
+  name: string;
+  role: string;
+  sortOrder?: number;
+  metrics: Array<{ label: string; unit?: string; sortOrder?: number }>;
+}): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  let empId = data.id;
+  if (empId) {
+    await db
+      .update(employees)
+      .set({ name: data.name, role: data.role, sortOrder: data.sortOrder ?? 0, updatedAt: new Date() })
+      .where(and(eq(employees.id, empId), eq(employees.accountId, data.accountId)));
+  } else {
+    const [result] = await db.insert(employees).values({
+      accountId: data.accountId,
+      name: data.name,
+      role: data.role,
+      sortOrder: data.sortOrder ?? 0,
+    });
+    empId = (result as any).insertId as number;
+  }
+
+  // Replace metrics: delete old, insert new
+  await db.delete(employeeMetrics).where(eq(employeeMetrics.employeeId, empId!));
+  if (data.metrics.length > 0) {
+    await db.insert(employeeMetrics).values(
+      data.metrics.map((m, i) => ({
+        employeeId: empId!,
+        label: m.label,
+        unit: m.unit ?? "#",
+        sortOrder: m.sortOrder ?? i,
+      }))
+    );
+  }
+  return empId!;
+}
+
+/** Soft-delete an employee (set isActive = false). */
+export async function deactivateEmployee(employeeId: number, accountId: number): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  await db
+    .update(employees)
+    .set({ isActive: false, updatedAt: new Date() })
+    .where(and(eq(employees.id, employeeId), eq(employees.accountId, accountId)));
+}
+
+/** Submit (or overwrite) a weekly report for one employee for a given weekKey. */
+export async function submitWeeklyReport(data: {
+  employeeId: number;
+  weekKey: string;
+  submittedByOwnerId: number;
+  entries: Array<{ metricId: number; value: number }>;
+}): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  // Upsert the report row
+  const existing = await db
+    .select()
+    .from(weeklyReports)
+    .where(and(eq(weeklyReports.employeeId, data.employeeId), eq(weeklyReports.weekKey, data.weekKey)))
+    .limit(1);
+
+  let reportId: number;
+  if (existing.length > 0) {
+    reportId = existing[0].id;
+    await db
+      .update(weeklyReports)
+      .set({ submittedAt: new Date(), submittedByOwnerId: data.submittedByOwnerId, updatedAt: new Date() })
+      .where(eq(weeklyReports.id, reportId));
+    // Delete old entries
+    await db.delete(weeklyReportEntries).where(eq(weeklyReportEntries.reportId, reportId));
+  } else {
+    const [result] = await db.insert(weeklyReports).values({
+      employeeId: data.employeeId,
+      weekKey: data.weekKey,
+      submittedByOwnerId: data.submittedByOwnerId,
+    });
+    reportId = (result as any).insertId as number;
+  }
+
+  // Insert entries
+  if (data.entries.length > 0) {
+    await db.insert(weeklyReportEntries).values(
+      data.entries.map((e) => ({ reportId, metricId: e.metricId, value: e.value }))
+    );
+  }
+}
+
+/** Get weekly report data for all employees for a given account + weekKey. */
+export async function getWeeklyReportSummary(accountId: number, weekKey: string, prevWeekKey: string): Promise<
+  Array<{
+    employee: Employee;
+    metrics: EmployeeMetric[];
+    thisWeek: Record<number, number>; // metricId -> value
+    lastWeek: Record<number, number>;
+    submitted: boolean;
+  }>
+> {
+  const db = await getDb();
+  if (!db) return [];
+
+  const empsWithMetrics = await getEmployeesWithMetrics(accountId);
+  if (empsWithMetrics.length === 0) return [];
+
+  const empIds = empsWithMetrics.map((e) => e.id);
+
+  // Fetch reports for this week and last week
+  const reports = await db
+    .select()
+    .from(weeklyReports)
+    .where(inArray(weeklyReports.employeeId, empIds));
+
+  const thisWeekReports = reports.filter((r) => r.weekKey === weekKey);
+  const lastWeekReports = reports.filter((r) => r.weekKey === prevWeekKey);
+
+  // Fetch entries for all relevant reports
+  const allReportIds = [...thisWeekReports, ...lastWeekReports].map((r) => r.id);
+  const allEntries = allReportIds.length > 0
+    ? await db
+        .select()
+        .from(weeklyReportEntries)
+        .where(inArray(weeklyReportEntries.reportId, allReportIds))
+    : [];
+
+  return empsWithMetrics.map((emp) => {
+    const thisReport = thisWeekReports.find((r) => r.employeeId === emp.id);
+    const lastReport = lastWeekReports.find((r) => r.employeeId === emp.id);
+
+    const thisEntries = thisReport
+      ? allEntries.filter((e) => e.reportId === thisReport.id)
+      : [];
+    const lastEntries = lastReport
+      ? allEntries.filter((e) => e.reportId === lastReport.id)
+      : [];
+
+    const thisWeek: Record<number, number> = {};
+    const lastWeek: Record<number, number> = {};
+    for (const e of thisEntries) thisWeek[e.metricId] = e.value;
+    for (const e of lastEntries) lastWeek[e.metricId] = e.value;
+
+    return {
+      employee: emp,
+      metrics: emp.metrics,
+      thisWeek,
+      lastWeek,
+      submitted: !!thisReport,
+    };
+  });
 }

@@ -144,3 +144,32 @@
 - [ ] Persist meeting reschedule overrides when closed periods affect meetings; surface them via `schedule.getOverrides`
 - [ ] Use `trpc.onboarding.getStatus` during app entry to verify onboarding completion from server state (not just localStorage flag)
 - [ ] Show a real generated calendar preview in onboarding Step 7 (call `trpc.onboarding.generateCalendar` and render upcoming meetings before confirmation)
+
+## Weekly Report System (Phase 7)
+
+### DB Schema
+- [x] Add `employees` table (accountId, name, role, isActive, sortOrder, createdAt, updatedAt)
+- [x] Add `employee_metrics` table (employeeId, label, unit, sortOrder)
+- [x] Add `weekly_reports` table (employeeId, weekKey YYYY-Www, submittedAt, submittedByOwnerId, updatedAt)
+- [x] Add `weekly_report_entries` table (reportId, metricId, value, createdAt)
+- [x] Push DB migration (migration 0008)
+
+### Backend
+- [x] tRPC `weeklyReport.getEmployees` — list employees with their metrics for an account
+- [x] tRPC `weeklyReport.saveEmployee` — create/update employee + their metrics
+- [x] tRPC `weeklyReport.deleteEmployee` — soft-delete an employee
+- [x] tRPC `weeklyReport.submitReport` — owner submits numbers for an employee for a given week
+- [x] tRPC `weeklyReport.getSummary` — get this week + last week data for all employees (for owner summary view)
+- [ ] tRPC `weeklyReport.getHistory` — get N weeks of history for a single employee (future enhancement)
+
+### Frontend
+- [x] Employee Setup page (`/app/employees`): list employees, add/edit name + role + metrics
+- [x] Link to Employee Setup from calendar sidebar ("👥 Employee Setup" button)
+- [x] Weekly Report panel (`WeeklyReportPanel`) inside weekly meeting detail
+- [x] Owner summary view: cards per employee showing this week vs last week with delta badges (▲▼)
+- [x] Submission status badge: "✓ Submitted" vs "⏳ Pending" per employee card
+- [x] Number entry form: owner enters numbers on behalf of each employee
+
+### Integration
+- [x] Wire `WeeklyReportPanel` into Home.tsx `MeetingSection` for `weekly` meeting type
+- [x] Save checkpoint

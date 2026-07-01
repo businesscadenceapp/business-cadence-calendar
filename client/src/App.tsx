@@ -12,6 +12,7 @@ import Board from "./pages/Board";
 import Settings from "./pages/Settings";
 import Onboarding from "./pages/Onboarding";
 import ManageSchedule from "./pages/ManageSchedule";
+import EmployeeSetup from "./pages/EmployeeSetup";
 
 // Calendar app routes — all protected by the password gate
 function CalendarApp() {
@@ -38,6 +39,8 @@ function Router() {
       <Route path={"/onboarding"} component={Onboarding} />
       {/* Schedule management — closed days/weeks */}
       <Route path={"/app/schedule"} component={ManageSchedule} />
+      {/* Employee setup — define staff and their weekly metrics */}
+      <Route path={"/app/employees"} component={EmployeeSetup} />
       {/* Password-gated calendar app */}
       <Route path={"/app"} component={CalendarApp} />
       <Route path={"/app/:rest*"} component={CalendarApp} />
