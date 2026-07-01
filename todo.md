@@ -93,3 +93,54 @@
 - [x] Display past recording notes when viewing a meeting that was previously recorded
 - [ ] Test full flow end-to-end on desktop and mobile
 - [ ] Save checkpoint
+
+## Onboarding Wizard + Editable Schedule (Phase 6)
+
+### DB Schema
+- [x] Add `business_profiles` table (accountId, businessName, industry, ownerCount, employeeCount, workDays, preferredMeetingDays, onboardingComplete)
+- [x] Add `closed_periods` table (accountId, startDate, endDate, label, type: day|week)
+- [x] Add `meeting_schedule_overrides` table (accountId, originalDate, meetingType, rescheduledDate, reason)
+- [x] Push DB migration
+
+### Industry Agenda Templates
+- [x] Define industry-specific default agenda items for all 9 industry types × 4 meeting types (daily/weekly/monthly/quarterly)
+- [x] Store templates in a `industry_agenda_defaults` constant/seed file
+- [x] Industries: Healthcare/Medical, Fitness & Wellness, Real Estate, Retail/E-commerce, Restaurant/Food Service, Professional Services, Construction/Trades, Salon/Spa/Beauty, Other
+
+### Onboarding Backend
+- [x] tRPC `onboarding.save` — save business profile answers to DB
+- [x] tRPC `onboarding.getStatus` — check if current account has completed onboarding
+- [x] tRPC `onboarding.generateCalendar` — use profile answers to generate meeting schedule for the year
+- [x] Calendar generation logic: place meetings on correct days, skip closed periods, auto-shift to next available day
+
+### Onboarding Frontend (multi-step wizard)
+- [x] Step 1: Welcome screen — "Let's set up your BusinessCadence calendar"
+- [x] Step 2: Business basics — name, industry dropdown (9 options)
+- [x] Step 3: Team size — number of owners/partners, number of employees
+- [x] Step 4: Work schedule — which days of week they operate (checkboxes)
+- [x] Step 5: Owner meeting preferences — preferred day for each cadence (daily/weekly/monthly)
+- [x] Step 6: Team meeting preferences — preferred day for team standups and team weekly
+- [x] Step 7: Preview — show generated calendar before confirming
+- [x] Step 8: Done — celebration screen, redirect to calendar
+
+### Editable Schedule
+- [x] "Manage Schedule" button in calendar sidebar
+- [x] UI to add/remove closed days (single date picker) and closed weeks (week range picker)
+- [x] When a closed day is added, find all meetings on that date and auto-shift to next available same-weekday
+- [ ] Visual indicator on rescheduled meetings (small "moved" badge or different border style) — future enhancement
+- [x] tRPC `schedule.addClosedPeriod` — add a closed day/week
+- [x] tRPC `schedule.removeClosedPeriod` — remove a closed period
+- [x] tRPC `schedule.getClosedPeriods` — list all closed periods for account
+- [x] tRPC `schedule.getOverrides` — list all rescheduled meetings
+
+### Integration
+- [x] Trigger onboarding wizard on first login (check localStorage flag + server profile)
+- [x] `accountId` stored in localStorage after login for use by onboarding + schedule pages
+- [ ] Replace static `calendarData.ts` meeting placement with dynamic schedule from DB — Phase 7
+- [ ] Owner toggle button (Owner Mode ↔ Team Mode) — owners only, deferred until Team Layer built
+
+### Known Gaps / Phase 7 Work
+- [ ] Replace static `calendarData.ts` calendar rendering in Home.tsx with DB-driven dynamic schedule (so closed-day changes visibly reschedule meetings in the main calendar)
+- [ ] Persist meeting reschedule overrides when closed periods affect meetings; surface them via `schedule.getOverrides`
+- [ ] Use `trpc.onboarding.getStatus` during app entry to verify onboarding completion from server state (not just localStorage flag)
+- [ ] Show a real generated calendar preview in onboarding Step 7 (call `trpc.onboarding.generateCalendar` and render upcoming meetings before confirmation)

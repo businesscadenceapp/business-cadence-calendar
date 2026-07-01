@@ -1,4 +1,4 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, boolean } from "drizzle-orm/mysql-core";
+import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, boolean, json } from "drizzle-orm/mysql-core";
 
 /**
  * Core user table backing auth flow.
@@ -157,3 +157,62 @@ export const meetingRecordings = mysqlTable("meeting_recordings", {
 
 export type MeetingRecording = typeof meetingRecordings.$inferSelect;
 export type InsertMeetingRecording = typeof meetingRecordings.$inferInsert;
+
+/**
+ * Business profile — created during onboarding for each app_user account.
+ * Stores business info, work schedule, and meeting day preferences.
+ * workDays: JSON array of day-of-week numbers (0=Sun, 1=Mon, ..., 6=Sat)
+ * meetingDayPrefs: JSON object with preferred day-of-week for each cadence
+ */
+export const businessProfiles = mysqlTable("business_profiles", {
+  id: int("id").autoincrement().primaryKey(),
+  accountId: int("accountId").notNull(), // references app_users.id
+  businessName: varchar("businessName", { length: 256 }).notNull(),
+  industry: varchar("industry", { length: 64 }).notNull(),
+  ownerCount: int("ownerCount").default(1).notNull(),
+  employeeCount: int("employeeCount").default(0).notNull(),
+  workDays: text("workDays").notNull(), // JSON: number[] e.g. [1,2,3,4,5]
+  meetingDayPrefs: text("meetingDayPrefs").notNull(), // JSON: { ownerDaily, ownerWeekly, ownerMonthly, teamDaily, teamWeekly }
+  onboardingComplete: boolean("onboardingComplete").default(false).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type BusinessProfile = typeof businessProfiles.$inferSelect;
+export type InsertBusinessProfile = typeof businessProfiles.$inferInsert;
+
+/**
+ * Closed periods — days or weeks marked as closed for a business.
+ * type: "day" = single date, "week" = full week (startDate = Monday of that week)
+ * Meetings on closed dates are automatically rescheduled to next available day.
+ */
+export const closedPeriods = mysqlTable("closed_periods", {
+  id: int("id").autoincrement().primaryKey(),
+  accountId: int("accountId").notNull(), // references app_users.id
+  startDate: varchar("startDate", { length: 10 }).notNull(), // YYYY-MM-DD
+  endDate: varchar("endDate", { length: 10 }).notNull(),     // YYYY-MM-DD (same as startDate for single day)
+  label: varchar("label", { length: 128 }), // e.g. "Christmas Week", "Staff Vacation"
+  periodType: mysqlEnum("periodType", ["day", "week"]).default("day").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type ClosedPeriod = typeof closedPeriods.$inferSelect;
+export type InsertClosedPeriod = typeof closedPeriods.$inferInsert;
+
+/**
+ * Meeting schedule overrides — tracks meetings that were auto-shifted due to closed periods.
+ * originalDate: the date the meeting was originally scheduled
+ * rescheduledDate: the date it was moved to
+ */
+export const meetingScheduleOverrides = mysqlTable("meeting_schedule_overrides", {
+  id: int("id").autoincrement().primaryKey(),
+  accountId: int("accountId").notNull(),
+  originalDate: varchar("originalDate", { length: 10 }).notNull(), // YYYY-MM-DD
+  meetingType: mysqlEnum("meetingType", ["daily", "weekly", "monthly", "quarterly"]).notNull(),
+  rescheduledDate: varchar("rescheduledDate", { length: 10 }).notNull(), // YYYY-MM-DD
+  reason: varchar("reason", { length: 256 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type MeetingScheduleOverride = typeof meetingScheduleOverrides.$inferSelect;
+export type InsertMeetingScheduleOverride = typeof meetingScheduleOverrides.$inferInsert;

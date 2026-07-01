@@ -10,6 +10,8 @@ import ClientLogin from "./pages/ClientLogin";
 import Home from "./pages/Home";
 import Board from "./pages/Board";
 import Settings from "./pages/Settings";
+import Onboarding from "./pages/Onboarding";
+import ManageSchedule from "./pages/ManageSchedule";
 
 // Calendar app routes — all protected by the password gate
 function CalendarApp() {
@@ -32,6 +34,10 @@ function Router() {
       <Route path={"/"} component={Landing} />
       {/* Business selection portal — public, leads to password gate */}
       <Route path={"/login"} component={ClientLogin} />
+      {/* Onboarding wizard — first-login setup */}
+      <Route path={"/onboarding"} component={Onboarding} />
+      {/* Schedule management — closed days/weeks */}
+      <Route path={"/app/schedule"} component={ManageSchedule} />
       {/* Password-gated calendar app */}
       <Route path={"/app"} component={CalendarApp} />
       <Route path={"/app/:rest*"} component={CalendarApp} />

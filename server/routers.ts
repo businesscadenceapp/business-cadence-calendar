@@ -25,7 +25,14 @@ import {
   createMeetingRecording,
   updateMeetingRecording,
   getMeetingRecording,
+  getBusinessProfile,
+  upsertBusinessProfile,
+  getClosedPeriods,
+  addClosedPeriod,
+  removeClosedPeriod,
+  getMeetingOverrides,
 } from "./db";
+import { generateMeetingSchedule } from "../shared/calendarEngine";
 import { notifyOwner } from "./_core/notification";
 import bcrypt from "bcryptjs";
 import { getDb } from "./db";
@@ -238,7 +245,7 @@ Keep the tone warm but professional. This summary will be saved under this speci
         const correct = await bcrypt.compare(input.password, user.passwordHash);
         if (!correct) return { success: false, scope: null };
 
-        return { success: true, scope: user.scope, displayName: user.displayName };
+        return { success: true, scope: user.scope, displayName: user.displayName, accountId: user.id };
       }),
   }),
 
@@ -382,6 +389,100 @@ Be concise and specific. If a field has nothing, use an empty array.`,
         if (!log) return { recording: null };
         const recording = await getMeetingRecording(log.id);
         return { recording };
+      }),
+  }),
+
+  onboarding: router({
+    /** Check if the current account has completed onboarding. */
+    getStatus: publicProcedure
+      .input(z.object({ accountId: z.number() }))
+      .query(async ({ input }) => {
+        const profile = await getBusinessProfile(input.accountId);
+        return {
+          complete: profile?.onboardingComplete ?? false,
+          profile: profile ?? null,
+        };
+      }),
+
+    /** Save onboarding answers (can be called multiple times — upserts). */
+    save: publicProcedure
+      .input(z.object({
+        accountId: z.number(),
+        businessName: z.string().min(1),
+        industry: z.string().min(1),
+        ownerCount: z.number().int().min(1).max(20),
+        employeeCount: z.number().int().min(0).max(500),
+        workDays: z.array(z.number().int().min(0).max(6)),
+        meetingDayPrefs: z.object({
+          ownerDaily: z.number().int().min(0).max(6),
+          ownerWeekly: z.number().int().min(0).max(6),
+          ownerMonthly: z.number().int().min(0).max(6),
+          teamDaily: z.number().int().min(0).max(6),
+          teamWeekly: z.number().int().min(0).max(6),
+        }),
+        onboardingComplete: z.boolean(),
+      }))
+      .mutation(async ({ input }) => {
+        const profile = await upsertBusinessProfile(input);
+        return { success: true, profile };
+      }),
+
+    /** Generate the meeting schedule for a year based on business profile + closed periods. */
+    generateCalendar: publicProcedure
+      .input(z.object({ accountId: z.number(), year: z.number().int() }))
+      .query(async ({ input }) => {
+        const profile = await getBusinessProfile(input.accountId);
+        if (!profile) return { meetings: [] };
+        const closedPeriods = await getClosedPeriods(input.accountId);
+        const workDays: number[] = JSON.parse(profile.workDays);
+        const meetingDayPrefs = JSON.parse(profile.meetingDayPrefs);
+        const meetings = generateMeetingSchedule({
+          year: input.year,
+          workDays,
+          meetingDayPrefs,
+          closedPeriods,
+        });
+        return { meetings };
+      }),
+  }),
+
+  schedule: router({
+    /** Get all closed periods for an account. */
+    getClosedPeriods: publicProcedure
+      .input(z.object({ accountId: z.number() }))
+      .query(async ({ input }) => {
+        const periods = await getClosedPeriods(input.accountId);
+        return { periods };
+      }),
+
+    /** Add a closed day or week. Automatically recalculates affected meetings. */
+    addClosedPeriod: publicProcedure
+      .input(z.object({
+        accountId: z.number(),
+        startDate: z.string(),
+        endDate: z.string(),
+        label: z.string().optional(),
+        periodType: z.enum(["day", "week"]),
+      }))
+      .mutation(async ({ input }) => {
+        const period = await addClosedPeriod(input);
+        return { success: true, period };
+      }),
+
+    /** Remove a closed period. */
+    removeClosedPeriod: publicProcedure
+      .input(z.object({ id: z.number(), accountId: z.number() }))
+      .mutation(async ({ input }) => {
+        await removeClosedPeriod(input.id, input.accountId);
+        return { success: true };
+      }),
+
+    /** Get all meeting schedule overrides (rescheduled meetings) for an account. */
+    getOverrides: publicProcedure
+      .input(z.object({ accountId: z.number() }))
+      .query(async ({ input }) => {
+        const overrides = await getMeetingOverrides(input.accountId);
+        return { overrides };
       }),
   }),
 

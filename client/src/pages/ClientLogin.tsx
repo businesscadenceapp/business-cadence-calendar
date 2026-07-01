@@ -48,14 +48,27 @@ export default function ClientLogin() {
   const usernameRef = useRef<HTMLInputElement>(null);
 
   const verify = trpc.gate.verify.useMutation({
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       setIsLoading(false);
       if (data.success && data.scope) {
-        // Store the scope returned from the server
+        // Store the scope and accountId returned from the server
         const scope = data.scope as BusinessSelection;
         saveBusinessSelection(scope);
-        try { localStorage.setItem(STORAGE_KEY, "granted"); } catch { /* ignore */ }
-        navigate("/app");
+        try {
+          localStorage.setItem(STORAGE_KEY, "granted");
+          if (data.accountId) {
+            localStorage.setItem("bcc_account_id", String(data.accountId));
+          }
+        } catch { /* ignore */ }
+
+        // Check if onboarding is complete
+        const accountId = data.accountId ?? 0;
+        const isFirstLogin = !localStorage.getItem("bcc_onboarding_done_" + accountId);
+        if (isFirstLogin && accountId) {
+          navigate("/onboarding");
+        } else {
+          navigate("/app");
+        }
       } else {
         setPassword("");
         setShake(true);

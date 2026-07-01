@@ -1,6 +1,6 @@
 import { eq, and, desc } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, meetingLogs, agendaItems, MeetingLog, AgendaItem, boardCards, agendaTemplates, type BoardCard, type InsertBoardCard, waitlistEmails, meetingRecordings, type MeetingRecording } from "../drizzle/schema";
+import { InsertUser, users, meetingLogs, agendaItems, MeetingLog, AgendaItem, boardCards, agendaTemplates, type BoardCard, type InsertBoardCard, waitlistEmails, meetingRecordings, type MeetingRecording, businessProfiles, type BusinessProfile, closedPeriods, type ClosedPeriod, meetingScheduleOverrides } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -330,4 +330,132 @@ export async function getMeetingRecording(meetingLogId: number): Promise<Meeting
     .orderBy(desc(meetingRecordings.createdAt))
     .limit(1);
   return rows[0] ?? null;
+}
+
+// ─── Business Profile / Onboarding helpers ──────────────────────────────────────────
+
+/** Get the business profile for an account. Returns null if onboarding not done. */
+export async function getBusinessProfile(accountId: number): Promise<BusinessProfile | null> {
+  const db = await getDb();
+  if (!db) return null;
+  const rows = await db
+    .select()
+    .from(businessProfiles)
+    .where(eq(businessProfiles.accountId, accountId))
+    .limit(1);
+  return rows[0] ?? null;
+}
+
+/** Save or update the business profile for an account. */
+export async function upsertBusinessProfile(data: {
+  accountId: number;
+  businessName: string;
+  industry: string;
+  ownerCount: number;
+  employeeCount: number;
+  workDays: number[];
+  meetingDayPrefs: {
+    ownerDaily: number;
+    ownerWeekly: number;
+    ownerMonthly: number;
+    teamDaily: number;
+    teamWeekly: number;
+  };
+  onboardingComplete: boolean;
+}): Promise<BusinessProfile> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const workDaysJson = JSON.stringify(data.workDays);
+  const prefsJson = JSON.stringify(data.meetingDayPrefs);
+  const existing = await getBusinessProfile(data.accountId);
+  if (existing) {
+    await db.update(businessProfiles).set({
+      businessName: data.businessName,
+      industry: data.industry,
+      ownerCount: data.ownerCount,
+      employeeCount: data.employeeCount,
+      workDays: workDaysJson,
+      meetingDayPrefs: prefsJson,
+      onboardingComplete: data.onboardingComplete,
+    }).where(eq(businessProfiles.id, existing.id));
+    return (await getBusinessProfile(data.accountId))!;
+  } else {
+    await db.insert(businessProfiles).values({
+      accountId: data.accountId,
+      businessName: data.businessName,
+      industry: data.industry,
+      ownerCount: data.ownerCount,
+      employeeCount: data.employeeCount,
+      workDays: workDaysJson,
+      meetingDayPrefs: prefsJson,
+      onboardingComplete: data.onboardingComplete,
+    });
+    return (await getBusinessProfile(data.accountId))!;
+  }
+}
+
+// ─── Closed Periods helpers ─────────────────────────────────────────────────────────────
+
+/** Get all closed periods for an account. */
+export async function getClosedPeriods(accountId: number): Promise<ClosedPeriod[]> {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(closedPeriods).where(eq(closedPeriods.accountId, accountId));
+}
+
+/** Add a closed period for an account. */
+export async function addClosedPeriod(data: {
+  accountId: number;
+  startDate: string;
+  endDate: string;
+  label?: string;
+  periodType: "day" | "week";
+}): Promise<ClosedPeriod> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.insert(closedPeriods).values(data);
+  const rows = await db
+    .select()
+    .from(closedPeriods)
+    .where(and(eq(closedPeriods.accountId, data.accountId), eq(closedPeriods.startDate, data.startDate)))
+    .orderBy(desc(closedPeriods.createdAt))
+    .limit(1);
+  return rows[0];
+}
+
+/** Remove a closed period by id. */
+export async function removeClosedPeriod(id: number, accountId: number): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  await db.delete(closedPeriods).where(and(eq(closedPeriods.id, id), eq(closedPeriods.accountId, accountId)));
+}
+
+/** Save a meeting schedule override (rescheduled meeting). */
+export async function saveMeetingOverride(data: {
+  accountId: number;
+  originalDate: string;
+  meetingType: "daily" | "weekly" | "monthly" | "quarterly";
+  rescheduledDate: string;
+  reason?: string;
+}): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  // Remove any existing override for this date+type first
+  await db.delete(meetingScheduleOverrides).where(
+    and(
+      eq(meetingScheduleOverrides.accountId, data.accountId),
+      eq(meetingScheduleOverrides.originalDate, data.originalDate),
+      eq(meetingScheduleOverrides.meetingType, data.meetingType)
+    )
+  );
+  if (data.originalDate !== data.rescheduledDate) {
+    await db.insert(meetingScheduleOverrides).values(data);
+  }
+}
+
+/** Get all meeting schedule overrides for an account. */
+export async function getMeetingOverrides(accountId: number): Promise<typeof meetingScheduleOverrides.$inferSelect[]> {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(meetingScheduleOverrides).where(eq(meetingScheduleOverrides.accountId, accountId));
 }

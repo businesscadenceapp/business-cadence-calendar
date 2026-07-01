@@ -923,6 +923,23 @@ export default function Home() {
             </div>
           </div>
 
+          {/* Manage Schedule */}
+          <div>
+            <Link
+              href="/app/schedule"
+              className="flex items-center gap-2 w-full px-3 py-2.5 rounded-lg text-[11px] font-semibold transition-all hover:opacity-90"
+              style={{
+                background: "rgba(20,184,166,0.10)",
+                border: "1px solid rgba(20,184,166,0.25)",
+                color: "#5EEAD4",
+                fontFamily: "'Space Grotesk', sans-serif",
+              }}
+            >
+              <span>📆</span>
+              Manage Schedule
+            </Link>
+          </div>
+
           {/* Golden Rule */}
           <div
             className="rounded-xl p-3.5"
