@@ -185,7 +185,7 @@ export async function getBoardCards(includeArchived = false): Promise<BoardCard[
 }
 
 export async function createBoardCard(
-  data: Pick<InsertBoardCard, "author" | "type" | "business" | "content">
+  data: Pick<InsertBoardCard, "author" | "type" | "business" | "content"> & { assignedTo?: "Matt" | "Lynn" }
 ): Promise<BoardCard> {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
@@ -195,6 +195,25 @@ export async function createBoardCard(
     .from(boardCards)
     .orderBy(boardCards.createdAt);
   return rows[rows.length - 1]!;
+}
+
+export async function markTaskDone(id: number, completedBy: "Matt" | "Lynn"): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  await db
+    .update(boardCards)
+    .set({ completedAt: new Date(), completedBy })
+    .where(eq(boardCards.id, id));
+}
+
+export async function confirmTaskDone(id: number, confirmedBy: "Matt" | "Lynn"): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  // Confirming done also archives the card so it leaves the active board
+  await db
+    .update(boardCards)
+    .set({ confirmedAt: new Date(), confirmedBy, archivedAt: new Date() })
+    .where(eq(boardCards.id, id));
 }
 
 export async function markCardSeen(id: number, seenBy: "Matt" | "Lynn"): Promise<void> {

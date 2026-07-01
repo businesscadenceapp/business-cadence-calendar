@@ -71,9 +71,16 @@ export type InsertAgendaItem = typeof agendaItems.$inferInsert;
 export const boardCards = mysqlTable("board_cards", {
   id: int("id").autoincrement().primaryKey(),
   author: mysqlEnum("author", ["Matt", "Lynn"]).notNull(),
-  type: mysqlEnum("type", ["update", "issue"]).notNull(),
+  type: mysqlEnum("type", ["update", "issue", "task"]).notNull(),
   business: mysqlEnum("business", ["chiropractic", "crossfit", "realty", "general"]).notNull().default("general"),
   content: text("content").notNull(),
+  // Task-specific fields
+  assignedTo: mysqlEnum("assignedTo", ["Matt", "Lynn"]),  // who the task is assigned to
+  completedAt: timestamp("completedAt"),                   // when doer marked it done
+  completedBy: mysqlEnum("completedBy", ["Matt", "Lynn"]), // who marked it done
+  confirmedAt: timestamp("confirmedAt"),                   // when requester confirmed it done
+  confirmedBy: mysqlEnum("confirmedBy", ["Matt", "Lynn"]), // who confirmed it done
+  // Legacy seen/archive fields (updates + issues)
   seenAt: timestamp("seenAt"),
   seenBy: mysqlEnum("seenBy", ["Matt", "Lynn"]),
   archivedAt: timestamp("archivedAt"),

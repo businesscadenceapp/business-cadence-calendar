@@ -17,6 +17,8 @@ import {
   markCardSeen,
   archiveCard,
   deleteBoardCard,
+  markTaskDone,
+  confirmTaskDone,
   getAgendaTemplate,
   getAllAgendaTemplates,
   upsertAgendaTemplate,
@@ -498,17 +500,40 @@ Be concise and specific. If a field has nothing, use an empty array.`,
       return { cards };
     }),
 
-    /** Create a new board card. */
+    /** Create a new board card (update, issue, or task). */
     create: publicProcedure
       .input(z.object({
         author: z.enum(["Matt", "Lynn"]),
-        type: z.enum(["update", "issue"]),
+        type: z.enum(["update", "issue", "task"]),
         business: z.enum(["chiropractic", "crossfit", "realty", "general"]),
         content: z.string().min(1).max(1000),
+        assignedTo: z.enum(["Matt", "Lynn"]).optional(),
       }))
       .mutation(async ({ input }) => {
         const card = await createBoardCard(input);
         return { card };
+      }),
+
+    /** Doer marks a task as done (first step of two-step completion). */
+    markDone: publicProcedure
+      .input(z.object({
+        id: z.number(),
+        completedBy: z.enum(["Matt", "Lynn"]),
+      }))
+      .mutation(async ({ input }) => {
+        await markTaskDone(input.id, input.completedBy);
+        return { success: true };
+      }),
+
+    /** Requester confirms the task is done (second step — moves to archive). */
+    confirmDone: publicProcedure
+      .input(z.object({
+        id: z.number(),
+        confirmedBy: z.enum(["Matt", "Lynn"]),
+      }))
+      .mutation(async ({ input }) => {
+        await confirmTaskDone(input.id, input.confirmedBy);
+        return { success: true };
       }),
 
     /** Mark a card as seen by the other person. */

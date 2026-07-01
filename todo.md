@@ -180,4 +180,27 @@
 - [x] Full-width employee cards with proper spacing and readable number inputs
 - [x] Add "Reports" tab to main navigation (alongside Calendar and Board)
 - [x] Label Reports tab as Team layer (owners + employees)
-- [ ] Save checkpoint
+- [x] Save checkpoint
+
+## Command Board Upgrade — Tasks + Two-Step Completion (Phase 9)
+
+### DB Schema
+- [ ] Add `completedAt`, `completedBy`, `confirmedAt`, `confirmedBy` columns to `board_cards` table
+- [ ] Add `assignedTo` column to `board_cards` (who the task is assigned to)
+- [ ] Push DB migration
+
+### Backend
+- [ ] tRPC `board.markDone` — doer marks task as done (sets completedAt + completedBy)
+- [ ] tRPC `board.confirmDone` — requester confirms task is done (sets confirmedAt + confirmedBy)
+- [ ] Update `board.list` to return completedAt, confirmedAt, assignedTo fields
+- [ ] Update `board.create` to accept `assignedTo` for Task type
+
+### Frontend
+- [ ] Add "Task" as a third card type (alongside Update and Issue)
+- [ ] Task cards show assignee, checkbox for doer to mark done
+- [ ] Two-step flow: doer checks off → card moves to "Done — Awaiting Confirmation" section
+- [ ] Requester sees "Confirm Done" button → confirms → card moves to collapsed archive
+- [ ] Board sections: Active | Done — Awaiting Confirmation | Completed (collapsible)
+- [ ] Fix identity selector: persist "I am Matt / Lynn" in localStorage (set once per device)
+- [ ] Remove redundant top-right identity selector from board header
+- [ ] When posting a Task, show "Assign to:" dropdown (the other owner)
