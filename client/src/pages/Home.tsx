@@ -8,6 +8,7 @@ import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import { Link } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { getBusinessSelection, type BusinessSelection } from "./ClientLogin";
+import { RecordMeeting } from "@/components/RecordMeeting";
 import {
   generateCalendar,
   MEETING_TYPES,
@@ -573,7 +574,7 @@ function MeetingSection({
       </div>
 
       {/* AI Summary section */}
-      <div className="px-3 pb-4 flex flex-col gap-2">
+      <div className="px-3 flex flex-col gap-2">
         <div className="flex items-center justify-between px-1">
           <p className="text-[9px] font-bold text-white/25 uppercase tracking-widest" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
             AI Summary
@@ -619,6 +620,17 @@ function MeetingSection({
             )}
           </button>
         )}
+      </div>
+
+      {/* Meeting Recording section */}
+      <div className="px-3 pb-4">
+        <RecordMeeting
+          dateKey={dateKey}
+          meetingType={type as "daily" | "weekly" | "monthly" | "quarterly"}
+          agendaItems={effectiveBlocks.flatMap(block =>
+            block.items.map(item => `${BUSINESSES[block.business as keyof typeof BUSINESSES]?.shortName ?? block.business}: ${item}`)
+          )}
+        />
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
-import { eq, and } from "drizzle-orm";
+import { eq, and, desc } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, meetingLogs, agendaItems, MeetingLog, AgendaItem, boardCards, agendaTemplates, type BoardCard, type InsertBoardCard, waitlistEmails } from "../drizzle/schema";
+import { InsertUser, users, meetingLogs, agendaItems, MeetingLog, AgendaItem, boardCards, agendaTemplates, type BoardCard, type InsertBoardCard, waitlistEmails, meetingRecordings, type MeetingRecording } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -297,4 +297,37 @@ export async function getWaitlistCount(): Promise<number> {
   if (!db) return 0;
   const rows = await db.select().from(waitlistEmails);
   return rows.length;
+}
+
+// ─── Meeting Recording helpers ────────────────────────────────────────────────
+
+/** Create a new recording row in pending state. Returns the new row id. */
+export async function createMeetingRecording(meetingLogId: number, audioKey: string): Promise<number | null> {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.insert(meetingRecordings).values({ meetingLogId, audioKey, processingStatus: "processing" });
+  return (result as any)[0]?.insertId ?? null;
+}
+
+/** Update a recording row with transcript + AI notes after processing. */
+export async function updateMeetingRecording(
+  id: number,
+  data: { transcript?: string; aiNotes?: string; processingStatus: "done" | "error"; errorMessage?: string }
+): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  await db.update(meetingRecordings).set(data).where(eq(meetingRecordings.id, id));
+}
+
+/** Get the most recent recording for a meeting log. */
+export async function getMeetingRecording(meetingLogId: number): Promise<MeetingRecording | null> {
+  const db = await getDb();
+  if (!db) return null;
+  const rows = await db
+    .select()
+    .from(meetingRecordings)
+    .where(eq(meetingRecordings.meetingLogId, meetingLogId))
+    .orderBy(desc(meetingRecordings.createdAt))
+    .limit(1);
+  return rows[0] ?? null;
 }

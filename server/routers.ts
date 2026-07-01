@@ -22,12 +22,17 @@ import {
   upsertAgendaTemplate,
   addWaitlistEmail,
   getWaitlistCount,
+  createMeetingRecording,
+  updateMeetingRecording,
+  getMeetingRecording,
 } from "./db";
 import { notifyOwner } from "./_core/notification";
 import bcrypt from "bcryptjs";
 import { getDb } from "./db";
 import { appUsers } from "../drizzle/schema";
 import { eq } from "drizzle-orm";
+import { storagePut } from "./storage";
+import { transcribeAudio } from "./_core/voiceTranscription";
 
 const meetingTypeSchema = z.enum(["daily", "weekly", "monthly", "quarterly"]);
 
@@ -267,6 +272,117 @@ Keep the tone warm but professional. This summary will be saved under this speci
       const count = await getWaitlistCount();
       return { count };
     }),
+  }),
+
+  /** Meeting recording — upload audio, transcribe, and generate AI notes. */
+  recording: router({
+    /** Upload audio blob, transcribe via Whisper, generate AI notes, save to DB. */
+    process: publicProcedure
+      .input(z.object({
+        dateKey: z.string(),
+        meetingType: z.enum(["daily", "weekly", "monthly", "quarterly"]),
+        audioBase64: z.string(), // base64-encoded audio blob
+        mimeType: z.string().default("audio/webm"),
+        agendaItems: z.array(z.string()).optional(), // agenda item labels for context
+      }))
+      .mutation(async ({ input }) => {
+        // 1. Ensure meeting log exists
+        const log = await upsertMeetingLog(input.dateKey, input.meetingType, "");
+        if (!log) throw new Error("Could not create meeting log");
+
+        // 2. Decode base64 audio and upload to S3
+        const audioBuffer = Buffer.from(input.audioBase64, "base64");
+        const fileName = `recordings/${input.dateKey}-${input.meetingType}-${Date.now()}.webm`;
+        const { key: audioKey, url: audioUrl } = await storagePut(fileName, audioBuffer, input.mimeType);
+
+        // 3. Create recording row in DB
+        const recordingId = await createMeetingRecording(log.id, audioKey);
+        if (!recordingId) throw new Error("Could not create recording record");
+
+        // 4. Transcribe via Whisper
+        const fullAudioUrl = `${process.env.BUILT_IN_FORGE_API_URL?.replace('/v1', '') ?? ''}${audioUrl}`;
+        let transcript = "";
+        try {
+          const transcription = await transcribeAudio({ audioUrl: fullAudioUrl, language: "en" });
+          if ('error' in transcription) throw new Error(transcription.error);
+          transcript = transcription.text;
+        } catch (err) {
+          await updateMeetingRecording(recordingId, { processingStatus: "error", errorMessage: String(err) });
+          throw new Error(`Transcription failed: ${err}`);
+        }
+
+        // 5. Use LLM to extract structured notes from transcript
+        const agendaContext = input.agendaItems?.length
+          ? `\n\nThe meeting agenda included these items:\n${input.agendaItems.map((a, i) => `${i + 1}. ${a}`).join("\n")}`
+          : "";
+
+        let aiNotes = "";
+        try {
+          const llmResponse = await invokeLLM({
+            messages: [
+              {
+                role: "system",
+                content: `You are a meeting notes assistant for a small business. Extract structured notes from the meeting transcript. Return ONLY valid JSON with this exact structure:
+{
+  "summary": "2-3 sentence overview of what was discussed",
+  "actionItems": ["action item 1", "action item 2"],
+  "resolvedItems": ["resolved item 1"],
+  "keyDecisions": ["decision 1"]
+}
+Be concise and specific. If a field has nothing, use an empty array.`,
+              },
+              {
+                role: "user",
+                content: `Meeting transcript:${agendaContext}\n\n${transcript}`,
+              },
+            ],
+            response_format: {
+              type: "json_schema",
+              json_schema: {
+                name: "meeting_notes",
+                strict: true,
+                schema: {
+                  type: "object",
+                  properties: {
+                    summary: { type: "string" },
+                    actionItems: { type: "array", items: { type: "string" } },
+                    resolvedItems: { type: "array", items: { type: "string" } },
+                    keyDecisions: { type: "array", items: { type: "string" } },
+                  },
+                  required: ["summary", "actionItems", "resolvedItems", "keyDecisions"],
+                  additionalProperties: false,
+                },
+              },
+            },
+          });
+          const rawContent = llmResponse.choices[0].message.content;
+          aiNotes = typeof rawContent === "string" ? rawContent : JSON.stringify(rawContent ?? "");
+        } catch (err) {
+          // LLM failure is non-fatal — save transcript only
+          aiNotes = JSON.stringify({ summary: transcript.slice(0, 500), actionItems: [], resolvedItems: [], keyDecisions: [] });
+        }
+
+        // 6. Save transcript + AI notes to DB
+        await updateMeetingRecording(recordingId, { transcript, aiNotes, processingStatus: "done" });
+
+        // 7. Also save AI summary back to the meeting log for display in the calendar
+        const parsed = (() => { try { return JSON.parse(aiNotes); } catch { return null; } })();
+        if (parsed?.summary) {
+          await saveSummary(input.dateKey, input.meetingType, `[Recording Summary]\n${parsed.summary}\n\nAction Items:\n${(parsed.actionItems as string[]).map((a: string) => `• ${a}`).join("\n")}`);
+        }
+
+        return { success: true, recordingId, transcript, aiNotes };
+      }),
+
+    /** Get the latest recording for a meeting log. */
+    get: publicProcedure
+      .input(z.object({ dateKey: z.string(), meetingType: z.enum(["daily", "weekly", "monthly", "quarterly"]) }))
+      .query(async ({ input }) => {
+        const log = await getMeetingLog(input.dateKey, input.meetingType);
+        if (!log) return { recording: null };
+        const recording = await getMeetingRecording(log.id);
+        return { recording };
+      }),
   }),
 
   board: router({

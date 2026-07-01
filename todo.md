@@ -83,3 +83,13 @@
 - [ ] Update calendar app to filter meeting data by business scope from session
 - [ ] Test all three accounts in isolation
 - [ ] Save checkpoint
+
+## Meeting Recording Feature (Phase 5)
+- [x] Add meeting_recordings table to DB schema (meetingId, transcript, aiNotes, actionItems, audioKey, createdAt)
+- [x] Push DB migration
+- [x] Add server-side tRPC procedure: upload audio → Whisper transcription → LLM processing → save to DB
+- [x] Build RecordMeeting UI component: mic button, recording timer, stop, upload progress, AI notes display
+- [x] Wire RecordMeeting into the meeting detail/Board view
+- [x] Display past recording notes when viewing a meeting that was previously recorded
+- [ ] Test full flow end-to-end on desktop and mobile
+- [ ] Save checkpoint

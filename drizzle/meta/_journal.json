@@ -43,6 +43,13 @@
       "when": 1782794444388,
       "tag": "0005_lovely_red_shift",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1782877657356,
+      "tag": "0006_sudden_nitro",
+      "breakpoints": true
     }
   ]
 }

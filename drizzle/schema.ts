@@ -135,3 +135,25 @@ export const appUsers = mysqlTable("app_users", {
 
 export type AppUser = typeof appUsers.$inferSelect;
 export type InsertAppUser = typeof appUsers.$inferInsert;
+
+/**
+ * Stores meeting recordings, transcripts, and AI-generated notes.
+ * Linked to a meeting_logs row by meetingLogId.
+ * audioKey: S3 storage key for the raw audio file
+ * transcript: full Whisper transcription text
+ * aiNotes: AI-generated structured notes (JSON string with summary, actionItems, resolvedItems)
+ */
+export const meetingRecordings = mysqlTable("meeting_recordings", {
+  id: int("id").autoincrement().primaryKey(),
+  meetingLogId: int("meetingLogId").notNull(),
+  audioKey: varchar("audioKey", { length: 512 }),
+  transcript: text("transcript"),
+  aiNotes: text("aiNotes"), // JSON: { summary: string, actionItems: string[], resolvedItems: string[], keyDecisions: string[] }
+  processingStatus: mysqlEnum("processingStatus", ["pending", "processing", "done", "error"]).default("pending").notNull(),
+  errorMessage: text("errorMessage"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type MeetingRecording = typeof meetingRecordings.$inferSelect;
+export type InsertMeetingRecording = typeof meetingRecordings.$inferInsert;
