@@ -13,6 +13,7 @@ import Settings from "./pages/Settings";
 import Onboarding from "./pages/Onboarding";
 import ManageSchedule from "./pages/ManageSchedule";
 import EmployeeSetup from "./pages/EmployeeSetup";
+import WeeklyReports from "./pages/WeeklyReports";
 
 // Calendar app routes — all protected by the password gate
 function CalendarApp() {
@@ -41,6 +42,8 @@ function Router() {
       <Route path={"/app/schedule"} component={ManageSchedule} />
       {/* Employee setup — define staff and their weekly metrics */}
       <Route path={"/app/employees"} component={EmployeeSetup} />
+      {/* Weekly Reports — team layer, standalone full-width page */}
+      <Route path={"/app/reports"} component={WeeklyReports} />
       {/* Password-gated calendar app */}
       <Route path={"/app"} component={CalendarApp} />
       <Route path={"/app/:rest*"} component={CalendarApp} />

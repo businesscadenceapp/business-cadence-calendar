@@ -1,0 +1,496 @@
+/**
+ * Weekly Reports — Standalone full-width page
+ * Team Layer: owners enter numbers on behalf of staff; owners see all cards side-by-side.
+ * Accessible via the "Reports" tab in the main nav.
+ */
+import { useState, useMemo } from "react";
+import { Link } from "wouter";
+import { trpc } from "@/lib/trpc";
+import { toast } from "sonner";
+
+// ── helpers ──────────────────────────────────────────────────────────────────
+
+function getWeekKey(date: Date): string {
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  const day = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - day);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  const weekNo = Math.ceil(((d.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
+  return `${d.getUTCFullYear()}-W${String(weekNo).padStart(2, "0")}`;
+}
+
+function getPrevWeekKey(weekKey: string): string {
+  const { start } = getWeekRange(weekKey);
+  const prev = new Date(start);
+  prev.setUTCDate(start.getUTCDate() - 7);
+  return getWeekKey(prev);
+}
+
+function getWeekRange(weekKey: string): { start: Date; end: Date } {
+  const [year, week] = weekKey.split("-W").map(Number);
+  const jan4 = new Date(Date.UTC(year, 0, 4));
+  const startOfWeek1 = new Date(jan4);
+  startOfWeek1.setUTCDate(jan4.getUTCDate() - ((jan4.getUTCDay() + 6) % 7));
+  const start = new Date(startOfWeek1);
+  start.setUTCDate(startOfWeek1.getUTCDate() + (week - 1) * 7);
+  const end = new Date(start);
+  end.setUTCDate(start.getUTCDate() + 4); // Mon–Fri
+  return { start, end };
+}
+
+function formatWeekRange(weekKey: string): string {
+  const { start, end } = getWeekRange(weekKey);
+  const opts: Intl.DateTimeFormatOptions = { month: "short", day: "numeric" };
+  return `${start.toLocaleDateString("en-US", opts)} – ${end.toLocaleDateString("en-US", opts)}`;
+}
+
+function deltaColor(delta: number | null): string {
+  if (delta === null) return "text-white/30";
+  if (delta > 0) return "text-emerald-400";
+  if (delta < 0) return "text-rose-400";
+  return "text-white/40";
+}
+
+function deltaLabel(delta: number | null): string {
+  if (delta === null || delta === 0) return "—";
+  return delta > 0 ? `▲ ${delta}` : `▼ ${Math.abs(delta)}`;
+}
+
+// ── types ─────────────────────────────────────────────────────────────────────
+
+interface Metric {
+  id: number;
+  label: string;
+  unit: string | null;
+  sortOrder: number;
+  employeeId: number;
+  createdAt: Date;
+}
+
+interface EmployeeRow {
+  id: number;
+  name: string;
+  role: string;
+  accountId: number;
+  isActive: boolean;
+  sortOrder: number;
+  createdAt: Date;
+  updatedAt: Date;
+  metrics: Metric[];
+}
+
+interface SummaryRow {
+  employee: EmployeeRow;
+  metrics: Metric[];
+  thisWeek: Record<number, number>;
+  lastWeek: Record<number, number>;
+  submitted: boolean;
+}
+
+// ── EntryForm ─────────────────────────────────────────────────────────────────
+
+function EntryForm({
+  row,
+  weekKey,
+  onSaved,
+}: {
+  row: SummaryRow;
+  weekKey: string;
+  onSaved: () => void;
+}) {
+  const accountId = parseInt(localStorage.getItem("bcc_account_id") ?? "0", 10);
+  const [values, setValues] = useState<Record<number, string>>(() => {
+    const init: Record<number, string> = {};
+    row.metrics.forEach((m) => {
+      const existing = row.thisWeek[m.id];
+      init[m.id] = existing !== undefined ? String(existing) : "";
+    });
+    return init;
+  });
+
+  const submitMutation = trpc.weeklyReport.submitReport.useMutation({
+    onSuccess: () => {
+      toast.success(`${row.employee.name}'s numbers saved`);
+      onSaved();
+    },
+    onError: (err) => toast.error(err.message),
+  });
+
+  const handleSubmit = () => {
+    const entries = row.metrics
+      .filter((m) => values[m.id] !== "" && !isNaN(Number(values[m.id])))
+      .map((m) => ({ metricId: m.id, value: parseFloat(values[m.id]) }));
+    if (entries.length === 0) {
+      toast.error("Enter at least one number before submitting.");
+      return;
+    }
+    submitMutation.mutate({
+      employeeId: row.employee.id,
+      weekKey,
+      entries,
+      submittedByOwnerId: accountId,
+    });
+  };
+
+  return (
+    <div className="space-y-3">
+      {row.metrics.map((m) => (
+        <div key={m.id} className="flex items-center gap-3">
+          <span className="flex-1 text-sm text-white/70" style={{ fontFamily: "'Inter', sans-serif" }}>
+            {m.label}
+          </span>
+          <div className="flex items-center gap-1.5">
+            <input
+              type="number"
+              min={0}
+              step="any"
+              value={values[m.id] ?? ""}
+              onChange={(e) => setValues((v) => ({ ...v, [m.id]: e.target.value }))}
+              placeholder="0"
+              className="w-24 px-3 py-1.5 rounded-lg text-sm text-right font-mono text-white bg-white/10 border border-white/15 focus:border-teal-400/60 focus:outline-none focus:ring-1 focus:ring-teal-400/30 transition-colors"
+            />
+            {m.unit && (
+              <span className="text-xs text-white/35 w-8" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                {m.unit}
+              </span>
+            )}
+          </div>
+        </div>
+      ))}
+      <button
+        onClick={handleSubmit}
+        disabled={submitMutation.isPending}
+        className="w-full mt-2 py-2 rounded-lg text-sm font-semibold transition-all active:scale-[0.98]"
+        style={{
+          background: submitMutation.isPending ? "rgba(20,184,166,0.3)" : "rgba(20,184,166,0.85)",
+          color: "#fff",
+          fontFamily: "'Space Grotesk', sans-serif",
+        }}
+      >
+        {submitMutation.isPending ? "Saving…" : "Submit Numbers"}
+      </button>
+    </div>
+  );
+}
+
+// ── EmployeeCard ──────────────────────────────────────────────────────────────
+
+function EmployeeCard({
+  row,
+  weekKey,
+  onRefresh,
+}: {
+  row: SummaryRow;
+  weekKey: string;
+  onRefresh: () => void;
+}) {
+  const [entering, setEntering] = useState(false);
+  const { employee, metrics, thisWeek, lastWeek, submitted } = row;
+
+  return (
+    <div
+      className="rounded-2xl p-5 flex flex-col gap-4 transition-all"
+      style={{
+        background: "rgba(255,255,255,0.04)",
+        border: submitted
+          ? "1px solid rgba(20,184,166,0.35)"
+          : "1px solid rgba(255,255,255,0.10)",
+      }}
+    >
+      {/* Header */}
+      <div className="flex items-start justify-between gap-2">
+        <div>
+          <p className="text-base font-bold text-white leading-tight" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+            {employee.name}
+          </p>
+          <p className="text-xs text-white/45 mt-0.5" style={{ fontFamily: "'Inter', sans-serif" }}>
+            {employee.role}
+          </p>
+        </div>
+        <span
+          className="shrink-0 text-xs font-semibold px-2.5 py-1 rounded-full"
+          style={{
+            background: submitted ? "rgba(20,184,166,0.15)" : "rgba(255,255,255,0.07)",
+            color: submitted ? "#5EEAD4" : "rgba(255,255,255,0.35)",
+            fontFamily: "'Space Grotesk', sans-serif",
+          }}
+        >
+          {submitted ? "✓ Submitted" : "⏳ Pending"}
+        </span>
+      </div>
+
+      {/* Submitted metrics display */}
+      {submitted && !entering && (
+        <div className="space-y-2.5">
+          {/* Column headers */}
+          <div className="flex items-center justify-between text-[10px] text-white/25 uppercase tracking-wider mb-1" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+            <span>Metric</span>
+            <div className="flex items-center gap-6">
+              <span>This Week</span>
+              <span className="w-14 text-right">vs Last</span>
+            </div>
+          </div>
+          {metrics.map((m) => {
+            const val = thisWeek[m.id] ?? null;
+            const last = lastWeek[m.id] ?? null;
+            const delta = val !== null && last !== null ? val - last : null;
+            return (
+              <div key={m.id} className="flex items-center justify-between gap-2">
+                <span className="text-xs text-white/55 flex-1 truncate" style={{ fontFamily: "'Inter', sans-serif" }}>
+                  {m.label}
+                </span>
+                <div className="flex items-center gap-4 shrink-0">
+                  <span className="text-sm font-bold text-white tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                    {val !== null ? val.toLocaleString() : "—"}
+                    {m.unit ? <span className="text-white/30 text-xs ml-0.5">{m.unit}</span> : null}
+                  </span>
+                  <span className={`text-xs font-semibold w-14 text-right tabular-nums ${deltaColor(delta)}`} style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                    {deltaLabel(delta)}
+                  </span>
+                </div>
+              </div>
+            );
+          })}
+          <button
+            onClick={() => setEntering(true)}
+            className="text-xs text-teal-400/50 hover:text-teal-400 transition-colors mt-1"
+            style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+          >
+            Edit numbers
+          </button>
+        </div>
+      )}
+
+      {/* Empty state */}
+      {!submitted && !entering && (
+        <div className="flex flex-col items-center gap-3 py-2">
+          <p className="text-xs text-white/30 text-center" style={{ fontFamily: "'Inter', sans-serif" }}>
+            No numbers submitted yet for this week.
+          </p>
+          <button
+            onClick={() => setEntering(true)}
+            className="px-5 py-2 rounded-xl text-sm font-semibold transition-all active:scale-[0.97]"
+            style={{
+              background: "rgba(20,184,166,0.12)",
+              border: "1px solid rgba(20,184,166,0.30)",
+              color: "#5EEAD4",
+              fontFamily: "'Space Grotesk', sans-serif",
+            }}
+          >
+            Enter Numbers
+          </button>
+        </div>
+      )}
+
+      {/* Entry form */}
+      {entering && (
+        <div>
+          <EntryForm
+            row={row}
+            weekKey={weekKey}
+            onSaved={() => {
+              setEntering(false);
+              onRefresh();
+            }}
+          />
+          <button
+            onClick={() => setEntering(false)}
+            className="text-xs text-white/30 hover:text-white/60 transition-colors mt-2"
+            style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+          >
+            Cancel
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Main Page ─────────────────────────────────────────────────────────────────
+
+export default function WeeklyReports() {
+  const accountId = parseInt(localStorage.getItem("bcc_account_id") ?? "0", 10);
+  const today = useMemo(() => new Date(), []);
+  const currentWeekKey = useMemo(() => getWeekKey(today), [today]);
+  const [selectedWeek, setSelectedWeek] = useState(currentWeekKey);
+  const prevWeekKey = useMemo(() => getPrevWeekKey(selectedWeek), [selectedWeek]);
+
+  const summaryQuery = trpc.weeklyReport.getSummary.useQuery(
+    { accountId, weekKey: selectedWeek, prevWeekKey },
+    { enabled: accountId > 0 }
+  );
+
+  const rows: SummaryRow[] = (summaryQuery.data as SummaryRow[] | undefined) ?? [];
+  const submittedCount = rows.filter((r) => r.submitted).length;
+  const totalCount = rows.length;
+
+  function shiftWeek(delta: number) {
+    const { start } = getWeekRange(selectedWeek);
+    const next = new Date(start);
+    next.setUTCDate(start.getUTCDate() + delta * 7);
+    setSelectedWeek(getWeekKey(next));
+  }
+
+  const weekNum = selectedWeek.split("-W")[1];
+  const isCurrentWeek = selectedWeek === currentWeekKey;
+
+  if (!accountId) {
+    return (
+      <div className="flex items-center justify-center h-screen" style={{ background: "linear-gradient(135deg, #0A0F1E 0%, #0D1B2A 100%)" }}>
+        <p className="text-white/40 text-sm">Please log in first.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen w-full" style={{ background: "linear-gradient(135deg, #0A0F1E 0%, #0D1B2A 50%, #0A1628 100%)" }}>
+      {/* Top bar */}
+      <div
+        className="sticky top-0 z-10 flex items-center justify-between px-6 py-4 border-b"
+        style={{ background: "rgba(10,15,30,0.92)", backdropFilter: "blur(12px)", borderColor: "rgba(255,255,255,0.08)" }}
+      >
+        <div className="flex items-center gap-4">
+          <Link href="/app" className="text-xs text-white/40 hover:text-white/70 transition-colors" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+            ← Calendar
+          </Link>
+          <div className="w-px h-4" style={{ background: "rgba(255,255,255,0.12)" }} />
+          <h1 className="text-base font-bold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+            📊 Weekly Reports
+          </h1>
+          <span
+            className="text-xs px-2 py-0.5 rounded-full"
+            style={{ background: "rgba(20,184,166,0.12)", color: "#5EEAD4", fontFamily: "'Space Grotesk', sans-serif" }}
+          >
+            Team Layer
+          </span>
+        </div>
+        <div className="flex items-center gap-3">
+          {totalCount > 0 && (
+            <span className="text-xs text-white/50" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+              {submittedCount}/{totalCount} submitted
+            </span>
+          )}
+          <Link
+            href="/app/employees"
+            className="text-xs px-3 py-1.5 rounded-lg transition-all"
+            style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: "rgba(255,255,255,0.55)", fontFamily: "'Space Grotesk', sans-serif" }}
+          >
+            👥 Manage Staff
+          </Link>
+        </div>
+      </div>
+
+      <div className="max-w-5xl mx-auto px-6 py-8">
+        {/* Week selector */}
+        <div className="flex items-center gap-4 mb-8">
+          <button
+            onClick={() => shiftWeek(-1)}
+            className="w-9 h-9 rounded-xl flex items-center justify-center transition-all hover:bg-white/10 active:scale-95 text-lg"
+            style={{ border: "1px solid rgba(255,255,255,0.12)", color: "rgba(255,255,255,0.5)" }}
+          >
+            ‹
+          </button>
+          <div className="flex-1 text-center">
+            <p className="text-lg font-bold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+              {formatWeekRange(selectedWeek)}
+            </p>
+            <p className="text-xs text-white/35 mt-0.5" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+              Week {weekNum}{isCurrentWeek ? " · Current Week" : ""}
+            </p>
+          </div>
+          <button
+            onClick={() => shiftWeek(1)}
+            disabled={isCurrentWeek}
+            className="w-9 h-9 rounded-xl flex items-center justify-center transition-all hover:bg-white/10 active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed text-lg"
+            style={{ border: "1px solid rgba(255,255,255,0.12)", color: "rgba(255,255,255,0.5)" }}
+          >
+            ›
+          </button>
+        </div>
+
+        {/* Loading */}
+        {summaryQuery.isLoading && (
+          <div className="flex items-center justify-center py-16">
+            <div className="w-8 h-8 rounded-full border-2 border-teal-400/30 border-t-teal-400 animate-spin" />
+          </div>
+        )}
+
+        {/* No employees set up yet */}
+        {!summaryQuery.isLoading && rows.length === 0 && (
+          <div
+            className="rounded-2xl p-10 text-center"
+            style={{ background: "rgba(255,255,255,0.03)", border: "1px dashed rgba(255,255,255,0.12)" }}
+          >
+            <p className="text-2xl mb-3">👥</p>
+            <p className="text-base font-semibold text-white/70 mb-1" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+              No staff set up yet
+            </p>
+            <p className="text-sm text-white/35 mb-5" style={{ fontFamily: "'Inter', sans-serif" }}>
+              Add your team members and their metrics to start tracking weekly numbers.
+            </p>
+            <Link
+              href="/app/employees"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all active:scale-[0.97]"
+              style={{ background: "rgba(20,184,166,0.15)", border: "1px solid rgba(20,184,166,0.35)", color: "#5EEAD4", fontFamily: "'Space Grotesk', sans-serif" }}
+            >
+              Set Up Staff →
+            </Link>
+          </div>
+        )}
+
+        {/* Employee cards + progress */}
+        {!summaryQuery.isLoading && rows.length > 0 && (
+          <>
+            {/* Submission progress bar */}
+            <div className="mb-6">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs text-white/40" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+                  Submission Progress
+                </span>
+                <span
+                  className="text-xs font-semibold"
+                  style={{ color: submittedCount === totalCount ? "#5EEAD4" : "rgba(255,255,255,0.4)", fontFamily: "'JetBrains Mono', monospace" }}
+                >
+                  {submittedCount} of {totalCount}
+                </span>
+              </div>
+              <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.08)" }}>
+                <div
+                  className="h-full rounded-full transition-all duration-500"
+                  style={{
+                    width: totalCount > 0 ? `${(submittedCount / totalCount) * 100}%` : "0%",
+                    background: "linear-gradient(90deg, #0D9488, #5EEAD4)",
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Cards grid */}
+            <div className="grid gap-4" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))" }}>
+              {rows.map((row) => (
+                <EmployeeCard
+                  key={row.employee.id}
+                  row={row}
+                  weekKey={selectedWeek}
+                  onRefresh={() => summaryQuery.refetch()}
+                />
+              ))}
+            </div>
+
+            {/* All submitted */}
+            {submittedCount === totalCount && totalCount > 0 && (
+              <div
+                className="mt-8 rounded-2xl p-5 text-center"
+                style={{ background: "rgba(20,184,166,0.06)", border: "1px solid rgba(20,184,166,0.20)" }}
+              >
+                <p className="text-sm font-semibold text-teal-300" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+                  ✓ All reports submitted for this week
+                </p>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}

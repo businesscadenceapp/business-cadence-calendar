@@ -9,7 +9,7 @@ import { Link } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { getBusinessSelection, type BusinessSelection } from "./ClientLogin";
 import { RecordMeeting } from "@/components/RecordMeeting";
-import WeeklyReportPanel from "@/components/WeeklyReportPanel";
+
 import {
   generateCalendar,
   MEETING_TYPES,
@@ -634,20 +634,6 @@ function MeetingSection({
         />
       </div>
 
-      {/* Weekly Report Panel — only shown for weekly meeting type */}
-      {type === "weekly" && (
-        <div className="px-3 pb-4">
-          <div
-            className="rounded-xl p-4"
-            style={{
-              background: "rgba(13,148,136,0.05)",
-              border: "1px solid rgba(13,148,136,0.18)",
-            }}
-          >
-            <WeeklyReportPanel dateKey={dateKey} />
-          </div>
-        </div>
-      )}
     </div>
   );
 }
@@ -837,6 +823,19 @@ export default function Home() {
           >
             <span>📋</span>
             Command Board
+          </Link>
+          <Link
+            href="/app/reports"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all hover:opacity-90"
+            style={{
+              background: "linear-gradient(135deg, rgba(20,184,166,0.18), rgba(6,182,212,0.12))",
+              border: "1px solid rgba(20,184,166,0.30)",
+              color: "#5EEAD4",
+              fontFamily: "'Space Grotesk', sans-serif",
+            }}
+          >
+            <span>📊</span>
+            Weekly Reports
           </Link>
           <Link
             href="/app/settings"

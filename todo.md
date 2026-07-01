@@ -173,3 +173,11 @@
 ### Integration
 - [x] Wire `WeeklyReportPanel` into Home.tsx `MeetingSection` for `weekly` meeting type
 - [x] Save checkpoint
+
+## Weekly Reports Redesign (Phase 8)
+- [x] Remove WeeklyReportPanel from MeetingSection in Home.tsx
+- [x] Build standalone WeeklyReports page (/app/reports) with full-width layout
+- [x] Full-width employee cards with proper spacing and readable number inputs
+- [x] Add "Reports" tab to main navigation (alongside Calendar and Board)
+- [x] Label Reports tab as Team layer (owners + employees)
+- [ ] Save checkpoint
