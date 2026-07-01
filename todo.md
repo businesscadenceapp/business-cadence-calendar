@@ -204,3 +204,17 @@
 - [ ] Fix identity selector: persist "I am Matt / Lynn" in localStorage (set once per device)
 - [ ] Remove redundant top-right identity selector from board header
 - [ ] When posting a Task, show "Assign to:" dropdown (the other owner)
+
+## Light Theme Redesign (Phase 10)
+- [x] Audit homepage colors and extract exact values (bg, text, accent, card, border)
+- [x] Update index.css with light theme CSS variables matching homepage palette
+- [x] Redesign Home.tsx (calendar) — light bg, navy text, teal accents, readable dates
+- [x] Redesign Board.tsx — light cards, Matt=blue, Lynn=coral, readable on white
+- [x] Redesign ClientLogin.tsx — already light-compatible (no changes needed)
+- [x] Redesign Onboarding.tsx — already light-compatible (no changes needed)
+- [x] Redesign ManageSchedule.tsx — already light-compatible (no changes needed)
+- [x] Redesign EmployeeSetup.tsx — already light-compatible (no changes needed)
+- [x] Redesign WeeklyReports.tsx — light employee cards
+- [x] Redesign Settings.tsx — light theme + renamed "Weekly Level 10" → "Weekly Review"
+- [x] Screenshot all pages to verify readability
+- [x] Save checkpoint

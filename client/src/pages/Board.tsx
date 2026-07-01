@@ -805,8 +805,8 @@ export default function Board() {
                     </span>
                   </div>
                   {updates.length === 0 ? (
-                    <div className="rounded-xl p-6 text-center" style={{ backgroundColor: "oklch(0.17 0.022 240)", border: "1px dashed oklch(1 0 0 / 10%)" }}>
-                      <p className="text-[12px] text-white/25">No updates yet.</p>
+                    <div className="rounded-xl p-6 text-center" style={{ backgroundColor: "#F1F0ED", border: "1px dashed #E2E0DB" }}>
+                      <p className="text-[12px] text-[#94A3B8]">No updates yet.</p>
                     </div>
                   ) : (
                     updates.map(card => (
@@ -833,8 +833,8 @@ export default function Board() {
                     </span>
                   </div>
                   {issues.length === 0 ? (
-                    <div className="rounded-xl p-6 text-center" style={{ backgroundColor: "oklch(0.17 0.022 240)", border: "1px dashed oklch(1 0 0 / 10%)" }}>
-                      <p className="text-[12px] text-white/25">No issues queued.</p>
+                    <div className="rounded-xl p-6 text-center" style={{ backgroundColor: "#F1F0ED", border: "1px dashed #E2E0DB" }}>
+                      <p className="text-[12px] text-[#94A3B8]">No issues queued.</p>
                     </div>
                   ) : (
                     issues.map(card => (

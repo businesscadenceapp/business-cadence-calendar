@@ -45,10 +45,10 @@ function formatWeekRange(weekKey: string): string {
 }
 
 function deltaColor(delta: number | null): string {
-  if (delta === null) return "text-white/30";
-  if (delta > 0) return "text-emerald-400";
-  if (delta < 0) return "text-rose-400";
-  return "text-white/40";
+  if (delta === null) return "text-[#94A3B8]";
+  if (delta > 0) return "text-emerald-600";
+  if (delta < 0) return "text-rose-600";
+  return "text-[#94A3B8]";
 }
 
 function deltaLabel(delta: number | null): string {
@@ -136,7 +136,7 @@ function EntryForm({
     <div className="space-y-3">
       {row.metrics.map((m) => (
         <div key={m.id} className="flex items-center gap-3">
-          <span className="flex-1 text-sm text-white/70" style={{ fontFamily: "'Inter', sans-serif" }}>
+          <span className="flex-1 text-sm text-[#374151]" style={{ fontFamily: "'Inter', sans-serif" }}>
             {m.label}
           </span>
           <div className="flex items-center gap-1.5">
@@ -147,10 +147,10 @@ function EntryForm({
               value={values[m.id] ?? ""}
               onChange={(e) => setValues((v) => ({ ...v, [m.id]: e.target.value }))}
               placeholder="0"
-              className="w-24 px-3 py-1.5 rounded-lg text-sm text-right font-mono text-white bg-white/10 border border-white/15 focus:border-teal-400/60 focus:outline-none focus:ring-1 focus:ring-teal-400/30 transition-colors"
+              className="w-24 px-3 py-1.5 rounded-lg text-sm text-right font-mono text-[#1E3A5F] bg-[#F8F7F4] border border-[#E2E0DB] focus:border-[#0D9488] focus:outline-none focus:ring-1 focus:ring-[#0D9488]/30 transition-colors"
             />
             {m.unit && (
-              <span className="text-xs text-white/35 w-8" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+              <span className="text-xs text-[#94A3B8] w-8" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
                 {m.unit}
               </span>
             )}
@@ -162,7 +162,7 @@ function EntryForm({
         disabled={submitMutation.isPending}
         className="w-full mt-2 py-2 rounded-lg text-sm font-semibold transition-all active:scale-[0.98]"
         style={{
-          background: submitMutation.isPending ? "rgba(20,184,166,0.3)" : "rgba(20,184,166,0.85)",
+          background: submitMutation.isPending ? "rgba(13,148,136,0.4)" : "#0D9488",
           color: "#fff",
           fontFamily: "'Space Grotesk', sans-serif",
         }}
@@ -191,27 +191,27 @@ function EmployeeCard({
     <div
       className="rounded-2xl p-5 flex flex-col gap-4 transition-all"
       style={{
-        background: "rgba(255,255,255,0.04)",
+        background: "#FFFFFF",
         border: submitted
-          ? "1px solid rgba(20,184,166,0.35)"
-          : "1px solid rgba(255,255,255,0.10)",
+          ? "1px solid rgba(13,148,136,0.40)"
+          : "1px solid #E2E0DB",
       }}
     >
       {/* Header */}
       <div className="flex items-start justify-between gap-2">
         <div>
-          <p className="text-base font-bold text-white leading-tight" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+          <p className="text-base font-bold text-[#1E3A5F] leading-tight" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
             {employee.name}
           </p>
-          <p className="text-xs text-white/45 mt-0.5" style={{ fontFamily: "'Inter', sans-serif" }}>
+          <p className="text-xs text-[#64748B] mt-0.5" style={{ fontFamily: "'Inter', sans-serif" }}>
             {employee.role}
           </p>
         </div>
         <span
           className="shrink-0 text-xs font-semibold px-2.5 py-1 rounded-full"
           style={{
-            background: submitted ? "rgba(20,184,166,0.15)" : "rgba(255,255,255,0.07)",
-            color: submitted ? "#5EEAD4" : "rgba(255,255,255,0.35)",
+            background: submitted ? "rgba(13,148,136,0.10)" : "rgba(30,58,95,0.06)",
+            color: submitted ? "#0D9488" : "#94A3B8",
             fontFamily: "'Space Grotesk', sans-serif",
           }}
         >
@@ -223,7 +223,7 @@ function EmployeeCard({
       {submitted && !entering && (
         <div className="space-y-2.5">
           {/* Column headers */}
-          <div className="flex items-center justify-between text-[10px] text-white/25 uppercase tracking-wider mb-1" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+          <div className="flex items-center justify-between text-[10px] text-[#94A3B8] uppercase tracking-wider mb-1" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
             <span>Metric</span>
             <div className="flex items-center gap-6">
               <span>This Week</span>
@@ -236,13 +236,13 @@ function EmployeeCard({
             const delta = val !== null && last !== null ? val - last : null;
             return (
               <div key={m.id} className="flex items-center justify-between gap-2">
-                <span className="text-xs text-white/55 flex-1 truncate" style={{ fontFamily: "'Inter', sans-serif" }}>
+                <span className="text-xs text-[#64748B] flex-1 truncate" style={{ fontFamily: "'Inter', sans-serif" }}>
                   {m.label}
                 </span>
                 <div className="flex items-center gap-4 shrink-0">
-                  <span className="text-sm font-bold text-white tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                  <span className="text-sm font-bold text-[#1E3A5F] tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
                     {val !== null ? val.toLocaleString() : "—"}
-                    {m.unit ? <span className="text-white/30 text-xs ml-0.5">{m.unit}</span> : null}
+                    {m.unit ? <span className="text-[#94A3B8] text-xs ml-0.5">{m.unit}</span> : null}
                   </span>
                   <span className={`text-xs font-semibold w-14 text-right tabular-nums ${deltaColor(delta)}`} style={{ fontFamily: "'JetBrains Mono', monospace" }}>
                     {deltaLabel(delta)}
@@ -253,7 +253,7 @@ function EmployeeCard({
           })}
           <button
             onClick={() => setEntering(true)}
-            className="text-xs text-teal-400/50 hover:text-teal-400 transition-colors mt-1"
+            className="text-xs text-[#0D9488]/60 hover:text-[#0D9488] transition-colors mt-1"
             style={{ fontFamily: "'Space Grotesk', sans-serif" }}
           >
             Edit numbers
@@ -264,16 +264,16 @@ function EmployeeCard({
       {/* Empty state */}
       {!submitted && !entering && (
         <div className="flex flex-col items-center gap-3 py-2">
-          <p className="text-xs text-white/30 text-center" style={{ fontFamily: "'Inter', sans-serif" }}>
+          <p className="text-xs text-[#94A3B8] text-center" style={{ fontFamily: "'Inter', sans-serif" }}>
             No numbers submitted yet for this week.
           </p>
           <button
             onClick={() => setEntering(true)}
             className="px-5 py-2 rounded-xl text-sm font-semibold transition-all active:scale-[0.97]"
             style={{
-              background: "rgba(20,184,166,0.12)",
-              border: "1px solid rgba(20,184,166,0.30)",
-              color: "#5EEAD4",
+              background: "rgba(13,148,136,0.08)",
+              border: "1px solid rgba(13,148,136,0.28)",
+              color: "#0D9488",
               fontFamily: "'Space Grotesk', sans-serif",
             }}
           >
@@ -295,7 +295,7 @@ function EmployeeCard({
           />
           <button
             onClick={() => setEntering(false)}
-            className="text-xs text-white/30 hover:text-white/60 transition-colors mt-2"
+            className="text-xs text-[#94A3B8] hover:text-[#64748B] transition-colors mt-2"
             style={{ fontFamily: "'Space Grotesk', sans-serif" }}
           >
             Cancel
@@ -336,44 +336,44 @@ export default function WeeklyReports() {
 
   if (!accountId) {
     return (
-      <div className="flex items-center justify-center h-screen" style={{ background: "linear-gradient(135deg, #0A0F1E 0%, #0D1B2A 100%)" }}>
-        <p className="text-white/40 text-sm">Please log in first.</p>
+      <div className="flex items-center justify-center h-screen" style={{ background: "#F8F7F4" }}>
+        <p className="text-[#94A3B8] text-sm">Please log in first.</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen w-full" style={{ background: "linear-gradient(135deg, #0A0F1E 0%, #0D1B2A 50%, #0A1628 100%)" }}>
+    <div className="min-h-screen w-full" style={{ background: "#F8F7F4" }}>
       {/* Top bar */}
       <div
         className="sticky top-0 z-10 flex items-center justify-between px-6 py-4 border-b"
-        style={{ background: "rgba(10,15,30,0.92)", backdropFilter: "blur(12px)", borderColor: "rgba(255,255,255,0.08)" }}
+        style={{ background: "rgba(248,247,244,0.95)", backdropFilter: "blur(12px)", borderColor: "#E2E0DB" }}
       >
         <div className="flex items-center gap-4">
-          <Link href="/app" className="text-xs text-white/40 hover:text-white/70 transition-colors" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+          <Link href="/app" className="text-xs text-[#64748B] hover:text-[#1E3A5F] transition-colors" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
             ← Calendar
           </Link>
-          <div className="w-px h-4" style={{ background: "rgba(255,255,255,0.12)" }} />
-          <h1 className="text-base font-bold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+          <div className="w-px h-4" style={{ background: "#E2E0DB" }} />
+          <h1 className="text-base font-bold text-[#1E3A5F]" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
             📊 Weekly Reports
           </h1>
           <span
             className="text-xs px-2 py-0.5 rounded-full"
-            style={{ background: "rgba(20,184,166,0.12)", color: "#5EEAD4", fontFamily: "'Space Grotesk', sans-serif" }}
+            style={{ background: "rgba(13,148,136,0.10)", color: "#0D9488", fontFamily: "'Space Grotesk', sans-serif" }}
           >
             Team Layer
           </span>
         </div>
         <div className="flex items-center gap-3">
           {totalCount > 0 && (
-            <span className="text-xs text-white/50" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+            <span className="text-xs text-[#64748B]" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
               {submittedCount}/{totalCount} submitted
             </span>
           )}
           <Link
             href="/app/employees"
             className="text-xs px-3 py-1.5 rounded-lg transition-all"
-            style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: "rgba(255,255,255,0.55)", fontFamily: "'Space Grotesk', sans-serif" }}
+            style={{ background: "rgba(30,58,95,0.05)", border: "1px solid rgba(30,58,95,0.15)", color: "#64748B", fontFamily: "'Space Grotesk', sans-serif" }}
           >
             👥 Manage Staff
           </Link>
@@ -385,24 +385,24 @@ export default function WeeklyReports() {
         <div className="flex items-center gap-4 mb-8">
           <button
             onClick={() => shiftWeek(-1)}
-            className="w-9 h-9 rounded-xl flex items-center justify-center transition-all hover:bg-white/10 active:scale-95 text-lg"
-            style={{ border: "1px solid rgba(255,255,255,0.12)", color: "rgba(255,255,255,0.5)" }}
+            className="w-9 h-9 rounded-xl flex items-center justify-center transition-all hover:bg-[#E2E0DB] active:scale-95 text-lg"
+            style={{ border: "1px solid #E2E0DB.12)", color: "rgba(255,255,255,0.5)" }}
           >
             ‹
           </button>
           <div className="flex-1 text-center">
-            <p className="text-lg font-bold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+            <p className="text-lg font-bold text-[#1E3A5F]" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
               {formatWeekRange(selectedWeek)}
             </p>
-            <p className="text-xs text-white/35 mt-0.5" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+            <p className="text-xs text-[#94A3B8] mt-0.5" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
               Week {weekNum}{isCurrentWeek ? " · Current Week" : ""}
             </p>
           </div>
           <button
             onClick={() => shiftWeek(1)}
             disabled={isCurrentWeek}
-            className="w-9 h-9 rounded-xl flex items-center justify-center transition-all hover:bg-white/10 active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed text-lg"
-            style={{ border: "1px solid rgba(255,255,255,0.12)", color: "rgba(255,255,255,0.5)" }}
+            className="w-9 h-9 rounded-xl flex items-center justify-center transition-all hover:bg-[#E2E0DB] active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed text-lg"
+            style={{ border: "1px solid #E2E0DB", color: "#64748B" }}
           >
             ›
           </button>
@@ -419,19 +419,19 @@ export default function WeeklyReports() {
         {!summaryQuery.isLoading && rows.length === 0 && (
           <div
             className="rounded-2xl p-10 text-center"
-            style={{ background: "rgba(255,255,255,0.03)", border: "1px dashed rgba(255,255,255,0.12)" }}
+            style={{ background: "#F1F0ED", border: "1px dashed #E2E0DB" }}
           >
             <p className="text-2xl mb-3">👥</p>
-            <p className="text-base font-semibold text-white/70 mb-1" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+            <p className="text-base font-semibold text-[#1E3A5F] mb-1" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
               No staff set up yet
             </p>
-            <p className="text-sm text-white/35 mb-5" style={{ fontFamily: "'Inter', sans-serif" }}>
+            <p className="text-sm text-[#64748B] mb-5" style={{ fontFamily: "'Inter', sans-serif" }}>
               Add your team members and their metrics to start tracking weekly numbers.
             </p>
             <Link
               href="/app/employees"
               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all active:scale-[0.97]"
-              style={{ background: "rgba(20,184,166,0.15)", border: "1px solid rgba(20,184,166,0.35)", color: "#5EEAD4", fontFamily: "'Space Grotesk', sans-serif" }}
+              style={{ background: "rgba(13,148,136,0.10)", border: "1px solid rgba(13,148,136,0.30)", color: "#0D9488", fontFamily: "'Space Grotesk', sans-serif" }}
             >
               Set Up Staff →
             </Link>
@@ -444,17 +444,17 @@ export default function WeeklyReports() {
             {/* Submission progress bar */}
             <div className="mb-6">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs text-white/40" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+                <span className="text-xs text-[#94A3B8]" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
                   Submission Progress
                 </span>
                 <span
                   className="text-xs font-semibold"
-                  style={{ color: submittedCount === totalCount ? "#5EEAD4" : "rgba(255,255,255,0.4)", fontFamily: "'JetBrains Mono', monospace" }}
+                  style={{ color: submittedCount === totalCount ? "#0D9488" : "#64748B", fontFamily: "'JetBrains Mono', monospace" }}
                 >
                   {submittedCount} of {totalCount}
                 </span>
               </div>
-              <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.08)" }}>
+              <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "#E2E0DB" }}>
                 <div
                   className="h-full rounded-full transition-all duration-500"
                   style={{
@@ -481,9 +481,9 @@ export default function WeeklyReports() {
             {submittedCount === totalCount && totalCount > 0 && (
               <div
                 className="mt-8 rounded-2xl p-5 text-center"
-                style={{ background: "rgba(20,184,166,0.06)", border: "1px solid rgba(20,184,166,0.20)" }}
+                style={{ background: "rgba(13,148,136,0.07)", border: "1px solid rgba(13,148,136,0.22)" }}
               >
-                <p className="text-sm font-semibold text-teal-300" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+                <p className="text-sm font-semibold text-[#0D9488]" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
                   ✓ All reports submitted for this week
                 </p>
               </div>

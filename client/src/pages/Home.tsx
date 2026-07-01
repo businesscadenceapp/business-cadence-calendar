@@ -64,22 +64,22 @@ function DayCell({
     <div
       className={`h-10 rounded-md flex flex-col items-center justify-between py-1 px-0.5 relative transition-all duration-150
         ${day.isWeekend ? "opacity-30" : ""}
-        ${day.isToday ? "ring-1 ring-white/50" : ""}
-        ${isSelected ? "ring-1 ring-white/60" : ""}
+        ${day.isToday ? "ring-1 ring-[#0D9488]" : ""}
+        ${isSelected ? "ring-1 ring-[#1E3A5F]/40" : ""}
         ${hasMeetings ? "cursor-pointer" : ""}
         ${isHighlighted ? "ring-1" : ""}
       `}
       style={{
         backgroundColor: isSelected
-          ? "oklch(1 0 0 / 12%)"
+          ? "rgba(30,58,95,0.10)"
           : hasQuarterly
-          ? "rgba(244,63,94,0.12)"
+          ? "rgba(244,63,94,0.10)"
           : hasMonthly
-          ? "rgba(20,184,166,0.08)"
+          ? "rgba(13,148,136,0.08)"
           : isHighlighted
-          ? "oklch(1 0 0 / 7%)"
+          ? "rgba(30,58,95,0.06)"
           : hasMeetings
-          ? "oklch(1 0 0 / 3%)"
+          ? "rgba(30,58,95,0.03)"
           : "transparent",
         borderColor:
           isHighlighted && highlightType
@@ -92,12 +92,12 @@ function DayCell({
         <span
           className={`text-[10px] leading-none ${
             day.isToday
-              ? "text-white font-bold"
+              ? "text-white font-bold bg-[#1E3A5F] rounded-sm px-0.5"
               : hasQuarterly
-              ? "text-rose-300 font-semibold"
+              ? "text-rose-600 font-semibold"
               : hasMonthly
-              ? "text-teal-300 font-medium"
-              : "text-white/45"
+              ? "text-teal-700 font-medium"
+              : "text-[#374151]"
           }`}
           style={{ fontFamily: "'JetBrains Mono', monospace" }}
         >
@@ -142,15 +142,15 @@ function MonthGrid({
     <div
       className="rounded-xl p-3 flex flex-col gap-2"
       style={{
-        backgroundColor: "oklch(0.17 0.022 240)",
+        backgroundColor: "#FFFFFF",
         border: quarterlyDays > 0
-          ? "1px solid rgba(244,63,94,0.25)"
-          : "1px solid oklch(1 0 0 / 6%)",
+          ? "1px solid rgba(244,63,94,0.30)"
+          : "1px solid #E2E0DB",
       }}
     >
       <div className="flex items-center justify-between">
         <h3
-          className="text-xs font-semibold text-white/80 tracking-wider uppercase"
+          className="text-xs font-semibold text-[#1E3A5F] tracking-wider uppercase"
           style={{ fontFamily: "'Space Grotesk', sans-serif" }}
         >
           {month.name}
@@ -186,7 +186,7 @@ function MonthGrid({
         {DOW_LABELS.map((d) => (
           <div
             key={d}
-            className="text-center text-[9px] font-medium text-white/25 pb-1"
+            className="text-center text-[9px] font-medium text-[#94A3B8] pb-1"
             style={{ fontFamily: "'Space Grotesk', sans-serif" }}
           >
             {d}
@@ -241,7 +241,7 @@ function BusinessBlock({
       style={{ border: `1px solid ${biz.color}30`, backgroundColor: `${biz.color}08` }}
     >
       <button
-        className="w-full flex items-center gap-2.5 px-3 py-2.5 text-left hover:bg-white/5 transition-colors"
+        className="w-full flex items-center gap-2.5 px-3 py-2.5 text-left hover:bg-[#F1F0ED] transition-colors"
         onClick={() => setExpanded((v) => !v)}
       >
         <span className="text-base leading-none flex-shrink-0">{biz.icon}</span>
@@ -256,16 +256,16 @@ function BusinessBlock({
             >
               {block.duration}
             </span>
-            <span className="text-[10px] text-white/30 font-mono" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+            <span className="text-[10px] text-[#94A3B8] font-mono" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
               {block.startOffset}–{block.endOffset}
             </span>
-            <span className="ml-auto text-[10px] text-white/25" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+            <span className="ml-auto text-[10px] text-[#94A3B8]" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
               {completedCount}/{block.items.length}
             </span>
           </div>
-          <p className="text-[10px] text-white/45 mt-0.5 truncate">{block.focus}</p>
+          <p className="text-[10px] text-[#64748B] mt-0.5 truncate">{block.focus}</p>
         </div>
-        <span className="text-white/30 text-xs flex-shrink-0">{expanded ? "▲" : "▼"}</span>
+        <span className="text-[#94A3B8] text-xs flex-shrink-0">{expanded ? "▲" : "▼"}</span>
       </button>
       {expanded && (
         <div className="px-3 pb-3 flex flex-col gap-3">
@@ -294,7 +294,7 @@ function BusinessBlock({
                     )}
                   </button>
                   <p className={`text-[11px] leading-relaxed transition-colors flex-1 ${
-                    isChecked ? "text-white/35 line-through" : "text-white/75"
+                    isChecked ? "text-[#94A3B8] line-through" : "text-[#374151]"
                   }`}>{item}</p>
                 </div>
                 {/* Inline comment field — always visible, subtle */}
@@ -304,7 +304,7 @@ function BusinessBlock({
                     value={state.comment}
                     onChange={(e) => onCommentChange(itemKey, e.target.value)}
                     placeholder={isChecked ? "Add a note about this item…" : "Add context or a question…"}
-                    className="w-full rounded px-2.5 py-1.5 text-[10px] text-white/60 placeholder-white/20 focus:outline-none transition-colors"
+                    className="w-full rounded px-2.5 py-1.5 text-[10px] text-[#64748B] placeholder-[#CBD5E1] focus:outline-none transition-colors"
                     style={{
                       backgroundColor: `${biz.color}10`,
                       border: `1px solid ${biz.color}20`,
@@ -490,14 +490,14 @@ function MeetingSection({
             {m.totalDuration}
           </span>
         </div>
-        <p className="text-[10px] text-white/40 leading-relaxed">{m.overview}</p>
+        <p className="text-[10px] text-[#64748B] leading-relaxed">{m.overview}</p>
         <div className="flex items-center gap-1.5 mt-0.5">
-          <span className="text-[9px] text-white/25">🕐</span>
-          <span className="text-[10px] text-white/35 italic">{m.suggestedTime}</span>
+          <span className="text-[9px] text-[#94A3B8]">🕐</span>
+          <span className="text-[10px] text-[#94A3B8] italic">{m.suggestedTime}</span>
         </div>
         {/* Progress bar */}
         <div className="mt-2 flex items-center gap-2">
-          <div className="flex-1 h-1 rounded-full" style={{ backgroundColor: "oklch(1 0 0 / 8%)" }}>
+          <div className="flex-1 h-1 rounded-full" style={{ backgroundColor: "#E2E0DB" }}>
             <div
               className="h-1 rounded-full transition-all duration-300"
               style={{ width: `${progressPct}%`, backgroundColor: m.color }}
@@ -511,7 +511,7 @@ function MeetingSection({
 
       {/* Per-business time blocks with checkboxes */}
       <div className="px-3 flex flex-col gap-2">
-        <p className="text-[9px] font-bold text-white/25 uppercase tracking-widest px-1" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+        <p className="text-[9px] font-bold text-[#94A3B8] uppercase tracking-widest px-1" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
           Time Breakdown by Business
         </p>
         {effectiveBlocks.map((block, i) => (
@@ -530,14 +530,14 @@ function MeetingSection({
       {/* Shared items */}
       {m.sharedItems.length > 0 && (
         <div className="px-3 flex flex-col gap-1.5">
-          <p className="text-[9px] font-bold text-white/25 uppercase tracking-widest px-1" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+          <p className="text-[9px] font-bold text-[#94A3B8] uppercase tracking-widest px-1" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
             All-Business Items
           </p>
-          <div className="rounded-lg px-3 py-2.5 flex flex-col gap-1.5" style={{ backgroundColor: "oklch(1 0 0 / 5%)", border: "1px solid oklch(1 0 0 / 8%)" }}>
+          <div className="rounded-lg px-3 py-2.5 flex flex-col gap-1.5" style={{ backgroundColor: "#F8F7F4", border: "1px solid #E2E0DB" }}>
             {m.sharedItems.map((item, i) => (
               <div key={i} className="flex gap-2 items-start">
-                <span className="text-white/30 flex-shrink-0 text-xs mt-0.5">›</span>
-                <p className="text-[11px] text-white/60 leading-relaxed">{item}</p>
+                <span className="text-[#94A3B8] flex-shrink-0 text-xs mt-0.5">›</span>
+                <p className="text-[11px] text-[#374151] leading-relaxed">{item}</p>
               </div>
             ))}
           </div>
@@ -547,14 +547,14 @@ function MeetingSection({
       {/* Notes section */}
       <div className="px-3 flex flex-col gap-1.5">
         <div className="flex items-center justify-between px-1">
-          <p className="text-[9px] font-bold text-white/25 uppercase tracking-widest" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+          <p className="text-[9px] font-bold text-[#94A3B8] uppercase tracking-widest" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
             Meeting Notes
           </p>
           {saveNotes.isPending && (
-            <span className="text-[9px] text-white/20 italic">saving…</span>
+            <span className="text-[9px] text-[#94A3B8] italic">saving…</span>
           )}
           {!saveNotes.isPending && notes.length > 0 && (
-            <span className="text-[9px] text-white/20">✓ saved</span>
+            <span className="text-[9px] text-[#0D9488]">✓ saved</span>
           )}
         </div>
         <textarea
@@ -562,9 +562,9 @@ function MeetingSection({
           onChange={(e) => handleNotesChange(e.target.value)}
           placeholder="Type your meeting notes here… decisions made, issues raised, action items…"
           rows={4}
-          className="w-full rounded-lg px-3 py-2.5 text-[11px] text-white/75 placeholder-white/20 resize-none focus:outline-none transition-colors"
+          className="w-full rounded-lg px-3 py-2.5 text-[11px] text-[#374151] placeholder-[#CBD5E1] resize-none focus:outline-none transition-colors"
           style={{
-            backgroundColor: "oklch(1 0 0 / 5%)",
+            backgroundColor: "#FFFFFF",
             border: `1px solid ${m.color}25`,
             fontFamily: "'Inter', sans-serif",
             lineHeight: "1.6",
@@ -577,11 +577,11 @@ function MeetingSection({
       {/* AI Summary section */}
       <div className="px-3 flex flex-col gap-2">
         <div className="flex items-center justify-between px-1">
-          <p className="text-[9px] font-bold text-white/25 uppercase tracking-widest" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+          <p className="text-[9px] font-bold text-[#94A3B8] uppercase tracking-widest" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
             AI Summary
           </p>
           {summaryDate && (
-            <span className="text-[9px] text-white/20">
+            <span className="text-[9px] text-[#94A3B8]">
               {new Date(summaryDate).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
             </span>
           )}
@@ -592,7 +592,7 @@ function MeetingSection({
             className="rounded-lg px-3 py-3 flex flex-col gap-2"
             style={{ backgroundColor: `${m.color}10`, border: `1px solid ${m.color}25` }}
           >
-            <p className="text-[11px] text-white/70 leading-relaxed">{summary}</p>
+            <p className="text-[11px] text-[#374151] leading-relaxed">{summary}</p>
             <button
               onClick={handleGenerateSummary}
               disabled={generateSummary.isPending}
@@ -662,16 +662,16 @@ function DetailPanel({
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
-          <p className="text-[10px] text-white/35 uppercase tracking-widest mb-1" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+          <p className="text-[10px] text-[#94A3B8] uppercase tracking-widest mb-1" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
             Scheduled for
           </p>
-          <h2 className="text-sm font-bold text-white leading-tight" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+          <h2 className="text-sm font-bold text-[#1E3A5F] leading-tight" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
             {dateStr}
           </h2>
         </div>
         <button
           onClick={onClose}
-          className="text-white/30 hover:text-white/70 transition-colors text-xl leading-none w-6 h-6 flex items-center justify-center rounded hover:bg-white/10"
+          className="text-[#94A3B8] hover:text-[#1E3A5F] transition-colors text-xl leading-none w-6 h-6 flex items-center justify-center rounded hover:bg-[#F1F0ED]"
         >
           ×
         </button>
@@ -719,19 +719,19 @@ function LegendItem({
       <div className="flex flex-col gap-0.5 min-w-0 flex-1">
         <div className="flex items-center justify-between gap-2">
           <span
-            className="text-xs font-semibold text-white/85"
+            className="text-xs font-semibold text-[#1E3A5F]"
             style={{ fontFamily: "'Space Grotesk', sans-serif" }}
           >
             {m.label}
           </span>
           <span
-            className="text-[10px] text-white/35 flex-shrink-0"
+            className="text-[10px] text-[#94A3B8] flex-shrink-0"
             style={{ fontFamily: "'JetBrains Mono', monospace" }}
           >
             ×{count}/yr
           </span>
         </div>
-        <span className="text-[10px] text-white/35">{m.totalDuration}</span>
+        <span className="text-[10px] text-[#94A3B8]">{m.totalDuration}</span>
       </div>
     </div>
   );
@@ -766,12 +766,12 @@ export default function Home() {
   return (
     <div
       className="min-h-screen flex flex-col"
-      style={{ backgroundColor: "oklch(0.13 0.025 240)", fontFamily: "'Inter', sans-serif" }}
+      style={{ backgroundColor: "#F8F7F4", fontFamily: "'Inter', sans-serif" }}
     >
       {/* Header */}
       <header
         className="px-5 py-3.5 flex items-center justify-between flex-shrink-0"
-        style={{ borderBottom: "1px solid oklch(1 0 0 / 8%)" }}
+        style={{ borderBottom: "1px solid #E2E0DB" }}
       >
         <div className="flex items-center gap-3">
           <div
@@ -790,12 +790,12 @@ export default function Home() {
           </div>
           <div>
             <h1
-              className="text-base font-bold text-white leading-tight tracking-tight"
+              className="text-base font-bold text-[#1E3A5F] leading-tight tracking-tight"
               style={{ fontFamily: "'Space Grotesk', sans-serif" }}
             >
               Business Cadence Calendar
             </h1>
-            <p className="text-[11px] text-white/35 mt-0.5">
+            <p className="text-[11px] text-[#64748B] mt-0.5">
               New Beginnings Chiropractic · Evolved CrossFit · Bubbles Realty
             </p>
           </div>
@@ -805,7 +805,7 @@ export default function Home() {
             {(["daily", "weekly", "monthly", "quarterly"] as MeetingType[]).map((t) => (
               <div key={t} className="flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full" style={{ backgroundColor: MEETING_TYPES[t].color }} />
-                <span className="text-[10px] text-white/40" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+                <span className="text-[10px] text-[#94A3B8]" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
                   {MEETING_TYPES[t].shortLabel}
                 </span>
               </div>
@@ -815,9 +815,9 @@ export default function Home() {
             href="/app/board"
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all hover:opacity-90"
             style={{
-              background: "linear-gradient(135deg, rgba(59,130,246,0.20), rgba(236,72,153,0.15))",
-              border: "1px solid rgba(59,130,246,0.30)",
-              color: "#93C5FD",
+              background: "rgba(30,58,95,0.06)",
+              border: "1px solid rgba(30,58,95,0.18)",
+              color: "#1E3A5F",
               fontFamily: "'Space Grotesk', sans-serif",
             }}
           >
@@ -828,9 +828,9 @@ export default function Home() {
             href="/app/reports"
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all hover:opacity-90"
             style={{
-              background: "linear-gradient(135deg, rgba(20,184,166,0.18), rgba(6,182,212,0.12))",
-              border: "1px solid rgba(20,184,166,0.30)",
-              color: "#5EEAD4",
+              background: "rgba(13,148,136,0.08)",
+              border: "1px solid rgba(13,148,136,0.25)",
+              color: "#0D9488",
               fontFamily: "'Space Grotesk', sans-serif",
             }}
           >
@@ -841,9 +841,9 @@ export default function Home() {
             href="/app/settings"
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all hover:opacity-90"
             style={{
-              background: "oklch(1 0 0 / 6%)",
-              border: "1px solid oklch(1 0 0 / 12%)",
-              color: "oklch(1 0 0 / 45%)",
+              background: "rgba(30,58,95,0.05)",
+              border: "1px solid rgba(30,58,95,0.15)",
+              color: "#64748B",
               fontFamily: "'Space Grotesk', sans-serif",
             }}
           >
@@ -851,7 +851,7 @@ export default function Home() {
             Agenda Settings
           </Link>
           <span
-            className="text-sm font-mono font-bold text-white/25 tracking-widest"
+            className="text-sm font-mono font-bold text-[#94A3B8] tracking-widest"
             style={{ fontFamily: "'JetBrains Mono', monospace" }}
           >
             {YEAR}
@@ -863,16 +863,16 @@ export default function Home() {
         {/* Left Sidebar */}
         <aside
           className="w-60 flex-shrink-0 flex flex-col gap-4 p-4 overflow-y-auto"
-          style={{ borderRight: "1px solid oklch(1 0 0 / 8%)" }}
+          style={{ borderRight: "1px solid #E2E0DB" }}
         >
           <div>
             <p
-              className="text-[10px] font-bold text-white/25 uppercase tracking-widest mb-1 px-1"
+              className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest mb-1 px-1"
               style={{ fontFamily: "'Space Grotesk', sans-serif" }}
             >
               Meeting Types
             </p>
-            <p className="text-[10px] text-white/20 px-1 mb-2 leading-relaxed">
+            <p className="text-[10px] text-[#94A3B8] px-1 mb-2 leading-relaxed">
               Hover to highlight · Click day for full breakdown
             </p>
             <div className="flex flex-col gap-0.5">
@@ -892,14 +892,14 @@ export default function Home() {
           <div>
             <div className="flex items-center justify-between mb-2 px-1">
               <p
-                className="text-[10px] font-bold text-white/25 uppercase tracking-widest"
+                className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest"
                 style={{ fontFamily: "'Space Grotesk', sans-serif" }}
               >
                 Your Businesses
               </p>
               <a
                 href="/login"
-                className="text-[9px] text-white/25 hover:text-white/50 transition-colors"
+                className="text-[9px] text-[#94A3B8] hover:text-[#64748B] transition-colors"
               >
                 Switch
               </a>
@@ -916,7 +916,7 @@ export default function Home() {
                     key={key}
                     className="flex items-center gap-2.5 px-3 py-2 rounded-lg transition-opacity"
                     style={{
-                      backgroundColor: isActive ? "oklch(0.17 0.022 240)" : "oklch(0.15 0.015 240)",
+                      backgroundColor: isActive ? "#F1F0ED" : "#F8F7F4",
                       opacity: isFiltered ? 0.35 : 1,
                       border: isSingleSelected ? `1px solid ${biz.color}40` : "1px solid transparent",
                     }}
@@ -924,12 +924,12 @@ export default function Home() {
                     <span className="text-base leading-none">{biz.icon}</span>
                     <div className="flex-1 min-w-0">
                       <p
-                        className="text-xs font-medium text-white/75"
+                        className="text-xs font-medium text-[#1E3A5F]"
                         style={{ fontFamily: "'Space Grotesk', sans-serif" }}
                       >
                         {biz.shortName}
                       </p>
-                      <p className="text-[9px] text-white/30 truncate">{biz.tagline}</p>
+                      <p className="text-[9px] text-[#94A3B8] truncate">{biz.tagline}</p>
                     </div>
                     <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: biz.color }} />
                   </div>
@@ -944,9 +944,9 @@ export default function Home() {
               href="/app/schedule"
               className="flex items-center gap-2 w-full px-3 py-2.5 rounded-lg text-[11px] font-semibold transition-all hover:opacity-90"
               style={{
-                background: "rgba(20,184,166,0.10)",
-                border: "1px solid rgba(20,184,166,0.25)",
-                color: "#5EEAD4",
+                background: "rgba(13,148,136,0.08)",
+                border: "1px solid rgba(13,148,136,0.25)",
+                color: "#0D9488",
                 fontFamily: "'Space Grotesk', sans-serif",
               }}
             >
@@ -957,9 +957,9 @@ export default function Home() {
               href="/app/employees"
               className="flex items-center gap-2 w-full px-3 py-2.5 rounded-lg text-[11px] font-semibold transition-all hover:opacity-90"
               style={{
-                background: "rgba(20,184,166,0.10)",
-                border: "1px solid rgba(20,184,166,0.25)",
-                color: "#5EEAD4",
+                background: "rgba(13,148,136,0.08)",
+                border: "1px solid rgba(13,148,136,0.25)",
+                color: "#0D9488",
                 fontFamily: "'Space Grotesk', sans-serif",
               }}
             >
@@ -971,7 +971,7 @@ export default function Home() {
           {/* Golden Rule */}
           <div
             className="rounded-xl p-3.5"
-            style={{ backgroundColor: "rgba(244,63,94,0.08)", border: "1px solid rgba(244,63,94,0.2)" }}
+            style={{ backgroundColor: "rgba(244,63,94,0.06)", border: "1px solid rgba(244,63,94,0.18)" }}
           >
             <p
               className="text-[10px] font-bold text-rose-300 uppercase tracking-wider mb-1.5"
@@ -979,9 +979,9 @@ export default function Home() {
             >
               ★ The Golden Rule
             </p>
-            <p className="text-[11px] text-white/55 leading-relaxed">
+            <p className="text-[11px] text-[#374151] leading-relaxed">
               When an issue arises outside a meeting,{" "}
-              <strong className="text-white/80">add it to the Issues List</strong> — don't discuss
+              <strong className="text-[#1E3A5F]">add it to the Issues List</strong> — don't discuss
               it. It waits for the next scheduled meeting.
             </p>
           </div>
@@ -989,7 +989,7 @@ export default function Home() {
           {/* Science note */}
           <div
             className="rounded-xl p-3.5"
-            style={{ backgroundColor: "rgba(14,165,233,0.07)", border: "1px solid rgba(14,165,233,0.15)" }}
+            style={{ backgroundColor: "rgba(14,165,233,0.06)", border: "1px solid rgba(14,165,233,0.18)" }}
           >
             <p
               className="text-[10px] font-bold text-sky-300 uppercase tracking-wider mb-1.5"
@@ -997,9 +997,9 @@ export default function Home() {
             >
               Why This Works
             </p>
-            <p className="text-[11px] text-white/50 leading-relaxed">
+            <p className="text-[11px] text-[#374151] leading-relaxed">
               APA research: unstructured task-switching costs up to{" "}
-              <strong className="text-white/75">40% of productive time</strong>. Structured cadence
+              <strong className="text-[#1E3A5F]">40% of productive time</strong>. Structured cadence
               eliminates that loss.
             </p>
           </div>
@@ -1029,14 +1029,14 @@ export default function Home() {
                   </div>
                   <div className="flex items-baseline gap-1.5 mt-0.5">
                     <span
-                      className="text-3xl font-bold text-white leading-none"
+                      className="text-3xl font-bold text-[#1E3A5F] leading-none"
                       style={{ fontFamily: "'Space Grotesk', sans-serif" }}
                     >
                       {count}
                     </span>
-                    <span className="text-xs text-white/35">per year</span>
+                    <span className="text-xs text-[#94A3B8]">per year</span>
                   </div>
-                  <span className="text-[10px] text-white/30">{m.totalDuration} each session</span>
+                  <span className="text-[10px] text-[#94A3B8]">{m.totalDuration} each session</span>
                 </div>
               );
             })}
@@ -1061,7 +1061,7 @@ export default function Home() {
         {selectedDay && (
           <aside
             className="w-80 flex-shrink-0 p-4 overflow-y-auto"
-            style={{ borderLeft: "1px solid oklch(1 0 0 / 8%)" }}
+            style={{ borderLeft: "1px solid #E2E0DB" }}
           >
             <DetailPanel day={selectedDay} onClose={() => setSelectedDay(null)} businessContext={businessContext} />
           </aside>
@@ -1071,12 +1071,12 @@ export default function Home() {
       {/* Footer */}
       <footer
         className="px-5 py-2.5 flex items-center justify-between flex-shrink-0"
-        style={{ borderTop: "1px solid oklch(1 0 0 / 8%)" }}
+        style={{ borderTop: "1px solid #E2E0DB" }}
       >
-        <span className="text-[10px] text-white/20" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+        <span className="text-[10px] text-[#94A3B8]" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
           Framework: EOS Meeting Pulse + Rockefeller Habits
         </span>
-        <span className="text-[10px] text-white/20" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+        <span className="text-[10px] text-[#94A3B8]" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
           Hover legend to highlight · Click days to view full agenda
         </span>
       </footer>
