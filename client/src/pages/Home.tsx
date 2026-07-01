@@ -144,8 +144,9 @@ function MonthGrid({
       style={{
         backgroundColor: "#FFFFFF",
         border: quarterlyDays > 0
-          ? "1px solid rgba(244,63,94,0.30)"
-          : "1px solid #E2E0DB",
+          ? "1.5px solid rgba(244,63,94,0.40)"
+          : "1.5px solid #C8C5BE",
+        boxShadow: "0 1px 4px rgba(30,58,95,0.06)",
       }}
     >
       <div className="flex items-center justify-between">
@@ -1016,7 +1017,7 @@ export default function Home() {
                 <div
                   key={type}
                   className="rounded-xl p-3.5 flex flex-col gap-1.5"
-                  style={{ backgroundColor: m.bgColor, border: `1px solid ${m.color}20` }}
+                  style={{ backgroundColor: m.bgColor, border: `1.5px solid ${m.color}35`, boxShadow: "0 1px 4px rgba(30,58,95,0.06)" }}
                 >
                   <div className="flex items-center gap-1.5">
                     <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: m.color }} />

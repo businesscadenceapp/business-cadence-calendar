@@ -126,7 +126,7 @@ function TaskCard({ card, currentUser, onMarkDone, onConfirmDone, onDelete }: {
 
         {/* Assigned to */}
         {card.assignedTo && (
-          <span className="text-[10px] text-white/40 flex items-center gap-1" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+          <span className="text-[10px] text-[#64748B] flex items-center gap-1" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
             → <span style={{ color: AUTHOR_COLORS[card.assignedTo].text }}>{card.assignedTo}</span>
           </span>
         )}
@@ -155,7 +155,7 @@ function TaskCard({ card, currentUser, onMarkDone, onConfirmDone, onDelete }: {
 
         {/* Timestamp */}
         <span
-          className={`text-[10px] text-white/25 ${taskState === "open" ? "ml-auto" : ""}`}
+          className={`text-[10px] text-[#94A3B8] ${taskState === "open" ? "ml-auto" : ""}`}
           style={{ fontFamily: "'JetBrains Mono', monospace" }}
         >
           {timeAgo(card.createdAt)}
@@ -163,11 +163,11 @@ function TaskCard({ card, currentUser, onMarkDone, onConfirmDone, onDelete }: {
       </div>
 
       {/* Content */}
-      <p className="text-[13px] text-white/80 leading-relaxed">{card.content}</p>
+      <p className="text-[13px] text-[#1E3A5F] leading-relaxed">{card.content}</p>
 
       {/* Completion trail */}
       {isDone && (
-        <p className="text-[11px] text-white/35 italic">
+        <p className="text-[11px] text-[#64748B] italic">
           Marked done by <span style={{ color: card.completedBy ? AUTHOR_COLORS[card.completedBy].text : "white" }}>{card.completedBy}</span> · {timeAgo(card.completedAt!)}
         </p>
       )}
@@ -208,12 +208,12 @@ function TaskCard({ card, currentUser, onMarkDone, onConfirmDone, onDelete }: {
 
         {/* Waiting message */}
         {taskState === "open" && !isDoer && currentUser && (
-          <span className="text-[11px] text-white/25 italic">
+          <span className="text-[11px] text-[#94A3B8] italic">
             Waiting for {card.assignedTo ?? "assignee"} to complete
           </span>
         )}
         {taskState === "done_pending" && !isRequester && currentUser && (
-          <span className="text-[11px] text-white/25 italic">
+          <span className="text-[11px] text-[#94A3B8] italic">
             Waiting for {card.author} to confirm
           </span>
         )}
@@ -223,7 +223,7 @@ function TaskCard({ card, currentUser, onMarkDone, onConfirmDone, onDelete }: {
           <button
             onClick={() => onDelete(card.id)}
             className="text-[11px] px-2 py-1.5 rounded-lg transition-all hover:opacity-80 ml-auto"
-            style={{ color: "rgba(255,255,255,0.20)", fontFamily: "'Space Grotesk', sans-serif" }}
+            style={{ color: "#94A3B8", fontFamily: "'Space Grotesk', sans-serif" }}
           >
             Delete
           </button>
@@ -270,19 +270,19 @@ function BoardCard({ card, currentUser, onSeen, onArchive, onDelete }: {
           {biz.icon} {biz.label}
         </span>
         {alreadySeen && (
-          <span className="text-[10px] text-white/30 ml-auto flex items-center gap-1">
+          <span className="text-[10px] text-[#94A3B8] ml-auto flex items-center gap-1">
             <span style={{ color: "#22c55e" }}>✓</span> Seen by {card.seenBy}
           </span>
         )}
         {!alreadySeen && isOwnCard && (
-          <span className="text-[10px] text-white/25 ml-auto italic">Awaiting {card.author === "Matt" ? "Lynn" : "Matt"}</span>
+          <span className="text-[10px] text-[#94A3B8] ml-auto italic">Awaiting {card.author === "Matt" ? "Lynn" : "Matt"}</span>
         )}
-        <span className="text-[10px] text-white/25 ml-auto" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+        <span className="text-[10px] text-[#94A3B8] ml-auto" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
           {timeAgo(card.createdAt)}
         </span>
       </div>
 
-      <p className="text-[13px] text-white/80 leading-relaxed">{card.content}</p>
+      <p className="text-[13px] text-[#1E3A5F] leading-relaxed">{card.content}</p>
 
       <div className="flex items-center gap-2 flex-wrap">
         {!isOwnCard && !alreadySeen && (
@@ -303,9 +303,9 @@ function BoardCard({ card, currentUser, onSeen, onArchive, onDelete }: {
           onClick={() => onArchive(card.id)}
           className="text-[11px] px-3 py-1.5 rounded-lg transition-all hover:opacity-80"
           style={{
-            backgroundColor: "oklch(1 0 0 / 5%)",
-            border: "1px solid oklch(1 0 0 / 10%)",
-            color: "rgba(255,255,255,0.35)",
+            backgroundColor: "#F8FAFC",
+            border: "1px solid #CBD5E1",
+            color: "#64748B",
             fontFamily: "'Space Grotesk', sans-serif",
           }}
         >
@@ -315,7 +315,7 @@ function BoardCard({ card, currentUser, onSeen, onArchive, onDelete }: {
           <button
             onClick={() => onDelete(card.id)}
             className="text-[11px] px-2 py-1.5 rounded-lg transition-all hover:opacity-80 ml-auto"
-            style={{ color: "rgba(255,255,255,0.20)", fontFamily: "'Space Grotesk', sans-serif" }}
+            style={{ color: "#94A3B8", fontFamily: "'Space Grotesk', sans-serif" }}
           >
             Delete
           </button>
@@ -361,23 +361,23 @@ function AddCardForm({ currentUser, onAdded }: { currentUser: Author | null; onA
   return (
     <div
       className="rounded-xl p-4 flex flex-col gap-4"
-      style={{ backgroundColor: "oklch(0.17 0.022 240)", border: "1px solid oklch(1 0 0 / 10%)" }}
+      style={{ backgroundColor: "#F8FAFC", border: "1px solid #CBD5E1" }}
     >
-      <p className="text-[11px] font-bold text-white/40 uppercase tracking-widest" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+      <p className="text-[11px] font-bold text-[#64748B] uppercase tracking-widest" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
         + Post to Board
       </p>
 
       {/* Type selector */}
       <div className="flex flex-col gap-1.5">
-        <p className="text-[10px] text-white/30 uppercase tracking-wider" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>What kind of post?</p>
+        <p className="text-[10px] text-[#94A3B8] uppercase tracking-wider" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>What kind of post?</p>
         <div className="flex flex-col gap-1.5">
           <button
             onClick={() => setType("update")}
             className="w-full py-2 rounded-lg text-[11px] font-semibold transition-all text-left px-3"
             style={{
-              backgroundColor: type === "update" ? "rgba(16,185,129,0.15)" : "oklch(1 0 0 / 5%)",
-              border: `1px solid ${type === "update" ? "rgba(16,185,129,0.35)" : "oklch(1 0 0 / 8%)"}`,
-              color: type === "update" ? "#6EE7B7" : "rgba(255,255,255,0.35)",
+              backgroundColor: type === "update" ? "rgba(16,185,129,0.15)" : "#F8FAFC",
+              border: `1px solid ${type === "update" ? "rgba(16,185,129,0.35)" : "#E2E8F0"}`,
+              color: type === "update" ? "#6EE7B7" : "#64748B",
               fontFamily: "'Space Grotesk', sans-serif",
             }}
           >
@@ -387,9 +387,9 @@ function AddCardForm({ currentUser, onAdded }: { currentUser: Author | null; onA
             onClick={() => setType("issue")}
             className="w-full py-2 rounded-lg text-[11px] font-semibold transition-all text-left px-3"
             style={{
-              backgroundColor: type === "issue" ? "rgba(251,191,36,0.12)" : "oklch(1 0 0 / 5%)",
-              border: `1px solid ${type === "issue" ? "rgba(251,191,36,0.30)" : "oklch(1 0 0 / 8%)"}`,
-              color: type === "issue" ? "#FDE68A" : "rgba(255,255,255,0.35)",
+              backgroundColor: type === "issue" ? "rgba(251,191,36,0.12)" : "#F8FAFC",
+              border: `1px solid ${type === "issue" ? "rgba(251,191,36,0.30)" : "#E2E8F0"}`,
+              color: type === "issue" ? "#FDE68A" : "#64748B",
               fontFamily: "'Space Grotesk', sans-serif",
             }}
           >
@@ -399,9 +399,9 @@ function AddCardForm({ currentUser, onAdded }: { currentUser: Author | null; onA
             onClick={() => setType("task")}
             className="w-full py-2 rounded-lg text-[11px] font-semibold transition-all text-left px-3"
             style={{
-              backgroundColor: type === "task" ? "rgba(139,92,246,0.15)" : "oklch(1 0 0 / 5%)",
-              border: `1px solid ${type === "task" ? "rgba(139,92,246,0.35)" : "oklch(1 0 0 / 8%)"}`,
-              color: type === "task" ? "#C4B5FD" : "rgba(255,255,255,0.35)",
+              backgroundColor: type === "task" ? "rgba(139,92,246,0.15)" : "#F8FAFC",
+              border: `1px solid ${type === "task" ? "rgba(139,92,246,0.35)" : "#E2E8F0"}`,
+              color: type === "task" ? "#C4B5FD" : "#64748B",
               fontFamily: "'Space Grotesk', sans-serif",
             }}
           >
@@ -413,7 +413,7 @@ function AddCardForm({ currentUser, onAdded }: { currentUser: Author | null; onA
       {/* Assign to (only for tasks) */}
       {type === "task" && (
         <div className="flex flex-col gap-1.5">
-          <p className="text-[10px] text-white/30 uppercase tracking-wider" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Assign to:</p>
+          <p className="text-[10px] text-[#94A3B8] uppercase tracking-wider" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Assign to:</p>
           <div className="flex gap-2">
             {(["Matt", "Lynn"] as Author[]).map(a => {
               const c = AUTHOR_COLORS[a];
@@ -425,9 +425,9 @@ function AddCardForm({ currentUser, onAdded }: { currentUser: Author | null; onA
                   onClick={() => setAssignedTo(a)}
                   className="flex-1 py-2 rounded-lg text-[11px] font-bold transition-all"
                   style={{
-                    backgroundColor: isActive ? c.badge : "oklch(1 0 0 / 5%)",
-                    border: `2px solid ${isActive ? c.border : "oklch(1 0 0 / 8%)"}`,
-                    color: isActive ? c.text : "rgba(255,255,255,0.35)",
+                    backgroundColor: isActive ? c.badge : "#F8FAFC",
+                    border: `2px solid ${isActive ? c.border : "#E2E8F0"}`,
+                    color: isActive ? c.text : "#64748B",
                     fontFamily: "'Space Grotesk', sans-serif",
                   }}
                 >
@@ -441,7 +441,7 @@ function AddCardForm({ currentUser, onAdded }: { currentUser: Author | null; onA
 
       {/* Business */}
       <div className="flex flex-col gap-1.5">
-        <p className="text-[10px] text-white/30 uppercase tracking-wider" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Which business?</p>
+        <p className="text-[10px] text-[#94A3B8] uppercase tracking-wider" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Which business?</p>
         <div className="flex gap-1.5 flex-wrap">
           {(Object.entries(BUSINESS_LABELS) as [Business, typeof BUSINESS_LABELS[Business]][]).map(([key, biz]) => (
             <button
@@ -449,9 +449,9 @@ function AddCardForm({ currentUser, onAdded }: { currentUser: Author | null; onA
               onClick={() => setBusiness(key)}
               className="px-3 py-1.5 rounded-lg text-[11px] font-medium transition-all flex items-center gap-1"
               style={{
-                backgroundColor: business === key ? `${biz.color}18` : "oklch(1 0 0 / 5%)",
-                border: `1px solid ${business === key ? `${biz.color}40` : "oklch(1 0 0 / 8%)"}`,
-                color: business === key ? biz.color : "rgba(255,255,255,0.35)",
+                backgroundColor: business === key ? `${biz.color}18` : "#F8FAFC",
+                border: `1px solid ${business === key ? `${biz.color}40` : "#E2E8F0"}`,
+                color: business === key ? biz.color : "#64748B",
                 fontFamily: "'Space Grotesk', sans-serif",
               }}
             >
@@ -475,15 +475,15 @@ function AddCardForm({ currentUser, onAdded }: { currentUser: Author | null; onA
             : "Describe the task…"
         }
         rows={3}
-        className="w-full rounded-lg px-3 py-2.5 text-[12px] text-white/75 placeholder-white/20 resize-none focus:outline-none transition-colors"
+        className="w-full rounded-lg px-3 py-2.5 text-[12px] text-[#1E3A5F] placeholder-[#94A3B8] resize-none focus:outline-none transition-colors"
         style={{
-          backgroundColor: "oklch(1 0 0 / 5%)",
-          border: "1px solid oklch(1 0 0 / 12%)",
+          backgroundColor: "#F8FAFC",
+          border: "1px solid #CBD5E1",
           fontFamily: "'Inter', sans-serif",
           lineHeight: "1.6",
         }}
-        onFocus={e => (e.target.style.borderColor = "oklch(1 0 0 / 25%)")}
-        onBlur={e => (e.target.style.borderColor = "oklch(1 0 0 / 12%)")}
+        onFocus={e => (e.target.style.borderColor = "#94A3B8")}
+        onBlur={e => (e.target.style.borderColor = "#CBD5E1")}
       />
 
       <button
@@ -493,9 +493,9 @@ function AddCardForm({ currentUser, onAdded }: { currentUser: Author | null; onA
         style={{
           background: currentUser
             ? `linear-gradient(135deg, ${AUTHOR_COLORS[currentUser].badge}, ${AUTHOR_COLORS[currentUser].bg})`
-            : "oklch(1 0 0 / 8%)",
-          border: `1px solid ${currentUser ? AUTHOR_COLORS[currentUser].border : "oklch(1 0 0 / 10%)"}`,
-          color: currentUser ? AUTHOR_COLORS[currentUser].text : "rgba(255,255,255,0.30)",
+            : "#E2E8F0",
+          border: `1px solid ${currentUser ? AUTHOR_COLORS[currentUser].border : "#CBD5E1"}`,
+          color: currentUser ? AUTHOR_COLORS[currentUser].text : "#94A3B8",
           fontFamily: "'Space Grotesk', sans-serif",
         }}
       >
@@ -566,12 +566,12 @@ export default function Board() {
   return (
     <div
       className="min-h-screen flex flex-col"
-      style={{ backgroundColor: "oklch(0.13 0.025 240)", fontFamily: "'Inter', sans-serif" }}
+      style={{ backgroundColor: "#F8F7F4", fontFamily: "'Inter', sans-serif" }}
     >
       {/* Header */}
       <header
         className="px-5 py-3.5 flex items-center justify-between flex-shrink-0"
-        style={{ borderBottom: "1px solid oklch(1 0 0 / 8%)" }}
+        style={{ borderBottom: "1px solid #E2E8F0", backgroundColor: "#FFFFFF" }}
       >
         <div className="flex items-center gap-3">
           <div
@@ -581,10 +581,10 @@ export default function Board() {
             📋
           </div>
           <div>
-            <h1 className="text-base font-bold text-white leading-tight tracking-tight" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+            <h1 className="text-base font-bold text-[#1E3A5F] leading-tight tracking-tight" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
               Command Board
             </h1>
-            <p className="text-[11px] text-white/35 mt-0.5">Updates, issues & tasks between Matt and Lynn</p>
+            <p className="text-[11px] text-[#64748B] mt-0.5">Updates, issues & tasks between Matt and Lynn</p>
           </div>
         </div>
 
@@ -594,15 +594,15 @@ export default function Board() {
             href="/app"
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-medium transition-all hover:opacity-80"
             style={{
-              backgroundColor: "oklch(1 0 0 / 6%)",
-              border: "1px solid oklch(1 0 0 / 10%)",
-              color: "rgba(255,255,255,0.40)",
+              backgroundColor: "#F1F5F9",
+              border: "1px solid #CBD5E1",
+              color: "#64748B",
               fontFamily: "'Space Grotesk', sans-serif",
             }}
           >
             ← Calendar
           </Link>
-          <span className="text-[10px] text-white/30" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>I am:</span>
+          <span className="text-[10px] text-[#94A3B8]" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>I am:</span>
           {(["Matt", "Lynn"] as Author[]).map(a => {
             const c = AUTHOR_COLORS[a];
             const isActive = currentUser === a;
@@ -612,9 +612,9 @@ export default function Board() {
                 onClick={() => setCurrentUser(a)}
                 className="px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all relative"
                 style={{
-                  backgroundColor: isActive ? c.badge : "oklch(1 0 0 / 5%)",
-                  border: `1px solid ${isActive ? c.border : "oklch(1 0 0 / 8%)"}`,
-                  color: isActive ? c.text : "rgba(255,255,255,0.35)",
+                  backgroundColor: isActive ? c.badge : "#F8FAFC",
+                  border: `1px solid ${isActive ? c.border : "#E2E8F0"}`,
+                  color: isActive ? c.text : "#64748B",
                   fontFamily: "'Space Grotesk', sans-serif",
                 }}
               >
@@ -634,7 +634,7 @@ export default function Board() {
         {/* Left sidebar: form + filters */}
         <aside
           className="w-80 flex-shrink-0 p-4 overflow-y-auto"
-          style={{ borderRight: "1px solid oklch(1 0 0 / 8%)" }}
+          style={{ borderRight: "1px solid #E2E8F0", backgroundColor: "#FAFAF9" }}
         >
           {/* Identity prompt if not set */}
           {!currentUser && (
@@ -651,7 +651,7 @@ export default function Board() {
 
           {/* Business filter */}
           <div className="mt-5 flex flex-col gap-2">
-            <p className="text-[10px] font-bold text-white/25 uppercase tracking-widest px-1" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+            <p className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest px-1" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
               Filter by Business
             </p>
             <div className="flex flex-col gap-1">
@@ -659,8 +659,8 @@ export default function Board() {
                 onClick={() => setFilterBusiness("all")}
                 className="text-left px-3 py-2 rounded-lg text-[11px] transition-all"
                 style={{
-                  backgroundColor: filterBusiness === "all" ? "oklch(1 0 0 / 10%)" : "transparent",
-                  color: filterBusiness === "all" ? "rgba(255,255,255,0.80)" : "rgba(255,255,255,0.35)",
+                  backgroundColor: filterBusiness === "all" ? "#CBD5E1" : "transparent",
+                  color: filterBusiness === "all" ? "rgba(255,255,255,0.80)" : "#64748B",
                   fontFamily: "'Space Grotesk', sans-serif",
                 }}
               >
@@ -673,7 +673,7 @@ export default function Board() {
                   className="text-left px-3 py-2 rounded-lg text-[11px] transition-all"
                   style={{
                     backgroundColor: filterBusiness === key ? `${biz.color}15` : "transparent",
-                    color: filterBusiness === key ? biz.color : "rgba(255,255,255,0.35)",
+                    color: filterBusiness === key ? biz.color : "#64748B",
                     fontFamily: "'Space Grotesk', sans-serif",
                   }}
                 >
@@ -684,24 +684,24 @@ export default function Board() {
           </div>
 
           {/* Legend */}
-          <div className="mt-5 rounded-xl p-3.5" style={{ backgroundColor: "oklch(0.17 0.022 240)", border: "1px solid oklch(1 0 0 / 8%)" }}>
-            <p className="text-[10px] font-bold text-white/25 uppercase tracking-widest mb-2" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Color Key</p>
+          <div className="mt-5 rounded-xl p-3.5" style={{ backgroundColor: "#F8FAFC", border: "1px solid #E2E8F0" }}>
+            <p className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest mb-2" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Color Key</p>
             <div className="flex flex-col gap-1.5">
               <div className="flex items-center gap-2">
                 <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: "#3B82F6" }} />
-                <span className="text-[11px] text-white/55">Matt's posts</span>
+                <span className="text-[11px] text-[#374151]">Matt's posts</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: "#EC4899" }} />
-                <span className="text-[11px] text-white/55">Lynn's posts</span>
+                <span className="text-[11px] text-[#374151]">Lynn's posts</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: "#8B5CF6" }} />
-                <span className="text-[11px] text-white/55">Tasks (assigned)</span>
+                <span className="text-[11px] text-[#374151]">Tasks (assigned)</span>
               </div>
               <div className="flex items-center gap-2 mt-1">
                 <span className="text-[10px]" style={{ color: "#22c55e" }}>✓</span>
-                <span className="text-[11px] text-white/55">Seen / confirmed done</span>
+                <span className="text-[11px] text-[#374151]">Seen / confirmed done</span>
               </div>
             </div>
           </div>
@@ -711,7 +711,7 @@ export default function Board() {
         <main className="flex-1 overflow-y-auto p-5 flex flex-col gap-8">
           {isLoading ? (
             <div className="flex items-center justify-center h-40">
-              <span className="text-white/30 text-sm animate-pulse">Loading board…</span>
+              <span className="text-[#94A3B8] text-sm animate-pulse">Loading board…</span>
             </div>
           ) : (
             <>
@@ -719,16 +719,16 @@ export default function Board() {
               <section className="flex flex-col gap-3">
                 <div className="flex items-center gap-2 mb-1">
                   <span className="text-base">☑</span>
-                  <h2 className="text-sm font-bold text-white/80" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Tasks</h2>
-                  <span className="text-[10px] text-white/25 ml-1">— Assigned to-dos between owners</span>
-                  <span className="ml-auto text-[10px] px-2 py-0.5 rounded-full" style={{ backgroundColor: "oklch(1 0 0 / 8%)", color: "rgba(255,255,255,0.40)", fontFamily: "'JetBrains Mono', monospace" }}>
+                  <h2 className="text-sm font-bold text-[#1E3A5F]" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Tasks</h2>
+                  <span className="text-[10px] text-[#94A3B8] ml-1">— Assigned to-dos between owners</span>
+                  <span className="ml-auto text-[10px] px-2 py-0.5 rounded-full" style={{ backgroundColor: "#E2E8F0", color: "#64748B", fontFamily: "'JetBrains Mono', monospace" }}>
                     {openTasks.length} open
                   </span>
                 </div>
 
                 {openTasks.length === 0 && donePendingTasks.length === 0 ? (
-                  <div className="rounded-xl p-6 text-center" style={{ backgroundColor: "oklch(0.17 0.022 240)", border: "1px dashed oklch(1 0 0 / 10%)" }}>
-                    <p className="text-[12px] text-white/25">No open tasks. Use "☑ Task" to assign something to Matt or Lynn.</p>
+                  <div className="rounded-xl p-6 text-center" style={{ backgroundColor: "#F8FAFC", border: "1px dashed #CBD5E1" }}>
+                    <p className="text-[12px] text-[#94A3B8]">No open tasks. Use "☑ Task" to assign something to Matt or Lynn.</p>
                   </div>
                 ) : (
                   <>
@@ -769,7 +769,7 @@ export default function Board() {
                   <div className="mt-2">
                     <button
                       onClick={() => setShowCompleted(v => !v)}
-                      className="text-[11px] text-white/30 hover:text-white/50 transition-colors flex items-center gap-1.5 px-1"
+                      className="text-[11px] text-[#94A3B8] hover:text-[#374151] transition-colors flex items-center gap-1.5 px-1"
                       style={{ fontFamily: "'Space Grotesk', sans-serif" }}
                     >
                       {showCompleted ? "▾" : "▸"} Completed this period ({completedTasks.length})
@@ -798,9 +798,9 @@ export default function Board() {
                 <div className="flex flex-col gap-3">
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-base">✅</span>
-                    <h2 className="text-sm font-bold text-white/80" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Updates</h2>
-                    <span className="text-[10px] text-white/25 ml-1">— What I did</span>
-                    <span className="ml-auto text-[10px] px-2 py-0.5 rounded-full" style={{ backgroundColor: "oklch(1 0 0 / 8%)", color: "rgba(255,255,255,0.40)", fontFamily: "'JetBrains Mono', monospace" }}>
+                    <h2 className="text-sm font-bold text-[#1E3A5F]" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Updates</h2>
+                    <span className="text-[10px] text-[#94A3B8] ml-1">— What I did</span>
+                    <span className="ml-auto text-[10px] px-2 py-0.5 rounded-full" style={{ backgroundColor: "#E2E8F0", color: "#64748B", fontFamily: "'JetBrains Mono', monospace" }}>
                       {updates.length}
                     </span>
                   </div>
@@ -826,9 +826,9 @@ export default function Board() {
                 <div className="flex flex-col gap-3">
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-base">💬</span>
-                    <h2 className="text-sm font-bold text-white/80" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Issues</h2>
-                    <span className="text-[10px] text-white/25 ml-1">— What we need to discuss</span>
-                    <span className="ml-auto text-[10px] px-2 py-0.5 rounded-full" style={{ backgroundColor: "oklch(1 0 0 / 8%)", color: "rgba(255,255,255,0.40)", fontFamily: "'JetBrains Mono', monospace" }}>
+                    <h2 className="text-sm font-bold text-[#1E3A5F]" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Issues</h2>
+                    <span className="text-[10px] text-[#94A3B8] ml-1">— What we need to discuss</span>
+                    <span className="ml-auto text-[10px] px-2 py-0.5 rounded-full" style={{ backgroundColor: "#E2E8F0", color: "#64748B", fontFamily: "'JetBrains Mono', monospace" }}>
                       {issues.length}
                     </span>
                   </div>
