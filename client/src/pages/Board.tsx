@@ -1,11 +1,15 @@
 /**
  * Command Board — Shared Updates, Issues & Tasks for Matt and Lynn
- * Matt = Blue (#3B82F6), Lynn = Pink (#EC4899)
+ * Matt = Blue (#2563EB), Lynn = Rose (#E11D48)
  *
  * Identity is persisted in localStorage so you only pick once per device.
  * Tasks use a two-step completion flow:
  *   1. Doer marks done → moves to "Done — Awaiting Confirmation"
  *   2. Requester confirms → archived (collapsed "Completed" section)
+ *
+ * All colors are designed for the light theme (#F8F7F4 bg):
+ *   - Text always dark (navy or slate-700) on light backgrounds
+ *   - Colored accents use saturated foreground colors, not washed-out pastels
  */
 import { useState, useEffect } from "react";
 import { Link } from "wouter";
@@ -18,28 +22,44 @@ type Business = "chiropractic" | "crossfit" | "realty" | "general";
 
 const IDENTITY_KEY = "bcc_identity";
 
-const AUTHOR_COLORS: Record<Author, { bg: string; border: string; text: string; badge: string; badgeText: string }> = {
+// Light-theme author colors — dark text on tinted backgrounds
+const AUTHOR_COLORS: Record<Author, {
+  bg: string;        // card background
+  border: string;    // card border
+  badgeBg: string;   // name badge background
+  badgeText: string; // name badge text (dark, readable)
+  btnBg: string;     // active button background
+  btnBorder: string; // active button border
+  btnText: string;   // active button text
+  dot: string;       // solid dot color
+}> = {
   Matt: {
-    bg: "rgba(59,130,246,0.08)",
-    border: "rgba(59,130,246,0.30)",
-    text: "#93C5FD",
-    badge: "rgba(59,130,246,0.20)",
-    badgeText: "#BFDBFE",
+    bg: "#EFF6FF",
+    border: "#BFDBFE",
+    badgeBg: "#DBEAFE",
+    badgeText: "#1D4ED8",
+    btnBg: "#DBEAFE",
+    btnBorder: "#93C5FD",
+    btnText: "#1D4ED8",
+    dot: "#2563EB",
   },
   Lynn: {
-    bg: "rgba(236,72,153,0.08)",
-    border: "rgba(236,72,153,0.30)",
-    text: "#F9A8D4",
-    badge: "rgba(236,72,153,0.20)",
-    badgeText: "#FBCFE8",
+    bg: "#FFF1F2",
+    border: "#FECDD3",
+    badgeBg: "#FFE4E6",
+    badgeText: "#BE123C",
+    btnBg: "#FFE4E6",
+    btnBorder: "#FDA4AF",
+    btnText: "#BE123C",
+    dot: "#E11D48",
   },
 };
 
-const BUSINESS_LABELS: Record<Business, { label: string; icon: string; color: string }> = {
-  chiropractic: { label: "Chiropractic", icon: "🦴", color: "#10B981" },
-  crossfit:     { label: "CrossFit",     icon: "💪", color: "#F59E0B" },
-  realty:       { label: "Realty",       icon: "🏠", color: "#8B5CF6" },
-  general:      { label: "General",      icon: "📋", color: "#6B7280" },
+const BUSINESS_LABELS: Record<Business, { label: string; icon: string; bg: string; text: string; border: string }> = {
+  chiropractic: { label: "Chiropractic", icon: "🦴", bg: "#D1FAE5", text: "#065F46", border: "#6EE7B7" },
+  crossfit:     { label: "CrossFit",     icon: "💪", bg: "#FEF3C7", text: "#92400E", border: "#FCD34D" },
+  realty:       { label: "Realty",       icon: "🏠", bg: "#EDE9FE", text: "#5B21B6", border: "#C4B5FD" },
+  general:      { label: "General",      icon: "📋", bg: "#F1F5F9", text: "#475569", border: "#CBD5E1" },
 };
 
 function timeAgo(date: Date): string {
@@ -86,17 +106,17 @@ function TaskCard({ card, currentUser, onMarkDone, onConfirmDone, onDelete }: {
   const isDone = !!card.completedAt;
   const isConfirmed = !!card.confirmedAt;
 
-  // Task state
   const taskState: "open" | "done_pending" | "confirmed" = isConfirmed
     ? "confirmed"
     : isDone
     ? "done_pending"
     : "open";
 
+  // State-based card styling (light backgrounds with dark text)
   const stateStyles = {
-    open: { bg: "rgba(59,130,246,0.06)", border: "rgba(59,130,246,0.22)" },
-    done_pending: { bg: "rgba(251,191,36,0.07)", border: "rgba(251,191,36,0.28)" },
-    confirmed: { bg: "rgba(34,197,94,0.06)", border: "rgba(34,197,94,0.22)" },
+    open:         { bg: "#EFF6FF", border: "#BFDBFE" },
+    done_pending: { bg: "#FFFBEB", border: "#FCD34D" },
+    confirmed:    { bg: "#F0FDF4", border: "#86EFAC" },
   };
 
   const style = stateStyles[taskState];
@@ -104,14 +124,14 @@ function TaskCard({ card, currentUser, onMarkDone, onConfirmDone, onDelete }: {
   return (
     <div
       className="rounded-xl p-4 flex flex-col gap-3 transition-all duration-200"
-      style={{ backgroundColor: style.bg, border: `1px solid ${style.border}` }}
+      style={{ backgroundColor: style.bg, border: `1.5px solid ${style.border}` }}
     >
-      {/* Header */}
+      {/* Header row */}
       <div className="flex items-center gap-2 flex-wrap">
-        {/* Task badge */}
+        {/* Task type badge */}
         <span
           className="text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide"
-          style={{ backgroundColor: "rgba(139,92,246,0.18)", color: "#C4B5FD", fontFamily: "'Space Grotesk', sans-serif" }}
+          style={{ backgroundColor: "#EDE9FE", color: "#5B21B6", fontFamily: "'Space Grotesk', sans-serif" }}
         >
           ☑ Task
         </span>
@@ -119,22 +139,28 @@ function TaskCard({ card, currentUser, onMarkDone, onConfirmDone, onDelete }: {
         {/* Author badge */}
         <span
           className="text-[11px] font-bold px-2 py-0.5 rounded-full"
-          style={{ backgroundColor: authorColors.badge, color: authorColors.badgeText, fontFamily: "'Space Grotesk', sans-serif" }}
+          style={{ backgroundColor: authorColors.badgeBg, color: authorColors.badgeText, fontFamily: "'Space Grotesk', sans-serif" }}
         >
           {card.author}
         </span>
 
         {/* Assigned to */}
         {card.assignedTo && (
-          <span className="text-[10px] text-[#64748B] flex items-center gap-1" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-            → <span style={{ color: AUTHOR_COLORS[card.assignedTo].text }}>{card.assignedTo}</span>
+          <span className="text-[10px] text-slate-500 flex items-center gap-1" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+            →{" "}
+            <span
+              className="font-semibold"
+              style={{ color: AUTHOR_COLORS[card.assignedTo].badgeText }}
+            >
+              {card.assignedTo}
+            </span>
           </span>
         )}
 
         {/* Business tag */}
         <span
           className="text-[10px] font-medium px-2 py-0.5 rounded-full flex items-center gap-1"
-          style={{ backgroundColor: `${biz.color}18`, color: biz.color, fontFamily: "'Space Grotesk', sans-serif" }}
+          style={{ backgroundColor: biz.bg, color: biz.text, border: `1px solid ${biz.border}`, fontFamily: "'Space Grotesk', sans-serif" }}
         >
           {biz.icon} {biz.label}
         </span>
@@ -142,20 +168,20 @@ function TaskCard({ card, currentUser, onMarkDone, onConfirmDone, onDelete }: {
         {/* State badge */}
         {taskState === "done_pending" && (
           <span className="ml-auto text-[10px] px-2 py-0.5 rounded-full font-semibold"
-            style={{ backgroundColor: "rgba(251,191,36,0.15)", color: "#FDE68A", fontFamily: "'Space Grotesk', sans-serif" }}>
-            ⏳ Done — Awaiting Confirmation
+            style={{ backgroundColor: "#FEF3C7", color: "#92400E", border: "1px solid #FCD34D", fontFamily: "'Space Grotesk', sans-serif" }}>
+            ⏳ Awaiting Confirmation
           </span>
         )}
         {taskState === "confirmed" && (
           <span className="ml-auto text-[10px] px-2 py-0.5 rounded-full font-semibold"
-            style={{ backgroundColor: "rgba(34,197,94,0.15)", color: "#86EFAC", fontFamily: "'Space Grotesk', sans-serif" }}>
+            style={{ backgroundColor: "#DCFCE7", color: "#166534", border: "1px solid #86EFAC", fontFamily: "'Space Grotesk', sans-serif" }}>
             ✓ Confirmed Done
           </span>
         )}
 
         {/* Timestamp */}
         <span
-          className={`text-[10px] text-[#94A3B8] ${taskState === "open" ? "ml-auto" : ""}`}
+          className={`text-[10px] text-slate-400 ${taskState === "open" ? "ml-auto" : ""}`}
           style={{ fontFamily: "'JetBrains Mono', monospace" }}
         >
           {timeAgo(card.createdAt)}
@@ -167,22 +193,26 @@ function TaskCard({ card, currentUser, onMarkDone, onConfirmDone, onDelete }: {
 
       {/* Completion trail */}
       {isDone && (
-        <p className="text-[11px] text-[#64748B] italic">
-          Marked done by <span style={{ color: card.completedBy ? AUTHOR_COLORS[card.completedBy].text : "white" }}>{card.completedBy}</span> · {timeAgo(card.completedAt!)}
+        <p className="text-[11px] text-slate-500 italic">
+          Marked done by{" "}
+          <span style={{ color: card.completedBy ? AUTHOR_COLORS[card.completedBy].badgeText : "#475569" }}>
+            {card.completedBy}
+          </span>{" "}
+          · {timeAgo(card.completedAt!)}
         </p>
       )}
 
       {/* Action row */}
       <div className="flex items-center gap-2 flex-wrap">
-        {/* Doer: mark done (only if open and this is the assigned person) */}
+        {/* Doer: mark done */}
         {taskState === "open" && isDoer && (
           <button
             onClick={() => onMarkDone(card.id)}
-            className="text-[11px] px-3 py-1.5 rounded-lg font-medium transition-all hover:opacity-90 flex items-center gap-1.5"
+            className="text-[11px] px-3 py-1.5 rounded-lg font-semibold transition-all hover:opacity-90 flex items-center gap-1.5"
             style={{
-              backgroundColor: "rgba(34,197,94,0.15)",
-              border: "1px solid rgba(34,197,94,0.30)",
-              color: "#86EFAC",
+              backgroundColor: "#DCFCE7",
+              border: "1.5px solid #86EFAC",
+              color: "#166534",
               fontFamily: "'Space Grotesk', sans-serif",
             }}
           >
@@ -190,15 +220,15 @@ function TaskCard({ card, currentUser, onMarkDone, onConfirmDone, onDelete }: {
           </button>
         )}
 
-        {/* Requester: confirm done (only if done_pending and this is the requester) */}
+        {/* Requester: confirm done */}
         {taskState === "done_pending" && isRequester && (
           <button
             onClick={() => onConfirmDone(card.id)}
             className="text-[11px] px-3 py-1.5 rounded-lg font-bold transition-all hover:opacity-90 flex items-center gap-1.5"
             style={{
-              backgroundColor: "rgba(34,197,94,0.20)",
-              border: "1px solid rgba(34,197,94,0.40)",
-              color: "#4ADE80",
+              backgroundColor: "#DCFCE7",
+              border: "1.5px solid #4ADE80",
+              color: "#166534",
               fontFamily: "'Space Grotesk', sans-serif",
             }}
           >
@@ -206,19 +236,19 @@ function TaskCard({ card, currentUser, onMarkDone, onConfirmDone, onDelete }: {
           </button>
         )}
 
-        {/* Waiting message */}
+        {/* Waiting messages */}
         {taskState === "open" && !isDoer && currentUser && (
-          <span className="text-[11px] text-[#94A3B8] italic">
+          <span className="text-[11px] text-slate-400 italic">
             Waiting for {card.assignedTo ?? "assignee"} to complete
           </span>
         )}
         {taskState === "done_pending" && !isRequester && currentUser && (
-          <span className="text-[11px] text-[#94A3B8] italic">
+          <span className="text-[11px] text-slate-400 italic">
             Waiting for {card.author} to confirm
           </span>
         )}
 
-        {/* Delete — only own cards */}
+        {/* Delete */}
         {card.author === currentUser && (
           <button
             onClick={() => onDelete(card.id)}
@@ -252,32 +282,40 @@ function BoardCard({ card, currentUser, onSeen, onArchive, onDelete }: {
       className="rounded-xl p-4 flex flex-col gap-3 transition-all duration-200"
       style={{
         backgroundColor: colors.bg,
-        border: `1px solid ${colors.border}`,
-        opacity: alreadySeen ? 0.7 : 1,
+        border: `1.5px solid ${colors.border}`,
+        opacity: alreadySeen ? 0.75 : 1,
       }}
     >
       <div className="flex items-center gap-2 flex-wrap">
+        {/* Author badge */}
         <span
           className="text-[11px] font-bold px-2 py-0.5 rounded-full"
-          style={{ backgroundColor: colors.badge, color: colors.badgeText, fontFamily: "'Space Grotesk', sans-serif" }}
+          style={{ backgroundColor: colors.badgeBg, color: colors.badgeText, fontFamily: "'Space Grotesk', sans-serif" }}
         >
           {card.author}
         </span>
+
+        {/* Business tag */}
         <span
           className="text-[10px] font-medium px-2 py-0.5 rounded-full flex items-center gap-1"
-          style={{ backgroundColor: `${biz.color}18`, color: biz.color, fontFamily: "'Space Grotesk', sans-serif" }}
+          style={{ backgroundColor: biz.bg, color: biz.text, border: `1px solid ${biz.border}`, fontFamily: "'Space Grotesk', sans-serif" }}
         >
           {biz.icon} {biz.label}
         </span>
+
+        {/* Seen indicator */}
         {alreadySeen && (
-          <span className="text-[10px] text-[#94A3B8] ml-auto flex items-center gap-1">
-            <span style={{ color: "#22c55e" }}>✓</span> Seen by {card.seenBy}
+          <span className="text-[10px] text-slate-400 ml-auto flex items-center gap-1">
+            <span style={{ color: "#16A34A" }}>✓</span> Seen by {card.seenBy}
           </span>
         )}
         {!alreadySeen && isOwnCard && (
-          <span className="text-[10px] text-[#94A3B8] ml-auto italic">Awaiting {card.author === "Matt" ? "Lynn" : "Matt"}</span>
+          <span className="text-[10px] text-slate-400 ml-auto italic">
+            Awaiting {card.author === "Matt" ? "Lynn" : "Matt"}
+          </span>
         )}
-        <span className="text-[10px] text-[#94A3B8] ml-auto" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+
+        <span className="text-[10px] text-slate-400 ml-auto" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
           {timeAgo(card.createdAt)}
         </span>
       </div>
@@ -288,11 +326,11 @@ function BoardCard({ card, currentUser, onSeen, onArchive, onDelete }: {
         {!isOwnCard && !alreadySeen && (
           <button
             onClick={() => onSeen(card.id)}
-            className="text-[11px] px-3 py-1.5 rounded-lg font-medium transition-all hover:opacity-90 flex items-center gap-1.5"
+            className="text-[11px] px-3 py-1.5 rounded-lg font-semibold transition-all hover:opacity-90 flex items-center gap-1.5"
             style={{
-              backgroundColor: "rgba(34,197,94,0.15)",
-              border: "1px solid rgba(34,197,94,0.30)",
-              color: "#86EFAC",
+              backgroundColor: "#DCFCE7",
+              border: "1.5px solid #86EFAC",
+              color: "#166534",
               fontFamily: "'Space Grotesk', sans-serif",
             }}
           >
@@ -305,7 +343,7 @@ function BoardCard({ card, currentUser, onSeen, onArchive, onDelete }: {
           style={{
             backgroundColor: "#F8FAFC",
             border: "1px solid #CBD5E1",
-            color: "#64748B",
+            color: "#475569",
             fontFamily: "'Space Grotesk', sans-serif",
           }}
         >
@@ -358,62 +396,57 @@ function AddCardForm({ currentUser, onAdded }: { currentUser: Author | null; onA
 
   const other = currentUser === "Matt" ? "Lynn" : "Matt";
 
+  // Type button styles
+  const typeStyles: Record<CardType, { activeBg: string; activeBorder: string; activeText: string }> = {
+    update: { activeBg: "#D1FAE5", activeBorder: "#6EE7B7", activeText: "#065F46" },
+    issue:  { activeBg: "#FEF3C7", activeBorder: "#FCD34D", activeText: "#92400E" },
+    task:   { activeBg: "#EDE9FE", activeBorder: "#C4B5FD", activeText: "#5B21B6" },
+  };
+
   return (
     <div
       className="rounded-xl p-4 flex flex-col gap-4"
-      style={{ backgroundColor: "#F8FAFC", border: "1px solid #CBD5E1" }}
+      style={{ backgroundColor: "#FFFFFF", border: "1.5px solid #E2E8F0" }}
     >
-      <p className="text-[11px] font-bold text-[#64748B] uppercase tracking-widest" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+      <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
         + Post to Board
       </p>
 
       {/* Type selector */}
       <div className="flex flex-col gap-1.5">
-        <p className="text-[10px] text-[#94A3B8] uppercase tracking-wider" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>What kind of post?</p>
+        <p className="text-[10px] text-slate-400 uppercase tracking-wider" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>What kind of post?</p>
         <div className="flex flex-col gap-1.5">
-          <button
-            onClick={() => setType("update")}
-            className="w-full py-2 rounded-lg text-[11px] font-semibold transition-all text-left px-3"
-            style={{
-              backgroundColor: type === "update" ? "rgba(16,185,129,0.15)" : "#F8FAFC",
-              border: `1px solid ${type === "update" ? "rgba(16,185,129,0.35)" : "#E2E8F0"}`,
-              color: type === "update" ? "#6EE7B7" : "#64748B",
-              fontFamily: "'Space Grotesk', sans-serif",
-            }}
-          >
-            ✅ Update — What I did
-          </button>
-          <button
-            onClick={() => setType("issue")}
-            className="w-full py-2 rounded-lg text-[11px] font-semibold transition-all text-left px-3"
-            style={{
-              backgroundColor: type === "issue" ? "rgba(251,191,36,0.12)" : "#F8FAFC",
-              border: `1px solid ${type === "issue" ? "rgba(251,191,36,0.30)" : "#E2E8F0"}`,
-              color: type === "issue" ? "#FDE68A" : "#64748B",
-              fontFamily: "'Space Grotesk', sans-serif",
-            }}
-          >
-            💬 Issue — Need to discuss
-          </button>
-          <button
-            onClick={() => setType("task")}
-            className="w-full py-2 rounded-lg text-[11px] font-semibold transition-all text-left px-3"
-            style={{
-              backgroundColor: type === "task" ? "rgba(139,92,246,0.15)" : "#F8FAFC",
-              border: `1px solid ${type === "task" ? "rgba(139,92,246,0.35)" : "#E2E8F0"}`,
-              color: type === "task" ? "#C4B5FD" : "#64748B",
-              fontFamily: "'Space Grotesk', sans-serif",
-            }}
-          >
-            ☑ Task — Assign to someone
-          </button>
+          {(["update", "issue", "task"] as CardType[]).map(t => {
+            const s = typeStyles[t];
+            const isActive = type === t;
+            const labels: Record<CardType, string> = {
+              update: "✅ Update — What I did",
+              issue:  "💬 Issue — Need to discuss",
+              task:   "☑ Task — Assign to someone",
+            };
+            return (
+              <button
+                key={t}
+                onClick={() => setType(t)}
+                className="w-full py-2 rounded-lg text-[11px] font-semibold transition-all text-left px-3"
+                style={{
+                  backgroundColor: isActive ? s.activeBg : "#F8FAFC",
+                  border: `1.5px solid ${isActive ? s.activeBorder : "#E2E8F0"}`,
+                  color: isActive ? s.activeText : "#64748B",
+                  fontFamily: "'Space Grotesk', sans-serif",
+                }}
+              >
+                {labels[t]}
+              </button>
+            );
+          })}
         </div>
       </div>
 
       {/* Assign to (only for tasks) */}
       {type === "task" && (
         <div className="flex flex-col gap-1.5">
-          <p className="text-[10px] text-[#94A3B8] uppercase tracking-wider" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Assign to:</p>
+          <p className="text-[10px] text-slate-500 uppercase tracking-wider font-medium" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Assign to:</p>
           <div className="flex gap-2">
             {(["Matt", "Lynn"] as Author[]).map(a => {
               const c = AUTHOR_COLORS[a];
@@ -423,11 +456,11 @@ function AddCardForm({ currentUser, onAdded }: { currentUser: Author | null; onA
                 <button
                   key={a}
                   onClick={() => setAssignedTo(a)}
-                  className="flex-1 py-2 rounded-lg text-[11px] font-bold transition-all"
+                  className="flex-1 py-2 rounded-lg text-[12px] font-bold transition-all"
                   style={{
-                    backgroundColor: isActive ? c.badge : "#F8FAFC",
-                    border: `2px solid ${isActive ? c.border : "#E2E8F0"}`,
-                    color: isActive ? c.text : "#64748B",
+                    backgroundColor: isActive ? c.btnBg : "#F8FAFC",
+                    border: `2px solid ${isActive ? c.btnBorder : "#E2E8F0"}`,
+                    color: isActive ? c.btnText : "#475569",
                     fontFamily: "'Space Grotesk', sans-serif",
                   }}
                 >
@@ -441,7 +474,7 @@ function AddCardForm({ currentUser, onAdded }: { currentUser: Author | null; onA
 
       {/* Business */}
       <div className="flex flex-col gap-1.5">
-        <p className="text-[10px] text-[#94A3B8] uppercase tracking-wider" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Which business?</p>
+        <p className="text-[10px] text-slate-400 uppercase tracking-wider" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Which business?</p>
         <div className="flex gap-1.5 flex-wrap">
           {(Object.entries(BUSINESS_LABELS) as [Business, typeof BUSINESS_LABELS[Business]][]).map(([key, biz]) => (
             <button
@@ -449,9 +482,9 @@ function AddCardForm({ currentUser, onAdded }: { currentUser: Author | null; onA
               onClick={() => setBusiness(key)}
               className="px-3 py-1.5 rounded-lg text-[11px] font-medium transition-all flex items-center gap-1"
               style={{
-                backgroundColor: business === key ? `${biz.color}18` : "#F8FAFC",
-                border: `1px solid ${business === key ? `${biz.color}40` : "#E2E8F0"}`,
-                color: business === key ? biz.color : "#64748B",
+                backgroundColor: business === key ? biz.bg : "#F8FAFC",
+                border: `1.5px solid ${business === key ? biz.border : "#E2E8F0"}`,
+                color: business === key ? biz.text : "#64748B",
                 fontFamily: "'Space Grotesk', sans-serif",
               }}
             >
@@ -461,7 +494,7 @@ function AddCardForm({ currentUser, onAdded }: { currentUser: Author | null; onA
         </div>
       </div>
 
-      {/* Content */}
+      {/* Content textarea */}
       <textarea
         value={content}
         onChange={e => setContent(e.target.value)}
@@ -475,15 +508,16 @@ function AddCardForm({ currentUser, onAdded }: { currentUser: Author | null; onA
             : "Describe the task…"
         }
         rows={3}
-        className="w-full rounded-lg px-3 py-2.5 text-[12px] text-[#1E3A5F] placeholder-[#94A3B8] resize-none focus:outline-none transition-colors"
+        className="w-full rounded-lg px-3 py-2.5 text-[13px] text-[#1E3A5F] placeholder-slate-400 resize-none focus:outline-none transition-colors"
         style={{
           backgroundColor: "#F8FAFC",
-          border: "1px solid #CBD5E1",
+          border: "1.5px solid #CBD5E1",
           fontFamily: "'Inter', sans-serif",
           lineHeight: "1.6",
         }}
         onFocus={e => (e.target.style.borderColor = "#94A3B8")}
-        onBlur={e => (e.target.style.borderColor = "#CBD5E1")}
+        onBlur={e => (e.target.style.borderColor =
+          "#CBD5E1")}
       />
 
       <button
@@ -491,11 +525,9 @@ function AddCardForm({ currentUser, onAdded }: { currentUser: Author | null; onA
         disabled={createCard.isPending || !currentUser || !content.trim() || (type === "task" && !assignedTo)}
         className="w-full py-2.5 rounded-lg text-[12px] font-bold transition-all hover:opacity-90 disabled:opacity-40"
         style={{
-          background: currentUser
-            ? `linear-gradient(135deg, ${AUTHOR_COLORS[currentUser].badge}, ${AUTHOR_COLORS[currentUser].bg})`
-            : "#E2E8F0",
-          border: `1px solid ${currentUser ? AUTHOR_COLORS[currentUser].border : "#CBD5E1"}`,
-          color: currentUser ? AUTHOR_COLORS[currentUser].text : "#94A3B8",
+          backgroundColor: currentUser ? AUTHOR_COLORS[currentUser].btnBg : "#E2E8F0",
+          border: `1.5px solid ${currentUser ? AUTHOR_COLORS[currentUser].btnBorder : "#CBD5E1"}`,
+          color: currentUser ? AUTHOR_COLORS[currentUser].btnText : "#94A3B8",
           fontFamily: "'Space Grotesk', sans-serif",
         }}
       >
@@ -508,7 +540,6 @@ function AddCardForm({ currentUser, onAdded }: { currentUser: Author | null; onA
 // ─── Main Board Page ──────────────────────────────────────────────────────────
 
 export default function Board() {
-  // Persist identity in localStorage — set once per device
   const [currentUser, setCurrentUser] = useState<Author | null>(() => {
     const saved = localStorage.getItem(IDENTITY_KEY);
     return (saved === "Matt" || saved === "Lynn") ? saved : null;
@@ -516,7 +547,6 @@ export default function Board() {
   const [filterBusiness, setFilterBusiness] = useState<Business | "all">("all");
   const [showCompleted, setShowCompleted] = useState(false);
 
-  // Persist identity changes
   useEffect(() => {
     if (currentUser) {
       localStorage.setItem(IDENTITY_KEY, currentUser);
@@ -539,14 +569,12 @@ export default function Board() {
     onError: () => toast.error("Failed to confirm task"),
   });
 
-  // Include archived cards for the completed section
   const allCards = (data?.cards ?? []) as Card[];
 
   const filtered = filterBusiness === "all"
     ? allCards
     : allCards.filter(c => c.business === filterBusiness);
 
-  // Separate into sections
   const updates = filtered.filter(c => c.type === "update" && !c.archivedAt);
   const issues = filtered.filter(c => c.type === "issue" && !c.archivedAt);
   const openTasks = filtered.filter(c => c.type === "task" && !c.archivedAt && !c.completedAt);
@@ -576,7 +604,7 @@ export default function Board() {
         <div className="flex items-center gap-3">
           <div
             className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 text-lg"
-            style={{ background: "linear-gradient(135deg, #3B82F6 0%, #EC4899 100%)", boxShadow: "0 0 16px rgba(59,130,246,0.25)" }}
+            style={{ background: "linear-gradient(135deg, #2563EB 0%, #E11D48 100%)" }}
           >
             📋
           </div>
@@ -584,11 +612,11 @@ export default function Board() {
             <h1 className="text-base font-bold text-[#1E3A5F] leading-tight tracking-tight" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
               Command Board
             </h1>
-            <p className="text-[11px] text-[#64748B] mt-0.5">Updates, issues & tasks between Matt and Lynn</p>
+            <p className="text-[11px] text-slate-500 mt-0.5">Updates, issues & tasks between Matt and Lynn</p>
           </div>
         </div>
 
-        {/* Identity selector (persistent) + back link */}
+        {/* Identity selector */}
         <div className="flex items-center gap-3">
           <Link
             href="/app"
@@ -596,13 +624,13 @@ export default function Board() {
             style={{
               backgroundColor: "#F1F5F9",
               border: "1px solid #CBD5E1",
-              color: "#64748B",
+              color: "#475569",
               fontFamily: "'Space Grotesk', sans-serif",
             }}
           >
             ← Calendar
           </Link>
-          <span className="text-[10px] text-[#94A3B8]" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>I am:</span>
+          <span className="text-[10px] text-slate-400 font-medium" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>I am:</span>
           {(["Matt", "Lynn"] as Author[]).map(a => {
             const c = AUTHOR_COLORS[a];
             const isActive = currentUser === a;
@@ -610,11 +638,11 @@ export default function Board() {
               <button
                 key={a}
                 onClick={() => setCurrentUser(a)}
-                className="px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all relative"
+                className="px-3 py-1.5 rounded-lg text-[12px] font-bold transition-all relative"
                 style={{
-                  backgroundColor: isActive ? c.badge : "#F8FAFC",
-                  border: `1px solid ${isActive ? c.border : "#E2E8F0"}`,
-                  color: isActive ? c.text : "#64748B",
+                  backgroundColor: isActive ? c.btnBg : "#F8FAFC",
+                  border: `2px solid ${isActive ? c.btnBorder : "#E2E8F0"}`,
+                  color: isActive ? c.btnText : "#475569",
                   fontFamily: "'Space Grotesk', sans-serif",
                 }}
               >
@@ -631,7 +659,7 @@ export default function Board() {
       </header>
 
       <div className="flex flex-1 overflow-hidden">
-        {/* Left sidebar: form + filters */}
+        {/* Left sidebar */}
         <aside
           className="w-80 flex-shrink-0 p-4 overflow-y-auto"
           style={{ borderRight: "1px solid #E2E8F0", backgroundColor: "#FAFAF9" }}
@@ -640,10 +668,12 @@ export default function Board() {
           {!currentUser && (
             <div
               className="rounded-xl p-3 mb-4 flex items-center gap-2"
-              style={{ backgroundColor: "rgba(251,191,36,0.08)", border: "1px solid rgba(251,191,36,0.25)" }}
+              style={{ backgroundColor: "#FFFBEB", border: "1.5px solid #FCD34D" }}
             >
               <span>👆</span>
-              <p className="text-[11px] text-amber-200/70">Select <strong className="text-amber-200">who you are</strong> in the top-right — saved for next time.</p>
+              <p className="text-[11px] text-amber-800">
+                Select <strong>who you are</strong> in the top-right — saved for next time.
+              </p>
             </div>
           )}
 
@@ -651,16 +681,16 @@ export default function Board() {
 
           {/* Business filter */}
           <div className="mt-5 flex flex-col gap-2">
-            <p className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest px-1" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
               Filter by Business
             </p>
             <div className="flex flex-col gap-1">
               <button
                 onClick={() => setFilterBusiness("all")}
-                className="text-left px-3 py-2 rounded-lg text-[11px] transition-all"
+                className="text-left px-3 py-2 rounded-lg text-[11px] font-medium transition-all"
                 style={{
-                  backgroundColor: filterBusiness === "all" ? "#CBD5E1" : "transparent",
-                  color: filterBusiness === "all" ? "rgba(255,255,255,0.80)" : "#64748B",
+                  backgroundColor: filterBusiness === "all" ? "#E2E8F0" : "transparent",
+                  color: filterBusiness === "all" ? "#1E3A5F" : "#64748B",
                   fontFamily: "'Space Grotesk', sans-serif",
                 }}
               >
@@ -670,10 +700,10 @@ export default function Board() {
                 <button
                   key={key}
                   onClick={() => setFilterBusiness(key)}
-                  className="text-left px-3 py-2 rounded-lg text-[11px] transition-all"
+                  className="text-left px-3 py-2 rounded-lg text-[11px] font-medium transition-all"
                   style={{
-                    backgroundColor: filterBusiness === key ? `${biz.color}15` : "transparent",
-                    color: filterBusiness === key ? biz.color : "#64748B",
+                    backgroundColor: filterBusiness === key ? biz.bg : "transparent",
+                    color: filterBusiness === key ? biz.text : "#64748B",
                     fontFamily: "'Space Grotesk', sans-serif",
                   }}
                 >
@@ -684,24 +714,24 @@ export default function Board() {
           </div>
 
           {/* Legend */}
-          <div className="mt-5 rounded-xl p-3.5" style={{ backgroundColor: "#F8FAFC", border: "1px solid #E2E8F0" }}>
-            <p className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest mb-2" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Color Key</p>
-            <div className="flex flex-col gap-1.5">
+          <div className="mt-5 rounded-xl p-3.5" style={{ backgroundColor: "#FFFFFF", border: "1px solid #E2E8F0" }}>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2.5" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Color Key</p>
+            <div className="flex flex-col gap-2">
               <div className="flex items-center gap-2">
-                <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: "#3B82F6" }} />
-                <span className="text-[11px] text-[#374151]">Matt's posts</span>
+                <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: "#2563EB" }} />
+                <span className="text-[11px] text-slate-600">Matt's posts</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: "#EC4899" }} />
-                <span className="text-[11px] text-[#374151]">Lynn's posts</span>
+                <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: "#E11D48" }} />
+                <span className="text-[11px] text-slate-600">Lynn's posts</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: "#8B5CF6" }} />
-                <span className="text-[11px] text-[#374151]">Tasks (assigned)</span>
+                <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: "#7C3AED" }} />
+                <span className="text-[11px] text-slate-600">Tasks (assigned)</span>
               </div>
-              <div className="flex items-center gap-2 mt-1">
-                <span className="text-[10px]" style={{ color: "#22c55e" }}>✓</span>
-                <span className="text-[11px] text-[#374151]">Seen / confirmed done</span>
+              <div className="flex items-center gap-2 mt-0.5">
+                <span className="text-[11px]" style={{ color: "#16A34A" }}>✓</span>
+                <span className="text-[11px] text-slate-600">Seen / confirmed done</span>
               </div>
             </div>
           </div>
@@ -711,7 +741,7 @@ export default function Board() {
         <main className="flex-1 overflow-y-auto p-5 flex flex-col gap-8">
           {isLoading ? (
             <div className="flex items-center justify-center h-40">
-              <span className="text-[#94A3B8] text-sm animate-pulse">Loading board…</span>
+              <span className="text-slate-400 text-sm animate-pulse">Loading board…</span>
             </div>
           ) : (
             <>
@@ -720,15 +750,15 @@ export default function Board() {
                 <div className="flex items-center gap-2 mb-1">
                   <span className="text-base">☑</span>
                   <h2 className="text-sm font-bold text-[#1E3A5F]" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Tasks</h2>
-                  <span className="text-[10px] text-[#94A3B8] ml-1">— Assigned to-dos between owners</span>
-                  <span className="ml-auto text-[10px] px-2 py-0.5 rounded-full" style={{ backgroundColor: "#E2E8F0", color: "#64748B", fontFamily: "'JetBrains Mono', monospace" }}>
+                  <span className="text-[10px] text-slate-400 ml-1">— Assigned to-dos between owners</span>
+                  <span className="ml-auto text-[10px] px-2 py-0.5 rounded-full" style={{ backgroundColor: "#E2E8F0", color: "#475569", fontFamily: "'JetBrains Mono', monospace" }}>
                     {openTasks.length} open
                   </span>
                 </div>
 
                 {openTasks.length === 0 && donePendingTasks.length === 0 ? (
                   <div className="rounded-xl p-6 text-center" style={{ backgroundColor: "#F8FAFC", border: "1px dashed #CBD5E1" }}>
-                    <p className="text-[12px] text-[#94A3B8]">No open tasks. Use "☑ Task" to assign something to Matt or Lynn.</p>
+                    <p className="text-[12px] text-slate-400">No open tasks. Use "☑ Task" to assign something to Matt or Lynn.</p>
                   </div>
                 ) : (
                   <>
@@ -748,7 +778,8 @@ export default function Board() {
                 {/* Done — Awaiting Confirmation subsection */}
                 {donePendingTasks.length > 0 && (
                   <div className="mt-2 flex flex-col gap-2">
-                    <p className="text-[10px] font-bold text-amber-300/50 uppercase tracking-widest px-1" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+                    <p className="text-[10px] font-bold uppercase tracking-widest px-1"
+                      style={{ color: "#92400E", fontFamily: "'Space Grotesk', sans-serif" }}>
                       ⏳ Done — Awaiting Your Confirmation ({donePendingTasks.length})
                     </p>
                     {donePendingTasks.map(card => (
@@ -769,7 +800,7 @@ export default function Board() {
                   <div className="mt-2">
                     <button
                       onClick={() => setShowCompleted(v => !v)}
-                      className="text-[11px] text-[#94A3B8] hover:text-[#374151] transition-colors flex items-center gap-1.5 px-1"
+                      className="text-[11px] text-slate-400 hover:text-slate-600 transition-colors flex items-center gap-1.5 px-1"
                       style={{ fontFamily: "'Space Grotesk', sans-serif" }}
                     >
                       {showCompleted ? "▾" : "▸"} Completed this period ({completedTasks.length})
@@ -799,14 +830,14 @@ export default function Board() {
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-base">✅</span>
                     <h2 className="text-sm font-bold text-[#1E3A5F]" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Updates</h2>
-                    <span className="text-[10px] text-[#94A3B8] ml-1">— What I did</span>
-                    <span className="ml-auto text-[10px] px-2 py-0.5 rounded-full" style={{ backgroundColor: "#E2E8F0", color: "#64748B", fontFamily: "'JetBrains Mono', monospace" }}>
+                    <span className="text-[10px] text-slate-400 ml-1">— What I did</span>
+                    <span className="ml-auto text-[10px] px-2 py-0.5 rounded-full" style={{ backgroundColor: "#E2E8F0", color: "#475569", fontFamily: "'JetBrains Mono', monospace" }}>
                       {updates.length}
                     </span>
                   </div>
                   {updates.length === 0 ? (
                     <div className="rounded-xl p-6 text-center" style={{ backgroundColor: "#F1F0ED", border: "1px dashed #E2E0DB" }}>
-                      <p className="text-[12px] text-[#94A3B8]">No updates yet.</p>
+                      <p className="text-[12px] text-slate-400">No updates yet.</p>
                     </div>
                   ) : (
                     updates.map(card => (
@@ -827,14 +858,14 @@ export default function Board() {
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-base">💬</span>
                     <h2 className="text-sm font-bold text-[#1E3A5F]" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Issues</h2>
-                    <span className="text-[10px] text-[#94A3B8] ml-1">— What we need to discuss</span>
-                    <span className="ml-auto text-[10px] px-2 py-0.5 rounded-full" style={{ backgroundColor: "#E2E8F0", color: "#64748B", fontFamily: "'JetBrains Mono', monospace" }}>
+                    <span className="text-[10px] text-slate-400 ml-1">— What we need to discuss</span>
+                    <span className="ml-auto text-[10px] px-2 py-0.5 rounded-full" style={{ backgroundColor: "#E2E8F0", color: "#475569", fontFamily: "'JetBrains Mono', monospace" }}>
                       {issues.length}
                     </span>
                   </div>
                   {issues.length === 0 ? (
                     <div className="rounded-xl p-6 text-center" style={{ backgroundColor: "#F1F0ED", border: "1px dashed #E2E0DB" }}>
-                      <p className="text-[12px] text-[#94A3B8]">No issues queued.</p>
+                      <p className="text-[12px] text-slate-400">No issues queued.</p>
                     </div>
                   ) : (
                     issues.map(card => (
