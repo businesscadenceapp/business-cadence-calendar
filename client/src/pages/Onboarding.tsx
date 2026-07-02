@@ -18,9 +18,10 @@ interface OnboardingData {
   employeeCount: number;
   workDays: number[]; // 0=Sun..6=Sat
   meetingDayPrefs: {
-    ownerDaily: number;
+    ownerDaily: number[];  // multi-day selection
     ownerWeekly: number;
     ownerMonthly: number;
+    quarterlyDay: number;  // day of week for quarterly offsite
     teamDaily: number;
     teamWeekly: number;
   };
@@ -233,6 +234,52 @@ function StepWorkSchedule({
   );
 }
 
+// Multi-select day picker (for Daily Huddle)
+function DayPickerMulti({
+  label,
+  value,
+  onChange,
+  allowedDays,
+}: {
+  label: string;
+  value: number[];
+  onChange: (days: number[]) => void;
+  allowedDays: number[];
+}) {
+  const toggle = (i: number) => {
+    if (!allowedDays.includes(i)) return;
+    const next = value.includes(i) ? value.filter(d => d !== i) : [...value, i];
+    onChange(next);
+  };
+  return (
+    <div className="flex flex-col gap-1.5">
+      <Label className="text-xs font-medium text-slate-500 uppercase tracking-wide">{label}</Label>
+      <p className="text-[11px] text-slate-400 -mt-0.5">Select all days you hold this meeting each week.</p>
+      <div className="flex gap-1.5 flex-wrap">
+        {DAY_NAMES.map((name, i) => {
+          const allowed = allowedDays.includes(i);
+          const selected = value.includes(i);
+          return (
+            <button
+              key={i}
+              disabled={!allowed}
+              onClick={() => toggle(i)}
+              className={cn(
+                "w-11 h-9 rounded-lg border text-xs font-semibold transition-all duration-150",
+                !allowed && "opacity-30 cursor-not-allowed border-slate-100 text-slate-300",
+                allowed && selected && "border-teal-500 bg-teal-500 text-white",
+                allowed && !selected && "border-slate-200 bg-white text-slate-600 hover:border-teal-300"
+              )}
+            >
+              {name}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function DayPicker({
   label,
   value,
@@ -294,10 +341,10 @@ function StepOwnerMeetings({
       </div>
 
       <div className="flex flex-col gap-5 bg-slate-50 rounded-xl p-4">
-        <DayPicker
+        <DayPickerMulti
           label="Daily Huddle (every week)"
           value={data.meetingDayPrefs.ownerDaily}
-          onChange={v => update("ownerDaily", v)}
+          onChange={days => onChange({ meetingDayPrefs: { ...data.meetingDayPrefs, ownerDaily: days } })}
           allowedDays={data.workDays}
         />
         <DayPicker
@@ -312,10 +359,12 @@ function StepOwnerMeetings({
           onChange={v => update("ownerMonthly", v)}
           allowedDays={data.workDays}
         />
-        <div className="flex flex-col gap-1.5">
-          <Label className="text-xs font-medium text-slate-500 uppercase tracking-wide">Quarterly Offsite</Label>
-          <p className="text-xs text-slate-400">Always scheduled on the first Friday of Jan, Apr, Jul, Oct — shifts to next Friday if that day is closed.</p>
-        </div>
+        <DayPicker
+          label="Quarterly Offsite day (first occurrence in Jan, Apr, Jul, Oct)"
+          value={data.meetingDayPrefs.quarterlyDay}
+          onChange={v => update("quarterlyDay", v)}
+          allowedDays={[0, 1, 2, 3, 4, 5, 6]}
+        />
       </div>
 
       <StepNav onBack={onBack} onNext={onNext} canProceed={true} />
@@ -396,7 +445,7 @@ function StepPreview({
         />
         <PreviewRow
           label="Owner Daily Huddle"
-          value={`Every ${DAY_FULL[data.meetingDayPrefs.ownerDaily]}`}
+          value={data.meetingDayPrefs.ownerDaily.map(d => DAY_NAMES[d]).join(", ") || "None selected"}
         />
         <PreviewRow
           label="Owner Weekly Review"
@@ -406,7 +455,10 @@ function StepPreview({
           label="Owner Monthly Review"
           value={`First ${DAY_FULL[data.meetingDayPrefs.ownerMonthly]} of each month`}
         />
-        <PreviewRow label="Quarterly Offsite" value="First Friday of Jan, Apr, Jul, Oct" />
+        <PreviewRow
+          label="Quarterly Offsite"
+          value={`First ${DAY_FULL[data.meetingDayPrefs.quarterlyDay]} of Jan, Apr, Jul, Oct`}
+        />
         <PreviewRow
           label="Team Daily Standup"
           value={`Every ${DAY_FULL[data.meetingDayPrefs.teamDaily]}`}

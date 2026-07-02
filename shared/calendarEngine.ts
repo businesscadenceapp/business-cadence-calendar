@@ -6,9 +6,10 @@
 export type MeetingType = "daily" | "weekly" | "monthly" | "quarterly";
 
 export interface MeetingDayPrefs {
-  ownerDaily: number;    // 0=Sun, 1=Mon, ..., 6=Sat
+  ownerDaily: number[];  // array of days 0=Sun..6=Sat (multi-day daily huddle)
   ownerWeekly: number;
   ownerMonthly: number;  // day of week for monthly (first occurrence of that day each month)
+  quarterlyDay: number;  // day of week for quarterly offsite (first occurrence of that day in Jan/Apr/Jul/Oct)
   teamDaily: number;
   teamWeekly: number;
 }
@@ -60,7 +61,6 @@ function nextAvailableDate(
   preferredDayOfWeek: number,
   workDays: number[],
   closedPeriods: ClosedPeriod[],
-  isQuarterly = false
 ): { date: Date; rescheduled: boolean; originalDate: Date } {
   const originalDate = new Date(from);
   let current = new Date(from);
@@ -81,8 +81,7 @@ function nextAvailableDate(
     }
 
     // Move to next occurrence of the preferred day of week
-    // (for quarterly, preferred = Friday = 5)
-    const targetDow = isQuarterly ? 5 : preferredDayOfWeek;
+    const targetDow = preferredDayOfWeek;
     let daysUntilNext = (targetDow - current.getDay() + 7) % 7;
     if (daysUntilNext === 0) daysUntilNext = 7; // always advance at least one week
     current = addDays(current, daysUntilNext);
@@ -124,14 +123,14 @@ function getFirstDayOfWeekEachMonth(year: number, dayOfWeek: number): Date[] {
 }
 
 /**
- * Get the first Friday of each quarter (Jan, Apr, Jul, Oct).
+ * Get the first occurrence of a day-of-week in each quarter start month (Jan, Apr, Jul, Oct).
  * Used for quarterly offsites.
  */
-function getQuarterlyFridays(year: number): Date[] {
+function getFirstDayOfWeekEachQuarter(year: number, dayOfWeek: number): Date[] {
   const quarterMonths = [0, 3, 6, 9]; // Jan, Apr, Jul, Oct
   return quarterMonths.map(month => {
     const d = new Date(year, month, 1);
-    while (d.getDay() !== 5) d.setDate(d.getDate() + 1); // advance to first Friday
+    while (d.getDay() !== dayOfWeek) d.setDate(d.getDate() + 1);
     return new Date(d);
   });
 }
@@ -150,19 +149,28 @@ export function generateMeetingSchedule(params: {
   const meetings: ScheduledMeeting[] = [];
 
   // ── Owner Daily Huddle (every work day on ownerDaily) ──────────────────────
-  const allOwnerDailyDates = getAllDatesForDayOfWeek(year, meetingDayPrefs.ownerDaily);
-  for (const rawDate of allOwnerDailyDates) {
-    const { date, rescheduled, originalDate } = nextAvailableDate(
-      rawDate, meetingDayPrefs.ownerDaily, workDays, closedPeriods
-    );
-    if (date.getFullYear() !== year) continue;
-    meetings.push({
-      date: toDateKey(date),
-      meetingType: "daily",
-      layer: "owner",
-      isRescheduled: rescheduled,
-      originalDate: rescheduled ? toDateKey(originalDate) : undefined,
-    });
+  const ownerDailyDays = Array.isArray(meetingDayPrefs.ownerDaily)
+    ? meetingDayPrefs.ownerDaily
+    : [meetingDayPrefs.ownerDaily as unknown as number]; // backward compat
+  const seenDailyOwnerDates = new Set<string>();
+  for (const dayOfWeek of ownerDailyDays) {
+    const allOwnerDailyDates = getAllDatesForDayOfWeek(year, dayOfWeek);
+    for (const rawDate of allOwnerDailyDates) {
+      const { date, rescheduled, originalDate } = nextAvailableDate(
+        rawDate, dayOfWeek, workDays, closedPeriods
+      );
+      if (date.getFullYear() !== year) continue;
+      const key = toDateKey(date);
+      if (seenDailyOwnerDates.has(key)) continue;
+      seenDailyOwnerDates.add(key);
+      meetings.push({
+        date: key,
+        meetingType: "daily",
+        layer: "owner",
+        isRescheduled: rescheduled,
+        originalDate: rescheduled ? toDateKey(originalDate) : undefined,
+      });
+    }
   }
 
   // ── Owner Weekly (every ownerWeekly day of week) ───────────────────────────
@@ -198,10 +206,11 @@ export function generateMeetingSchedule(params: {
   }
 
   // ── Owner Quarterly Offsite (first Friday of Jan, Apr, Jul, Oct) ──────────
-  const quarterlyDates = getQuarterlyFridays(year);
+  const qDay = meetingDayPrefs.quarterlyDay ?? 5; // default to Friday if not set
+  const quarterlyDates = getFirstDayOfWeekEachQuarter(year, qDay);
   for (const rawDate of quarterlyDates) {
     const { date, rescheduled, originalDate } = nextAvailableDate(
-      rawDate, 5 /* Friday */, workDays, closedPeriods, true
+      rawDate, qDay, workDays, closedPeriods
     );
     if (date.getFullYear() !== year) continue;
     meetings.push({

@@ -374,9 +374,10 @@ export async function upsertBusinessProfile(data: {
   employeeCount: number;
   workDays: number[];
   meetingDayPrefs: {
-    ownerDaily: number;
+    ownerDaily: number[];  // multi-day
     ownerWeekly: number;
     ownerMonthly: number;
+    quarterlyDay: number;
     teamDaily: number;
     teamWeekly: number;
   };
