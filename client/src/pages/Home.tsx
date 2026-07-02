@@ -53,7 +53,7 @@ function DayCell({
   highlightType: MeetingType | null;
   hasLog?: boolean;
 }) {
-  if (!day) return <div className="h-10" />;
+  if (!day) return <div className="h-11 rounded-md" style={{ backgroundColor: "#EEECE8" }} />;
 
   const isClosed = day.isClosed === true;
   const isHighlighted = highlightType ? day.meetings.includes(highlightType) : false;
@@ -62,44 +62,41 @@ function DayCell({
   const hasMonthly = day.meetings.includes("monthly");
   const sortedMeetings = MEETING_ORDER.filter((t) => day.meetings.includes(t));
 
+  // Determine cell background
+  let cellBg = "#F1F0ED"; // default: every day gets a solid light card
+  if (isClosed) cellBg = "#E8E6E1";
+  else if (isSelected) cellBg = "rgba(30,58,95,0.13)";
+  else if (hasQuarterly) cellBg = "rgba(244,63,94,0.12)";
+  else if (hasMonthly) cellBg = "rgba(13,148,136,0.10)";
+  else if (isHighlighted) cellBg = "rgba(30,58,95,0.09)";
+  else if (hasMeetings) cellBg = "#EAE8E3";
+  else if (day.isWeekend) cellBg = "#ECEAE6";
+
+  let cellBorder = "1px solid rgba(30,58,95,0.08)";
+  if (isClosed) cellBorder = "1px solid rgba(148,163,184,0.35)";
+  else if (day.isToday) cellBorder = "1.5px solid #0D9488";
+  else if (isSelected) cellBorder = "1.5px solid rgba(30,58,95,0.35)";
+  else if (isHighlighted && highlightType) cellBorder = `1.5px solid ${MEETING_TYPES[highlightType].color}60`;
+  else if (hasQuarterly) cellBorder = "1.5px solid rgba(244,63,94,0.35)";
+  else if (hasMonthly) cellBorder = "1.5px solid rgba(13,148,136,0.30)";
+
   return (
     <div
-      className={`h-10 rounded-md flex flex-col items-center justify-between py-1 px-0.5 relative transition-all duration-150
-        ${day.isWeekend ? "opacity-30" : ""}
-        ${isClosed ? "opacity-50" : ""}
-        ${day.isToday ? "ring-1 ring-[#0D9488]" : ""}
-        ${isSelected ? "ring-1 ring-[#1E3A5F]/40" : ""}
-        ${hasMeetings ? "cursor-pointer" : ""}
-        ${isHighlighted ? "ring-1" : ""}
+      className={`h-11 rounded-md flex flex-col items-center justify-between py-1 px-0.5 relative transition-all duration-150
+        ${hasMeetings ? "cursor-pointer hover:brightness-95" : ""}
+        ${isClosed ? "opacity-60" : ""}
       `}
       style={{
-        backgroundColor: isClosed
-          ? "rgba(148,163,184,0.15)"
-          : isSelected
-          ? "rgba(30,58,95,0.10)"
-          : hasQuarterly
-          ? "rgba(244,63,94,0.10)"
-          : hasMonthly
-          ? "rgba(13,148,136,0.08)"
-          : isHighlighted
-          ? "rgba(30,58,95,0.06)"
-          : hasMeetings
-          ? "rgba(30,58,95,0.03)"
-          : "transparent",
-        borderColor:
-          isClosed
-            ? "rgba(148,163,184,0.4)"
-            : isHighlighted && highlightType
-            ? MEETING_TYPES[highlightType].color + "50"
-            : undefined,
-        border: isClosed ? "1px solid rgba(148,163,184,0.4)" : undefined,
+        backgroundColor: cellBg,
+        border: cellBorder,
+        boxShadow: hasMeetings && !isClosed ? "0 1px 2px rgba(30,58,95,0.06)" : undefined,
       }}
       onClick={() => hasMeetings && onSelect(day)}
       title={isClosed ? "Closed day" : undefined}
     >
       <div className="relative w-full flex justify-center">
         <span
-          className={`text-[10px] leading-none ${
+          className={`text-[10px] leading-none font-medium ${
             isClosed
               ? "text-[#94A3B8] line-through"
               : day.isToday
@@ -107,7 +104,9 @@ function DayCell({
               : hasQuarterly
               ? "text-rose-600 font-semibold"
               : hasMonthly
-              ? "text-teal-700 font-medium"
+              ? "text-teal-700 font-semibold"
+              : day.isWeekend
+              ? "text-[#94A3B8]"
               : "text-[#374151]"
           }`}
           style={{ fontFamily: "'JetBrains Mono', monospace" }}
@@ -135,6 +134,9 @@ function DayCell({
           ))}
         </div>
       )}
+      {!hasMeetings && !isClosed && !day.isWeekend && (
+        <div className="h-2" />
+      )}
     </div>
   );
 }
@@ -159,11 +161,11 @@ function MonthGrid({
     <div
       className="rounded-xl p-3 flex flex-col gap-2"
       style={{
-        backgroundColor: "#FFFFFF",
+        backgroundColor: "#FAFAF8",
         border: quarterlyDays > 0
-          ? "1.5px solid rgba(244,63,94,0.40)"
+          ? "1.5px solid rgba(244,63,94,0.45)"
           : "1.5px solid #C8C5BE",
-        boxShadow: "0 1px 4px rgba(30,58,95,0.06)",
+        boxShadow: "0 2px 6px rgba(30,58,95,0.07)",
       }}
     >
       <div className="flex items-center justify-between">
@@ -178,8 +180,8 @@ function MonthGrid({
             <span
               className="text-[9px] px-1.5 py-0.5 rounded font-semibold"
               style={{
-                backgroundColor: "rgba(244,63,94,0.2)",
-                color: "#FDA4AF",
+                backgroundColor: "rgba(244,63,94,0.15)",
+                color: "#E11D48",
                 fontFamily: "'Space Grotesk', sans-serif",
               }}
             >
@@ -190,8 +192,8 @@ function MonthGrid({
             <span
               className="text-[9px] px-1.5 py-0.5 rounded font-semibold"
               style={{
-                backgroundColor: "rgba(20,184,166,0.15)",
-                color: "#5EEAD4",
+                backgroundColor: "rgba(13,148,136,0.12)",
+                color: "#0F766E",
                 fontFamily: "'Space Grotesk', sans-serif",
               }}
             >
@@ -200,11 +202,11 @@ function MonthGrid({
           )}
         </div>
       </div>
-      <div className="grid grid-cols-7 gap-0.5">
+      <div className="grid grid-cols-7 gap-1">
         {DOW_LABELS.map((d) => (
           <div
             key={d}
-            className="text-center text-[9px] font-medium text-[#94A3B8] pb-1"
+            className="text-center text-[9px] font-semibold text-[#64748B] pb-0.5"
             style={{ fontFamily: "'Space Grotesk', sans-serif" }}
           >
             {d}
