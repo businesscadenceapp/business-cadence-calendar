@@ -441,12 +441,55 @@ Be concise and specific. If a field has nothing, use an empty array.`,
           quarterlyDay: z.number().int().min(0).max(6),
           teamDaily: z.array(z.number().int().min(0).max(6)),
           teamWeekly: z.number().int().min(0).max(6),
+          ownerDailyEnabled: z.boolean().optional().default(true),
+          ownerWeeklyEnabled: z.boolean().optional().default(true),
+          ownerMonthlyEnabled: z.boolean().optional().default(true),
+          quarterlyEnabled: z.boolean().optional().default(true),
+          teamDailyEnabled: z.boolean().optional().default(true),
+          teamWeeklyEnabled: z.boolean().optional().default(true),
         }),
         onboardingComplete: z.boolean(),
       }))
       .mutation(async ({ input }) => {
         const profile = await upsertBusinessProfile(input);
         return { success: true, profile };
+      }),
+
+    /** Update just the meeting day preferences (used from Settings page). */
+    updateMeetingPrefs: publicProcedure
+      .input(z.object({
+        accountId: z.number(),
+        meetingDayPrefs: z.object({
+          ownerDaily: z.array(z.number().int().min(0).max(6)),
+          ownerWeekly: z.number().int().min(0).max(6),
+          ownerMonthly: z.number().int().min(0).max(6),
+          quarterlyDay: z.number().int().min(0).max(6),
+          teamDaily: z.array(z.number().int().min(0).max(6)),
+          teamWeekly: z.number().int().min(0).max(6),
+          ownerDailyEnabled: z.boolean().optional().default(true),
+          ownerWeeklyEnabled: z.boolean().optional().default(true),
+          ownerMonthlyEnabled: z.boolean().optional().default(true),
+          quarterlyEnabled: z.boolean().optional().default(true),
+          teamDailyEnabled: z.boolean().optional().default(true),
+          teamWeeklyEnabled: z.boolean().optional().default(true),
+        }),
+      }))
+      .mutation(async ({ input }) => {
+        const profile = await getBusinessProfile(input.accountId);
+        if (!profile) throw new Error("Business profile not found");
+        const existing = JSON.parse(profile.meetingDayPrefs);
+        const merged = { ...existing, ...input.meetingDayPrefs };
+        await upsertBusinessProfile({
+          accountId: input.accountId,
+          businessName: profile.businessName,
+          industry: profile.industry,
+          ownerCount: profile.ownerCount,
+          employeeCount: profile.employeeCount,
+          workDays: JSON.parse(profile.workDays),
+          meetingDayPrefs: merged,
+          onboardingComplete: profile.onboardingComplete,
+        });
+        return { success: true };
       }),
 
     /** Generate the meeting schedule for a year based on business profile + closed periods. */

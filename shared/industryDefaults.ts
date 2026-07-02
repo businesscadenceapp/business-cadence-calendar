@@ -625,6 +625,15 @@ export const TEAM_AGENDA_DEFAULTS: Record<IndustryType, AgendaDefaults> = {
 };
 
 /** Default preferred meeting days by industry (0=Sun, 1=Mon, ..., 6=Sat) */
+const ENABLED_DEFAULTS = {
+  ownerDailyEnabled: true,
+  ownerWeeklyEnabled: true,
+  ownerMonthlyEnabled: true,
+  quarterlyEnabled: true,
+  teamDailyEnabled: true,
+  teamWeeklyEnabled: true,
+};
+
 export const INDUSTRY_MEETING_DAY_DEFAULTS: Record<IndustryType, {
   ownerDaily: number[];  // days of week for owner daily huddle (multi-select)
   ownerWeekly: number;   // day of week for owner weekly
@@ -632,14 +641,20 @@ export const INDUSTRY_MEETING_DAY_DEFAULTS: Record<IndustryType, {
   quarterlyDay: number;  // day of week for quarterly offsite (first occurrence in Jan/Apr/Jul/Oct)
   teamDaily: number[];   // days of week for team daily huddle (multi-select)
   teamWeekly: number;    // day of week for team weekly
+  ownerDailyEnabled: boolean;
+  ownerWeeklyEnabled: boolean;
+  ownerMonthlyEnabled: boolean;
+  quarterlyEnabled: boolean;
+  teamDailyEnabled: boolean;
+  teamWeeklyEnabled: boolean;
 }> = {
-  healthcare:   { ownerDaily: [1, 2, 3, 4], ownerWeekly: 5, ownerMonthly: 5, quarterlyDay: 5, teamDaily: [1], teamWeekly: 3 },
-  fitness:      { ownerDaily: [1, 2, 3, 4], ownerWeekly: 5, ownerMonthly: 5, quarterlyDay: 5, teamDaily: [1], teamWeekly: 3 },
-  realestate:   { ownerDaily: [1, 2, 3, 4], ownerWeekly: 5, ownerMonthly: 5, quarterlyDay: 5, teamDaily: [1], teamWeekly: 2 },
-  retail:       { ownerDaily: [1, 2, 3, 4], ownerWeekly: 5, ownerMonthly: 5, quarterlyDay: 5, teamDaily: [1], teamWeekly: 3 },
-  restaurant:   { ownerDaily: [2, 3, 4, 5], ownerWeekly: 2, ownerMonthly: 2, quarterlyDay: 5, teamDaily: [2], teamWeekly: 4 },
-  professional: { ownerDaily: [1, 2, 3, 4], ownerWeekly: 5, ownerMonthly: 5, quarterlyDay: 5, teamDaily: [1], teamWeekly: 3 },
-  construction: { ownerDaily: [1, 2, 3, 4], ownerWeekly: 5, ownerMonthly: 5, quarterlyDay: 5, teamDaily: [1], teamWeekly: 4 },
-  salon:        { ownerDaily: [2, 3, 4, 5], ownerWeekly: 2, ownerMonthly: 2, quarterlyDay: 5, teamDaily: [2], teamWeekly: 4 },
-  other:        { ownerDaily: [1, 2, 3, 4], ownerWeekly: 5, ownerMonthly: 5, quarterlyDay: 5, teamDaily: [1], teamWeekly: 3 },
+  healthcare:   { ownerDaily: [1, 2, 3, 4], ownerWeekly: 5, ownerMonthly: 5, quarterlyDay: 5, teamDaily: [1], teamWeekly: 3, ...ENABLED_DEFAULTS },
+  fitness:      { ownerDaily: [1, 2, 3, 4], ownerWeekly: 5, ownerMonthly: 5, quarterlyDay: 5, teamDaily: [1], teamWeekly: 3, ...ENABLED_DEFAULTS },
+  realestate:   { ownerDaily: [1, 2, 3, 4], ownerWeekly: 5, ownerMonthly: 5, quarterlyDay: 5, teamDaily: [1], teamWeekly: 2, ...ENABLED_DEFAULTS },
+  retail:       { ownerDaily: [1, 2, 3, 4], ownerWeekly: 5, ownerMonthly: 5, quarterlyDay: 5, teamDaily: [1], teamWeekly: 3, ...ENABLED_DEFAULTS },
+  restaurant:   { ownerDaily: [2, 3, 4, 5], ownerWeekly: 2, ownerMonthly: 2, quarterlyDay: 5, teamDaily: [2], teamWeekly: 4, ...ENABLED_DEFAULTS },
+  professional: { ownerDaily: [1, 2, 3, 4], ownerWeekly: 5, ownerMonthly: 5, quarterlyDay: 5, teamDaily: [1], teamWeekly: 3, ...ENABLED_DEFAULTS },
+  construction: { ownerDaily: [1, 2, 3, 4], ownerWeekly: 5, ownerMonthly: 5, quarterlyDay: 5, teamDaily: [1], teamWeekly: 4, ...ENABLED_DEFAULTS },
+  salon:        { ownerDaily: [2, 3, 4, 5], ownerWeekly: 2, ownerMonthly: 2, quarterlyDay: 5, teamDaily: [2], teamWeekly: 4, ...ENABLED_DEFAULTS },
+  other:        { ownerDaily: [1, 2, 3, 4], ownerWeekly: 5, ownerMonthly: 5, quarterlyDay: 5, teamDaily: [1], teamWeekly: 3, ...ENABLED_DEFAULTS },
 };

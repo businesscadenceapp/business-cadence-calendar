@@ -24,6 +24,13 @@ interface OnboardingData {
     quarterlyDay: number;  // day of week for quarterly offsite
     teamDaily: number[];  // multi-day selection
     teamWeekly: number;
+    // enabled flags
+    ownerDailyEnabled: boolean;
+    ownerWeeklyEnabled: boolean;
+    ownerMonthlyEnabled: boolean;
+    quarterlyEnabled: boolean;
+    teamDailyEnabled: boolean;
+    teamWeeklyEnabled: boolean;
   };
 }
 
@@ -318,6 +325,49 @@ function DayPicker({
   );
 }
 
+function MeetingToggleRow({
+  label,
+  description,
+  enabled,
+  onToggle,
+  children,
+}: {
+  label: string;
+  description: string;
+  enabled: boolean;
+  onToggle: (v: boolean) => void;
+  children?: React.ReactNode;
+}) {
+  return (
+    <div className={cn("rounded-lg border p-3 transition-all", enabled ? "border-teal-200 bg-white" : "border-slate-200 bg-slate-50 opacity-70")}>
+      <div className="flex items-center justify-between mb-1">
+        <div>
+          <span className="text-sm font-semibold text-navy">{label}</span>
+          <p className="text-xs text-slate-400 mt-0.5">{description}</p>
+        </div>
+        <button
+          type="button"
+          onClick={() => onToggle(!enabled)}
+          className={cn(
+            "relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200",
+            enabled ? "bg-teal-500" : "bg-slate-300"
+          )}
+          aria-checked={enabled}
+          role="switch"
+        >
+          <span
+            className={cn(
+              "pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow transform transition-transform duration-200",
+              enabled ? "translate-x-4" : "translate-x-0"
+            )}
+          />
+        </button>
+      </div>
+      {enabled && children && <div className="mt-2 pt-2 border-t border-slate-100">{children}</div>}
+    </div>
+  );
+}
+
 function StepOwnerMeetings({
   data,
   onChange,
@@ -329,42 +379,72 @@ function StepOwnerMeetings({
   onNext: () => void;
   onBack: () => void;
 }) {
-  const update = (key: keyof OnboardingData["meetingDayPrefs"], val: number) => {
-    onChange({ meetingDayPrefs: { ...data.meetingDayPrefs, [key]: val } });
-  };
+  const upd = (patch: Partial<OnboardingData["meetingDayPrefs"]>) =>
+    onChange({ meetingDayPrefs: { ...data.meetingDayPrefs, ...patch } });
 
   return (
     <div className="flex flex-col gap-6">
       <div>
         <h2 className="text-2xl font-bold text-navy mb-1">Owner meeting days</h2>
-        <p className="text-slate-500">When do you and your co-owner(s) meet? Choose any weekday — these are owner meetings, not business hours.</p>
+        <p className="text-slate-500">Choose which meetings you want and when. Toggle off any you don't need — you can always change these later in Settings.</p>
       </div>
 
-      <div className="flex flex-col gap-5 bg-slate-50 rounded-xl p-4">
-        <DayPickerMulti
+      <div className="flex flex-col gap-3">
+        <MeetingToggleRow
           label="Daily Huddle"
-          value={data.meetingDayPrefs.ownerDaily}
-          onChange={days => onChange({ meetingDayPrefs: { ...data.meetingDayPrefs, ownerDaily: days } })}
-          allowedDays={[1, 2, 3, 4, 5]}
-        />
-        <DayPicker
+          description="Quick daily sync between owners — 10–15 min"
+          enabled={data.meetingDayPrefs.ownerDailyEnabled}
+          onToggle={v => upd({ ownerDailyEnabled: v })}
+        >
+          <DayPickerMulti
+            label="Which days?"
+            value={data.meetingDayPrefs.ownerDaily}
+            onChange={days => upd({ ownerDaily: days })}
+            allowedDays={[1, 2, 3, 4, 5]}
+          />
+        </MeetingToggleRow>
+
+        <MeetingToggleRow
           label="Weekly Review"
-          value={data.meetingDayPrefs.ownerWeekly}
-          onChange={v => update("ownerWeekly", v)}
-          allowedDays={[1, 2, 3, 4, 5]}
-        />
-        <DayPicker
-          label="Monthly Finance Review (1st occurrence each month)"
-          value={data.meetingDayPrefs.ownerMonthly}
-          onChange={v => update("ownerMonthly", v)}
-          allowedDays={[1, 2, 3, 4, 5]}
-        />
-        <DayPicker
-          label="Quarterly Offsite Meeting (first selected day in Jan, Apr, Jul, Oct)"
-          value={data.meetingDayPrefs.quarterlyDay}
-          onChange={v => update("quarterlyDay", v)}
-          allowedDays={[1, 2, 3, 4, 5]}
-        />
+          description="Weekly business review — 60–90 min"
+          enabled={data.meetingDayPrefs.ownerWeeklyEnabled}
+          onToggle={v => upd({ ownerWeeklyEnabled: v })}
+        >
+          <DayPicker
+            label="Which day?"
+            value={data.meetingDayPrefs.ownerWeekly}
+            onChange={v => upd({ ownerWeekly: v })}
+            allowedDays={[1, 2, 3, 4, 5]}
+          />
+        </MeetingToggleRow>
+
+        <MeetingToggleRow
+          label="Monthly Finance Review"
+          description="Monthly financial deep-dive — 60 min, 1st occurrence each month"
+          enabled={data.meetingDayPrefs.ownerMonthlyEnabled}
+          onToggle={v => upd({ ownerMonthlyEnabled: v })}
+        >
+          <DayPicker
+            label="Which day?"
+            value={data.meetingDayPrefs.ownerMonthly}
+            onChange={v => upd({ ownerMonthly: v })}
+            allowedDays={[1, 2, 3, 4, 5]}
+          />
+        </MeetingToggleRow>
+
+        <MeetingToggleRow
+          label="Quarterly Offsite"
+          description="Quarterly strategic offsite — ~4 hrs, first occurrence in Jan, Apr, Jul, Oct"
+          enabled={data.meetingDayPrefs.quarterlyEnabled}
+          onToggle={v => upd({ quarterlyEnabled: v })}
+        >
+          <DayPicker
+            label="Which day?"
+            value={data.meetingDayPrefs.quarterlyDay}
+            onChange={v => upd({ quarterlyDay: v })}
+            allowedDays={[1, 2, 3, 4, 5]}
+          />
+        </MeetingToggleRow>
       </div>
 
       <StepNav onBack={onBack} onNext={onNext} canProceed={true} />
@@ -383,30 +463,44 @@ function StepTeamMeetings({
   onNext: () => void;
   onBack: () => void;
 }) {
-  const update = (key: keyof OnboardingData["meetingDayPrefs"], val: number) => {
-    onChange({ meetingDayPrefs: { ...data.meetingDayPrefs, [key]: val } });
-  };
+  const upd = (patch: Partial<OnboardingData["meetingDayPrefs"]>) =>
+    onChange({ meetingDayPrefs: { ...data.meetingDayPrefs, ...patch } });
 
   return (
     <div className="flex flex-col gap-6">
       <div>
         <h2 className="text-2xl font-bold text-navy mb-1">Team meeting days</h2>
-        <p className="text-slate-500">When does your full team meet? These are separate from owner-only meetings.</p>
+        <p className="text-slate-500">Choose which team meetings you want. Toggle off any you don't need — you can change these later in Settings.</p>
       </div>
 
-      <div className="flex flex-col gap-5 bg-slate-50 rounded-xl p-4">
-        <DayPickerMulti
+      <div className="flex flex-col gap-3">
+        <MeetingToggleRow
           label="Team Daily Huddle"
-          value={data.meetingDayPrefs.teamDaily}
-          onChange={days => onChange({ meetingDayPrefs: { ...data.meetingDayPrefs, teamDaily: days } })}
-          allowedDays={[1, 2, 3, 4, 5]}
-        />
-        <DayPicker
+          description="Quick daily sync with your full team — 10–15 min"
+          enabled={data.meetingDayPrefs.teamDailyEnabled}
+          onToggle={v => upd({ teamDailyEnabled: v })}
+        >
+          <DayPickerMulti
+            label="Which days?"
+            value={data.meetingDayPrefs.teamDaily}
+            onChange={days => upd({ teamDaily: days })}
+            allowedDays={[1, 2, 3, 4, 5]}
+          />
+        </MeetingToggleRow>
+
+        <MeetingToggleRow
           label="Team Weekly Meeting"
-          value={data.meetingDayPrefs.teamWeekly}
-          onChange={v => update("teamWeekly", v)}
-          allowedDays={data.workDays}
-        />
+          description="Weekly all-hands or team review — 30–60 min"
+          enabled={data.meetingDayPrefs.teamWeeklyEnabled}
+          onToggle={v => upd({ teamWeeklyEnabled: v })}
+        >
+          <DayPicker
+            label="Which day?"
+            value={data.meetingDayPrefs.teamWeekly}
+            onChange={v => upd({ teamWeekly: v })}
+            allowedDays={[1, 2, 3, 4, 5]}
+          />
+        </MeetingToggleRow>
       </div>
 
       <StepNav onBack={onBack} onNext={onNext} canProceed={true} />

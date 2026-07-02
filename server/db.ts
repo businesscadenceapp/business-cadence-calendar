@@ -380,6 +380,12 @@ export async function upsertBusinessProfile(data: {
     quarterlyDay: number;
     teamDaily: number[];  // multi-day
     teamWeekly: number;
+    ownerDailyEnabled?: boolean;
+    ownerWeeklyEnabled?: boolean;
+    ownerMonthlyEnabled?: boolean;
+    quarterlyEnabled?: boolean;
+    teamDailyEnabled?: boolean;
+    teamWeeklyEnabled?: boolean;
   };
   onboardingComplete: boolean;
 }): Promise<BusinessProfile> {

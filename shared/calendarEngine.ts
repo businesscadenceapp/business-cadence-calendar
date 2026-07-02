@@ -12,6 +12,13 @@ export interface MeetingDayPrefs {
   quarterlyDay: number;  // day of week for quarterly offsite (first occurrence of that day in Jan/Apr/Jul/Oct)
   teamDaily: number[];  // multi-day selection
   teamWeekly: number;
+  // Optional enabled flags — defaults to true if absent (backward compat)
+  ownerDailyEnabled?: boolean;
+  ownerWeeklyEnabled?: boolean;
+  ownerMonthlyEnabled?: boolean;
+  quarterlyEnabled?: boolean;
+  teamDailyEnabled?: boolean;
+  teamWeeklyEnabled?: boolean;
 }
 
 export interface ClosedPeriod {
@@ -149,6 +156,7 @@ export function generateMeetingSchedule(params: {
   const meetings: ScheduledMeeting[] = [];
 
   // ── Owner Daily Huddle (every work day on ownerDaily) ──────────────────────
+  if (meetingDayPrefs.ownerDailyEnabled !== false) {
   const ownerDailyDays = Array.isArray(meetingDayPrefs.ownerDaily)
     ? meetingDayPrefs.ownerDaily
     : [meetingDayPrefs.ownerDaily as unknown as number]; // backward compat
@@ -172,8 +180,9 @@ export function generateMeetingSchedule(params: {
       });
     }
   }
+  } // end ownerDailyEnabled
 
-  // ── Owner Weekly (every ownerWeekly day of week) ───────────────────────────
+  if (meetingDayPrefs.ownerWeeklyEnabled !== false) {
   const allOwnerWeeklyDates = getAllDatesForDayOfWeek(year, meetingDayPrefs.ownerWeekly);
   for (const rawDate of allOwnerWeeklyDates) {
     const { date, rescheduled, originalDate } = nextAvailableDate(
@@ -188,8 +197,9 @@ export function generateMeetingSchedule(params: {
       originalDate: rescheduled ? toDateKey(originalDate) : undefined,
     });
   }
+  } // end ownerWeeklyEnabled
 
-  // ── Owner Monthly (first ownerMonthly day of each month) ──────────────────
+  if (meetingDayPrefs.ownerMonthlyEnabled !== false) {
   const ownerMonthlyDates = getFirstDayOfWeekEachMonth(year, meetingDayPrefs.ownerMonthly);
   for (const rawDate of ownerMonthlyDates) {
     const { date, rescheduled, originalDate } = nextAvailableDate(
@@ -204,8 +214,9 @@ export function generateMeetingSchedule(params: {
       originalDate: rescheduled ? toDateKey(originalDate) : undefined,
     });
   }
+  } // end ownerMonthlyEnabled
 
-  // ── Owner Quarterly Offsite (first Friday of Jan, Apr, Jul, Oct) ──────────
+  if (meetingDayPrefs.quarterlyEnabled !== false) {
   const qDay = meetingDayPrefs.quarterlyDay ?? 5; // default to Friday if not set
   const quarterlyDates = getFirstDayOfWeekEachQuarter(year, qDay);
   for (const rawDate of quarterlyDates) {
@@ -221,8 +232,9 @@ export function generateMeetingSchedule(params: {
       originalDate: rescheduled ? toDateKey(originalDate) : undefined,
     });
   }
+  } // end quarterlyEnabled
 
-  // ── Team Daily Huddle (every week on each selected teamDaily day) ──────────
+  if (meetingDayPrefs.teamDailyEnabled !== false) {
   const teamDailyDays = Array.isArray(meetingDayPrefs.teamDaily)
     ? meetingDayPrefs.teamDaily
     : [meetingDayPrefs.teamDaily as unknown as number]; // backward compat
@@ -246,8 +258,9 @@ export function generateMeetingSchedule(params: {
       });
     }
   }
+  } // end teamDailyEnabled
 
-  // ── Team Weekly (every teamWeekly day of week) ────────────────────────────
+  if (meetingDayPrefs.teamWeeklyEnabled !== false) {
   const allTeamWeeklyDates = getAllDatesForDayOfWeek(year, meetingDayPrefs.teamWeekly);
   for (const rawDate of allTeamWeeklyDates) {
     const { date, rescheduled, originalDate } = nextAvailableDate(
@@ -262,6 +275,7 @@ export function generateMeetingSchedule(params: {
       originalDate: rescheduled ? toDateKey(originalDate) : undefined,
     });
   }
+  } // end teamWeeklyEnabled
 
   // Deduplicate: if owner and team share the same date+type, keep both (they're separate meetings)
   return meetings;
