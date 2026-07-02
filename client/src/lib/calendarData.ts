@@ -69,7 +69,7 @@ export const MEETING_TYPES: Record<MeetingType, Meeting> = {
     bgColor: "rgba(139,92,246,0.15)",
     textColor: "#C4B5FD",
     overview:
-      "A quick tactical alignment to start the day. No problem-solving — if a topic takes more than 60 seconds, it goes on the Issues List for Tuesday's Level 10.",
+      "A quick tactical alignment to start the day. No problem-solving — if a topic takes more than 60 seconds, it goes on the Issues List for Tuesday's Weekly Review.",
     timeBlocks: [
       {
         business: "chiro",
@@ -115,12 +115,12 @@ export const MEETING_TYPES: Record<MeetingType, Meeting> = {
   },
 
   // ─────────────────────────────────────────────
-  // WEEKLY LEVEL 10  (90 min, every Tuesday)
+  // WEEKLY REVIEW  (90 min, every Tuesday)
   // ─────────────────────────────────────────────
   weekly: {
     type: "weekly",
-    label: "Weekly Level 10",
-    shortLabel: "L10",
+    label: "Weekly Review",
+    shortLabel: "WR",
     totalDuration: "90 min",
     suggestedTime: "Tuesday at 1:00 PM — after morning patients, before afternoon",
     color: "#0EA5E9",
@@ -189,7 +189,7 @@ export const MEETING_TYPES: Record<MeetingType, Meeting> = {
     label: "Monthly Financial Review",
     shortLabel: "Finance",
     totalDuration: "60 min",
-    suggestedTime: "First Tuesday of the month at 1:00 PM — replaces the regular Weekly L10",
+    suggestedTime: "First Tuesday of the month at 1:00 PM — replaces the regular Weekly Review",
     color: "#14B8A6",
     bgColor: "rgba(20,184,166,0.15)",
     textColor: "#5EEAD4",
@@ -241,7 +241,7 @@ export const MEETING_TYPES: Record<MeetingType, Meeting> = {
       },
     ],
     sharedItems: [
-      "Note: This meeting replaces the regular Weekly L10 on the first Tuesday of the month",
+      "Note: This meeting replaces the regular Weekly Review on the first Tuesday of the month",
       "Bring printed or screen-shared P&L for each business",
       "End with: 'What is the one financial move we must make this month?'",
     ],

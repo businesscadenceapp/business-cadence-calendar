@@ -954,19 +954,7 @@ export default function Home() {
               <span>📆</span>
               Manage Schedule
             </Link>
-            <Link
-              href="/app/employees"
-              className="flex items-center gap-2 w-full px-3 py-2.5 rounded-lg text-[11px] font-semibold transition-all hover:opacity-90"
-              style={{
-                background: "rgba(13,148,136,0.08)",
-                border: "1px solid rgba(13,148,136,0.25)",
-                color: "#0D9488",
-                fontFamily: "'Space Grotesk', sans-serif",
-              }}
-            >
-              <span>👥</span>
-              Employee Setup
-            </Link>
+
           </div>
 
           {/* Golden Rule */}

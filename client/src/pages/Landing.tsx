@@ -384,7 +384,7 @@ function FeaturesSection() {
 // ─── How it works ──────────────────────────────────────────────────────────
 const CADENCE = [
   { freq: "Daily", time: "10–15 min", color: "#8B5CF6", desc: "A quick morning check-in to align on the day's priorities and flag anything urgent before it becomes a fire." },
-  { freq: "Weekly", time: "90 min", color: "#0EA5E9", desc: "A structured Level 10 meeting to review scorecard, discuss issues, and make decisions. Every week, same time, same agenda." },
+  { freq: "Weekly", time: "90 min", color: "#0EA5E9", desc: "A structured Weekly Review to review scorecard, discuss issues, and make decisions. Every week, same time, same agenda." },
   { freq: "Monthly", time: "60 min", color: "#14B8A6", desc: "A financial review to go over the numbers, check progress against goals, and course-correct before the quarter ends." },
   { freq: "Quarterly", time: "Half day", color: "#F43F5E", desc: "A strategic offsite to review the past quarter, set 90-day priorities, and reconnect as business partners — not just co-workers." },
 ];

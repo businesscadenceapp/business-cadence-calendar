@@ -301,7 +301,7 @@ function StepOwnerMeetings({
           allowedDays={data.workDays}
         />
         <DayPicker
-          label="Weekly L10 / Review"
+          label="Weekly Review"
           value={data.meetingDayPrefs.ownerWeekly}
           onChange={v => update("ownerWeekly", v)}
           allowedDays={data.workDays}
