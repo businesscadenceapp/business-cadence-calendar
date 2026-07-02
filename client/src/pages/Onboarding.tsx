@@ -22,7 +22,7 @@ interface OnboardingData {
     ownerWeekly: number;
     ownerMonthly: number;
     quarterlyDay: number;  // day of week for quarterly offsite
-    teamDaily: number;
+    teamDaily: number[];  // multi-day selection
     teamWeekly: number;
   };
 }
@@ -342,7 +342,7 @@ function StepOwnerMeetings({
 
       <div className="flex flex-col gap-5 bg-slate-50 rounded-xl p-4">
         <DayPickerMulti
-          label="Daily Huddle (every week)"
+          label="Daily Huddle"
           value={data.meetingDayPrefs.ownerDaily}
           onChange={days => onChange({ meetingDayPrefs: { ...data.meetingDayPrefs, ownerDaily: days } })}
           allowedDays={[1, 2, 3, 4, 5]}
@@ -395,11 +395,11 @@ function StepTeamMeetings({
       </div>
 
       <div className="flex flex-col gap-5 bg-slate-50 rounded-xl p-4">
-        <DayPicker
-          label="Team Daily Standup (every week)"
+        <DayPickerMulti
+          label="Team Daily Huddle"
           value={data.meetingDayPrefs.teamDaily}
-          onChange={v => update("teamDaily", v)}
-          allowedDays={data.workDays}
+          onChange={days => onChange({ meetingDayPrefs: { ...data.meetingDayPrefs, teamDaily: days } })}
+          allowedDays={[1, 2, 3, 4, 5]}
         />
         <DayPicker
           label="Team Weekly Meeting"
@@ -460,8 +460,8 @@ function StepPreview({
           value={`First ${DAY_FULL[data.meetingDayPrefs.quarterlyDay]} of Jan, Apr, Jul, Oct`}
         />
         <PreviewRow
-          label="Team Daily Standup"
-          value={`Every ${DAY_FULL[data.meetingDayPrefs.teamDaily]}`}
+          label="Team Daily Huddle"
+          value={data.meetingDayPrefs.teamDaily.map(d => DAY_NAMES[d]).join(", ") || "None selected"}
         />
         <PreviewRow
           label="Team Weekly Meeting"

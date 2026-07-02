@@ -378,7 +378,7 @@ export async function upsertBusinessProfile(data: {
     ownerWeekly: number;
     ownerMonthly: number;
     quarterlyDay: number;
-    teamDaily: number;
+    teamDaily: number[];  // multi-day
     teamWeekly: number;
   };
   onboardingComplete: boolean;

@@ -10,7 +10,7 @@ export interface MeetingDayPrefs {
   ownerWeekly: number;
   ownerMonthly: number;  // day of week for monthly (first occurrence of that day each month)
   quarterlyDay: number;  // day of week for quarterly offsite (first occurrence of that day in Jan/Apr/Jul/Oct)
-  teamDaily: number;
+  teamDaily: number[];  // multi-day selection
   teamWeekly: number;
 }
 
@@ -222,20 +222,29 @@ export function generateMeetingSchedule(params: {
     });
   }
 
-  // ── Team Daily Standup (every teamDaily day of week) ──────────────────────
-  const allTeamDailyDates = getAllDatesForDayOfWeek(year, meetingDayPrefs.teamDaily);
-  for (const rawDate of allTeamDailyDates) {
-    const { date, rescheduled, originalDate } = nextAvailableDate(
-      rawDate, meetingDayPrefs.teamDaily, workDays, closedPeriods
-    );
-    if (date.getFullYear() !== year) continue;
-    meetings.push({
-      date: toDateKey(date),
-      meetingType: "daily",
-      layer: "team",
-      isRescheduled: rescheduled,
-      originalDate: rescheduled ? toDateKey(originalDate) : undefined,
-    });
+  // ── Team Daily Huddle (every week on each selected teamDaily day) ──────────
+  const teamDailyDays = Array.isArray(meetingDayPrefs.teamDaily)
+    ? meetingDayPrefs.teamDaily
+    : [meetingDayPrefs.teamDaily as unknown as number]; // backward compat
+  const seenDailyTeamDates = new Set<string>();
+  for (const dayOfWeek of teamDailyDays) {
+    const allTeamDailyDates = getAllDatesForDayOfWeek(year, dayOfWeek);
+    for (const rawDate of allTeamDailyDates) {
+      const { date, rescheduled, originalDate } = nextAvailableDate(
+        rawDate, dayOfWeek, workDays, closedPeriods
+      );
+      if (date.getFullYear() !== year) continue;
+      const key = toDateKey(date);
+      if (seenDailyTeamDates.has(key)) continue;
+      seenDailyTeamDates.add(key);
+      meetings.push({
+        date: key,
+        meetingType: "daily",
+        layer: "team",
+        isRescheduled: rescheduled,
+        originalDate: rescheduled ? toDateKey(originalDate) : undefined,
+      });
+    }
   }
 
   // ── Team Weekly (every teamWeekly day of week) ────────────────────────────
