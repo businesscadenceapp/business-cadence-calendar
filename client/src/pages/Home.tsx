@@ -773,7 +773,7 @@ export default function Home() {
   // Fetch the DB-driven calendar (respects closed days, work days, meeting prefs)
   const { data: calendarData } = trpc.onboarding.generateCalendar.useQuery(
     { accountId, year: YEAR },
-    { enabled: accountId > 0, staleTime: 30_000, refetchOnWindowFocus: true }
+    { enabled: accountId > 0, refetchOnWindowFocus: true }
   );
 
   // Build the calendar grid — use DB data when available, fall back to static

@@ -395,9 +395,15 @@ type MeetingPrefs = {
 };
 
 function MeetingScheduleSection({ accountId }: { accountId: number }) {
+  const utils = trpc.useUtils();
   const { data: statusData, refetch } = trpc.onboarding.getStatus.useQuery({ accountId }, { enabled: accountId > 0 });
   const updatePrefs = trpc.onboarding.updateMeetingPrefs.useMutation({
-    onSuccess: () => { toast.success("Meeting schedule saved."); refetch(); },
+    onSuccess: () => {
+      toast.success("Meeting schedule saved.");
+      refetch();
+      // Invalidate the calendar so Home page reflects the new meeting schedule immediately
+      utils.onboarding.generateCalendar.invalidate();
+    },
     onError: (err) => toast.error(err.message ?? "Save failed."),
   });
 
