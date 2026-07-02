@@ -24,10 +24,18 @@ type Business = "chiropractic" | "crossfit" | "realty" | "general";
 const IDENTITY_KEY = "bcc_identity";
 
 // Map account scope → which board businesses are visible
+// Single-business accounts (chiro/crossfit) have no selector — posts auto-tag to their one business
 const SCOPE_BUSINESSES: Record<BusinessSelection, Business[]> = {
-  chiro:    ["chiropractic", "general"],
-  crossfit: ["crossfit", "general"],
+  chiro:    ["chiropractic"],
+  crossfit: ["crossfit"],
   owner:    ["chiropractic", "crossfit", "realty", "general"],
+};
+
+// For single-business accounts, the default (and only) business to post under
+const SCOPE_DEFAULT_BUSINESS: Record<BusinessSelection, Business> = {
+  chiro:    "chiropractic",
+  crossfit: "crossfit",
+  owner:    "general",
 };
 
 // Light-theme author colors — dark text on tinted backgrounds
@@ -373,15 +381,14 @@ function BoardCard({ card, currentUser, onSeen, onArchive, onDelete }: {
 
 // ─── Add Card Form ────────────────────────────────────────────────────────────
 
-function AddCardForm({ currentUser, onAdded, allowedBusinesses }: {
+function AddCardForm({ currentUser, onAdded, allowedBusinesses, defaultBusiness }: {
   currentUser: Author | null;
   onAdded: () => void;
   allowedBusinesses: Business[];
+  defaultBusiness: Business;
 }) {
   const [type, setType] = useState<CardType>("update");
-  // Default to the first non-general business, or general if that's all there is
-  const defaultBiz = allowedBusinesses.find(b => b !== "general") ?? "general";
-  const [business, setBusiness] = useState<Business>(defaultBiz);
+  const [business, setBusiness] = useState<Business>(defaultBusiness);
   const [content, setContent] = useState("");
   const [assignedTo, setAssignedTo] = useState<Author | null>(null);
 
@@ -569,6 +576,7 @@ export default function Board() {
   // Read account scope from localStorage (set at login)
   const scope = useMemo<BusinessSelection>(() => getBusinessSelection(), []);
   const allowedBusinesses = useMemo<Business[]>(() => SCOPE_BUSINESSES[scope], [scope]);
+  const defaultBusiness = useMemo<Business>(() => SCOPE_DEFAULT_BUSINESS[scope], [scope]);
 
   useEffect(() => {
     if (currentUser) {
@@ -703,7 +711,7 @@ export default function Board() {
             </div>
           )}
 
-          <AddCardForm currentUser={currentUser} onAdded={() => refetch()} allowedBusinesses={allowedBusinesses} />
+          <AddCardForm currentUser={currentUser} onAdded={() => refetch()} allowedBusinesses={allowedBusinesses} defaultBusiness={defaultBusiness} />
 
           {/* Business filter — only show businesses this account can access */}
           {allowedBusinesses.length > 1 && (
