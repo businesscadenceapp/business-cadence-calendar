@@ -797,7 +797,13 @@ export default function Home() {
               Business Cadence Calendar
             </h1>
             <p className="text-[11px] text-[#64748B] mt-0.5">
-              New Beginnings Chiropractic · Evolved CrossFit · Bubbles Realty
+              {businessContext === "owner"
+                ? "New Beginnings Chiropractic · Evolved CrossFit · Bubbles Realty"
+                : businessContext === "chiro"
+                ? "New Beginnings Chiropractic"
+                : businessContext === "crossfit"
+                ? "Evolved CrossFit"
+                : "Your Business"}
             </p>
           </div>
         </div>
@@ -898,20 +904,25 @@ export default function Home() {
               >
                 Your Businesses
               </p>
-              <a
-                href="/login"
-                className="text-[9px] text-[#94A3B8] hover:text-[#64748B] transition-colors"
-              >
-                Switch
-              </a>
+              {businessContext === "owner" && (
+                <a
+                  href="/login"
+                  className="text-[9px] text-[#94A3B8] hover:text-[#64748B] transition-colors"
+                >
+                  Switch
+                </a>
+              )}
             </div>
             <div className="flex flex-col gap-1">
-              {(Object.entries(BUSINESSES) as [keyof typeof BUSINESSES, typeof BUSINESSES[keyof typeof BUSINESSES]][]).map(([key, biz]) => {
-                const isActive = businessContext === "owner" ||
-                  (businessContext === "chiro" && key === "chiro") ||
-                  (businessContext === "crossfit" && key === "crossfit");
-                const isFiltered = !isActive;
-                const isSingleSelected = businessContext !== "owner" && isActive;
+              {(Object.entries(BUSINESSES) as [keyof typeof BUSINESSES, typeof BUSINESSES[keyof typeof BUSINESSES]][]).filter(([key]) => {
+                if (businessContext === "owner") return true;
+                if (businessContext === "chiro") return key === "chiro";
+                if (businessContext === "crossfit") return key === "crossfit";
+                return false;
+              }).map(([key, biz]) => {
+                const isActive = true; // already filtered to only active businesses
+                const isFiltered = false;
+                const isSingleSelected = businessContext !== "owner";
                 return (
                   <div
                     key={key}
