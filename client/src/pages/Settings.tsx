@@ -8,6 +8,7 @@ import { Link } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { MEETING_TYPES, BUSINESSES } from "@/lib/calendarData";
+import { getBusinessSelection } from "./ClientLogin";
 import type { MeetingType, BusinessKey } from "@/lib/calendarData";
 
 // Map calendarData BusinessKey to the DB business enum
@@ -304,9 +305,22 @@ function AgendaEditor({
   );
 }
 
+// Scope → which DB businesses are visible in Settings
+const SCOPE_DB_BUSINESSES: Record<string, DbBusiness[]> = {
+  chiro:    ["chiropractic"],
+  crossfit: ["crossfit"],
+  owner:    ["chiropractic", "crossfit", "realty"],
+};
+
 // ─── Main Settings Page ───────────────────────────────────────────────────────
 export default function Settings() {
-  const [selectedBiz, setSelectedBiz] = useState<DbBusiness>("chiropractic");
+  const scope = getBusinessSelection();
+  const allowedDbBiz = SCOPE_DB_BUSINESSES[scope] ?? ["chiropractic", "crossfit", "realty"];
+  const visibleBusinesses = BUSINESSES_LIST.filter(b => allowedDbBiz.includes(b.key));
+
+  const [selectedBiz, setSelectedBiz] = useState<DbBusiness>(
+    allowedDbBiz[0] ?? "chiropractic"
+  );
   const [selectedMt, setSelectedMt] = useState<DbMeetingType>("daily");
   const [pendingSave, setPendingSave] = useState<{ items: AgendaItem[] } | null>(null);
 
@@ -384,7 +398,7 @@ export default function Settings() {
           {/* Left: Business selector */}
           <div className="flex flex-col gap-3">
             <p className="text-[#94A3B8] text-[10px] uppercase tracking-widest mb-1">Business</p>
-            {BUSINESSES_LIST.map((biz) => (
+            {visibleBusinesses.map((biz) => (
               <button
                 key={biz.key}
                 onClick={() => setSelectedBiz(biz.key)}

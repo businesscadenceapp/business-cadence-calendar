@@ -218,3 +218,11 @@
 - [x] Redesign Settings.tsx — light theme + renamed "Weekly Level 10" → "Weekly Review"
 - [x] Screenshot all pages to verify readability
 - [x] Save checkpoint
+
+## Business Scope Filtering (Phase 11)
+- [x] Command Board: filter "Which business?" form options by account scope (chiro sees only Chiropractic+General)
+- [x] Command Board: filter "Filter by Business" sidebar by account scope (hide irrelevant businesses)
+- [x] Command Board: filter card list to only show cards for allowed businesses
+- [x] Command Board: hide business selector entirely for single-business accounts
+- [x] Settings: filter business selector to only show businesses for current account scope
+- [x] Add gate.getScope tRPC procedure (returns scope + displayName for a given accountId)

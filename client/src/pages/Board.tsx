@@ -11,16 +11,24 @@
  *   - Text always dark (navy or slate-700) on light backgrounds
  *   - Colored accents use saturated foreground colors, not washed-out pastels
  */
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Link } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
+import { getBusinessSelection, type BusinessSelection } from "./ClientLogin";
 
 type Author = "Matt" | "Lynn";
 type CardType = "update" | "issue" | "task";
 type Business = "chiropractic" | "crossfit" | "realty" | "general";
 
 const IDENTITY_KEY = "bcc_identity";
+
+// Map account scope → which board businesses are visible
+const SCOPE_BUSINESSES: Record<BusinessSelection, Business[]> = {
+  chiro:    ["chiropractic", "general"],
+  crossfit: ["crossfit", "general"],
+  owner:    ["chiropractic", "crossfit", "realty", "general"],
+};
 
 // Light-theme author colors — dark text on tinted backgrounds
 const AUTHOR_COLORS: Record<Author, {
@@ -365,9 +373,15 @@ function BoardCard({ card, currentUser, onSeen, onArchive, onDelete }: {
 
 // ─── Add Card Form ────────────────────────────────────────────────────────────
 
-function AddCardForm({ currentUser, onAdded }: { currentUser: Author | null; onAdded: () => void }) {
+function AddCardForm({ currentUser, onAdded, allowedBusinesses }: {
+  currentUser: Author | null;
+  onAdded: () => void;
+  allowedBusinesses: Business[];
+}) {
   const [type, setType] = useState<CardType>("update");
-  const [business, setBusiness] = useState<Business>("general");
+  // Default to the first non-general business, or general if that's all there is
+  const defaultBiz = allowedBusinesses.find(b => b !== "general") ?? "general";
+  const [business, setBusiness] = useState<Business>(defaultBiz);
   const [content, setContent] = useState("");
   const [assignedTo, setAssignedTo] = useState<Author | null>(null);
 
@@ -472,27 +486,32 @@ function AddCardForm({ currentUser, onAdded }: { currentUser: Author | null; onA
         </div>
       )}
 
-      {/* Business */}
-      <div className="flex flex-col gap-1.5">
-        <p className="text-[10px] text-slate-400 uppercase tracking-wider" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Which business?</p>
-        <div className="flex gap-1.5 flex-wrap">
-          {(Object.entries(BUSINESS_LABELS) as [Business, typeof BUSINESS_LABELS[Business]][]).map(([key, biz]) => (
-            <button
-              key={key}
-              onClick={() => setBusiness(key)}
-              className="px-3 py-1.5 rounded-lg text-[11px] font-medium transition-all flex items-center gap-1"
-              style={{
-                backgroundColor: business === key ? biz.bg : "#F8FAFC",
-                border: `1.5px solid ${business === key ? biz.border : "#E2E8F0"}`,
-                color: business === key ? biz.text : "#64748B",
-                fontFamily: "'Space Grotesk', sans-serif",
-              }}
-            >
-              {biz.icon} {biz.label}
-            </button>
-          ))}
+      {/* Business — only show businesses this account can access */}
+      {allowedBusinesses.length > 1 && (
+        <div className="flex flex-col gap-1.5">
+          <p className="text-[10px] text-slate-400 uppercase tracking-wider" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Which business?</p>
+          <div className="flex gap-1.5 flex-wrap">
+            {allowedBusinesses.map(key => {
+              const biz = BUSINESS_LABELS[key];
+              return (
+                <button
+                  key={key}
+                  onClick={() => setBusiness(key)}
+                  className="px-3 py-1.5 rounded-lg text-[11px] font-medium transition-all flex items-center gap-1"
+                  style={{
+                    backgroundColor: business === key ? biz.bg : "#F8FAFC",
+                    border: `1.5px solid ${business === key ? biz.border : "#E2E8F0"}`,
+                    color: business === key ? biz.text : "#64748B",
+                    fontFamily: "'Space Grotesk', sans-serif",
+                  }}
+                >
+                  {biz.icon} {biz.label}
+                </button>
+              );
+            })}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Content textarea */}
       <textarea
@@ -547,6 +566,10 @@ export default function Board() {
   const [filterBusiness, setFilterBusiness] = useState<Business | "all">("all");
   const [showCompleted, setShowCompleted] = useState(false);
 
+  // Read account scope from localStorage (set at login)
+  const scope = useMemo<BusinessSelection>(() => getBusinessSelection(), []);
+  const allowedBusinesses = useMemo<Business[]>(() => SCOPE_BUSINESSES[scope], [scope]);
+
   useEffect(() => {
     if (currentUser) {
       localStorage.setItem(IDENTITY_KEY, currentUser);
@@ -569,7 +592,10 @@ export default function Board() {
     onError: () => toast.error("Failed to confirm task"),
   });
 
-  const allCards = (data?.cards ?? []) as Card[];
+  // Only show cards for businesses this account is allowed to see
+  const allCards = ((data?.cards ?? []) as Card[]).filter(c =>
+    allowedBusinesses.includes(c.business)
+  );
 
   const filtered = filterBusiness === "all"
     ? allCards
@@ -677,41 +703,46 @@ export default function Board() {
             </div>
           )}
 
-          <AddCardForm currentUser={currentUser} onAdded={() => refetch()} />
+          <AddCardForm currentUser={currentUser} onAdded={() => refetch()} allowedBusinesses={allowedBusinesses} />
 
-          {/* Business filter */}
-          <div className="mt-5 flex flex-col gap-2">
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-              Filter by Business
-            </p>
-            <div className="flex flex-col gap-1">
-              <button
-                onClick={() => setFilterBusiness("all")}
-                className="text-left px-3 py-2 rounded-lg text-[11px] font-medium transition-all"
-                style={{
-                  backgroundColor: filterBusiness === "all" ? "#E2E8F0" : "transparent",
-                  color: filterBusiness === "all" ? "#1E3A5F" : "#64748B",
-                  fontFamily: "'Space Grotesk', sans-serif",
-                }}
-              >
-                📋 All Businesses
-              </button>
-              {(Object.entries(BUSINESS_LABELS) as [Business, typeof BUSINESS_LABELS[Business]][]).map(([key, biz]) => (
+          {/* Business filter — only show businesses this account can access */}
+          {allowedBusinesses.length > 1 && (
+            <div className="mt-5 flex flex-col gap-2">
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+                Filter by Business
+              </p>
+              <div className="flex flex-col gap-1">
                 <button
-                  key={key}
-                  onClick={() => setFilterBusiness(key)}
+                  onClick={() => setFilterBusiness("all")}
                   className="text-left px-3 py-2 rounded-lg text-[11px] font-medium transition-all"
                   style={{
-                    backgroundColor: filterBusiness === key ? biz.bg : "transparent",
-                    color: filterBusiness === key ? biz.text : "#64748B",
+                    backgroundColor: filterBusiness === "all" ? "#E2E8F0" : "transparent",
+                    color: filterBusiness === "all" ? "#1E3A5F" : "#64748B",
                     fontFamily: "'Space Grotesk', sans-serif",
                   }}
                 >
-                  {biz.icon} {biz.label}
+                  📋 All Businesses
                 </button>
-              ))}
+                {allowedBusinesses.map(key => {
+                  const biz = BUSINESS_LABELS[key];
+                  return (
+                    <button
+                      key={key}
+                      onClick={() => setFilterBusiness(key)}
+                      className="text-left px-3 py-2 rounded-lg text-[11px] font-medium transition-all"
+                      style={{
+                        backgroundColor: filterBusiness === key ? biz.bg : "transparent",
+                        color: filterBusiness === key ? biz.text : "#64748B",
+                        fontFamily: "'Space Grotesk', sans-serif",
+                      }}
+                    >
+                      {biz.icon} {biz.label}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Legend */}
           <div className="mt-5 rounded-xl p-3.5" style={{ backgroundColor: "#FFFFFF", border: "1px solid #E2E8F0" }}>

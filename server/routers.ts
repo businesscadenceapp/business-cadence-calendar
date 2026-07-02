@@ -254,6 +254,20 @@ Keep the tone warm but professional. This summary will be saved under this speci
 
         return { success: true, scope: user.scope, displayName: user.displayName, accountId: user.id };
       }),
+
+    /** Return the scope + displayName for a given accountId (used to filter UI by business). */
+    getScope: publicProcedure
+      .input(z.object({ accountId: z.number() }))
+      .query(async ({ input }) => {
+        const db = await getDb();
+        if (!db) return null;
+        const [user] = await db
+          .select({ scope: appUsers.scope, displayName: appUsers.displayName })
+          .from(appUsers)
+          .where(eq(appUsers.id, input.accountId))
+          .limit(1);
+        return user ?? null;
+      }),
   }),
 
   /** Waitlist signup for BusinessCadence.com marketing site. */
