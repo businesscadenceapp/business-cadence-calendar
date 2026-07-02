@@ -337,7 +337,7 @@ function StepOwnerMeetings({
     <div className="flex flex-col gap-6">
       <div>
         <h2 className="text-2xl font-bold text-navy mb-1">Owner meeting days</h2>
-        <p className="text-slate-500">When do you and your co-owner(s) meet? Only your work days are selectable.</p>
+        <p className="text-slate-500">When do you and your co-owner(s) meet? Choose any weekday — these are owner meetings, not business hours.</p>
       </div>
 
       <div className="flex flex-col gap-5 bg-slate-50 rounded-xl p-4">
@@ -345,25 +345,25 @@ function StepOwnerMeetings({
           label="Daily Huddle (every week)"
           value={data.meetingDayPrefs.ownerDaily}
           onChange={days => onChange({ meetingDayPrefs: { ...data.meetingDayPrefs, ownerDaily: days } })}
-          allowedDays={data.workDays}
+          allowedDays={[1, 2, 3, 4, 5]}
         />
         <DayPicker
           label="Weekly Review"
           value={data.meetingDayPrefs.ownerWeekly}
           onChange={v => update("ownerWeekly", v)}
-          allowedDays={data.workDays}
+          allowedDays={[1, 2, 3, 4, 5]}
         />
         <DayPicker
           label="Monthly Finance Review (1st occurrence each month)"
           value={data.meetingDayPrefs.ownerMonthly}
           onChange={v => update("ownerMonthly", v)}
-          allowedDays={data.workDays}
+          allowedDays={[1, 2, 3, 4, 5]}
         />
         <DayPicker
-          label="Quarterly Offsite day (first occurrence in Jan, Apr, Jul, Oct)"
+          label="Quarterly Offsite Meeting (first selected day in Jan, Apr, Jul, Oct)"
           value={data.meetingDayPrefs.quarterlyDay}
           onChange={v => update("quarterlyDay", v)}
-          allowedDays={[0, 1, 2, 3, 4, 5, 6]}
+          allowedDays={[1, 2, 3, 4, 5]}
         />
       </div>
 
