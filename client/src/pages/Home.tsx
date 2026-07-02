@@ -12,6 +12,7 @@ import { RecordMeeting } from "@/components/RecordMeeting";
 
 import {
   generateCalendar,
+  buildCalendarFromSchedule,
   MEETING_TYPES,
   BUSINESSES,
   type CalendarDay,
@@ -54,8 +55,9 @@ function DayCell({
 }) {
   if (!day) return <div className="h-10" />;
 
+  const isClosed = day.isClosed === true;
   const isHighlighted = highlightType ? day.meetings.includes(highlightType) : false;
-  const hasMeetings = day.meetings.length > 0 && !day.isWeekend;
+  const hasMeetings = day.meetings.length > 0 && !day.isWeekend && !isClosed;
   const hasQuarterly = day.meetings.includes("quarterly");
   const hasMonthly = day.meetings.includes("monthly");
   const sortedMeetings = MEETING_ORDER.filter((t) => day.meetings.includes(t));
@@ -64,13 +66,16 @@ function DayCell({
     <div
       className={`h-10 rounded-md flex flex-col items-center justify-between py-1 px-0.5 relative transition-all duration-150
         ${day.isWeekend ? "opacity-30" : ""}
+        ${isClosed ? "opacity-50" : ""}
         ${day.isToday ? "ring-1 ring-[#0D9488]" : ""}
         ${isSelected ? "ring-1 ring-[#1E3A5F]/40" : ""}
         ${hasMeetings ? "cursor-pointer" : ""}
         ${isHighlighted ? "ring-1" : ""}
       `}
       style={{
-        backgroundColor: isSelected
+        backgroundColor: isClosed
+          ? "rgba(148,163,184,0.15)"
+          : isSelected
           ? "rgba(30,58,95,0.10)"
           : hasQuarterly
           ? "rgba(244,63,94,0.10)"
@@ -82,16 +87,22 @@ function DayCell({
           ? "rgba(30,58,95,0.03)"
           : "transparent",
         borderColor:
-          isHighlighted && highlightType
+          isClosed
+            ? "rgba(148,163,184,0.4)"
+            : isHighlighted && highlightType
             ? MEETING_TYPES[highlightType].color + "50"
             : undefined,
+        border: isClosed ? "1px solid rgba(148,163,184,0.4)" : undefined,
       }}
       onClick={() => hasMeetings && onSelect(day)}
+      title={isClosed ? "Closed day" : undefined}
     >
       <div className="relative w-full flex justify-center">
         <span
           className={`text-[10px] leading-none ${
-            day.isToday
+            isClosed
+              ? "text-[#94A3B8] line-through"
+              : day.isToday
               ? "text-white font-bold bg-[#1E3A5F] rounded-sm px-0.5"
               : hasQuarterly
               ? "text-rose-600 font-semibold"
@@ -103,12 +114,18 @@ function DayCell({
         >
           {day.dayOfMonth}
         </span>
-        {hasLog && (
+        {hasLog && !isClosed && (
           <span
             className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full"
             style={{ backgroundColor: "#22c55e", boxShadow: "0 0 3px #22c55e" }}
             title="Meeting logged"
           />
+        )}
+        {isClosed && (
+          <span
+            className="absolute -top-0.5 -right-0.5 text-[8px] text-[#94A3B8] leading-none"
+            title="Closed"
+          >✕</span>
         )}
       </div>
       {hasMeetings && sortedMeetings.length > 0 && (
@@ -739,14 +756,35 @@ function LegendItem({
 }
 
 export default function Home() {
-  const calendar = useMemo(() => generateCalendar(), []);
   const [selectedDay, setSelectedDay] = useState<CalendarDay | null>(null);
   const [highlightType, setHighlightType] = useState<MeetingType | null>(null);
   // Business context from the login portal — re-read on every mount so switching accounts works
   const [businessContext, setBusinessContext] = useState<BusinessSelection>(() => getBusinessSelection());
+  const [accountId] = useState<number>(() => {
+    const stored = localStorage.getItem("bcc_account_id");
+    return stored ? parseInt(stored, 10) : 0;
+  });
   useEffect(() => {
     setBusinessContext(getBusinessSelection());
   }, []);
+
+  // Fetch the DB-driven calendar (respects closed days, work days, meeting prefs)
+  const { data: calendarData } = trpc.onboarding.generateCalendar.useQuery(
+    { accountId, year: YEAR },
+    { enabled: accountId > 0, staleTime: 30_000, refetchOnWindowFocus: true }
+  );
+
+  // Build the calendar grid — use DB data when available, fall back to static
+  const calendar = useMemo<CalendarMonth[]>(() => {
+    if (calendarData?.meetings && calendarData.meetings.length > 0) {
+      return buildCalendarFromSchedule(
+        YEAR,
+        calendarData.meetings,
+        calendarData.closedDates ?? []
+      );
+    }
+    return generateCalendar();
+  }, [calendarData]);
 
   // Fetch all days that have saved meeting logs for the green indicator dot
   const { data: loggedDatesData } = trpc.meetingLog.getLoggedDates.useQuery(undefined, {

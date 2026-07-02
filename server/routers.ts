@@ -454,7 +454,7 @@ Be concise and specific. If a field has nothing, use an empty array.`,
       .input(z.object({ accountId: z.number(), year: z.number().int() }))
       .query(async ({ input }) => {
         const profile = await getBusinessProfile(input.accountId);
-        if (!profile) return { meetings: [] };
+        if (!profile) return { meetings: [], closedDates: [], workDays: [] };
         const closedPeriods = await getClosedPeriods(input.accountId);
         const workDays: number[] = JSON.parse(profile.workDays);
         const meetingDayPrefs = JSON.parse(profile.meetingDayPrefs);
@@ -464,7 +464,16 @@ Be concise and specific. If a field has nothing, use an empty array.`,
           meetingDayPrefs,
           closedPeriods,
         });
-        return { meetings };
+        // Expand closed periods into individual YYYY-MM-DD date strings for the frontend
+        const closedDates: string[] = [];
+        for (const period of closedPeriods) {
+          const start = new Date(period.startDate + "T00:00:00");
+          const end = new Date(period.endDate + "T00:00:00");
+          for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+            closedDates.push(d.toISOString().slice(0, 10));
+          }
+        }
+        return { meetings, closedDates, workDays };
       }),
   }),
 

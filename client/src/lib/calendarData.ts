@@ -320,6 +320,7 @@ export interface CalendarDay {
   isWeekend: boolean;
   meetings: MeetingType[];
   isToday: boolean;
+  isClosed?: boolean;  // true if this day is in a closed period
 }
 
 export interface CalendarMonth {
@@ -395,6 +396,60 @@ export function generateCalendar(): CalendarMonth[] {
     }
 
     months.push({ month: m, name: MONTH_NAMES[m], days });
+  }
+
+  return months;
+}
+
+/**
+ * Build a CalendarMonth[] from server-generated schedule data.
+ * `meetings` is the array of ScheduledMeeting from the tRPC generateCalendar query.
+ * `closedDates` is the array of YYYY-MM-DD strings for closed days.
+ */
+export function buildCalendarFromSchedule(
+  year: number,
+  meetings: { date: string; meetingType: string; layer: string }[],
+  closedDates: string[]
+): CalendarMonth[] {
+  const closedSet = new Set(closedDates);
+  // Build a map of dateKey -> meeting types
+  const meetingMap = new Map<string, MeetingType[]>();
+  for (const m of meetings) {
+    const key = m.date;
+    if (!meetingMap.has(key)) meetingMap.set(key, []);
+    meetingMap.get(key)!.push(m.meetingType as MeetingType);
+  }
+
+  const today = new Date();
+  const months: CalendarMonth[] = [];
+  const MONTH_NAMES_LOCAL = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December",
+  ];
+
+  for (let mo = 0; mo < 12; mo++) {
+    const firstDay = new Date(year, mo, 1);
+    const lastDay = new Date(year, mo + 1, 0);
+    const startDow = firstDay.getDay();
+    const days: (CalendarDay | null)[] = [];
+
+    for (let i = 0; i < startDow; i++) days.push(null);
+
+    for (let d = 1; d <= lastDay.getDate(); d++) {
+      const date = new Date(year, mo, d);
+      const dow = date.getDay();
+      const isWeekend = dow === 0 || dow === 6;
+      const isToday =
+        today.getFullYear() === year &&
+        today.getMonth() === mo &&
+        today.getDate() === d;
+      const dateKey = `${year}-${String(mo + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+      const isClosed = closedSet.has(dateKey);
+      const meetings: MeetingType[] = meetingMap.get(dateKey) ?? [];
+      days.push({ date, dayOfMonth: d, isWeekend, meetings, isToday, isClosed });
+    }
+
+    months.push({ month: mo, name: MONTH_NAMES_LOCAL[mo], days });
   }
 
   return months;
