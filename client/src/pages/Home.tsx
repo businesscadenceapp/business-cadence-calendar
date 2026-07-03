@@ -1123,16 +1123,28 @@ export default function Home() {
 
           {/* Calendar Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3 xl:grid-cols-4">
-            {calendar.map((month) => (
-              <MonthGrid
-                key={month.month}
-                month={month}
-                onSelectDay={handleSelectDay}
-                selectedDay={selectedDay}
-                highlightType={highlightType}
-                loggedDates={loggedDatesSet}
-              />
-            ))}
+            {calendar.map((month) => {
+              const isCurrentMonth = month.month === new Date().getMonth();
+              return (
+                <div
+                  key={month.month}
+                  ref={isCurrentMonth ? (el) => {
+                    if (el) {
+                      // Small delay so the grid has rendered before scrolling
+                      setTimeout(() => el.scrollIntoView({ behavior: "smooth", block: "start" }), 150);
+                    }
+                  } : undefined}
+                >
+                  <MonthGrid
+                    month={month}
+                    onSelectDay={handleSelectDay}
+                    selectedDay={selectedDay}
+                    highlightType={highlightType}
+                    loggedDates={loggedDatesSet}
+                  />
+                </div>
+              );
+            })}
           </div>
         </main>
 
