@@ -3,7 +3,7 @@
  * Meetings on closed dates are automatically shifted to the next available day.
  */
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
@@ -99,6 +99,160 @@ function MiniCalendar({
   );
 }
 
+// ─── Meeting Schedule Helpers ────────────────────────────────────────────────
+const DAY_NAMES_SHORT = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+function MiniDayPickerMulti({ value, onChange }: { value: number[]; onChange: (v: number[]) => void }) {
+  return (
+    <div className="flex gap-1">
+      {[1, 2, 3, 4, 5].map(d => (
+        <button key={d} type="button"
+          onClick={() => onChange(value.includes(d) ? value.filter(x => x !== d) : [...value, d].sort())}
+          className={cn("w-8 h-8 rounded-md text-[11px] font-semibold transition-all",
+            value.includes(d) ? "bg-teal-500 text-white" : "bg-slate-100 text-slate-500 hover:bg-slate-200")}
+        >{DAY_NAMES_SHORT[d]}</button>
+      ))}
+    </div>
+  );
+}
+
+function MiniDayPicker({ value, onChange }: { value: number; onChange: (v: number) => void }) {
+  return (
+    <div className="flex gap-1">
+      {[1, 2, 3, 4, 5].map(d => (
+        <button key={d} type="button" onClick={() => onChange(d)}
+          className={cn("w-8 h-8 rounded-md text-[11px] font-semibold transition-all",
+            value === d ? "bg-teal-500 text-white" : "bg-slate-100 text-slate-500 hover:bg-slate-200")}
+        >{DAY_NAMES_SHORT[d]}</button>
+      ))}
+    </div>
+  );
+}
+
+function ToggleSwitch({ enabled, onToggle }: { enabled: boolean; onToggle: (v: boolean) => void }) {
+  return (
+    <button type="button" onClick={() => onToggle(!enabled)}
+      className={cn("relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200",
+        enabled ? "bg-teal-500" : "bg-slate-300")}
+      role="switch" aria-checked={enabled}>
+      <span className={cn("pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow transform transition-transform duration-200",
+        enabled ? "translate-x-4" : "translate-x-0")} />
+    </button>
+  );
+}
+
+type MeetingPrefs = {
+  ownerDaily: number[]; ownerWeekly: number; ownerMonthly: number; quarterlyDay: number;
+  teamDaily: number[]; teamWeekly: number;
+  ownerDailyEnabled: boolean; ownerWeeklyEnabled: boolean; ownerMonthlyEnabled: boolean;
+  quarterlyEnabled: boolean; teamDailyEnabled: boolean; teamWeeklyEnabled: boolean;
+};
+
+function MeetingScheduleSection({ accountId }: { accountId: number }) {
+  const utils = trpc.useUtils();
+  const { data: statusData, refetch } = trpc.onboarding.getStatus.useQuery({ accountId }, { enabled: accountId > 0 });
+  const updatePrefs = trpc.onboarding.updateMeetingPrefs.useMutation({
+    onSuccess: () => {
+      toast.success("Meeting schedule saved.");
+      refetch();
+      utils.onboarding.generateCalendar.invalidate();
+    },
+    onError: (err) => toast.error(err.message ?? "Save failed."),
+  });
+  const [prefs, setPrefs] = useState<MeetingPrefs | null>(null);
+  const [dirty, setDirty] = useState(false);
+
+  useEffect(() => {
+    if (statusData?.profile?.meetingDayPrefs) {
+      const raw = JSON.parse(statusData.profile.meetingDayPrefs);
+      setPrefs({
+        ownerDaily: raw.ownerDaily ?? [1, 2, 3, 4],
+        ownerWeekly: raw.ownerWeekly ?? 5,
+        ownerMonthly: raw.ownerMonthly ?? 5,
+        quarterlyDay: raw.quarterlyDay ?? 5,
+        teamDaily: raw.teamDaily ?? [1],
+        teamWeekly: raw.teamWeekly ?? 3,
+        ownerDailyEnabled: raw.ownerDailyEnabled !== false,
+        ownerWeeklyEnabled: raw.ownerWeeklyEnabled !== false,
+        ownerMonthlyEnabled: raw.ownerMonthlyEnabled !== false,
+        quarterlyEnabled: raw.quarterlyEnabled !== false,
+        teamDailyEnabled: raw.teamDailyEnabled !== false,
+        teamWeeklyEnabled: raw.teamWeeklyEnabled !== false,
+      });
+      setDirty(false);
+    }
+  }, [statusData]);
+
+  const upd = useCallback((patch: Partial<MeetingPrefs>) => {
+    setPrefs(prev => prev ? { ...prev, ...patch } : prev);
+    setDirty(true);
+  }, []);
+
+  if (!prefs) return <div className="text-slate-400 text-sm p-4">Loading…</div>;
+
+  const MeetingRow = ({ label, desc, enabledKey, children }: { label: string; desc: string; enabledKey: keyof MeetingPrefs; children: React.ReactNode }) => (
+    <div className={cn("rounded-lg border p-3 transition-all", prefs[enabledKey] ? "border-teal-200 bg-white" : "border-slate-200 bg-slate-50")}>
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-[13px] font-semibold text-navy">{label}</p>
+          <p className="text-[11px] text-slate-400">{desc}</p>
+        </div>
+        <ToggleSwitch enabled={!!prefs[enabledKey]} onToggle={v => upd({ [enabledKey]: v } as Partial<MeetingPrefs>)} />
+      </div>
+      {prefs[enabledKey] && <div className="mt-3 pt-3 border-t border-slate-100">{children}</div>}
+    </div>
+  );
+
+  return (
+    <div className="flex flex-col gap-4">
+      <div>
+        <h3 className="text-base font-bold text-navy mb-1">Owner Meetings</h3>
+        <p className="text-sm text-slate-500 mb-3">Toggle off any meeting type you don't want on your calendar.</p>
+        <div className="flex flex-col gap-2">
+          <MeetingRow label="Daily Huddle" desc="Quick daily sync — 10–15 min" enabledKey="ownerDailyEnabled">
+            <p className="text-[11px] text-slate-500 mb-1">Which days?</p>
+            <MiniDayPickerMulti value={prefs.ownerDaily} onChange={v => upd({ ownerDaily: v })} />
+          </MeetingRow>
+          <MeetingRow label="Weekly Review" desc="Weekly business review — 60–90 min" enabledKey="ownerWeeklyEnabled">
+            <p className="text-[11px] text-slate-500 mb-1">Which day?</p>
+            <MiniDayPicker value={prefs.ownerWeekly} onChange={v => upd({ ownerWeekly: v })} />
+          </MeetingRow>
+          <MeetingRow label="Monthly Finance Review" desc="Monthly financial deep-dive — 60 min" enabledKey="ownerMonthlyEnabled">
+            <p className="text-[11px] text-slate-500 mb-1">Which day? (1st occurrence each month)</p>
+            <MiniDayPicker value={prefs.ownerMonthly} onChange={v => upd({ ownerMonthly: v })} />
+          </MeetingRow>
+          <MeetingRow label="Quarterly Offsite Meeting" desc="Quarterly strategic offsite — ~4 hrs" enabledKey="quarterlyEnabled">
+            <p className="text-[11px] text-slate-500 mb-1">Which day? (first occurring day in Jan, Apr, Jul, Oct)</p>
+            <MiniDayPicker value={prefs.quarterlyDay} onChange={v => upd({ quarterlyDay: v })} />
+          </MeetingRow>
+        </div>
+      </div>
+      <div>
+        <h3 className="text-base font-bold text-navy mb-1">Team Meetings</h3>
+        <p className="text-sm text-slate-500 mb-3">Meetings that include your full team.</p>
+        <div className="flex flex-col gap-2">
+          <MeetingRow label="Team Daily Huddle" desc="Quick daily sync with the team — 10–15 min" enabledKey="teamDailyEnabled">
+            <p className="text-[11px] text-slate-500 mb-1">Which days?</p>
+            <MiniDayPickerMulti value={prefs.teamDaily} onChange={v => upd({ teamDaily: v })} />
+          </MeetingRow>
+          <MeetingRow label="Team Weekly Meeting" desc="Weekly all-hands or team review — 30–60 min" enabledKey="teamWeeklyEnabled">
+            <p className="text-[11px] text-slate-500 mb-1">Which day?</p>
+            <MiniDayPicker value={prefs.teamWeekly} onChange={v => upd({ teamWeekly: v })} />
+          </MeetingRow>
+        </div>
+      </div>
+      {dirty && (
+        <button onClick={() => { if (prefs) { updatePrefs.mutate({ accountId, meetingDayPrefs: prefs }); setDirty(false); } }}
+          disabled={updatePrefs.isPending}
+          className="self-start px-4 py-2 rounded-lg text-sm font-semibold text-white bg-teal-600 hover:bg-teal-700 transition-colors">
+          {updatePrefs.isPending ? "Saving…" : "Save Meeting Schedule"}
+        </button>
+      )}
+    </div>
+  );
+}
+
+// ─── Main Page ────────────────────────────────────────────────────────────────
 export default function ManageSchedule() {
   const [, navigate] = useLocation();
   const accountId = Number(localStorage.getItem("bcc_account_id") ?? "0");
@@ -346,6 +500,19 @@ export default function ManageSchedule() {
                 ))}
             </div>
           )}
+        </div>
+      </div>
+
+      {/* Meeting Schedule section — full width below */}
+      <div className="max-w-4xl mx-auto px-4 pb-8">
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+          <div className="mb-5">
+            <h2 className="text-base font-bold text-navy mb-1">Meeting Schedule</h2>
+            <p className="text-sm text-slate-500">
+              Choose which meetings appear on your calendar and which days they occur.
+            </p>
+          </div>
+          <MeetingScheduleSection accountId={accountId} />
         </div>
       </div>
     </div>

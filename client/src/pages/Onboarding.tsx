@@ -386,7 +386,7 @@ function StepOwnerMeetings({
     <div className="flex flex-col gap-6">
       <div>
         <h2 className="text-2xl font-bold text-navy mb-1">Owner meeting days</h2>
-        <p className="text-slate-500">Choose which meetings you want and when. Toggle off any you don't need — you can always change these later in Settings.</p>
+        <p className="text-slate-500">Choose which meetings you want and when. Toggle off any you don't need — you can always change these later in Manage Schedule.</p>
       </div>
 
       <div className="flex flex-col gap-3">
@@ -470,7 +470,7 @@ function StepTeamMeetings({
     <div className="flex flex-col gap-6">
       <div>
         <h2 className="text-2xl font-bold text-navy mb-1">Team meeting days</h2>
-        <p className="text-slate-500">Choose which team meetings you want. Toggle off any you don't need — you can change these later in Settings.</p>
+        <p className="text-slate-500">Choose which team meetings you want. Toggle off any you don't need — you can change these later in Manage Schedule.</p>
       </div>
 
       <div className="flex flex-col gap-3">
@@ -525,7 +525,7 @@ function StepPreview({
     <div className="flex flex-col gap-6">
       <div>
         <h2 className="text-2xl font-bold text-navy mb-1">Review your setup</h2>
-        <p className="text-slate-500">Everything look right? You can always change this later in Settings.</p>
+        <p className="text-slate-500">Everything look right? You can always change this later in Manage Schedule.</p>
       </div>
 
       <div className="bg-slate-50 rounded-xl divide-y divide-slate-200">
