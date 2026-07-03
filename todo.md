@@ -271,3 +271,16 @@
 - [ ] Today's date more prominent in calendar month view
 - [ ] Meeting dots slightly larger and more readable on mobile
 - [ ] Save checkpoint
+
+## Seamless Navigation — AppShell (Phase 14)
+- [x] Create `AppShell` layout component with persistent sidebar (desktop, 220px) + bottom tab bar (mobile)
+- [x] Sidebar: logo/brand at top, 5 nav items (Board, Goals, Reports, Calendar, Settings), identity selector at bottom
+- [x] Bottom tab bar (mobile): 5 icon+label tabs always visible at bottom, active state highlighted
+- [x] Animated page transitions: fade+slide between sections (150ms ease-out)
+- [x] Remove per-page header nav from Board.tsx — use AppShell instead
+- [x] Remove per-page header nav from Goals.tsx — use AppShell instead
+- [x] Remove per-page header nav from Home.tsx calendar — use AppShell instead
+- [x] Remove per-page header nav from Reports page — use AppShell instead
+- [x] Wire all /app/* routes through AppShell in App.tsx
+- [x] Identity selector (I am Matt/Lynn) moved to AppShell sidebar bottom
+- [x] Save checkpoint

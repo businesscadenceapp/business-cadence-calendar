@@ -7,7 +7,6 @@
  * Matt = Blue, Lynn = Rose, Both = Teal
  */
 import { useState, useMemo } from "react";
-import { Link } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { getBusinessSelection } from "./ClientLogin";
@@ -502,7 +501,6 @@ export default function Goals() {
   const [selectedYear, setSelectedYear] = useState(CURRENT_YEAR);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingGoal, setEditingGoal] = useState<typeof goalsData[0] | null>(null);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const { data: goalsData = [], refetch } = trpc.goals.list.useQuery(
     { accountId, year: selectedYear },
@@ -541,45 +539,17 @@ export default function Goals() {
   const pct = total > 0 ? Math.round((achieved / total) * 100) : 0;
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ backgroundColor: "#F8F7F4", fontFamily: "'Inter', sans-serif" }}>
-      {/* Header */}
-      <header
-        className="px-4 sm:px-5 py-3 flex items-center justify-between flex-shrink-0 gap-3"
+    <div className="h-full flex flex-col" style={{ backgroundColor: "#F8F7F4", fontFamily: "'Inter', sans-serif" }}>
+      {/* Slim page title bar */}
+      <div
+        className="px-4 sm:px-6 py-3 flex items-center justify-between flex-shrink-0"
         style={{ borderBottom: "1px solid #E2E8F0", backgroundColor: "#FFFFFF" }}
       >
-        {/* Logo + title */}
-        <div className="flex items-center gap-3 flex-shrink-0">
-          <div
-            className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 text-lg"
-            style={{ background: "linear-gradient(135deg, #7C3AED 0%, #0D9488 100%)", boxShadow: "0 2px 8px rgba(124,58,237,0.25)" }}
-          >
-            🎯
-          </div>
-          <div>
-            <h1 className="text-base font-bold text-[#1E3A5F] leading-tight tracking-tight" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-              Goals
-            </h1>
-            <p className="text-[10px] text-slate-400 mt-0.5 hidden sm:block">Quarterly & annual targets</p>
-          </div>
+        <div className="flex items-center gap-2.5">
+          <span className="text-lg">🎯</span>
+          <h1 className="text-base font-bold text-[#1E3A5F]" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Goals</h1>
+          <span className="text-[10px] text-slate-400 hidden sm:block">Quarterly & annual targets</span>
         </div>
-
-        {/* Desktop nav */}
-        <nav className="hidden md:flex items-center gap-1.5">
-          <Link href="/app/board" className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all hover:bg-[#F1F5F9]" style={{ color: "#1E3A5F", fontFamily: "'Space Grotesk', sans-serif" }}>
-            <span>📋</span> Board
-          </Link>
-          <Link href="/app/reports" className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all hover:bg-[#F1F5F9]" style={{ color: "#0D9488", fontFamily: "'Space Grotesk', sans-serif" }}>
-            <span>📊</span> Reports
-          </Link>
-          <Link href="/app/calendar" className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all hover:bg-[#F1F5F9]" style={{ color: "#64748B", fontFamily: "'Space Grotesk', sans-serif" }}>
-            <span>📅</span> Calendar
-          </Link>
-          <Link href="/app/settings" className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all hover:bg-[#F1F5F9]" style={{ color: "#94A3B8", fontFamily: "'Space Grotesk', sans-serif" }}>
-            <span>⚙️</span> Settings
-          </Link>
-        </nav>
-
-        {/* Right side: year selector + add + mobile menu */}
         <div className="flex items-center gap-2">
           <select
             value={selectedYear}
@@ -598,34 +568,8 @@ export default function Goals() {
           >
             + Add Goal
           </button>
-          {/* Mobile menu */}
-          <div className="relative md:hidden">
-            <button
-              className="w-8 h-8 flex items-center justify-center rounded-lg transition-all"
-              style={{ background: "rgba(30,58,95,0.06)", border: "1px solid rgba(30,58,95,0.15)" }}
-              onClick={() => setMobileMenuOpen(v => !v)}
-              aria-label="Navigation menu"
-            >
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                <circle cx="7" cy="3" r="1.3" fill="#1E3A5F" />
-                <circle cx="7" cy="7" r="1.3" fill="#1E3A5F" />
-                <circle cx="7" cy="11" r="1.3" fill="#1E3A5F" />
-              </svg>
-            </button>
-            {mobileMenuOpen && (
-              <div
-                className="absolute right-0 top-10 w-48 rounded-xl shadow-lg z-50 flex flex-col overflow-hidden"
-                style={{ background: "#FFFFFF", border: "1px solid #E2E8F0" }}
-              >
-                <Link href="/app/board" className="flex items-center gap-2.5 px-4 py-3 text-[12px] font-semibold hover:bg-[#F8F7F4] transition-colors" style={{ color: "#1E3A5F" }} onClick={() => setMobileMenuOpen(false)}>📋 Board</Link>
-                <Link href="/app/reports" className="flex items-center gap-2.5 px-4 py-3 text-[12px] font-semibold hover:bg-[#F8F7F4] transition-colors" style={{ color: "#0D9488" }} onClick={() => setMobileMenuOpen(false)}>📊 Reports</Link>
-                <Link href="/app/calendar" className="flex items-center gap-2.5 px-4 py-3 text-[12px] font-semibold hover:bg-[#F8F7F4] transition-colors" style={{ color: "#64748B" }} onClick={() => setMobileMenuOpen(false)}>📅 Calendar</Link>
-                <Link href="/app/settings" className="flex items-center gap-2.5 px-4 py-3 text-[12px] font-semibold hover:bg-[#F8F7F4] transition-colors" style={{ color: "#94A3B8" }} onClick={() => setMobileMenuOpen(false)}>⚙️ Settings</Link>
-              </div>
-            )}
-          </div>
         </div>
-      </header>
+      </div>
 
       {/* Stats bar */}
       {total > 0 && (

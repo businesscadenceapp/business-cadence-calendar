@@ -343,20 +343,15 @@ export default function WeeklyReports() {
   }
 
   return (
-    <div className="min-h-screen w-full" style={{ background: "#F8F7F4" }}>
-      {/* Top bar */}
+    <div className="h-full flex flex-col" style={{ background: "#F8F7F4" }}>
+      {/* Slim page title bar */}
       <div
-        className="sticky top-0 z-10 flex items-center justify-between px-6 py-4 border-b"
-        style={{ background: "rgba(248,247,244,0.95)", backdropFilter: "blur(12px)", borderColor: "#E2E0DB" }}
+        className="flex items-center justify-between px-6 py-3 border-b flex-shrink-0"
+        style={{ background: "#FFFFFF", borderColor: "#E2E0DB" }}
       >
-        <div className="flex items-center gap-4">
-          <Link href="/app" className="text-xs text-[#64748B] hover:text-[#1E3A5F] transition-colors" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-            ← Calendar
-          </Link>
-          <div className="w-px h-4" style={{ background: "#E2E0DB" }} />
-          <h1 className="text-base font-bold text-[#1E3A5F]" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-            📊 Weekly Reports
-          </h1>
+        <div className="flex items-center gap-3">
+          <span className="text-base">📊</span>
+          <h1 className="text-sm font-bold text-[#1E3A5F]" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Weekly Reports</h1>
           <span
             className="text-xs px-2 py-0.5 rounded-full"
             style={{ background: "rgba(13,148,136,0.10)", color: "#0D9488", fontFamily: "'Space Grotesk', sans-serif" }}

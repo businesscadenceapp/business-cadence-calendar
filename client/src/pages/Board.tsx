@@ -12,15 +12,18 @@
  *   - Colored accents use saturated foreground colors, not washed-out pastels
  */
 import { useState, useEffect, useMemo } from "react";
-import { Link } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { getBusinessSelection, type BusinessSelection } from "./ClientLogin";
+import { useIdentity } from "@/components/AppShell";
+import { Link } from "wouter";
 
 type Author = "Matt" | "Lynn";
 type CardType = "update" | "issue" | "task";
 type Business = "chiropractic" | "crossfit" | "realty" | "general";
 
+// Identity is now managed by AppShell context (useIdentity hook)
+// IDENTITY_KEY kept for backward compatibility with localStorage reads
 const IDENTITY_KEY = "bcc_identity";
 
 // Map account scope → which board businesses are visible
@@ -568,10 +571,8 @@ function AddCardForm({ currentUser, onAdded, allowedBusinesses, defaultBusiness 
 // ─── Main Board Page ──────────────────────────────────────────────────────────
 
 export default function Board() {
-  const [currentUser, setCurrentUser] = useState<Author | null>(() => {
-    const saved = localStorage.getItem(IDENTITY_KEY);
-    return (saved === "Matt" || saved === "Lynn") ? saved : null;
-  });
+  // Identity is managed by AppShell context — shared across all pages
+  const { currentUser } = useIdentity();
   const [filterBusiness, setFilterBusiness] = useState<Business | "all">("all");
   const [showCompleted, setShowCompleted] = useState(false);
 
@@ -579,12 +580,6 @@ export default function Board() {
   const scope = useMemo<BusinessSelection>(() => getBusinessSelection(), []);
   const allowedBusinesses = useMemo<Business[]>(() => SCOPE_BUSINESSES[scope], [scope]);
   const defaultBusiness = useMemo<Business>(() => SCOPE_DEFAULT_BUSINESS[scope], [scope]);
-
-  useEffect(() => {
-    if (currentUser) {
-      localStorage.setItem(IDENTITY_KEY, currentUser);
-    }
-  }, [currentUser]);
 
   const { data, refetch, isLoading } = trpc.board.list.useQuery(undefined, {
     refetchInterval: 15_000,
@@ -629,106 +624,9 @@ export default function Board() {
 
   return (
     <div
-      className="min-h-screen flex flex-col"
+      className="h-full flex"
       style={{ backgroundColor: "#F8F7F4", fontFamily: "'Inter', sans-serif" }}
     >
-      {/* Header */}
-      <header
-        className="px-4 sm:px-5 py-3 flex items-center justify-between flex-shrink-0 gap-3"
-        style={{ borderBottom: "1px solid #E2E8F0", backgroundColor: "#FFFFFF" }}
-      >
-        {/* Logo + title */}
-        <div className="flex items-center gap-3 flex-shrink-0">
-          <div
-            className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 text-lg"
-            style={{ background: "linear-gradient(135deg, #2563EB 0%, #E11D48 100%)", boxShadow: "0 2px 8px rgba(37,99,235,0.25)" }}
-          >
-            📋
-          </div>
-          <div>
-            <h1 className="text-base font-bold text-[#1E3A5F] leading-tight tracking-tight" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-              Command Board
-            </h1>
-            <p className="text-[10px] text-slate-400 mt-0.5 hidden sm:block">Your co-owner operating system</p>
-          </div>
-        </div>
-
-        {/* Desktop nav */}
-        <nav className="hidden md:flex items-center gap-1.5">
-          <Link href="/app/goals" className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all hover:bg-[#F1F5F9]" style={{ color: "#7C3AED", fontFamily: "'Space Grotesk', sans-serif" }}>
-            <span>🎯</span> Goals
-          </Link>
-          <Link href="/app/reports" className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all hover:bg-[#F1F5F9]" style={{ color: "#0D9488", fontFamily: "'Space Grotesk', sans-serif" }}>
-            <span>📊</span> Reports
-          </Link>
-          <Link href="/app/calendar" className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all hover:bg-[#F1F5F9]" style={{ color: "#64748B", fontFamily: "'Space Grotesk', sans-serif" }}>
-            <span>📅</span> Calendar
-          </Link>
-          <Link href="/app/settings" className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all hover:bg-[#F1F5F9]" style={{ color: "#94A3B8", fontFamily: "'Space Grotesk', sans-serif" }}>
-            <span>⚙️</span> Settings
-          </Link>
-          <div className="w-px h-5 bg-slate-200 mx-1" />
-        </nav>
-
-        {/* Identity selector + mobile menu */}
-        <div className="flex items-center gap-2">
-          <span className="text-[10px] text-slate-400 font-medium hidden sm:block" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>I am:</span>
-          {(["Matt", "Lynn"] as Author[]).map(a => {
-            const c = AUTHOR_COLORS[a];
-            const isActive = currentUser === a;
-            return (
-              <button
-                key={a}
-                onClick={() => setCurrentUser(a)}
-                className="px-3 py-1.5 rounded-lg text-[12px] font-bold transition-all relative"
-                style={{
-                  backgroundColor: isActive ? c.btnBg : "#F8FAFC",
-                  border: `2px solid ${isActive ? c.btnBorder : "#E2E8F0"}`,
-                  color: isActive ? c.btnText : "#475569",
-                  fontFamily: "'Space Grotesk', sans-serif",
-                }}
-              >
-                {a}
-                {isActive && totalBadge > 0 && (
-                  <span className="absolute -top-1.5 -right-1.5 text-[9px] px-1.5 py-0.5 rounded-full" style={{ backgroundColor: "#EF4444", color: "white" }}>
-                    {totalBadge}
-                  </span>
-                )}
-              </button>
-            );
-          })}
-          {/* Mobile nav dropdown */}
-          <div className="relative md:hidden">
-            <button
-              id="board-mobile-menu-btn"
-              className="w-8 h-8 flex items-center justify-center rounded-lg transition-all"
-              style={{ background: "rgba(30,58,95,0.06)", border: "1px solid rgba(30,58,95,0.15)" }}
-              onClick={() => {
-                const menu = document.getElementById("board-mobile-menu");
-                if (menu) menu.style.display = menu.style.display === "none" ? "flex" : "none";
-              }}
-              aria-label="Navigation menu"
-            >
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                <circle cx="7" cy="3" r="1.3" fill="#1E3A5F" />
-                <circle cx="7" cy="7" r="1.3" fill="#1E3A5F" />
-                <circle cx="7" cy="11" r="1.3" fill="#1E3A5F" />
-              </svg>
-            </button>
-            <div
-              id="board-mobile-menu"
-              className="absolute right-0 top-10 w-48 rounded-xl shadow-lg z-50 flex-col overflow-hidden"
-              style={{ background: "#FFFFFF", border: "1px solid #E2E8F0", display: "none" }}
-            >
-              <Link href="/app/goals" className="flex items-center gap-2.5 px-4 py-3 text-[12px] font-semibold hover:bg-[#F8F7F4] transition-colors" style={{ color: "#7C3AED" }}>🎯 Goals</Link>
-              <Link href="/app/reports" className="flex items-center gap-2.5 px-4 py-3 text-[12px] font-semibold hover:bg-[#F8F7F4] transition-colors" style={{ color: "#0D9488" }}>📊 Reports</Link>
-              <Link href="/app/calendar" className="flex items-center gap-2.5 px-4 py-3 text-[12px] font-semibold hover:bg-[#F8F7F4] transition-colors" style={{ color: "#64748B" }}>📅 Calendar</Link>
-              <Link href="/app/settings" className="flex items-center gap-2.5 px-4 py-3 text-[12px] font-semibold hover:bg-[#F8F7F4] transition-colors" style={{ color: "#94A3B8" }}>⚙️ Settings</Link>
-            </div>
-          </div>
-        </div>
-      </header>
-
       <div className="flex flex-1 overflow-hidden">
         {/* Left sidebar */}
         <aside
@@ -741,9 +639,9 @@ export default function Board() {
               className="rounded-xl p-3 mb-4 flex items-center gap-2"
               style={{ backgroundColor: "#FFFBEB", border: "1.5px solid #FCD34D" }}
             >
-              <span>👆</span>
+              <span>👈</span>
               <p className="text-[11px] text-amber-800">
-                Select <strong>who you are</strong> in the top-right — saved for next time.
+                Select <strong>who you are</strong> in the sidebar — saved for next time.
               </p>
             </div>
           )}

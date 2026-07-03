@@ -15,19 +15,25 @@ import ManageSchedule from "./pages/ManageSchedule";
 import EmployeeSetup from "./pages/EmployeeSetup";
 import WeeklyReports from "@/pages/WeeklyReports";
 import Goals from "@/pages/Goals";
+import AppShell from "@/components/AppShell";
 
-// Calendar app routes — all protected by the password gate
+// Calendar app routes — all protected by the password gate, wrapped in AppShell
 function CalendarApp() {
   return (
     <PasswordGate>
-      <Switch>
-        <Route path={"/app"} component={Board} />
-        <Route path={"/app/calendar"} component={Home} />
-        <Route path={"/app/board"} component={Board} />
-        <Route path={"/app/settings"} component={Settings} />
-        <Route path={"/app/goals"} component={Goals} />
-        <Route component={NotFound} />
-      </Switch>
+      <AppShell>
+        <Switch>
+          <Route path={"/app"} component={Board} />
+          <Route path={"/app/board"} component={Board} />
+          <Route path={"/app/calendar"} component={Home} />
+          <Route path={"/app/goals"} component={Goals} />
+          <Route path={"/app/reports"} component={WeeklyReports} />
+          <Route path={"/app/schedule"} component={ManageSchedule} />
+          <Route path={"/app/employees"} component={EmployeeSetup} />
+          <Route path={"/app/settings"} component={Settings} />
+          <Route component={NotFound} />
+        </Switch>
+      </AppShell>
     </PasswordGate>
   );
 }
@@ -41,13 +47,7 @@ function Router() {
       <Route path={"/login"} component={ClientLogin} />
       {/* Onboarding wizard — first-login setup */}
       <Route path={"/onboarding"} component={Onboarding} />
-      {/* Schedule management — closed days/weeks */}
-      <Route path={"/app/schedule"} component={ManageSchedule} />
-      {/* Employee setup — define staff and their weekly metrics */}
-      <Route path={"/app/employees"} component={EmployeeSetup} />
-      {/* Weekly Reports — team layer, standalone full-width page */}
-      <Route path={"/app/reports"} component={WeeklyReports} />
-      {/* Password-gated calendar app */}
+      {/* Password-gated calendar app (all /app/* routes) */}
       <Route path={"/app"} component={CalendarApp} />
       <Route path={"/app/:rest*"} component={CalendarApp} />
       <Route path={"/404"} component={NotFound} />
