@@ -769,19 +769,27 @@ export default function Home() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  // Scroll to current month once the calendar is ready
-  const currentMonthRef = useRef<HTMLDivElement | null>(null);
-  const hasScrolledToToday = useRef(false);
-  useEffect(() => {
-    if (hasScrolledToToday.current) return;
-    if (!currentMonthRef.current) return;
-    hasScrolledToToday.current = true;
-    const el = currentMonthRef.current;
-    // Small delay so the grid has fully rendered before scrolling
-    setTimeout(() => {
-      el.scrollIntoView({ behavior: "smooth", block: "start" });
-    }, 200);
-  }, [calendar]); // re-run when calendar data loads
+  // Calendar view mode: "month" (default) or "year"
+  const [viewMode, setViewMode] = useState<"month" | "year">(() => {
+    try { return (localStorage.getItem("bcc_cal_view") as "month" | "year") ?? "month"; } catch { return "month"; }
+  });
+  // Currently viewed month index (0=Jan, 11=Dec) — defaults to current month
+  const [viewMonthIndex, setViewMonthIndex] = useState(() => new Date().getMonth());
+
+  const toggleViewMode = () => {
+    setViewMode(prev => {
+      const next = prev === "month" ? "year" : "month";
+      try { localStorage.setItem("bcc_cal_view", next); } catch { /* ignore */ }
+      return next;
+    });
+  };
+
+  const goToPrevMonth = () => setViewMonthIndex(i => Math.max(0, i - 1));
+  const goToNextMonth = () => setViewMonthIndex(i => Math.min(11, i + 1));
+  const goToToday = () => setViewMonthIndex(new Date().getMonth());
+
+  const todayMonthIndex = new Date().getMonth();
+  const isViewingToday = viewMonthIndex === todayMonthIndex;
 
   return (
     <div
@@ -1135,15 +1143,76 @@ export default function Home() {
             })}
           </div>
 
-          {/* Calendar Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3 xl:grid-cols-4">
-            {calendar.map((month) => {
-              const isCurrentMonth = month.month === new Date().getMonth();
-              return (
-                <div
-                  key={month.month}
-                  ref={isCurrentMonth ? currentMonthRef : undefined}
+          {/* Calendar Navigation Bar */}
+          <div className="flex items-center justify-between gap-2">
+            {viewMode === "month" ? (
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={goToPrevMonth}
+                  disabled={viewMonthIndex === 0}
+                  className="w-8 h-8 flex items-center justify-center rounded-lg transition-all disabled:opacity-30"
+                  style={{ background: "rgba(30,58,95,0.06)", border: "1px solid rgba(30,58,95,0.12)", color: "#1E3A5F" }}
+                  aria-label="Previous month"
                 >
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 11L5 7l4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                </button>
+                <h2 className="text-sm font-bold text-[#1E3A5F] min-w-[120px] text-center" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+                  {calendar[viewMonthIndex]?.name ?? ""} {YEAR}
+                </h2>
+                <button
+                  onClick={goToNextMonth}
+                  disabled={viewMonthIndex === 11}
+                  className="w-8 h-8 flex items-center justify-center rounded-lg transition-all disabled:opacity-30"
+                  style={{ background: "rgba(30,58,95,0.06)", border: "1px solid rgba(30,58,95,0.12)", color: "#1E3A5F" }}
+                  aria-label="Next month"
+                >
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M5 3l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                </button>
+                {!isViewingToday && (
+                  <button
+                    onClick={goToToday}
+                    className="text-[11px] font-semibold px-2.5 py-1 rounded-lg transition-all"
+                    style={{ background: "rgba(13,148,136,0.1)", border: "1px solid rgba(13,148,136,0.25)", color: "#0D9488" }}
+                  >
+                    Today
+                  </button>
+                )}
+              </div>
+            ) : (
+              <h2 className="text-sm font-bold text-[#1E3A5F]" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+                {YEAR} — Full Year
+              </h2>
+            )}
+            <button
+              onClick={toggleViewMode}
+              className="text-[11px] font-semibold px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5"
+              style={{ background: "rgba(30,58,95,0.06)", border: "1px solid rgba(30,58,95,0.15)", color: "#1E3A5F" }}
+            >
+              {viewMode === "month" ? (
+                <><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="1" y="1" width="4" height="4" rx="0.5" stroke="currentColor" strokeWidth="1.2"/><rect x="7" y="1" width="4" height="4" rx="0.5" stroke="currentColor" strokeWidth="1.2"/><rect x="1" y="7" width="4" height="4" rx="0.5" stroke="currentColor" strokeWidth="1.2"/><rect x="7" y="7" width="4" height="4" rx="0.5" stroke="currentColor" strokeWidth="1.2"/></svg>Year View</>
+              ) : (
+                <><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="1" y="1" width="10" height="10" rx="1" stroke="currentColor" strokeWidth="1.2"/></svg>Month View</>
+              )}
+            </button>
+          </div>
+
+          {/* Calendar Grid */}
+          {viewMode === "month" ? (
+            <div>
+              {calendar[viewMonthIndex] && (
+                <MonthGrid
+                  month={calendar[viewMonthIndex]}
+                  onSelectDay={handleSelectDay}
+                  selectedDay={selectedDay}
+                  highlightType={highlightType}
+                  loggedDates={loggedDatesSet}
+                />
+              )}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3 xl:grid-cols-4">
+              {calendar.map((month) => (
+                <div key={month.month}>
                   <MonthGrid
                     month={month}
                     onSelectDay={handleSelectDay}
@@ -1152,9 +1221,9 @@ export default function Home() {
                     loggedDates={loggedDatesSet}
                   />
                 </div>
-              );
-            })}
-          </div>
+              ))}
+            </div>
+          )}
         </main>
 
         {/* Right Detail Panel — full screen on mobile, side panel on desktop */}

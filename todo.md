@@ -231,3 +231,14 @@
 - [x] Command Board: hide business selector entirely for single-business accounts
 - [x] Settings: filter business selector to only show businesses for current account scope
 - [x] Add gate.getScope tRPC procedure (returns scope + displayName for a given accountId)
+
+## Month-Focused Calendar View (Phase 12)
+- [x] Default calendar view shows current month only (no full-year scroll)
+- [x] Add prev/next month navigation buttons (← / →)
+- [x] Add "Today" button that jumps back to current month from any month
+- [x] Show current month name + year as a heading (e.g. "July 2026")
+- [x] Add year-view toggle button (e.g. "Year View" / "Month View") to switch between modes
+- [x] Year view shows all 12 months in the existing grid layout
+- [x] Persist the selected view mode in localStorage so it survives page refresh
+- [x] Remove the auto-scroll-to-today logic (no longer needed in month view)
+- [x] Save checkpoint
