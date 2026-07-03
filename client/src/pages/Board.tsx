@@ -632,13 +632,14 @@ export default function Board() {
     >
       {/* Header */}
       <header
-        className="px-5 py-3.5 flex items-center justify-between flex-shrink-0"
+        className="px-4 sm:px-5 py-3 flex items-center justify-between flex-shrink-0 gap-3"
         style={{ borderBottom: "1px solid #E2E8F0", backgroundColor: "#FFFFFF" }}
       >
-        <div className="flex items-center gap-3">
+        {/* Logo + title */}
+        <div className="flex items-center gap-3 flex-shrink-0">
           <div
             className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 text-lg"
-            style={{ background: "linear-gradient(135deg, #2563EB 0%, #E11D48 100%)" }}
+            style={{ background: "linear-gradient(135deg, #2563EB 0%, #E11D48 100%)", boxShadow: "0 2px 8px rgba(37,99,235,0.25)" }}
           >
             📋
           </div>
@@ -646,25 +647,30 @@ export default function Board() {
             <h1 className="text-base font-bold text-[#1E3A5F] leading-tight tracking-tight" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
               Command Board
             </h1>
-            <p className="text-[11px] text-slate-500 mt-0.5">Updates, issues & tasks between Matt and Lynn</p>
+            <p className="text-[10px] text-slate-400 mt-0.5 hidden sm:block">Your co-owner operating system</p>
           </div>
         </div>
 
-        {/* Identity selector */}
-        <div className="flex items-center gap-3">
-          <Link
-            href="/app"
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-medium transition-all hover:opacity-80"
-            style={{
-              backgroundColor: "#F1F5F9",
-              border: "1px solid #CBD5E1",
-              color: "#475569",
-              fontFamily: "'Space Grotesk', sans-serif",
-            }}
-          >
-            ← Calendar
+        {/* Desktop nav */}
+        <nav className="hidden md:flex items-center gap-1.5">
+          <Link href="/app/goals" className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all hover:bg-[#F1F5F9]" style={{ color: "#7C3AED", fontFamily: "'Space Grotesk', sans-serif" }}>
+            <span>🎯</span> Goals
           </Link>
-          <span className="text-[10px] text-slate-400 font-medium" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>I am:</span>
+          <Link href="/app/reports" className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all hover:bg-[#F1F5F9]" style={{ color: "#0D9488", fontFamily: "'Space Grotesk', sans-serif" }}>
+            <span>📊</span> Reports
+          </Link>
+          <Link href="/app/calendar" className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all hover:bg-[#F1F5F9]" style={{ color: "#64748B", fontFamily: "'Space Grotesk', sans-serif" }}>
+            <span>📅</span> Calendar
+          </Link>
+          <Link href="/app/settings" className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all hover:bg-[#F1F5F9]" style={{ color: "#94A3B8", fontFamily: "'Space Grotesk', sans-serif" }}>
+            <span>⚙️</span> Settings
+          </Link>
+          <div className="w-px h-5 bg-slate-200 mx-1" />
+        </nav>
+
+        {/* Identity selector + mobile menu */}
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] text-slate-400 font-medium hidden sm:block" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>I am:</span>
           {(["Matt", "Lynn"] as Author[]).map(a => {
             const c = AUTHOR_COLORS[a];
             const isActive = currentUser === a;
@@ -689,6 +695,35 @@ export default function Board() {
               </button>
             );
           })}
+          {/* Mobile nav dropdown */}
+          <div className="relative md:hidden">
+            <button
+              id="board-mobile-menu-btn"
+              className="w-8 h-8 flex items-center justify-center rounded-lg transition-all"
+              style={{ background: "rgba(30,58,95,0.06)", border: "1px solid rgba(30,58,95,0.15)" }}
+              onClick={() => {
+                const menu = document.getElementById("board-mobile-menu");
+                if (menu) menu.style.display = menu.style.display === "none" ? "flex" : "none";
+              }}
+              aria-label="Navigation menu"
+            >
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <circle cx="7" cy="3" r="1.3" fill="#1E3A5F" />
+                <circle cx="7" cy="7" r="1.3" fill="#1E3A5F" />
+                <circle cx="7" cy="11" r="1.3" fill="#1E3A5F" />
+              </svg>
+            </button>
+            <div
+              id="board-mobile-menu"
+              className="absolute right-0 top-10 w-48 rounded-xl shadow-lg z-50 flex-col overflow-hidden"
+              style={{ background: "#FFFFFF", border: "1px solid #E2E8F0", display: "none" }}
+            >
+              <Link href="/app/goals" className="flex items-center gap-2.5 px-4 py-3 text-[12px] font-semibold hover:bg-[#F8F7F4] transition-colors" style={{ color: "#7C3AED" }}>🎯 Goals</Link>
+              <Link href="/app/reports" className="flex items-center gap-2.5 px-4 py-3 text-[12px] font-semibold hover:bg-[#F8F7F4] transition-colors" style={{ color: "#0D9488" }}>📊 Reports</Link>
+              <Link href="/app/calendar" className="flex items-center gap-2.5 px-4 py-3 text-[12px] font-semibold hover:bg-[#F8F7F4] transition-colors" style={{ color: "#64748B" }}>📅 Calendar</Link>
+              <Link href="/app/settings" className="flex items-center gap-2.5 px-4 py-3 text-[12px] font-semibold hover:bg-[#F8F7F4] transition-colors" style={{ color: "#94A3B8" }}>⚙️ Settings</Link>
+            </div>
+          </div>
         </div>
       </header>
 

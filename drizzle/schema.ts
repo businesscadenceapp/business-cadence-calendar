@@ -290,3 +290,31 @@ export const weeklyReportEntries = mysqlTable("weekly_report_entries", {
 
 export type WeeklyReportEntry = typeof weeklyReportEntries.$inferSelect;
 export type InsertWeeklyReportEntry = typeof weeklyReportEntries.$inferInsert;
+
+/**
+ * Goals — quarterly and annual goals per business per account.
+ * period: "annual" = full year goal, "quarterly" = Q1/Q2/Q3/Q4
+ * quarter: 1-4 (only relevant when period = "quarterly")
+ * year: 4-digit year (e.g. 2026)
+ * status: "active" | "achieved" | "missed" | "deferred"
+ * business: which business this goal belongs to
+ * owner: which owner set this goal ("Matt" | "Lynn" | "both")
+ */
+export const goals = mysqlTable("goals", {
+  id: int("id").autoincrement().primaryKey(),
+  accountId: int("accountId").notNull(), // references app_users.id
+  business: mysqlEnum("business", ["chiropractic", "crossfit", "realty", "general"]).notNull().default("general"),
+  period: mysqlEnum("period", ["annual", "quarterly"]).notNull().default("quarterly"),
+  quarter: int("quarter"), // 1-4, null for annual goals
+  year: int("year").notNull(),
+  title: varchar("title", { length: 256 }).notNull(),
+  description: text("description"),
+  status: mysqlEnum("status", ["active", "achieved", "missed", "deferred"]).notNull().default("active"),
+  owner: mysqlEnum("owner", ["Matt", "Lynn", "both"]).notNull().default("both"),
+  sortOrder: int("sortOrder").default(0).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Goal = typeof goals.$inferSelect;
+export type InsertGoal = typeof goals.$inferInsert;

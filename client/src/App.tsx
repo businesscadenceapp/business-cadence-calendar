@@ -13,16 +13,19 @@ import Settings from "./pages/Settings";
 import Onboarding from "./pages/Onboarding";
 import ManageSchedule from "./pages/ManageSchedule";
 import EmployeeSetup from "./pages/EmployeeSetup";
-import WeeklyReports from "./pages/WeeklyReports";
+import WeeklyReports from "@/pages/WeeklyReports";
+import Goals from "@/pages/Goals";
 
 // Calendar app routes — all protected by the password gate
 function CalendarApp() {
   return (
     <PasswordGate>
       <Switch>
-        <Route path={"/app"} component={Home} />
+        <Route path={"/app"} component={Board} />
+        <Route path={"/app/calendar"} component={Home} />
         <Route path={"/app/board"} component={Board} />
         <Route path={"/app/settings"} component={Settings} />
+        <Route path={"/app/goals"} component={Goals} />
         <Route component={NotFound} />
       </Switch>
     </PasswordGate>

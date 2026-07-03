@@ -1,6 +1,6 @@
-import { eq, and, desc, inArray } from "drizzle-orm";
+import { eq, and, desc, inArray, asc } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, meetingLogs, agendaItems, MeetingLog, AgendaItem, boardCards, agendaTemplates, type BoardCard, type InsertBoardCard, waitlistEmails, meetingRecordings, type MeetingRecording, businessProfiles, type BusinessProfile, closedPeriods, type ClosedPeriod, meetingScheduleOverrides, employees, employeeMetrics, weeklyReports, weeklyReportEntries, type Employee, type EmployeeMetric, type WeeklyReport, type WeeklyReportEntry } from "../drizzle/schema";
+import { InsertUser, users, meetingLogs, agendaItems, MeetingLog, AgendaItem, boardCards, agendaTemplates, type BoardCard, type InsertBoardCard, waitlistEmails, meetingRecordings, type MeetingRecording, businessProfiles, type BusinessProfile, closedPeriods, type ClosedPeriod, meetingScheduleOverrides, employees, employeeMetrics, weeklyReports, weeklyReportEntries, type Employee, type EmployeeMetric, type WeeklyReport, type WeeklyReportEntry, goals, type Goal, type InsertGoal } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -716,4 +716,40 @@ export async function getWeeklyReportSummary(accountId: number, weekKey: string,
       submitted: !!thisReport,
     };
   });
+}
+
+// ─── Goals ────────────────────────────────────────────────────────────────────
+
+
+
+export async function getGoals(accountId: number, year?: number): Promise<Goal[]> {
+  const db = await getDb();
+  if (!db) return [];
+  const conditions = [eq(goals.accountId, accountId)];
+  if (year !== undefined) conditions.push(eq(goals.year, year));
+  return db
+    .select()
+    .from(goals)
+    .where(and(...conditions))
+    .orderBy(asc(goals.sortOrder), asc(goals.createdAt));
+}
+
+export async function createGoal(data: Omit<InsertGoal, "id" | "createdAt" | "updatedAt">): Promise<Goal> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const [result] = await db.insert(goals).values(data);
+  const inserted = await db.select().from(goals).where(eq(goals.id, result.insertId));
+  return inserted[0];
+}
+
+export async function updateGoal(id: number, data: Partial<Pick<Goal, "title" | "description" | "status" | "owner" | "sortOrder">>): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(goals).set(data).where(eq(goals.id, id));
+}
+
+export async function deleteGoal(id: number): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.delete(goals).where(eq(goals.id, id));
 }

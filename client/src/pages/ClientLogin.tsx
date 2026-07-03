@@ -74,17 +74,17 @@ export default function ClientLogin() {
             if (serverComplete) {
               // Mark locally so future logins skip the server check
               localStorage.setItem("bcc_onboarding_done_" + accountId, "1");
-              navigate("/app");
+              navigate("/app/board");
             } else {
               navigate("/onboarding");
             }
           } catch {
             // Fallback to localStorage if server check fails
             const isFirstLogin = !localStorage.getItem("bcc_onboarding_done_" + accountId);
-            navigate(isFirstLogin ? "/onboarding" : "/app");
+            navigate(isFirstLogin ? "/onboarding" : "/app/board");
           }
         } else {
-          navigate("/app");
+          navigate("/app/board");
         }
       } else {
         setPassword("");

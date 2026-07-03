@@ -40,6 +40,10 @@ import {
   getWeeklyReportSummary,
   saveMeetingOverride,
   recalculateOverrides,
+  getGoals,
+  createGoal,
+  updateGoal,
+  deleteGoal,
 } from "./db";
 import { generateMeetingSchedule } from "../shared/calendarEngine";
 import { notifyOwner } from "./_core/notification";
@@ -698,6 +702,56 @@ Be concise and specific. If a field has nothing, use an empty array.`,
       }))
       .query(async ({ input }) => {
         return getWeeklyReportSummary(input.accountId, input.weekKey, input.prevWeekKey);
+      }),
+  }),
+  goals: router({
+    /** List goals for an account, optionally filtered by year. */
+    list: publicProcedure
+      .input(z.object({ accountId: z.number(), year: z.number().optional() }))
+      .query(async ({ input }) => {
+        return getGoals(input.accountId, input.year);
+      }),
+
+    /** Create a new goal. */
+    create: publicProcedure
+      .input(z.object({
+        accountId: z.number(),
+        business: z.enum(["chiropractic", "crossfit", "realty", "general"]),
+        period: z.enum(["annual", "quarterly"]),
+        quarter: z.number().min(1).max(4).optional(),
+        year: z.number(),
+        title: z.string().min(1).max(256),
+        description: z.string().optional(),
+        status: z.enum(["active", "achieved", "missed", "deferred"]).default("active"),
+        owner: z.enum(["Matt", "Lynn", "both"]).default("both"),
+        sortOrder: z.number().default(0),
+      }))
+      .mutation(async ({ input }) => {
+        return createGoal(input);
+      }),
+
+    /** Update a goal's title, description, status, or owner. */
+    update: publicProcedure
+      .input(z.object({
+        id: z.number(),
+        title: z.string().min(1).max(256).optional(),
+        description: z.string().optional(),
+        status: z.enum(["active", "achieved", "missed", "deferred"]).optional(),
+        owner: z.enum(["Matt", "Lynn", "both"]).optional(),
+        sortOrder: z.number().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { id, ...data } = input;
+        await updateGoal(id, data);
+        return { success: true };
+      }),
+
+    /** Delete a goal. */
+    delete: publicProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        await deleteGoal(input.id);
+        return { success: true };
       }),
   }),
 });

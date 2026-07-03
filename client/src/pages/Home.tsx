@@ -861,13 +861,16 @@ export default function Home() {
             ))}
           </div>
           <Link href="/app/board" className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all hover:opacity-90" style={{ background: "rgba(30,58,95,0.06)", border: "1px solid rgba(30,58,95,0.18)", color: "#1E3A5F", fontFamily: "'Space Grotesk', sans-serif" }}>
-            <span>📋</span> Command Board
+            <span>📋</span> Board
+          </Link>
+          <Link href="/app/goals" className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all hover:opacity-90" style={{ background: "rgba(124,58,237,0.06)", border: "1px solid rgba(124,58,237,0.20)", color: "#7C3AED", fontFamily: "'Space Grotesk', sans-serif" }}>
+            <span>🎯</span> Goals
           </Link>
           <Link href="/app/reports" className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all hover:opacity-90" style={{ background: "rgba(13,148,136,0.08)", border: "1px solid rgba(13,148,136,0.25)", color: "#0D9488", fontFamily: "'Space Grotesk', sans-serif" }}>
-            <span>📊</span> Weekly Reports
+            <span>📊</span> Reports
           </Link>
           <Link href="/app/settings" className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all hover:opacity-90" style={{ background: "rgba(30,58,95,0.05)", border: "1px solid rgba(30,58,95,0.15)", color: "#64748B", fontFamily: "'Space Grotesk', sans-serif" }}>
-            <span>⚙️</span> Agenda Settings
+            <span>⚙️</span> Settings
           </Link>
           <span className="text-sm font-mono font-bold text-[#94A3B8] tracking-widest" style={{ fontFamily: "'JetBrains Mono', monospace" }}>{YEAR}</span>
         </div>
@@ -896,8 +899,11 @@ export default function Home() {
                 <Link href="/app/board" className="flex items-center gap-2.5 px-4 py-3 text-[12px] font-semibold text-[#1E3A5F] hover:bg-[#F1F0ED] transition-colors" onClick={() => setMobileMenuOpen(false)}>
                   <span>📋</span> Command Board
                 </Link>
+                <Link href="/app/goals" className="flex items-center gap-2.5 px-4 py-3 text-[12px] font-semibold hover:bg-[#F1F0ED] transition-colors" style={{ color: "#7C3AED" }} onClick={() => setMobileMenuOpen(false)}>
+                  <span>🎯</span> Goals
+                </Link>
                 <Link href="/app/reports" className="flex items-center gap-2.5 px-4 py-3 text-[12px] font-semibold text-[#0D9488] hover:bg-[#F1F0ED] transition-colors" onClick={() => setMobileMenuOpen(false)}>
-                  <span>📊</span> Weekly Reports
+                  <span>📊</span> Reports
                 </Link>
                 <Link href="/app/settings" className="flex items-center gap-2.5 px-4 py-3 text-[12px] font-semibold text-[#64748B] hover:bg-[#F1F0ED] transition-colors" onClick={() => setMobileMenuOpen(false)}>
                   <span>⚙️</span> Agenda Settings
@@ -961,6 +967,19 @@ export default function Home() {
             >
               <span>📋</span>
               Command Board
+            </Link>
+            <Link
+              href="/app/goals"
+              className="flex items-center gap-2 w-full px-3 py-2.5 rounded-lg text-[11px] font-semibold transition-all hover:opacity-90"
+              style={{
+                background: "rgba(124,58,237,0.06)",
+                border: "1px solid rgba(124,58,237,0.18)",
+                color: "#7C3AED",
+                fontFamily: "'Space Grotesk', sans-serif",
+              }}
+            >
+              <span>🎯</span>
+              Goals
             </Link>
             <Link
               href="/app/reports"
