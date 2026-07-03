@@ -766,6 +766,9 @@ export default function Home() {
     );
   };
 
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
   return (
     <div
       className="min-h-screen flex flex-col"
@@ -773,18 +776,31 @@ export default function Home() {
     >
       {/* Header */}
       <header
-        className="px-5 py-3.5 flex items-center justify-between flex-shrink-0"
+        className="px-4 py-3 flex items-center justify-between flex-shrink-0 relative z-30"
         style={{ borderBottom: "1px solid #E2E0DB" }}
       >
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5">
+          {/* Mobile sidebar toggle */}
+          <button
+            className="md:hidden flex items-center justify-center w-8 h-8 rounded-lg transition-all"
+            style={{ background: "rgba(30,58,95,0.06)", border: "1px solid rgba(30,58,95,0.12)" }}
+            onClick={() => setSidebarOpen((v) => !v)}
+            aria-label="Toggle sidebar"
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <rect x="2" y="4" width="12" height="1.5" rx="0.75" fill="#1E3A5F" />
+              <rect x="2" y="7.25" width="12" height="1.5" rx="0.75" fill="#1E3A5F" />
+              <rect x="2" y="10.5" width="12" height="1.5" rx="0.75" fill="#1E3A5F" />
+            </svg>
+          </button>
           <div
-            className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+            className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
             style={{
               background: "linear-gradient(135deg, #10B981 0%, #0EA5E9 100%)",
-              boxShadow: "0 0 16px rgba(16,185,129,0.3)",
+              boxShadow: "0 0 12px rgba(16,185,129,0.3)",
             }}
           >
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+            <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
               <rect x="2" y="2" width="6" height="6" rx="1.5" fill="white" fillOpacity="0.95" />
               <rect x="10" y="2" width="6" height="6" rx="1.5" fill="white" fillOpacity="0.65" />
               <rect x="2" y="10" width="6" height="6" rx="1.5" fill="white" fillOpacity="0.65" />
@@ -793,14 +809,14 @@ export default function Home() {
           </div>
           <div>
             <h1
-              className="text-base font-bold text-[#1E3A5F] leading-tight tracking-tight"
+              className="text-sm font-bold text-[#1E3A5F] leading-tight tracking-tight"
               style={{ fontFamily: "'Space Grotesk', sans-serif" }}
             >
-              Business Cadence Calendar
+              Business Cadence
             </h1>
-            <p className="text-[11px] text-[#64748B] mt-0.5">
+            <p className="text-[10px] text-[#64748B] truncate max-w-[160px] sm:max-w-none">
               {businessContext === "owner"
-                ? "New Beginnings Chiropractic · Evolved CrossFit · Bubbles Realty"
+                ? "New Beginnings · CrossFit · Realty"
                 : businessContext === "chiro"
                 ? "New Beginnings Chiropractic"
                 : businessContext === "crossfit"
@@ -809,8 +825,10 @@ export default function Home() {
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-4">
-          <div className="hidden sm:flex items-center gap-3">
+
+        {/* Desktop nav */}
+        <div className="hidden md:flex items-center gap-3">
+          <div className="flex items-center gap-3 mr-1">
             {(["daily", "weekly", "monthly", "quarterly"] as MeetingType[]).map((t) => (
               <div key={t} className="flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full" style={{ backgroundColor: MEETING_TYPES[t].color }} />
@@ -820,60 +838,87 @@ export default function Home() {
               </div>
             ))}
           </div>
-          <Link
-            href="/app/board"
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all hover:opacity-90"
-            style={{
-              background: "rgba(30,58,95,0.06)",
-              border: "1px solid rgba(30,58,95,0.18)",
-              color: "#1E3A5F",
-              fontFamily: "'Space Grotesk', sans-serif",
-            }}
-          >
-            <span>📋</span>
-            Command Board
+          <Link href="/app/board" className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all hover:opacity-90" style={{ background: "rgba(30,58,95,0.06)", border: "1px solid rgba(30,58,95,0.18)", color: "#1E3A5F", fontFamily: "'Space Grotesk', sans-serif" }}>
+            <span>📋</span> Command Board
           </Link>
-          <Link
-            href="/app/reports"
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all hover:opacity-90"
-            style={{
-              background: "rgba(13,148,136,0.08)",
-              border: "1px solid rgba(13,148,136,0.25)",
-              color: "#0D9488",
-              fontFamily: "'Space Grotesk', sans-serif",
-            }}
-          >
-            <span>📊</span>
-            Weekly Reports
+          <Link href="/app/reports" className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all hover:opacity-90" style={{ background: "rgba(13,148,136,0.08)", border: "1px solid rgba(13,148,136,0.25)", color: "#0D9488", fontFamily: "'Space Grotesk', sans-serif" }}>
+            <span>📊</span> Weekly Reports
           </Link>
-          <Link
-            href="/app/settings"
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all hover:opacity-90"
-            style={{
-              background: "rgba(30,58,95,0.05)",
-              border: "1px solid rgba(30,58,95,0.15)",
-              color: "#64748B",
-              fontFamily: "'Space Grotesk', sans-serif",
-            }}
-          >
-            <span>⚙️</span>
-            Agenda Settings
+          <Link href="/app/settings" className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all hover:opacity-90" style={{ background: "rgba(30,58,95,0.05)", border: "1px solid rgba(30,58,95,0.15)", color: "#64748B", fontFamily: "'Space Grotesk', sans-serif" }}>
+            <span>⚙️</span> Agenda Settings
           </Link>
-          <span
-            className="text-sm font-mono font-bold text-[#94A3B8] tracking-widest"
-            style={{ fontFamily: "'JetBrains Mono', monospace" }}
-          >
-            {YEAR}
-          </span>
+          <span className="text-sm font-mono font-bold text-[#94A3B8] tracking-widest" style={{ fontFamily: "'JetBrains Mono', monospace" }}>{YEAR}</span>
+        </div>
+
+        {/* Mobile right: year + hamburger menu */}
+        <div className="flex md:hidden items-center gap-2">
+          <span className="text-xs font-mono font-bold text-[#94A3B8]" style={{ fontFamily: "'JetBrains Mono', monospace" }}>{YEAR}</span>
+          <div className="relative">
+            <button
+              className="flex items-center justify-center w-8 h-8 rounded-lg transition-all"
+              style={{ background: mobileMenuOpen ? "rgba(30,58,95,0.10)" : "rgba(30,58,95,0.06)", border: "1px solid rgba(30,58,95,0.18)" }}
+              onClick={() => setMobileMenuOpen((v) => !v)}
+              aria-label="Navigation menu"
+            >
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <circle cx="8" cy="4" r="1.5" fill="#1E3A5F" />
+                <circle cx="8" cy="8" r="1.5" fill="#1E3A5F" />
+                <circle cx="8" cy="12" r="1.5" fill="#1E3A5F" />
+              </svg>
+            </button>
+            {mobileMenuOpen && (
+              <div
+                className="absolute right-0 top-10 w-52 rounded-xl shadow-lg z-50 flex flex-col overflow-hidden"
+                style={{ background: "#FFFFFF", border: "1px solid #E2E0DB" }}
+              >
+                <Link href="/app/board" className="flex items-center gap-2.5 px-4 py-3 text-[12px] font-semibold text-[#1E3A5F] hover:bg-[#F1F0ED] transition-colors" onClick={() => setMobileMenuOpen(false)}>
+                  <span>📋</span> Command Board
+                </Link>
+                <Link href="/app/reports" className="flex items-center gap-2.5 px-4 py-3 text-[12px] font-semibold text-[#0D9488] hover:bg-[#F1F0ED] transition-colors" onClick={() => setMobileMenuOpen(false)}>
+                  <span>📊</span> Weekly Reports
+                </Link>
+                <Link href="/app/settings" className="flex items-center gap-2.5 px-4 py-3 text-[12px] font-semibold text-[#64748B] hover:bg-[#F1F0ED] transition-colors" onClick={() => setMobileMenuOpen(false)}>
+                  <span>⚙️</span> Agenda Settings
+                </Link>
+                <Link href="/app/schedule" className="flex items-center gap-2.5 px-4 py-3 text-[12px] font-semibold text-[#0D9488] hover:bg-[#F1F0ED] transition-colors border-t" style={{ borderColor: "#E2E0DB" }} onClick={() => setMobileMenuOpen(false)}>
+                  <span>📆</span> Manage Schedule
+                </Link>
+              </div>
+            )}
+          </div>
         </div>
       </header>
 
-      <div className="flex flex-1 overflow-hidden">
-        {/* Left Sidebar */}
+      {/* Mobile sidebar overlay */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 z-20 bg-black/30 md:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      <div className="flex flex-1 overflow-hidden relative">
+        {/* Left Sidebar — desktop: always visible, mobile: slide-in drawer */}
         <aside
-          className="w-60 flex-shrink-0 flex flex-col gap-4 p-4 overflow-y-auto"
+          className={`flex-shrink-0 flex flex-col gap-4 p-4 overflow-y-auto transition-transform duration-300
+            md:relative md:translate-x-0 md:w-60
+            fixed top-0 left-0 h-full z-30 w-72 bg-[#F8F7F4]
+            ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}
           style={{ borderRight: "1px solid #E2E0DB" }}
         >
+          {/* Mobile sidebar close button */}
+          <div className="flex items-center justify-between md:hidden mb-1">
+            <span className="text-xs font-bold text-[#1E3A5F]" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Menu</span>
+            <button
+              className="w-7 h-7 flex items-center justify-center rounded-lg"
+              style={{ background: "rgba(30,58,95,0.06)", border: "1px solid rgba(30,58,95,0.12)" }}
+              onClick={() => setSidebarOpen(false)}
+            >
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                <path d="M1 1L11 11M11 1L1 11" stroke="#1E3A5F" strokeWidth="1.5" strokeLinecap="round" />
+              </svg>
+            </button>
+          </div>
           {/* Quick Nav */}
           <div className="flex flex-col gap-2">
             <p
@@ -1034,9 +1079,9 @@ export default function Home() {
         </aside>
 
         {/* Main Calendar */}
-        <main className="flex-1 overflow-y-auto p-5 flex flex-col gap-4">
+        <main className="flex-1 overflow-y-auto p-3 sm:p-5 flex flex-col gap-3 sm:gap-4">
           {/* Summary Strip */}
-          <div className="grid grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
             {(["daily", "weekly", "monthly", "quarterly"] as MeetingType[]).map((type) => {
               const m = MEETING_TYPES[type];
               const count = meetingCounts[type];
@@ -1077,7 +1122,7 @@ export default function Home() {
           </div>
 
           {/* Calendar Grid */}
-          <div className="grid grid-cols-3 gap-3 xl:grid-cols-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3 xl:grid-cols-4">
             {calendar.map((month) => (
               <MonthGrid
                 key={month.month}
@@ -1091,13 +1136,15 @@ export default function Home() {
           </div>
         </main>
 
-        {/* Right Detail Panel */}
+        {/* Right Detail Panel — full screen on mobile, side panel on desktop */}
         {selectedDay && (
           <aside
-            className="w-80 flex-shrink-0 p-4 overflow-y-auto"
-            style={{ borderLeft: "1px solid #E2E0DB" }}
+            className="fixed inset-0 z-40 overflow-y-auto md:relative md:inset-auto md:w-80 md:flex-shrink-0 md:p-4"
+            style={{ backgroundColor: "#F8F7F4", borderLeft: "1px solid #E2E0DB" }}
           >
-            <DetailPanel day={selectedDay} onClose={() => setSelectedDay(null)} businessContext={businessContext} />
+            <div className="p-4">
+              <DetailPanel day={selectedDay} onClose={() => setSelectedDay(null)} businessContext={businessContext} />
+            </div>
           </aside>
         )}
       </div>
