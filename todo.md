@@ -246,10 +246,10 @@
 ## App Restructure: Command Board as Main Character (Phase 13)
 
 ### Navigation & Routing
-- [ ] Change default route after login from `/app` (calendar) to `/app/board`
-- [ ] Reorder nav items: Board (1st), Goals (2nd), Reports (3rd), Calendar (4th), Schedule (5th), Settings (last)
-- [ ] Update mobile nav and desktop sidebar to reflect new order
-- [ ] Rename "Board" nav label to "Command Board" for clarity
+- [x] Change default route after login from `/app` (calendar) to `/app/board`
+- [x] Reorder nav items: Board (1st), Goals (2nd), Reports (3rd), Calendar (4th), Schedule (5th), Settings (last)
+- [x] Update mobile nav and desktop sidebar to reflect new order
+- [x] Rename "Board" nav label to "Command Board" for clarity
 
 ### Command Board UI Polish
 - [ ] Redesign card layout: larger, more breathing room, cleaner visual hierarchy
@@ -260,9 +260,9 @@
 - [ ] Smooth card entry animation (slide in from bottom)
 
 ### Goals Page
-- [ ] Audit current Goals page — determine if it exists or needs to be created
-- [ ] If missing: create Goals page with ability to add/edit quarterly and annual goals per business
-- [ ] Goals should be visible from the main nav (second position)
+- [x] Audit current Goals page — determine if it exists or needs to be created
+- [x] If missing: create Goals page with ability to add/edit quarterly and annual goals per business
+- [x] Goals should be visible from the main nav (second position)
 - [ ] Link goals to meeting types (quarterly goals shown in quarterly meeting detail)
 
 ### Overall Layout Polish

@@ -42,6 +42,125 @@ const OWNER_CONFIG: Record<Owner, { label: string; color: string; bg: string }> 
 
 const QUARTER_LABELS: Record<number, string> = { 1: "Q1", 2: "Q2", 3: "Q3", 4: "Q4" };
 
+// ─── Edit Goal Form ───────────────────────────────────────────────────────────
+
+function EditGoalForm({
+  goal,
+  businessScope,
+  onClose,
+  onUpdated,
+}: {
+  goal: { id: number; title: string; description: string | null; status: Status; owner: Owner; business: Business; period: Period; quarter: number | null; year: number };
+  businessScope: ReturnType<typeof getBusinessSelection>;
+  onClose: () => void;
+  onUpdated: () => void;
+}) {
+  const [title, setTitle] = useState(goal.title);
+  const [description, setDescription] = useState(goal.description ?? "");
+  const [period, setPeriod] = useState<Period>(goal.period);
+  const [quarter, setQuarter] = useState<number>(goal.quarter ?? CURRENT_QUARTER);
+  const [year, setYear] = useState(goal.year);
+  const [business, setBusiness] = useState<Business>(goal.business);
+  const [owner, setOwner] = useState<Owner>(goal.owner);
+  const [status, setStatus] = useState<Status>(goal.status);
+
+  const visibleBusinesses = useMemo<Business[]>(() => {
+    if (businessScope === "chiro") return ["chiropractic"];
+    if (businessScope === "crossfit") return ["crossfit"];
+    return ["chiropractic", "crossfit", "realty", "general"];
+  }, [businessScope]);
+
+  const updateGoal = trpc.goals.update.useMutation({
+    onSuccess: () => { toast.success("Goal updated!"); onUpdated(); onClose(); },
+    onError: () => toast.error("Failed to update goal."),
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!title.trim()) return;
+    updateGoal.mutate({
+      id: goal.id,
+      title: title.trim(),
+      description: description.trim() || undefined,
+      status,
+      owner,
+    });
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ backgroundColor: "rgba(0,0,0,0.35)" }}
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <div
+        className="w-full max-w-lg rounded-2xl p-6 flex flex-col gap-5"
+        style={{ backgroundColor: "#FFFFFF", border: "1px solid #E2E0DB", boxShadow: "0 20px 60px rgba(30,58,95,0.15)" }}
+      >
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-bold text-[#1E3A5F]" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Edit Goal</h2>
+          <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 transition-colors text-slate-400">✕</button>
+        </div>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-semibold text-[#1E3A5F]">Goal</label>
+            <input type="text" value={title} onChange={e => setTitle(e.target.value)} className="w-full rounded-xl px-4 py-3 text-sm text-[#1A1A2E] focus:outline-none transition-all" style={{ backgroundColor: "#F8F7F4", border: "1.5px solid #E2E0DB" }} onFocus={e => (e.target.style.borderColor = "#7C3AED")} onBlur={e => (e.target.style.borderColor = "#E2E0DB")} autoFocus />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-semibold text-[#1E3A5F]">Details <span className="font-normal text-slate-400">(optional)</span></label>
+            <textarea value={description} onChange={e => setDescription(e.target.value)} rows={2} className="w-full rounded-xl px-4 py-3 text-sm text-[#1A1A2E] focus:outline-none transition-all resize-none" style={{ backgroundColor: "#F8F7F4", border: "1.5px solid #E2E0DB" }} onFocus={e => (e.target.style.borderColor = "#7C3AED")} onBlur={e => (e.target.style.borderColor = "#E2E0DB")} />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-semibold text-[#1E3A5F]">Status</label>
+              <select value={status} onChange={e => setStatus(e.target.value as Status)} className="rounded-xl px-3 py-2.5 text-sm text-[#1A1A2E] focus:outline-none" style={{ backgroundColor: "#F8F7F4", border: "1.5px solid #E2E0DB" }}>
+                {(["active", "achieved", "missed", "deferred"] as Status[]).map(s => <option key={s} value={s}>{STATUS_CONFIG[s].icon} {STATUS_CONFIG[s].label}</option>)}
+              </select>
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-semibold text-[#1E3A5F]">Owner</label>
+              <select value={owner} onChange={e => setOwner(e.target.value as Owner)} className="rounded-xl px-3 py-2.5 text-sm text-[#1A1A2E] focus:outline-none" style={{ backgroundColor: "#F8F7F4", border: "1.5px solid #E2E0DB" }}>
+                <option value="both">Both</option>
+                <option value="Matt">Matt</option>
+                <option value="Lynn">Lynn</option>
+              </select>
+            </div>
+          </div>
+          <div className="grid grid-cols-3 gap-3">
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-semibold text-[#1E3A5F]">Period</label>
+              <select value={period} onChange={e => setPeriod(e.target.value as Period)} className="rounded-xl px-3 py-2.5 text-sm text-[#1A1A2E] focus:outline-none" style={{ backgroundColor: "#F8F7F4", border: "1.5px solid #E2E0DB" }}>
+                <option value="quarterly">Quarterly</option>
+                <option value="annual">Annual</option>
+              </select>
+            </div>
+            {period === "quarterly" && (
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-semibold text-[#1E3A5F]">Quarter</label>
+                <select value={quarter} onChange={e => setQuarter(Number(e.target.value))} className="rounded-xl px-3 py-2.5 text-sm text-[#1A1A2E] focus:outline-none" style={{ backgroundColor: "#F8F7F4", border: "1.5px solid #E2E0DB" }}>
+                  {[1,2,3,4].map(q => <option key={q} value={q}>Q{q}</option>)}
+                </select>
+              </div>
+            )}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-semibold text-[#1E3A5F]">Year</label>
+              <select value={year} onChange={e => setYear(Number(e.target.value))} className="rounded-xl px-3 py-2.5 text-sm text-[#1A1A2E] focus:outline-none" style={{ backgroundColor: "#F8F7F4", border: "1.5px solid #E2E0DB" }}>
+                {[CURRENT_YEAR - 1, CURRENT_YEAR, CURRENT_YEAR + 1].map(y => <option key={y} value={y}>{y}</option>)}
+              </select>
+            </div>
+          </div>
+          <div className="flex gap-3">
+            <button type="button" onClick={onClose} className="flex-1 py-3 rounded-xl text-sm font-semibold transition-all hover:bg-slate-50" style={{ border: "1.5px solid #E2E0DB", color: "#64748B" }}>Cancel</button>
+            <button type="submit" disabled={!title.trim() || updateGoal.isPending} className="flex-1 py-3 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-40" style={{ backgroundColor: "#7C3AED" }}>
+              {updateGoal.isPending ? "Saving…" : "Save Changes"}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 // ─── Add Goal Form ─────────────────────────────────────────────────────────────
 
 function AddGoalForm({
@@ -239,6 +358,7 @@ function GoalCard({
   goal,
   onStatusChange,
   onDelete,
+  onEdit,
 }: {
   goal: {
     id: number;
@@ -253,6 +373,7 @@ function GoalCard({
   };
   onStatusChange: (id: number, status: Status) => void;
   onDelete: (id: number) => void;
+  onEdit: (goal: { id: number; title: string; description: string | null; status: Status; owner: Owner; business: Business; period: Period; quarter: number | null; year: number }) => void;
 }) {
   const [showMenu, setShowMenu] = useState(false);
   const statusCfg = STATUS_CONFIG[goal.status];
@@ -329,6 +450,13 @@ function GoalCard({
                   <span>{STATUS_CONFIG[s].icon}</span> Mark {STATUS_CONFIG[s].label}
                 </button>
               ))}
+              <button
+                onClick={() => { onEdit(goal); setShowMenu(false); }}
+                className="flex items-center gap-2 px-3 py-2.5 text-[12px] font-medium hover:bg-[#F8F7F4] transition-colors text-left"
+                style={{ color: "#1E3A5F" }}
+              >
+                ✏️ Edit
+              </button>
               <div className="border-t" style={{ borderColor: "#E2E0DB" }} />
               <button
                 onClick={() => { onDelete(goal.id); setShowMenu(false); }}
@@ -373,6 +501,7 @@ export default function Goals() {
   const accountId = Number(localStorage.getItem("bcc_account_id") ?? "0");
   const [selectedYear, setSelectedYear] = useState(CURRENT_YEAR);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [editingGoal, setEditingGoal] = useState<typeof goalsData[0] | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const { data: goalsData = [], refetch } = trpc.goals.list.useQuery(
@@ -569,6 +698,7 @@ export default function Goals() {
                         goal={g as { id: number; title: string; description: string | null; status: Status; owner: Owner; business: Business; period: Period; quarter: number | null; year: number }}
                         onStatusChange={handleStatusChange}
                         onDelete={handleDelete}
+                        onEdit={g2 => setEditingGoal(g2 as typeof goalsData[0])}
                       />
                     ))}
                   </div>
@@ -612,6 +742,7 @@ export default function Goals() {
                           goal={g as { id: number; title: string; description: string | null; status: Status; owner: Owner; business: Business; period: Period; quarter: number | null; year: number }}
                           onStatusChange={handleStatusChange}
                           onDelete={handleDelete}
+                          onEdit={g2 => setEditingGoal(g2 as typeof goalsData[0])}
                         />
                       ))}
                     </div>
@@ -630,6 +761,16 @@ export default function Goals() {
           businessScope={businessScope}
           onClose={() => setShowAddForm(false)}
           onCreated={() => refetch()}
+        />
+      )}
+
+      {/* Edit Goal Modal */}
+      {editingGoal && (
+        <EditGoalForm
+          goal={editingGoal as { id: number; title: string; description: string | null; status: Status; owner: Owner; business: Business; period: Period; quarter: number | null; year: number }}
+          businessScope={businessScope}
+          onClose={() => setEditingGoal(null)}
+          onUpdated={() => refetch()}
         />
       )}
     </div>
