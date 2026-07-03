@@ -75,14 +75,14 @@
 
 ## Three-Account Authentication System (Phase 4)
 
-- [ ] Add app_users table to drizzle schema (username, hashed password, business scope, role)
-- [ ] Push DB migration and seed three accounts: chiro/subluxation, crossfit/burpee, owner/lynnandmatt901
-- [ ] Update server gate.verify procedure to validate username + password and return scope + session token
-- [ ] Update ClientLogin frontend to send username + password and store scope in session
-- [ ] Update PasswordGate to use new session token with scope
-- [ ] Update calendar app to filter meeting data by business scope from session
-- [ ] Test all three accounts in isolation
-- [ ] Save checkpoint
+- [x] Add app_users table to drizzle schema (username, hashed password, business scope, role)
+- [x] Push DB migration and seed three accounts: chiro/subluxation, crossfit/burpee, owner/lynnandmatt901
+- [x] Update server gate.verify procedure to validate username + password and return scope + session token
+- [x] Update ClientLogin frontend to send username + password and store scope in session
+- [x] Update PasswordGate to use new session token with scope
+- [x] Update calendar app to filter meeting data by business scope from session
+- [x] Test all three accounts in isolation
+- [x] Save checkpoint
 
 ## Meeting Recording Feature (Phase 5)
 - [x] Add meeting_recordings table to DB schema (meetingId, transcript, aiNotes, actionItems, audioKey, createdAt)
@@ -91,8 +91,8 @@
 - [x] Build RecordMeeting UI component: mic button, recording timer, stop, upload progress, AI notes display
 - [x] Wire RecordMeeting into the meeting detail/Board view
 - [x] Display past recording notes when viewing a meeting that was previously recorded
-- [ ] Test full flow end-to-end on desktop and mobile
-- [ ] Save checkpoint
+- [x] Test full flow end-to-end on desktop and mobile
+- [x] Save checkpoint
 
 ## Onboarding Wizard + Editable Schedule (Phase 6)
 
@@ -136,14 +136,14 @@
 ### Integration
 - [x] Trigger onboarding wizard on first login (check localStorage flag + server profile)
 - [x] `accountId` stored in localStorage after login for use by onboarding + schedule pages
-- [ ] Replace static `calendarData.ts` meeting placement with dynamic schedule from DB — Phase 7
+- [x] Replace static `calendarData.ts` meeting placement with dynamic schedule from DB — Phase 7
 - [ ] Owner toggle button (Owner Mode ↔ Team Mode) — owners only, deferred until Team Layer built
 
 ### Known Gaps / Phase 7 Work
-- [ ] Replace static `calendarData.ts` calendar rendering in Home.tsx with DB-driven dynamic schedule (so closed-day changes visibly reschedule meetings in the main calendar)
-- [ ] Persist meeting reschedule overrides when closed periods affect meetings; surface them via `schedule.getOverrides`
-- [ ] Use `trpc.onboarding.getStatus` during app entry to verify onboarding completion from server state (not just localStorage flag)
-- [ ] Show a real generated calendar preview in onboarding Step 7 (call `trpc.onboarding.generateCalendar` and render upcoming meetings before confirmation)
+- [x] Replace static `calendarData.ts` calendar rendering in Home.tsx with DB-driven dynamic schedule (so closed-day changes visibly reschedule meetings in the main calendar)
+- [x] Persist meeting reschedule overrides when closed periods affect meetings; surface them via `schedule.getOverrides`
+- [x] Use `trpc.onboarding.getStatus` during app entry to verify onboarding completion from server state (not just localStorage flag)
+- [x] Show a real generated calendar preview in onboarding Step 7 (call `trpc.onboarding.generateCalendar` and render upcoming meetings before confirmation)
 
 ## Weekly Report System (Phase 7)
 
@@ -185,25 +185,30 @@
 ## Command Board Upgrade — Tasks + Two-Step Completion (Phase 9)
 
 ### DB Schema
-- [ ] Add `completedAt`, `completedBy`, `confirmedAt`, `confirmedBy` columns to `board_cards` table
-- [ ] Add `assignedTo` column to `board_cards` (who the task is assigned to)
-- [ ] Push DB migration
+- [x] Add `completedAt`, `completedBy`, `confirmedAt`, `confirmedBy` columns to `board_cards` table
+- [x] Add `assignedTo` column to `board_cards` (who the task is assigned to)
+- [x] Push DB migration
 
 ### Backend
-- [ ] tRPC `board.markDone` — doer marks task as done (sets completedAt + completedBy)
-- [ ] tRPC `board.confirmDone` — requester confirms task is done (sets confirmedAt + confirmedBy)
-- [ ] Update `board.list` to return completedAt, confirmedAt, assignedTo fields
-- [ ] Update `board.create` to accept `assignedTo` for Task type
+- [x] tRPC `board.markDone` — doer marks task as done (sets completedAt + completedBy)
+- [x] tRPC `board.confirmDone` — requester confirms task is done (sets confirmedAt + confirmedBy)
+- [x] Update `board.list` to return completedAt, confirmedAt, assignedTo fields
+- [x] Update `board.create` to accept `assignedTo` for Task type
 
 ### Frontend
-- [ ] Add "Task" as a third card type (alongside Update and Issue)
-- [ ] Task cards show assignee, checkbox for doer to mark done
-- [ ] Two-step flow: doer checks off → card moves to "Done — Awaiting Confirmation" section
-- [ ] Requester sees "Confirm Done" button → confirms → card moves to collapsed archive
-- [ ] Board sections: Active | Done — Awaiting Confirmation | Completed (collapsible)
-- [ ] Fix identity selector: persist "I am Matt / Lynn" in localStorage (set once per device)
-- [ ] Remove redundant top-right identity selector from board header
-- [ ] When posting a Task, show "Assign to:" dropdown (the other owner)
+- [x] Add "Task" as a third card type (alongside Update and Issue)
+- [x] Task cards show assignee, checkbox for doer to mark done
+- [x] Two-step flow: doer checks off → card moves to "Done — Awaiting Confirmation" section
+- [x] Requester sees "Confirm Done" button → confirms → card moves to collapsed archive
+- [x] Board sections: Active | Done — Awaiting Confirmation | Completed (collapsible)
+- [x] Fix identity selector: persist "I am Matt / Lynn" in localStorage (set once per device)
+- [x] Remove redundant top-right identity selector from board header
+- [x] When posting a Task, show "Assign to:" dropdown (the other owner)
+
+## Calendar Auto-Scroll to Today (Phase 11)
+- [x] Add `currentMonthRef` + `hasScrolledToToday` guard so calendar scrolls to current month exactly once
+- [x] Scroll fires after DB calendar data loads (not just on initial render)
+- [x] Remove old inline ref callback that fired on every render
 
 ## Light Theme Redesign (Phase 10)
 - [x] Audit homepage colors and extract exact values (bg, text, accent, card, border)

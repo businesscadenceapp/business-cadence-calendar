@@ -38,6 +38,8 @@ import {
   deactivateEmployee,
   submitWeeklyReport,
   getWeeklyReportSummary,
+  saveMeetingOverride,
+  recalculateOverrides,
 } from "./db";
 import { generateMeetingSchedule } from "../shared/calendarEngine";
 import { notifyOwner } from "./_core/notification";
@@ -529,7 +531,7 @@ Be concise and specific. If a field has nothing, use an empty array.`,
         return { periods };
       }),
 
-    /** Add a closed day or week. Automatically recalculates affected meetings. */
+    /** Add a closed day or week. Automatically recalculates affected meetings and persists overrides. */
     addClosedPeriod: publicProcedure
       .input(z.object({
         accountId: z.number(),
@@ -540,14 +542,20 @@ Be concise and specific. If a field has nothing, use an empty array.`,
       }))
       .mutation(async ({ input }) => {
         const period = await addClosedPeriod(input);
+
+        // After adding the closed period, recalculate all overrides
+        await recalculateOverrides(input.accountId, generateMeetingSchedule);
+
         return { success: true, period };
       }),
 
-    /** Remove a closed period. */
+    /** Remove a closed period. Recalculates overrides after removal. */
     removeClosedPeriod: publicProcedure
       .input(z.object({ id: z.number(), accountId: z.number() }))
       .mutation(async ({ input }) => {
         await removeClosedPeriod(input.id, input.accountId);
+        // Recalculate overrides after removal
+        await recalculateOverrides(input.accountId, generateMeetingSchedule);
         return { success: true };
       }),
 

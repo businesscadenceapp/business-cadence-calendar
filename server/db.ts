@@ -486,6 +486,51 @@ export async function getMeetingOverrides(accountId: number): Promise<typeof mee
   return db.select().from(meetingScheduleOverrides).where(eq(meetingScheduleOverrides.accountId, accountId));
 }
 
+/**
+ * Recalculate all meeting schedule overrides for an account.
+ * Clears existing overrides and regenerates from current closed periods + business profile.
+ * Called after any closed period add/remove.
+ */
+import type { MeetingDayPrefs, ClosedPeriod as EnginePeriod, ScheduledMeeting } from "../shared/calendarEngine";
+
+export async function recalculateOverrides(
+  accountId: number,
+  generateMeetingScheduleFn: (params: {
+    year: number;
+    workDays: number[];
+    meetingDayPrefs: MeetingDayPrefs;
+    closedPeriods: EnginePeriod[];
+  }) => ScheduledMeeting[]
+): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  try {
+    const profile = await getBusinessProfile(accountId);
+    if (!profile?.meetingDayPrefs || !profile?.workDays) return;
+    const workDays = JSON.parse(profile.workDays) as number[];
+    const meetingDayPrefs = JSON.parse(profile.meetingDayPrefs);
+    const allClosedPeriods = await getClosedPeriods(accountId);
+    const closedForEngine = allClosedPeriods.map(p => ({ startDate: p.startDate, endDate: p.endDate }));
+    const year = new Date().getFullYear();
+    const meetings = generateMeetingScheduleFn({ year, workDays, meetingDayPrefs, closedPeriods: closedForEngine });
+    // Clear all existing overrides for this account
+    await db.delete(meetingScheduleOverrides).where(eq(meetingScheduleOverrides.accountId, accountId));
+    // Insert fresh overrides for rescheduled meetings
+    const rescheduled = meetings.filter(m => m.isRescheduled && m.originalDate);
+    for (const m of rescheduled) {
+      await db.insert(meetingScheduleOverrides).values({
+        accountId,
+        originalDate: m.originalDate!,
+        meetingType: m.meetingType,
+        rescheduledDate: m.date,
+        reason: "Closed period",
+      });
+    }
+  } catch (err) {
+    console.error("[recalculateOverrides] Failed:", err);
+  }
+}
+
 // ─── Weekly Report Helpers ───────────────────────────────────────────────────
 
 /** Get all active employees with their metrics for an account. */

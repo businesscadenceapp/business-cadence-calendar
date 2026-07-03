@@ -769,6 +769,20 @@ export default function Home() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  // Scroll to current month once the calendar is ready
+  const currentMonthRef = useRef<HTMLDivElement | null>(null);
+  const hasScrolledToToday = useRef(false);
+  useEffect(() => {
+    if (hasScrolledToToday.current) return;
+    if (!currentMonthRef.current) return;
+    hasScrolledToToday.current = true;
+    const el = currentMonthRef.current;
+    // Small delay so the grid has fully rendered before scrolling
+    setTimeout(() => {
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 200);
+  }, [calendar]); // re-run when calendar data loads
+
   return (
     <div
       className="min-h-screen flex flex-col"
@@ -1128,12 +1142,7 @@ export default function Home() {
               return (
                 <div
                   key={month.month}
-                  ref={isCurrentMonth ? (el) => {
-                    if (el) {
-                      // Small delay so the grid has rendered before scrolling
-                      setTimeout(() => el.scrollIntoView({ behavior: "smooth", block: "start" }), 150);
-                    }
-                  } : undefined}
+                  ref={isCurrentMonth ? currentMonthRef : undefined}
                 >
                   <MonthGrid
                     month={month}

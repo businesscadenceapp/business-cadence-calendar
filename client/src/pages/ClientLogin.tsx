@@ -61,11 +61,28 @@ export default function ClientLogin() {
           }
         } catch { /* ignore */ }
 
-        // Check if onboarding is complete
+        // Check if onboarding is complete — check server first, fall back to localStorage
         const accountId = data.accountId ?? 0;
-        const isFirstLogin = !localStorage.getItem("bcc_onboarding_done_" + accountId);
-        if (isFirstLogin && accountId) {
-          navigate("/onboarding");
+        if (accountId) {
+          try {
+            // Use fetch directly to avoid tRPC hook complexity in mutation callback
+            const resp = await fetch(`/api/trpc/onboarding.getStatus?input=${encodeURIComponent(JSON.stringify({ json: { accountId } }))}`, {
+              headers: { "Content-Type": "application/json" },
+            });
+            const json = await resp.json();
+            const serverComplete = json?.result?.data?.json?.complete ?? false;
+            if (serverComplete) {
+              // Mark locally so future logins skip the server check
+              localStorage.setItem("bcc_onboarding_done_" + accountId, "1");
+              navigate("/app");
+            } else {
+              navigate("/onboarding");
+            }
+          } catch {
+            // Fallback to localStorage if server check fails
+            const isFirstLogin = !localStorage.getItem("bcc_onboarding_done_" + accountId);
+            navigate(isFirstLogin ? "/onboarding" : "/app");
+          }
         } else {
           navigate("/app");
         }

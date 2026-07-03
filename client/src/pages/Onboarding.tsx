@@ -2,6 +2,7 @@ import { useState, useCallback } from "react";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { INDUSTRY_TYPES, INDUSTRY_MEETING_DAY_DEFAULTS, type IndustryType } from "@shared/industryDefaults";
+import { generateMeetingSchedule } from "@shared/calendarEngine";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -508,6 +509,130 @@ function StepTeamMeetings({
   );
 }
 
+const MEETING_TYPE_COLORS: Record<string, { bg: string; text: string; label: string }> = {
+  daily:     { bg: "#DBEAFE", text: "#1D4ED8", label: "Daily" },
+  weekly:    { bg: "#D1FAE5", text: "#065F46", label: "Weekly" },
+  monthly:   { bg: "#CCFBF1", text: "#0F766E", label: "Monthly" },
+  quarterly: { bg: "#FFE4E6", text: "#BE123C", label: "Quarterly" },
+};
+
+const MONTH_NAMES_SHORT = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+function MiniCalendarPreview({ data }: { data: OnboardingData }) {
+  // Generate meetings for the next 3 months starting from today
+  const today = new Date();
+  const year = today.getFullYear();
+  const startMonth = today.getMonth(); // 0-indexed
+  
+  const meetings = generateMeetingSchedule({
+    year,
+    workDays: data.workDays,
+    meetingDayPrefs: data.meetingDayPrefs,
+    closedPeriods: [],
+  });
+  
+  // Build a set of meeting dates for quick lookup
+  const meetingMap = new Map<string, Set<string>>();
+  for (const m of meetings) {
+    if (!meetingMap.has(m.date)) meetingMap.set(m.date, new Set());
+    meetingMap.get(m.date)!.add(m.meetingType);
+  }
+
+  // Show 3 months
+  const months = [0, 1, 2].map(offset => {
+    const m = (startMonth + offset) % 12;
+    const y = year + Math.floor((startMonth + offset) / 12);
+    const firstDay = new Date(y, m, 1);
+    const lastDay = new Date(y, m + 1, 0);
+    const days: (number | null)[] = [];
+    // Pad with nulls for first week
+    for (let i = 0; i < firstDay.getDay(); i++) days.push(null);
+    for (let d = 1; d <= lastDay.getDate(); d++) days.push(d);
+    return { year: y, month: m, days };
+  });
+
+  // Count meetings in the 3-month window
+  const windowStart = `${year}-${String(startMonth + 1).padStart(2, "0")}-01`;
+  const endMonth = (startMonth + 2) % 12;
+  const endYear = year + Math.floor((startMonth + 2) / 12);
+  const windowEnd = `${endYear}-${String(endMonth + 1).padStart(2, "0")}-${new Date(endYear, endMonth + 1, 0).getDate()}`;
+  const windowMeetings = meetings.filter(m => m.date >= windowStart && m.date <= windowEnd);
+  const countByType: Record<string, number> = {};
+  for (const m of windowMeetings) {
+    countByType[m.meetingType] = (countByType[m.meetingType] ?? 0) + 1;
+  }
+
+  return (
+    <div className="flex flex-col gap-3">
+      <div className="flex items-center justify-between">
+        <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Calendar Preview — Next 3 Months</p>
+        <div className="flex gap-1.5 flex-wrap justify-end">
+          {Object.entries(countByType).map(([type, count]) => {
+            const c = MEETING_TYPE_COLORS[type];
+            if (!c) return null;
+            return (
+              <span key={type} className="text-[10px] px-2 py-0.5 rounded-full font-medium"
+                style={{ backgroundColor: c.bg, color: c.text }}>
+                {count} {c.label}
+              </span>
+            );
+          })}
+        </div>
+      </div>
+      <div className="grid grid-cols-3 gap-2">
+        {months.map(({ year: y, month: m, days }) => (
+          <div key={`${y}-${m}`} className="flex flex-col gap-1">
+            <p className="text-[10px] font-bold text-slate-500 text-center uppercase tracking-wider">
+              {MONTH_NAMES_SHORT[m]} {y}
+            </p>
+            <div className="grid grid-cols-7 gap-px">
+              {["S","M","T","W","T","F","S"].map((d, i) => (
+                <div key={i} className="text-[8px] text-slate-400 text-center font-medium">{d}</div>
+              ))}
+              {days.map((day, i) => {
+                if (!day) return <div key={i} />;
+                const dateKey = `${y}-${String(m + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+                const types = meetingMap.get(dateKey);
+                const isToday = dateKey === today.toISOString().slice(0, 10);
+                const hasMeeting = types && types.size > 0;
+                // Pick the most prominent meeting type for color
+                const primaryType = types?.has("quarterly") ? "quarterly"
+                  : types?.has("monthly") ? "monthly"
+                  : types?.has("weekly") ? "weekly"
+                  : types?.has("daily") ? "daily" : null;
+                const c = primaryType ? MEETING_TYPE_COLORS[primaryType] : null;
+                return (
+                  <div
+                    key={i}
+                    className="aspect-square flex items-center justify-center rounded-sm text-[8px] font-medium"
+                    style={{
+                      backgroundColor: c ? c.bg : isToday ? "#E0F2FE" : "transparent",
+                      color: c ? c.text : isToday ? "#0369A1" : "#64748B",
+                      fontWeight: hasMeeting ? 700 : 400,
+                      outline: isToday ? "1px solid #0D9488" : undefined,
+                    }}
+                    title={primaryType ? `${MEETING_TYPE_COLORS[primaryType].label} meeting` : undefined}
+                  >
+                    {day}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="flex gap-2 flex-wrap">
+        {Object.entries(MEETING_TYPE_COLORS).map(([type, c]) => (
+          <div key={type} className="flex items-center gap-1">
+            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: c.bg, border: `1px solid ${c.text}40` }} />
+            <span className="text-[9px] text-slate-500">{c.label}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function StepPreview({
   data,
   onConfirm,
@@ -561,6 +686,11 @@ function StepPreview({
           label="Team Weekly Meeting"
           value={`Every ${DAY_FULL[data.meetingDayPrefs.teamWeekly]}`}
         />
+      </div>
+
+      {/* Mini calendar preview */}
+      <div className="bg-white rounded-xl border border-slate-200 p-4">
+        <MiniCalendarPreview data={data} />
       </div>
 
       <div className="flex gap-3">
