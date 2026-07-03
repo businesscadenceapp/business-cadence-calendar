@@ -18,7 +18,6 @@ import {
   type CalendarDay,
   type MeetingType,
   type CalendarMonth,
-  countMeetingsInYear,
   YEAR,
 } from "@/lib/calendarData";
 
@@ -705,57 +704,6 @@ function DetailPanel({
   );
 }
 
-function LegendItem({
-  type,
-  isActive,
-  onHover,
-  onLeave,
-}: {
-  type: MeetingType;
-  isActive: boolean;
-  onHover: () => void;
-  onLeave: () => void;
-}) {
-  const m = MEETING_TYPES[type];
-  const count = countMeetingsInYear(type);
-
-  return (
-    <div
-      className="flex items-start gap-3 p-3 rounded-lg cursor-pointer transition-all duration-150"
-      onMouseEnter={onHover}
-      onMouseLeave={onLeave}
-      style={{
-        backgroundColor: isActive ? m.bgColor : "transparent",
-        border: isActive ? `1px solid ${m.color}40` : "1px solid transparent",
-      }}
-    >
-      <span
-        className="w-2.5 h-2.5 rounded-full flex-shrink-0 mt-0.5"
-        style={{
-          backgroundColor: m.color,
-          boxShadow: isActive ? `0 0 6px ${m.color}` : undefined,
-        }}
-      />
-      <div className="flex flex-col gap-0.5 min-w-0 flex-1">
-        <div className="flex items-center justify-between gap-2">
-          <span
-            className="text-xs font-semibold text-[#1E3A5F]"
-            style={{ fontFamily: "'Space Grotesk', sans-serif" }}
-          >
-            {m.label}
-          </span>
-          <span
-            className="text-[10px] text-[#94A3B8] flex-shrink-0"
-            style={{ fontFamily: "'JetBrains Mono', monospace" }}
-          >
-            ×{count}/yr
-          </span>
-        </div>
-        <span className="text-[10px] text-[#94A3B8]">{m.totalDuration}</span>
-      </div>
-    </div>
-  );
-}
 
 export default function Home() {
   const [selectedDay, setSelectedDay] = useState<CalendarDay | null>(null);
@@ -797,6 +745,20 @@ export default function Home() {
     () => new Set<string>(loggedDatesData?.dates ?? []),
     [loggedDatesData]
   );
+
+  // Compute meeting counts from the live calendar (respects closed days)
+  const meetingCounts = useMemo(() => {
+    const counts: Record<MeetingType, number> = { daily: 0, weekly: 0, monthly: 0, quarterly: 0 };
+    for (const month of calendar) {
+      for (const day of month.days) {
+        if (!day || day.isClosed) continue;
+        for (const type of day.meetings) {
+          if (type in counts) counts[type as MeetingType]++;
+        }
+      }
+    }
+    return counts;
+  }, [calendar]);
 
   const handleSelectDay = (day: CalendarDay) => {
     setSelectedDay((prev) =>
@@ -912,27 +874,53 @@ export default function Home() {
           className="w-60 flex-shrink-0 flex flex-col gap-4 p-4 overflow-y-auto"
           style={{ borderRight: "1px solid #E2E0DB" }}
         >
-          <div>
+          {/* Quick Nav */}
+          <div className="flex flex-col gap-2">
             <p
               className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest mb-1 px-1"
               style={{ fontFamily: "'Space Grotesk', sans-serif" }}
             >
-              Meeting Types
+              Quick Access
             </p>
-            <p className="text-[10px] text-[#94A3B8] px-1 mb-2 leading-relaxed">
-              Hover to highlight · Click day for full breakdown
-            </p>
-            <div className="flex flex-col gap-0.5">
-              {(["quarterly", "monthly", "weekly", "daily"] as MeetingType[]).map((type) => (
-                <LegendItem
-                  key={type}
-                  type={type}
-                  isActive={highlightType === type}
-                  onHover={() => setHighlightType(type)}
-                  onLeave={() => setHighlightType(null)}
-                />
-              ))}
-            </div>
+            <Link
+              href="/app/board"
+              className="flex items-center gap-2 w-full px-3 py-2.5 rounded-lg text-[11px] font-semibold transition-all hover:opacity-90"
+              style={{
+                background: "rgba(30,58,95,0.06)",
+                border: "1px solid rgba(30,58,95,0.18)",
+                color: "#1E3A5F",
+                fontFamily: "'Space Grotesk', sans-serif",
+              }}
+            >
+              <span>📋</span>
+              Command Board
+            </Link>
+            <Link
+              href="/app/reports"
+              className="flex items-center gap-2 w-full px-3 py-2.5 rounded-lg text-[11px] font-semibold transition-all hover:opacity-90"
+              style={{
+                background: "rgba(13,148,136,0.06)",
+                border: "1px solid rgba(13,148,136,0.20)",
+                color: "#0D9488",
+                fontFamily: "'Space Grotesk', sans-serif",
+              }}
+            >
+              <span>📊</span>
+              Weekly Reports
+            </Link>
+            <Link
+              href="/app/settings"
+              className="flex items-center gap-2 w-full px-3 py-2.5 rounded-lg text-[11px] font-semibold transition-all hover:opacity-90"
+              style={{
+                background: "rgba(100,116,139,0.06)",
+                border: "1px solid rgba(100,116,139,0.18)",
+                color: "#64748B",
+                fontFamily: "'Space Grotesk', sans-serif",
+              }}
+            >
+              <span>⚙️</span>
+              Agenda Settings
+            </Link>
           </div>
 
           {/* Businesses */}
@@ -1051,12 +1039,18 @@ export default function Home() {
           <div className="grid grid-cols-4 gap-3">
             {(["daily", "weekly", "monthly", "quarterly"] as MeetingType[]).map((type) => {
               const m = MEETING_TYPES[type];
-              const count = countMeetingsInYear(type);
+              const count = meetingCounts[type];
               return (
                 <div
                   key={type}
-                  className="rounded-xl p-3.5 flex flex-col gap-1.5"
-                  style={{ backgroundColor: m.bgColor, border: `1.5px solid ${m.color}35`, boxShadow: "0 1px 4px rgba(30,58,95,0.06)" }}
+                  className="rounded-xl p-3.5 flex flex-col gap-1.5 cursor-pointer transition-all duration-150"
+                  style={{
+                    backgroundColor: m.bgColor,
+                    border: highlightType === type ? `1.5px solid ${m.color}` : `1.5px solid ${m.color}35`,
+                    boxShadow: highlightType === type ? `0 0 0 3px ${m.color}20` : "0 1px 4px rgba(30,58,95,0.06)",
+                  }}
+                  onMouseEnter={() => setHighlightType(type)}
+                  onMouseLeave={() => setHighlightType(null)}
                 >
                   <div className="flex items-center gap-1.5">
                     <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: m.color }} />
