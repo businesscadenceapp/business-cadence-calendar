@@ -18,7 +18,7 @@ import { getBusinessSelection, type BusinessSelection } from "./ClientLogin";
 import { useIdentity } from "@/components/AppShell";
 import { Link } from "wouter";
 
-type Author = "Matt" | "Lynn";
+type Author = string;
 type CardType = "update" | "issue" | "task";
 type Business = "chiropractic" | "crossfit" | "realty" | "general";
 
@@ -41,38 +41,26 @@ const SCOPE_DEFAULT_BUSINESS: Record<BusinessSelection, Business> = {
   owner:    "general",
 };
 
-// Light-theme author colors — dark text on tinted backgrounds
-const AUTHOR_COLORS: Record<Author, {
-  bg: string;        // card background
-  border: string;    // card border
-  badgeBg: string;   // name badge background
-  badgeText: string; // name badge text (dark, readable)
-  btnBg: string;     // active button background
-  btnBorder: string; // active button border
-  btnText: string;   // active button text
-  dot: string;       // solid dot color
-}> = {
-  Matt: {
-    bg: "#EFF6FF",
-    border: "#BFDBFE",
-    badgeBg: "#DBEAFE",
-    badgeText: "#1D4ED8",
-    btnBg: "#DBEAFE",
-    btnBorder: "#93C5FD",
-    btnText: "#1D4ED8",
-    dot: "#2563EB",
-  },
-  Lynn: {
-    bg: "#FFF1F2",
-    border: "#FECDD3",
-    badgeBg: "#FFE4E6",
-    badgeText: "#BE123C",
-    btnBg: "#FFE4E6",
-    btnBorder: "#FDA4AF",
-    btnText: "#BE123C",
-    dot: "#E11D48",
-  },
-};
+// Light-theme author colors — dynamically generated from name to support any person
+const PALETTE = [
+  { bg: "#EFF6FF", border: "#BFDBFE", badgeBg: "#DBEAFE", badgeText: "#1D4ED8", btnBg: "#DBEAFE", btnBorder: "#93C5FD", btnText: "#1D4ED8", dot: "#2563EB" },
+  { bg: "#FFF1F2", border: "#FECDD3", badgeBg: "#FFE4E6", badgeText: "#BE123C", btnBg: "#FFE4E6", btnBorder: "#FDA4AF", btnText: "#BE123C", dot: "#E11D48" },
+  { bg: "#F0FDF4", border: "#86EFAC", badgeBg: "#D1FAE5", badgeText: "#065F46", btnBg: "#D1FAE5", btnBorder: "#6EE7B7", btnText: "#065F46", dot: "#059669" },
+  { bg: "#FFFBEB", border: "#FCD34D", badgeBg: "#FEF3C7", badgeText: "#92400E", btnBg: "#FEF3C7", btnBorder: "#FCD34D", btnText: "#92400E", dot: "#D97706" },
+  { bg: "#F5F3FF", border: "#C4B5FD", badgeBg: "#EDE9FE", badgeText: "#5B21B6", btnBg: "#EDE9FE", btnBorder: "#C4B5FD", btnText: "#5B21B6", dot: "#7C3AED" },
+];
+
+function getAuthorColors(name: string) {
+  if (!name) return PALETTE[0];
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  return PALETTE[Math.abs(hash) % PALETTE.length];
+}
+
+// AUTHOR_COLORS kept for backward compat — delegates to getAuthorColors
+const AUTHOR_COLORS: Record<string, typeof PALETTE[0]> = new Proxy({} as Record<string, typeof PALETTE[0]>, {
+  get: (_t, prop: string) => getAuthorColors(prop),
+});
 
 const BUSINESS_LABELS: Record<Business, { label: string; icon: string; bg: string; text: string; border: string }> = {
   chiropractic: { label: "Chiropractic", icon: "🦴", bg: "#D1FAE5", text: "#065F46", border: "#6EE7B7" },
@@ -99,6 +87,7 @@ type Card = {
   business: Business;
   content: string;
   assignedTo: Author | null;
+  dueAt: number | null; // ms since epoch
   completedAt: Date | null;
   completedBy: Author | null;
   confirmedAt: Date | null;
@@ -118,7 +107,7 @@ function TaskCard({ card, currentUser, onMarkDone, onConfirmDone, onDelete }: {
   onConfirmDone: (id: number) => void;
   onDelete: (id: number) => void;
 }) {
-  const authorColors = AUTHOR_COLORS[card.author];
+  const authorColors = getAuthorColors(card.author);
   const biz = BUSINESS_LABELS[card.business];
   const isDoer = currentUser === card.assignedTo;
   const isRequester = currentUser === card.author;
@@ -130,6 +119,14 @@ function TaskCard({ card, currentUser, onMarkDone, onConfirmDone, onDelete }: {
     : isDone
     ? "done_pending"
     : "open";
+
+  // Due date helpers
+  const now = Date.now();
+  const isOverdue = card.dueAt && !isDone && card.dueAt < now;
+  const isDueSoon = card.dueAt && !isDone && !isOverdue && card.dueAt - now < 3 * 24 * 60 * 60 * 1000; // within 3 days
+  const dueLabel = card.dueAt
+    ? new Date(card.dueAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })
+    : null;
 
   // State-based card styling (light backgrounds with dark text)
   const stateStyles = {
@@ -183,6 +180,20 @@ function TaskCard({ card, currentUser, onMarkDone, onConfirmDone, onDelete }: {
               >
                 {biz.icon} {biz.label}
               </span>
+              {/* Due date badge */}
+              {dueLabel && (
+                <span
+                  className="text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1"
+                  style={{
+                    backgroundColor: isOverdue ? "#FEE2E2" : isDueSoon ? "#FEF3C7" : "#F1F5F9",
+                    color: isOverdue ? "#B91C1C" : isDueSoon ? "#92400E" : "#475569",
+                    border: `1px solid ${isOverdue ? "#FCA5A5" : isDueSoon ? "#FCD34D" : "#CBD5E1"}`,
+                    fontFamily: "'Space Grotesk', sans-serif",
+                  }}
+                >
+                  {isOverdue ? "⚠️" : "📅"} {isOverdue ? "Overdue" : "Due"} {dueLabel}
+                </span>
+              )}
               <span className="text-[10px] text-slate-400 ml-auto" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
                 {timeAgo(card.createdAt)}
               </span>
@@ -268,7 +279,7 @@ function BoardCard({ card, currentUser, onSeen, onArchive, onDelete }: {
   onArchive: (id: number) => void;
   onDelete: (id: number) => void;
 }) {
-  const colors = AUTHOR_COLORS[card.author];
+  const colors = getAuthorColors(card.author);
   const biz = BUSINESS_LABELS[card.business];
   const isOwnCard = card.author === currentUser;
   const alreadySeen = !!card.seenAt;
@@ -391,12 +402,14 @@ function AddCardForm({ currentUser, onAdded, allowedBusinesses, defaultBusiness 
   const [type, setType] = useState<CardType>("update");
   const [business, setBusiness] = useState<Business>(defaultBusiness);
   const [content, setContent] = useState("");
-  const [assignedTo, setAssignedTo] = useState<Author | null>(null);
+  const [assignedTo, setAssignedTo] = useState<string | null>(null);
+  const [dueDate, setDueDate] = useState(""); // YYYY-MM-DD string from date input
 
   const createCard = trpc.board.create.useMutation({
     onSuccess: () => {
       setContent("");
       setAssignedTo(null);
+      setDueDate("");
       onAdded();
       toast.success("Posted to the board");
     },
@@ -407,16 +420,19 @@ function AddCardForm({ currentUser, onAdded, allowedBusinesses, defaultBusiness 
     if (!currentUser) { toast.error("Select who you are first (top right)"); return; }
     if (!content.trim()) { toast.error("Please write something"); return; }
     if (type === "task" && !assignedTo) { toast.error("Please select who this task is assigned to"); return; }
+    const dueAt = dueDate ? new Date(dueDate + "T23:59:59").getTime() : undefined;
     createCard.mutate({
       author: currentUser,
       type,
       business,
       content: content.trim(),
       ...(type === "task" && assignedTo ? { assignedTo } : {}),
+      ...(dueAt ? { dueAt } : {}),
     });
   };
 
-  const other = currentUser === "Matt" ? "Lynn" : "Matt";
+  // 'other' is used for the awaiting message
+  const other = currentUser ?? "the other owner";
 
   // Type button styles
   const typeStyles: Record<CardType, { activeBg: string; activeBorder: string; activeText: string }> = {
@@ -470,8 +486,8 @@ function AddCardForm({ currentUser, onAdded, allowedBusinesses, defaultBusiness 
         <div className="flex flex-col gap-1.5">
           <p className="text-[10px] text-slate-500 uppercase tracking-wider font-medium" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Assign to:</p>
           <div className="flex gap-2">
-            {(["Matt", "Lynn"] as Author[]).map(a => {
-              const c = AUTHOR_COLORS[a];
+            {(["Matt", "Lynn"] as string[]).map(a => {
+              const c = getAuthorColors(a);
               const isActive = assignedTo === a;
               const isSelf = a === currentUser;
               return (
@@ -521,6 +537,27 @@ function AddCardForm({ currentUser, onAdded, allowedBusinesses, defaultBusiness 
         </div>
       )}
 
+      {/* Due date — only for tasks */}
+      {type === "task" && (
+        <div className="flex flex-col gap-1.5">
+          <p className="text-[10px] text-slate-500 uppercase tracking-wider font-medium" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Due date <span className="normal-case text-slate-400">(optional)</span></p>
+          <input
+            type="date"
+            value={dueDate}
+            onChange={e => setDueDate(e.target.value)}
+            min={new Date().toISOString().split("T")[0]}
+            className="w-full rounded-lg px-3 py-2 text-[12px] text-[#1E3A5F] focus:outline-none transition-colors"
+            style={{
+              backgroundColor: "#F8FAFC",
+              border: "1.5px solid #CBD5E1",
+              fontFamily: "'Inter', sans-serif",
+            }}
+            onFocus={e => (e.target.style.borderColor = "#7C3AED")}
+            onBlur={e => (e.target.style.borderColor = "#CBD5E1")}
+          />
+        </div>
+      )}
+
       {/* Content textarea */}
       <textarea
         value={content}
@@ -553,10 +590,10 @@ function AddCardForm({ currentUser, onAdded, allowedBusinesses, defaultBusiness 
         className="w-full py-3 rounded-xl text-[13px] font-bold transition-all hover:opacity-90 disabled:opacity-40 active:scale-[0.97]"
         style={{
           background: currentUser
-            ? `linear-gradient(135deg, ${AUTHOR_COLORS[currentUser].btnBg} 0%, ${AUTHOR_COLORS[currentUser].btnBorder} 100%)`
+            ? `linear-gradient(135deg, ${getAuthorColors(currentUser).btnBg} 0%, ${getAuthorColors(currentUser).btnBorder} 100%)`
             : "#E2E8F0",
           border: `none`,
-          color: currentUser ? AUTHOR_COLORS[currentUser].btnText : "#94A3B8",
+          color: currentUser ? getAuthorColors(currentUser).btnText : "#94A3B8",
           fontFamily: "'Space Grotesk', sans-serif",
           boxShadow: currentUser && !createCard.isPending ? "0 4px 14px rgba(30,58,95,0.18)" : "none",
           letterSpacing: "0.02em",

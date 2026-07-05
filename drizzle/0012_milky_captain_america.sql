@@ -1,0 +1,1 @@
+ALTER TABLE `persons` MODIFY COLUMN `businessScope` varchar(1024) NOT NULL DEFAULT '[]';

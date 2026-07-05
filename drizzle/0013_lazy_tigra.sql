@@ -1,0 +1,1 @@
+ALTER TABLE `board_cards` MODIFY COLUMN `author` varchar(128) NOT NULL;

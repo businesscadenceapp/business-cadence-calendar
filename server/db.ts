@@ -185,7 +185,7 @@ export async function getBoardCards(includeArchived = false): Promise<BoardCard[
 }
 
 export async function createBoardCard(
-  data: Pick<InsertBoardCard, "author" | "type" | "business" | "content"> & { assignedTo?: "Matt" | "Lynn" }
+  data: Pick<InsertBoardCard, "type" | "business" | "content"> & { author: string; assignedTo?: string; dueAt?: number }
 ): Promise<BoardCard> {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
@@ -197,7 +197,7 @@ export async function createBoardCard(
   return rows[rows.length - 1]!;
 }
 
-export async function markTaskDone(id: number, completedBy: "Matt" | "Lynn"): Promise<void> {
+export async function markTaskDone(id: number, completedBy: string): Promise<void> {
   const db = await getDb();
   if (!db) return;
   await db
@@ -206,7 +206,7 @@ export async function markTaskDone(id: number, completedBy: "Matt" | "Lynn"): Pr
     .where(eq(boardCards.id, id));
 }
 
-export async function confirmTaskDone(id: number, confirmedBy: "Matt" | "Lynn"): Promise<void> {
+export async function confirmTaskDone(id: number, confirmedBy: string): Promise<void> {
   const db = await getDb();
   if (!db) return;
   // Confirming done also archives the card so it leaves the active board
@@ -216,7 +216,7 @@ export async function confirmTaskDone(id: number, confirmedBy: "Matt" | "Lynn"):
     .where(eq(boardCards.id, id));
 }
 
-export async function markCardSeen(id: number, seenBy: "Matt" | "Lynn"): Promise<void> {
+export async function markCardSeen(id: number, seenBy: string): Promise<void> {
   const db = await getDb();
   if (!db) return;
   await db
@@ -752,4 +752,169 @@ export async function deleteGoal(id: number): Promise<void> {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   await db.delete(goals).where(eq(goals.id, id));
+}
+
+// ─── Person helpers ───────────────────────────────────────────────────────────
+import { persons, kpiCategories, kpiEntries, type Person, type InsertPerson, type KpiCategory, type InsertKpiCategory, type KpiEntry, type InsertKpiEntry } from "../drizzle/schema";
+import { nanoid } from "nanoid";
+
+export async function getPersonByEmail(email: string): Promise<Person | null> {
+  const db = await getDb();
+  if (!db) return null;
+  const [p] = await db.select().from(persons).where(eq(persons.email, email.toLowerCase())).limit(1);
+  return p ?? null;
+}
+
+export async function getPersonById(id: string): Promise<Person | null> {
+  const db = await getDb();
+  if (!db) return null;
+  const [p] = await db.select().from(persons).where(eq(persons.id, id)).limit(1);
+  return p ?? null;
+}
+
+export async function getPersonByInviteToken(token: string): Promise<Person | null> {
+  const db = await getDb();
+  if (!db) return null;
+  const [p] = await db.select().from(persons).where(eq(persons.inviteToken, token)).limit(1);
+  return p ?? null;
+}
+
+export async function getPersonsByAccount(accountId: number): Promise<Person[]> {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(persons).where(eq(persons.accountId, accountId)).orderBy(asc(persons.createdAt));
+}
+
+export async function createPerson(data: Omit<InsertPerson, "id" | "createdAt" | "updatedAt">): Promise<Person> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const id = nanoid(16);
+  await db.insert(persons).values({ ...data, id, email: data.email.toLowerCase() });
+  const p = await getPersonById(id);
+  if (!p) throw new Error("Failed to create person");
+  return p;
+}
+
+export async function updatePerson(id: string, data: Partial<Pick<Person, "name" | "passwordHash" | "inviteToken" | "inviteAccepted" | "businessScope" | "role">>): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(persons).set(data).where(eq(persons.id, id));
+}
+
+export async function deletePerson(id: string): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.delete(persons).where(eq(persons.id, id));
+}
+
+// ─── KPI Category helpers ─────────────────────────────────────────────────────
+
+export async function getKpiCategories(accountId: number, businessSlug?: string): Promise<KpiCategory[]> {
+  const db = await getDb();
+  if (!db) return [];
+  const conditions = [eq(kpiCategories.accountId, accountId), eq(kpiCategories.isActive, true)];
+  if (businessSlug) conditions.push(eq(kpiCategories.businessSlug, businessSlug));
+  return db.select().from(kpiCategories).where(and(...conditions)).orderBy(asc(kpiCategories.sortOrder), asc(kpiCategories.id));
+}
+
+export async function createKpiCategory(data: Omit<InsertKpiCategory, "id" | "createdAt">): Promise<KpiCategory> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const [result] = await db.insert(kpiCategories).values(data);
+  const [cat] = await db.select().from(kpiCategories).where(eq(kpiCategories.id, (result as any).insertId));
+  return cat;
+}
+
+export async function updateKpiCategory(id: number, data: Partial<Pick<KpiCategory, "name" | "unit" | "frequency" | "sortOrder" | "isActive">>): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(kpiCategories).set(data).where(eq(kpiCategories.id, id));
+}
+
+// ─── KPI Entry helpers ────────────────────────────────────────────────────────
+
+export async function upsertKpiEntry(data: Omit<InsertKpiEntry, "id" | "submittedAt" | "updatedAt">): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  // Check if entry exists for this person + category + period
+  const [existing] = await db
+    .select()
+    .from(kpiEntries)
+    .where(and(
+      eq(kpiEntries.categoryId, data.categoryId),
+      eq(kpiEntries.personId, data.personId),
+      eq(kpiEntries.periodKey, data.periodKey),
+    ))
+    .limit(1);
+  if (existing) {
+    await db.update(kpiEntries).set({ value: data.value }).where(eq(kpiEntries.id, existing.id));
+  } else {
+    await db.insert(kpiEntries).values(data);
+  }
+}
+
+export async function getKpiEntries(accountId: number, businessSlug: string, periodKey: string): Promise<KpiEntry[]> {
+  const db = await getDb();
+  if (!db) return [];
+  // Get all category IDs for this business
+  const cats = await getKpiCategories(accountId, businessSlug);
+  if (cats.length === 0) return [];
+  const catIds = cats.map(c => c.id);
+  return db
+    .select()
+    .from(kpiEntries)
+    .where(and(
+      eq(kpiEntries.accountId, accountId),
+      eq(kpiEntries.periodKey, periodKey),
+      inArray(kpiEntries.categoryId, catIds),
+    ));
+}
+
+export async function getKpiMonthlyTotals(accountId: number, businessSlug: string, yearMonth: string): Promise<{ categoryId: number; categoryName: string; unit: string; personId: string; total: number }[]> {
+  const db = await getDb();
+  if (!db) return [];
+  // Get all weekly entries for the month (periodKey starts with yearMonth for weekly, or equals for monthly)
+  const cats = await getKpiCategories(accountId, businessSlug);
+  if (cats.length === 0) return [];
+  const catIds = cats.map(c => c.id);
+  const catMap: Record<number, { name: string; unit: string }> = {};
+  for (const c of cats) catMap[c.id] = { name: c.name, unit: c.unit };
+  const allEntries = await db
+    .select()
+    .from(kpiEntries)
+    .where(and(
+      eq(kpiEntries.accountId, accountId),
+      inArray(kpiEntries.categoryId, catIds),
+    ));
+  // Filter by month: weekly entries have periodKey "YYYY-Www", monthly have "YYYY-MM"
+  const monthEntries = allEntries.filter(e => {
+    if (e.periodKey.startsWith(yearMonth)) return true; // monthly exact match
+    // For weekly: check if the week falls in the month
+    if (e.periodKey.match(/^\d{4}-W\d{2}$/)) {
+      // Parse the week start date
+      const [year, week] = e.periodKey.split("-W").map(Number);
+      const jan4 = new Date(year, 0, 4);
+      const weekStart = new Date(jan4.getTime() + (week - 1) * 7 * 86400000);
+      const monthStr = `${year}-${String(weekStart.getMonth() + 1).padStart(2, "0")}`;
+      return monthStr === yearMonth;
+    }
+    return false;
+  });
+  // Sum by (categoryId, personId)
+  const totals: Record<string, number> = {};
+  for (const e of monthEntries) {
+    const key = `${e.categoryId}::${e.personId}`;
+    totals[key] = (totals[key] ?? 0) + e.value;
+  }
+  return Object.entries(totals).map(([key, total]) => {
+    const [catIdStr, personId] = key.split("::");
+    const catId = Number(catIdStr);
+    return {
+      categoryId: catId,
+      categoryName: catMap[catId]?.name ?? String(catId),
+      unit: catMap[catId]?.unit ?? "#",
+      personId,
+      total,
+    };
+  });
 }

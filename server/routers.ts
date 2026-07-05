@@ -44,6 +44,19 @@ import {
   createGoal,
   updateGoal,
   deleteGoal,
+  getPersonByEmail,
+  getPersonById,
+  getPersonByInviteToken,
+  getPersonsByAccount,
+  createPerson,
+  updatePerson,
+  deletePerson,
+  getKpiCategories,
+  createKpiCategory,
+  updateKpiCategory,
+  upsertKpiEntry,
+  getKpiEntries,
+  getKpiMonthlyTotals,
 } from "./db";
 import { generateMeetingSchedule } from "../shared/calendarEngine";
 import { notifyOwner } from "./_core/notification";
@@ -53,6 +66,7 @@ import { appUsers } from "../drizzle/schema";
 import { eq } from "drizzle-orm";
 import { storagePut } from "./storage";
 import { transcribeAudio } from "./_core/voiceTranscription";
+import { nanoid } from "nanoid";
 
 const meetingTypeSchema = z.enum(["daily", "weekly", "monthly", "quarterly"]);
 
@@ -582,11 +596,12 @@ Be concise and specific. If a field has nothing, use an empty array.`,
     /** Create a new board card (update, issue, or task). */
     create: publicProcedure
       .input(z.object({
-        author: z.enum(["Matt", "Lynn"]),
+        author: z.string().min(1).max(128),
         type: z.enum(["update", "issue", "task"]),
         business: z.enum(["chiropractic", "crossfit", "realty", "general"]),
         content: z.string().min(1).max(1000),
-        assignedTo: z.enum(["Matt", "Lynn"]).optional(),
+        assignedTo: z.string().min(1).max(128).optional(),
+        dueAt: z.number().optional(), // ms since epoch
       }))
       .mutation(async ({ input }) => {
         const card = await createBoardCard(input);
@@ -597,7 +612,7 @@ Be concise and specific. If a field has nothing, use an empty array.`,
     markDone: publicProcedure
       .input(z.object({
         id: z.number(),
-        completedBy: z.enum(["Matt", "Lynn"]),
+        completedBy: z.string().min(1).max(128),
       }))
       .mutation(async ({ input }) => {
         await markTaskDone(input.id, input.completedBy);
@@ -608,7 +623,7 @@ Be concise and specific. If a field has nothing, use an empty array.`,
     confirmDone: publicProcedure
       .input(z.object({
         id: z.number(),
-        confirmedBy: z.enum(["Matt", "Lynn"]),
+        confirmedBy: z.string().min(1).max(128),
       }))
       .mutation(async ({ input }) => {
         await confirmTaskDone(input.id, input.confirmedBy);
@@ -619,7 +634,7 @@ Be concise and specific. If a field has nothing, use an empty array.`,
     markSeen: publicProcedure
       .input(z.object({
         id: z.number(),
-        seenBy: z.enum(["Matt", "Lynn"]),
+        seenBy: z.string().min(1).max(128),
       }))
       .mutation(async ({ input }) => {
         await markCardSeen(input.id, input.seenBy);
@@ -746,12 +761,252 @@ Be concise and specific. If a field has nothing, use an empty array.`,
         return { success: true };
       }),
 
-    /** Delete a goal. */
-    delete: publicProcedure
+  /** Delete a goal. */
+  delete: publicProcedure
       .input(z.object({ id: z.number() }))
       .mutation(async ({ input }) => {
         await deleteGoal(input.id);
         return { success: true };
+      }),
+  }),
+
+  /** Person auth — individual logins for owners and employees. */
+  person: router({
+    /** Login with email + password. Returns personId stored in localStorage. */
+    login: publicProcedure
+      .input(z.object({ email: z.string().email(), password: z.string() }))
+      .mutation(async ({ input }) => {
+        const person = await getPersonByEmail(input.email);
+        if (!person || !person.passwordHash) {
+          await bcrypt.compare(input.password, "$2a$10$invalidhashpadding000000000000000000000000000000000000");
+          return { success: false as const, person: null };
+        }
+        if (!person.inviteAccepted) {
+          return { success: false as const, person: null, reason: "invite_pending" as const };
+        }
+        const correct = await bcrypt.compare(input.password, person.passwordHash);
+        if (!correct) return { success: false as const, person: null };
+        return {
+          success: true as const,
+          person: {
+            id: person.id,
+            name: person.name,
+            email: person.email,
+            role: person.role,
+            businessScope: person.businessScope,
+            accountId: person.accountId,
+          },
+        };
+      }),
+
+    /** Get a person by ID (used to restore session on page load). */
+    get: publicProcedure
+      .input(z.object({ id: z.string() }))
+      .query(async ({ input }) => {
+        const person = await getPersonById(input.id);
+        if (!person) return null;
+        return {
+          id: person.id,
+          name: person.name,
+          email: person.email,
+          role: person.role,
+          businessScope: person.businessScope,
+          accountId: person.accountId,
+        };
+      }),
+
+    /** List all persons for an account (owner only). */
+    list: publicProcedure
+      .input(z.object({ accountId: z.number() }))
+      .query(async ({ input }) => {
+        const people = await getPersonsByAccount(input.accountId);
+        return people.map(p => ({
+          id: p.id,
+          name: p.name,
+          email: p.email,
+          role: p.role,
+          businessScope: p.businessScope,
+          inviteAccepted: p.inviteAccepted,
+          createdAt: p.createdAt,
+        }));
+      }),
+
+    /** Invite a person (owner creates the record, sends invite link). */
+    invite: publicProcedure
+      .input(z.object({
+        accountId: z.number(),
+        name: z.string().min(1),
+        email: z.string().email(),
+        role: z.enum(["owner", "coowner", "employee"]),
+        businessScope: z.string(),
+        origin: z.string().url(),
+      }))
+      .mutation(async ({ input }) => {
+        const existing = await getPersonByEmail(input.email);
+        if (existing) return { success: false as const, reason: "already_exists" as const };
+        const token = nanoid(32);
+        const person = await createPerson({
+          accountId: input.accountId,
+          name: input.name,
+          email: input.email,
+          role: input.role,
+          businessScope: input.businessScope,
+          inviteToken: token,
+          inviteAccepted: false,
+          passwordHash: null,
+        });
+        const inviteUrl = `${input.origin}/accept-invite?token=${token}`;
+        // Notify owner of the invite (non-blocking)
+        try {
+          await notifyOwner({
+            title: `Invite sent to ${input.name}`,
+            content: `Invite link: ${inviteUrl}`,
+          });
+        } catch { /* non-blocking */ }
+        return { success: true as const, inviteUrl, personId: person.id };
+      }),
+
+    /** Accept an invite — person sets their own password. */
+    acceptInvite: publicProcedure
+      .input(z.object({ token: z.string(), password: z.string().min(8) }))
+      .mutation(async ({ input }) => {
+        const person = await getPersonByInviteToken(input.token);
+        if (!person) return { success: false as const, reason: "invalid_token" as const };
+        if (person.inviteAccepted) return { success: false as const, reason: "already_accepted" as const };
+        const passwordHash = await bcrypt.hash(input.password, 10);
+        await updatePerson(person.id, { passwordHash, inviteAccepted: true, inviteToken: null });
+        return {
+          success: true as const,
+          person: {
+            id: person.id,
+            name: person.name,
+            email: person.email,
+            role: person.role,
+            businessScope: person.businessScope,
+            accountId: person.accountId,
+          },
+        };
+      }),
+
+    /** Remove a person from the account (owner only). */
+    remove: publicProcedure
+      .input(z.object({ id: z.string() }))
+      .mutation(async ({ input }) => {
+        await deletePerson(input.id);
+        return { success: true };
+      }),
+
+    /** Owner registers themselves as the first person on their account. */
+    register: publicProcedure
+      .input(z.object({
+        accountId: z.number(),
+        name: z.string().min(1),
+        email: z.string().email(),
+        password: z.string().min(8),
+        role: z.enum(["owner", "coowner"]).default("owner"),
+        businessScope: z.string().default("all"),
+      }))
+      .mutation(async ({ input }) => {
+        const existing = await getPersonByEmail(input.email);
+        if (existing) return { success: false as const, reason: "already_exists" as const };
+        const passwordHash = await bcrypt.hash(input.password, 10);
+        const person = await createPerson({
+          accountId: input.accountId,
+          name: input.name,
+          email: input.email,
+          role: input.role,
+          businessScope: input.businessScope,
+          inviteToken: null,
+          inviteAccepted: true,
+          passwordHash,
+        });
+        return {
+          success: true as const,
+          person: {
+            id: person.id,
+            name: person.name,
+            email: person.email,
+            role: person.role,
+            businessScope: person.businessScope,
+            accountId: person.accountId,
+          },
+        };
+      }),
+  }),
+
+  /** KPI categories and entries for employee reporting. */
+  kpi: router({
+    /** List KPI categories for a business. */
+    listCategories: publicProcedure
+      .input(z.object({ accountId: z.number(), businessSlug: z.string().optional() }))
+      .query(async ({ input }) => {
+        return getKpiCategories(input.accountId, input.businessSlug);
+      }),
+
+    /** Create a KPI category. */
+    createCategory: publicProcedure
+      .input(z.object({
+        accountId: z.number(),
+        businessSlug: z.string(),
+        name: z.string().min(1),
+        unit: z.string().optional(),
+        frequency: z.enum(["weekly", "monthly"]).default("weekly"),
+        sortOrder: z.number().default(0),
+      }))
+      .mutation(async ({ input }) => {
+        return createKpiCategory(input);
+      }),
+
+    /** Update a KPI category. */
+    updateCategory: publicProcedure
+      .input(z.object({
+        id: z.number(),
+        name: z.string().min(1).optional(),
+        unit: z.string().optional(),
+        frequency: z.enum(["weekly", "monthly"]).optional(),
+        sortOrder: z.number().optional(),
+        isActive: z.boolean().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { id, ...data } = input;
+        await updateKpiCategory(id, data);
+        return { success: true };
+      }),
+
+    /** Submit a KPI entry for a period. */
+    submitEntry: publicProcedure
+      .input(z.object({
+        accountId: z.number(),
+        categoryId: z.number(),
+        personId: z.string(),
+        periodKey: z.string(), // "YYYY-Www" for weekly, "YYYY-MM" for monthly
+        value: z.number(),
+      }))
+      .mutation(async ({ input }) => {
+        await upsertKpiEntry(input);
+        return { success: true };
+      }),
+
+    /** Get KPI entries for a period. */
+    getEntries: publicProcedure
+      .input(z.object({
+        accountId: z.number(),
+        businessSlug: z.string(),
+        periodKey: z.string(),
+      }))
+      .query(async ({ input }) => {
+        return getKpiEntries(input.accountId, input.businessSlug, input.periodKey);
+      }),
+
+    /** Get monthly totals for a business. */
+    getMonthlyTotals: publicProcedure
+      .input(z.object({
+        accountId: z.number(),
+        businessSlug: z.string(),
+        yearMonth: z.string(), // "YYYY-MM"
+      }))
+      .query(async ({ input }) => {
+        return getKpiMonthlyTotals(input.accountId, input.businessSlug, input.yearMonth);
       }),
   }),
 });

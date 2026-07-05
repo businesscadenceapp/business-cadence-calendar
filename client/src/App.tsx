@@ -16,6 +16,8 @@ import EmployeeSetup from "./pages/EmployeeSetup";
 import WeeklyReports from "@/pages/WeeklyReports";
 import Goals from "@/pages/Goals";
 import AppShell from "@/components/AppShell";
+import AcceptInvite from "@/pages/AcceptInvite";
+import KpiReporting from "@/pages/KpiReporting";
 
 // Calendar app routes — all protected by the password gate, wrapped in AppShell
 function CalendarApp() {
@@ -30,6 +32,7 @@ function CalendarApp() {
           <Route path={"/app/reports"} component={WeeklyReports} />
           <Route path={"/app/schedule"} component={ManageSchedule} />
           <Route path={"/app/employees"} component={EmployeeSetup} />
+          <Route path={"/app/kpi"} component={KpiReporting} />
           <Route path={"/app/settings"} component={Settings} />
           <Route component={NotFound} />
         </Switch>
@@ -47,6 +50,8 @@ function Router() {
       <Route path={"/login"} component={ClientLogin} />
       {/* Onboarding wizard — first-login setup */}
       <Route path={"/onboarding"} component={Onboarding} />
+      {/* Employee invite acceptance — public route */}
+      <Route path={"/accept-invite"} component={AcceptInvite} />
       {/* Password-gated calendar app (all /app/* routes) */}
       <Route path={"/app"} component={CalendarApp} />
       <Route path={"/app/:rest*"} component={CalendarApp} />

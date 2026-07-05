@@ -1,4 +1,4 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, boolean, json, double } from "drizzle-orm/mysql-core";
+import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, boolean, json, double, bigint } from "drizzle-orm/mysql-core";
 
 /**
  * Core user table backing auth flow.
@@ -70,19 +70,21 @@ export type InsertAgendaItem = typeof agendaItems.$inferInsert;
  */
 export const boardCards = mysqlTable("board_cards", {
   id: int("id").autoincrement().primaryKey(),
-  author: mysqlEnum("author", ["Matt", "Lynn"]).notNull(),
+  author: varchar("author", { length: 128 }).notNull(),
   type: mysqlEnum("type", ["update", "issue", "task"]).notNull(),
   business: mysqlEnum("business", ["chiropractic", "crossfit", "realty", "general"]).notNull().default("general"),
   content: text("content").notNull(),
   // Task-specific fields
-  assignedTo: mysqlEnum("assignedTo", ["Matt", "Lynn"]),  // who the task is assigned to
+  assignedTo: varchar("assignedTo", { length: 128 }),       // display name of assignee (legacy)
+  assignedToPersonId: varchar("assignedToPersonId", { length: 64 }), // persons.id (new per-person auth)
+  dueAt: bigint("dueAt", { mode: "number" }),               // optional due date (ms since epoch)
   completedAt: timestamp("completedAt"),                   // when doer marked it done
-  completedBy: mysqlEnum("completedBy", ["Matt", "Lynn"]), // who marked it done
+  completedBy: varchar("completedBy", { length: 128 }),    // who marked it done
   confirmedAt: timestamp("confirmedAt"),                   // when requester confirmed it done
-  confirmedBy: mysqlEnum("confirmedBy", ["Matt", "Lynn"]), // who confirmed it done
+  confirmedBy: varchar("confirmedBy", { length: 128 }),    // who confirmed it done
   // Legacy seen/archive fields (updates + issues)
   seenAt: timestamp("seenAt"),
-  seenBy: mysqlEnum("seenBy", ["Matt", "Lynn"]),
+  seenBy: varchar("seenBy", { length: 128 }),
   archivedAt: timestamp("archivedAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
@@ -318,3 +320,67 @@ export const goals = mysqlTable("goals", {
 
 export type Goal = typeof goals.$inferSelect;
 export type InsertGoal = typeof goals.$inferInsert;
+
+/**
+ * Persons — individual user accounts for per-person authentication.
+ * role: "owner" = business owner (full access to all their businesses)
+ *       "coowner" = co-owner (full access to shared businesses)
+ *       "employee" = employee (scoped to one business, board + KPIs only)
+ * businessScope: JSON array of business slugs this person can access
+ * inviteToken: one-time token sent via email for self-signup
+ * inviteAccepted: true once the person has set their password
+ */
+export const persons = mysqlTable("persons", {
+  id: varchar("id", { length: 64 }).primaryKey(), // nanoid
+  accountId: int("accountId").notNull(),           // references app_users.id (the business account)
+  name: varchar("name", { length: 128 }).notNull(),
+  email: varchar("email", { length: 320 }).notNull().unique(),
+  role: mysqlEnum("role", ["owner", "coowner", "employee"]).notNull().default("employee"),
+  businessScope: varchar("businessScope", { length: 1024 }).notNull().default("[]"), // JSON: string[] of business slugs
+  passwordHash: varchar("passwordHash", { length: 255 }),
+  inviteToken: varchar("inviteToken", { length: 128 }),
+  inviteAccepted: boolean("inviteAccepted").default(false).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Person = typeof persons.$inferSelect;
+export type InsertPerson = typeof persons.$inferInsert;
+
+/**
+ * KPI Categories — configurable KPI metrics per business.
+ * frequency: "weekly" = submitted each week, "monthly" = submitted each month
+ * isActive: soft-delete flag
+ */
+export const kpiCategories = mysqlTable("kpi_categories", {
+  id: int("id").autoincrement().primaryKey(),
+  accountId: int("accountId").notNull(),
+  businessSlug: varchar("businessSlug", { length: 64 }).notNull(), // e.g. "chiropractic"
+  name: varchar("name", { length: 256 }).notNull(),
+  unit: varchar("unit", { length: 32 }).default("#").notNull(), // "#", "$", "%"
+  frequency: mysqlEnum("frequency", ["weekly", "monthly"]).default("weekly").notNull(),
+  sortOrder: int("sortOrder").default(0).notNull(),
+  isActive: boolean("isActive").default(true).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type KpiCategory = typeof kpiCategories.$inferSelect;
+export type InsertKpiCategory = typeof kpiCategories.$inferInsert;
+
+/**
+ * KPI Entries — individual submissions per person per period.
+ * periodKey: "YYYY-Www" for weekly (e.g. "2026-W27") or "YYYY-MM" for monthly
+ */
+export const kpiEntries = mysqlTable("kpi_entries", {
+  id: int("id").autoincrement().primaryKey(),
+  categoryId: int("categoryId").notNull(),
+  personId: varchar("personId", { length: 64 }).notNull(), // references persons.id
+  accountId: int("accountId").notNull(),
+  value: double("value").notNull(),
+  periodKey: varchar("periodKey", { length: 10 }).notNull(), // "YYYY-Www" or "YYYY-MM"
+  submittedAt: timestamp("submittedAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type KpiEntry = typeof kpiEntries.$inferSelect;
+export type InsertKpiEntry = typeof kpiEntries.$inferInsert;

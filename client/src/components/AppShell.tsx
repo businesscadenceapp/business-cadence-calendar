@@ -1,10 +1,11 @@
 import { useState, createContext, useContext, ReactNode, useRef, useEffect } from "react";
 import { Link, useLocation } from "wouter";
+import { usePerson } from "@/contexts/PersonContext";
+import PersonLoginModal from "@/components/PersonLoginModal";
 
-// ─── Identity Context ─────────────────────────────────────────────────────────
+// ─── Identity Context (legacy shim — now backed by PersonContext) ─────────────
 
-type Author = "Matt" | "Lynn";
-const IDENTITY_KEY = "bcc_identity";
+type Author = string; // now any person's name
 
 interface IdentityCtx {
   currentUser: Author | null;
@@ -21,11 +22,19 @@ export function useIdentity() {
 }
 
 // ─── Author colors ────────────────────────────────────────────────────────────
-
-const AUTHOR_COLORS: Record<Author, { bg: string; text: string; border: string; dot: string }> = {
-  Matt: { bg: "#DBEAFE", text: "#1D4ED8", border: "#93C5FD", dot: "#2563EB" },
-  Lynn: { bg: "#FFE4E6", text: "#BE123C", border: "#FECDD3", dot: "#E11D48" },
-};
+// Generate a consistent color from a name string
+function nameToColor(name: string): { bg: string; text: string; border: string; dot: string } {
+  const colors = [
+    { bg: "#DBEAFE", text: "#1D4ED8", border: "#93C5FD", dot: "#2563EB" },
+    { bg: "#FFE4E6", text: "#BE123C", border: "#FECDD3", dot: "#E11D48" },
+    { bg: "#D1FAE5", text: "#065F46", border: "#6EE7B7", dot: "#059669" },
+    { bg: "#FEF3C7", text: "#92400E", border: "#FCD34D", dot: "#D97706" },
+    { bg: "#EDE9FE", text: "#5B21B6", border: "#C4B5FD", dot: "#7C3AED" },
+  ];
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  return colors[Math.abs(hash) % colors.length];
+}
 
 // ─── Nav items ────────────────────────────────────────────────────────────────
 
@@ -39,6 +48,7 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { path: "/app/board",    label: "Board",    icon: "📋", activeColor: "#2563EB" },
   { path: "/app/goals",    label: "Goals",    icon: "🎯", activeColor: "#7C3AED" },
+  { path: "/app/kpi",      label: "KPIs",     icon: "📈", activeColor: "#059669" },
   { path: "/app/reports",  label: "Reports",  icon: "📊", activeColor: "#0D9488" },
   { path: "/app/calendar", label: "Calendar", icon: "📅", activeColor: "#0EA5E9" },
   { path: "/app/settings", label: "Settings", icon: "⚙️", activeColor: "#64748B" },
@@ -90,15 +100,19 @@ interface AppShellProps {
 
 export default function AppShell({ children }: AppShellProps) {
   const [location] = useLocation();
-  const [currentUser, setCurrentUserState] = useState<Author | null>(() => {
-    const saved = localStorage.getItem(IDENTITY_KEY);
-    return saved === "Matt" || saved === "Lynn" ? saved : null;
-  });
+  const { person, setPerson } = usePerson();
 
-  const setCurrentUser = (u: Author) => {
-    localStorage.setItem(IDENTITY_KEY, u);
-    setCurrentUserState(u);
-  };
+  // Derive currentUser from person session
+  const currentUser = person?.name ?? null;
+  const setCurrentUser = (_u: Author) => {}; // no-op: identity comes from login
+
+  // Get accountId from localStorage (set during business account login)
+  const accountId = (() => {
+    try { return parseInt(localStorage.getItem("bcc_account_id") ?? "0", 10) || 0; } catch { return 0; }
+  })();
+
+  // Show person login modal if no person session exists (but business account is logged in)
+  const showPersonModal = !person && accountId > 0;
 
   // Derive active path (normalize /app → /app/board)
   const activePath = location === "/app" ? "/app/board" : location;
@@ -168,38 +182,39 @@ export default function AppShell({ children }: AppShellProps) {
             })}
           </nav>
 
-          {/* Identity selector */}
+          {/* Logged-in person display */}
           <div
             className="px-4 py-4 flex-shrink-0"
             style={{ borderTop: "1px solid #F1F0ED" }}
           >
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2.5 px-1" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-              I am
-            </p>
-            <div className="flex gap-2">
-              {(["Matt", "Lynn"] as Author[]).map(a => {
-                const c = AUTHOR_COLORS[a];
-                const isActive = currentUser === a;
-                return (
-                  <button
-                    key={a}
-                    onClick={() => setCurrentUser(a)}
-                    className="flex-1 py-2 rounded-xl text-[12px] font-bold transition-all active:scale-[0.97]"
-                    style={{
-                      backgroundColor: isActive ? c.bg : "#F8FAFC",
-                      border: `2px solid ${isActive ? c.border : "#E2E8F0"}`,
-                      color: isActive ? c.text : "#94A3B8",
-                      fontFamily: "'Space Grotesk', sans-serif",
-                    }}
-                  >
-                    {a}
-                  </button>
-                );
-              })}
-            </div>
-            {!currentUser && (
-              <p className="text-[10px] text-amber-600 mt-2 text-center" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-                👆 Select to post
+            {person ? (
+              <div className="flex items-center gap-2.5">
+                <div
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-[13px] font-bold flex-shrink-0"
+                  style={{
+                    backgroundColor: nameToColor(person.name).dot,
+                    color: "white",
+                  }}
+                >
+                  {person.name.charAt(0).toUpperCase()}
+                </div>
+                <div className="min-w-0">
+                  <p className="text-[12px] font-bold text-[#1E3A5F] truncate" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+                    {person.name}
+                  </p>
+                  <p className="text-[10px] text-slate-400 truncate capitalize">{person.role === "coowner" ? "Co-owner" : person.role}</p>
+                </div>
+                <button
+                  onClick={() => setPerson(null)}
+                  className="ml-auto text-[10px] text-slate-400 hover:text-red-500 transition-colors flex-shrink-0"
+                  title="Sign out of personal account"
+                >
+                  ✕
+                </button>
+              </div>
+            ) : (
+              <p className="text-[10px] text-amber-600 text-center" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+                ⚠️ No personal account
               </p>
             )}
           </div>
@@ -253,33 +268,27 @@ export default function AppShell({ children }: AppShellProps) {
                 </Link>
               );
             })}
-            {/* Mobile identity pill — compact, at the right edge */}
+            {/* Mobile person avatar */}
             <div className="flex flex-col items-center justify-center px-2 gap-0.5">
-              <div className="flex gap-1">
-                {(["Matt", "Lynn"] as Author[]).map(a => {
-                  const c = AUTHOR_COLORS[a];
-                  const isMe = currentUser === a;
-                  return (
-                    <button
-                      key={a}
-                      onClick={() => setCurrentUser(a)}
-                      className="w-7 h-7 rounded-full text-[10px] font-bold transition-all active:scale-90"
-                      style={{
-                        backgroundColor: isMe ? c.dot : "#F1F5F9",
-                        color: isMe ? "white" : "#94A3B8",
-                        border: `2px solid ${isMe ? c.dot : "#E2E8F0"}`,
-                      }}
-                    >
-                      {a[0]}
-                    </button>
-                  );
-                })}
-              </div>
-              <span className="text-[8px] text-slate-400" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Me</span>
+              {person ? (
+                <div
+                  className="w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold"
+                  style={{ backgroundColor: nameToColor(person.name).dot, color: "white" }}
+                >
+                  {person.name.charAt(0).toUpperCase()}
+                </div>
+              ) : (
+                <div className="w-7 h-7 rounded-full flex items-center justify-center text-[11px] bg-amber-100 text-amber-600 font-bold">?</div>
+              )}
+              <span className="text-[8px] text-slate-400" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+                {person ? person.name.split(" ")[0] : "Login"}
+              </span>
             </div>
           </nav>
         </div>
       </div>
+      {/* Person login modal — shown when no person session exists */}
+      {showPersonModal && <PersonLoginModal accountId={accountId} />}
     </IdentityContext.Provider>
   );
 }

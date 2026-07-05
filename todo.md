@@ -284,3 +284,59 @@
 - [x] Wire all /app/* routes through AppShell in App.tsx
 - [x] Identity selector (I am Matt/Lynn) moved to AppShell sidebar bottom
 - [x] Save checkpoint
+
+## Per-Person Auth + Employee Layer (Phase 15)
+
+### DB Schema
+- [x] Add `persons` table: id, accountId, name, email, role (owner|coowner|employee), businessScope, hashedPassword, inviteToken, inviteAccepted, createdAt
+- [x] Update `board_cards` table: add `dueAt` (bigint timestamp, nullable), `assignedToPersonId` (text, nullable)
+- [x] Add `kpi_categories` table: id, accountId, businessId, name, unit, frequency (weekly|monthly), sortOrder, isActive
+- [x] Add `kpi_entries` table: id, categoryId, personId, accountId, value, periodStart (YYYY-Www or YYYY-MM), submittedAt
+- [x] Push DB migration
+
+### Auth Overhaul
+- [ ] Owner registration: `/register` page — name, email, password, business name → creates person record + first business
+- [ ] Replace shared business login with per-person email + password login
+- [ ] Co-owner invite: owner sends invite link to co-owner email → co-owner sets own password → gets full access
+- [ ] Employee invite: owner adds employee (name + email + business) → employee receives email invite link → sets own password
+- [ ] Session stores personId + role + accountId + businessScope
+- [ ] Remove "I am Matt / Lynn" identity selector from AppShell entirely
+- [ ] Update all board card authorship to use session personId (not localStorage selector)
+- [ ] Seed owner account for Matt with email + password for testing
+
+### Scoped Command Board
+- [ ] Board shows cards scoped to logged-in person's business(es)
+- [ ] Owners see all cards for their businesses
+- [ ] Employees see only cards assigned to them or posted by them in their business
+- [ ] Task assignment dropdown shows real names from persons table (co-owner + employees at that business)
+- [ ] Card author chip shows real name from session
+- [ ] Employees can post Updates (open communication back to owners)
+- [ ] Employees cannot post Issues or Tasks (owners only)
+
+### Task Due Dates
+- [x] Add optional "Due by" date/time picker to task creation form
+- [x] Show due date badge on task cards (green if >48h away, amber if <48h, red if overdue)
+- [ ] Overdue tasks get a red border accent (future)
+
+### Notifications (Email)
+- [ ] Email notification to assignee when a task is posted to them
+- [ ] Scheduled job: email reminder to assignee 3 days before due date (if task still open)
+- [ ] Scheduled job: email reminder to assignee 2 days before due date (if task still open)
+- [ ] Email notification to task creator when assignee marks task done
+- [ ] Email notification to assignee when creator confirms task complete
+
+### Employee KPI Reporting
+- [x] Owner configures KPI categories per business in Settings (name, unit, frequency)
+- [ ] Seed default categories for chiro: Adjustments/week, New Patients/week, Reactivated Patients/month (future)
+- [x] Employee KPI submission page: simple number input per category, submit weekly
+- [x] Running monthly total auto-calculated per category (sum of weekly submissions in current month)
+- [x] Owner KPI dashboard: table of all employees' submissions per category with monthly totals
+- [x] KPI nav item in AppShell for both owners and employees
+
+### UI Cleanup
+- [ ] Remove identity selector from AppShell sidebar
+- [ ] Remove identity selector from AppShell mobile tab bar
+- [ ] AppShell shows logged-in person's name + role in sidebar bottom
+- [ ] Employee AppShell nav: Board + KPIs only (no Goals, Calendar, Schedule, Settings) (future)
+- [x] Owner AppShell nav: Board, Goals, Reports, KPIs, Calendar, Schedule, Settings
+- [ ] Save checkpoint
