@@ -352,3 +352,14 @@
 - [x] AppShell: add Sign Out button that clears PersonContext and redirects to /login
 - [x] Board.tsx: scope derived from person.businessScope (no manual selector)
 - [x] Save checkpoint
+
+## Complete Auth Flow (Phase 17)
+
+- [x] Fix owner self-registration: "Create your account" on /login creates a person record with role=owner, accountId auto-created if accountId=0
+- [x] Server: person.register creates a new app_users row if accountId=0 (owner self-signup)
+- [x] Build employee invite panel in Settings: owner enters employee name + email + business scope, clicks "Send Invite"
+- [x] Server: person.invite procedure — creates person record with inviteToken, returns invite URL
+- [x] Server: person.lookupInvite — returns name/validity for the accept-invite page without consuming the token
+- [x] Build /accept-invite page: reads ?token= from URL, shows person's name, set-password form, calls person.acceptInvite, logs them in
+- [x] Gate AppShell nav: employees see Board + KPIs only; owners/co-owners see full nav
+- [x] Run tests and save checkpoint

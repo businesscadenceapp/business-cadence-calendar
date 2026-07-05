@@ -33,13 +33,18 @@ interface NavItem {
   activeColor: string;
 }
 
-const NAV_ITEMS: NavItem[] = [
+const OWNER_NAV: NavItem[] = [
   { path: "/app/board",    label: "Board",    icon: "📋", activeColor: "#2563EB" },
   { path: "/app/goals",    label: "Goals",    icon: "🎯", activeColor: "#7C3AED" },
   { path: "/app/kpi",      label: "KPIs",     icon: "📈", activeColor: "#059669" },
   { path: "/app/reports",  label: "Reports",  icon: "📊", activeColor: "#0D9488" },
   { path: "/app/calendar", label: "Calendar", icon: "📅", activeColor: "#0EA5E9" },
   { path: "/app/settings", label: "Settings", icon: "⚙️", activeColor: "#64748B" },
+];
+
+const EMPLOYEE_NAV: NavItem[] = [
+  { path: "/app/board",    label: "Board",    icon: "📋", activeColor: "#2563EB" },
+  { path: "/app/kpi",      label: "KPIs",     icon: "📈", activeColor: "#059669" },
 ];
 
 // ─── Page Transition ─────────────────────────────────────────────────────────
@@ -90,6 +95,9 @@ export default function AppShell({ children }: AppShellProps) {
   const { person, setPerson } = usePerson();
 
   const activePath = location === "/app" ? "/app/board" : location;
+
+  // Employees only see Board + KPIs; owners/co-owners see full nav
+  const NAV_ITEMS = person?.role === "employee" ? EMPLOYEE_NAV : OWNER_NAV;
 
   const handleSignOut = () => {
     setPerson(null);

@@ -488,6 +488,11 @@ export default function Settings() {
         </div>
       </div>
 
+      {/* Employee Management — owners only */}
+      {(person?.role === "owner" || person?.role === "coowner") && (
+        <EmployeeInvitePanel accountId={accountId} />
+      )}
+
       {/* Password confirmation modal */}
       {pendingSave && (
         <PasswordModal
@@ -496,6 +501,203 @@ export default function Settings() {
           isPending={saveTemplate.isPending}
         />
       )}
+    </div>
+  );
+}
+
+// ─── Employee Invite Panel ────────────────────────────────────────────────────
+
+function EmployeeInvitePanel({ accountId }: { accountId: number }) {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [scope, setScope] = useState("chiro");
+  const [sending, setSending] = useState(false);
+  const [inviteLink, setInviteLink] = useState<string | null>(null);
+
+  const { data: membersData, refetch: refetchMembers } = trpc.person.list.useQuery(
+    { accountId },
+    { enabled: accountId > 0 }
+  );
+  type PersonRow = { id: string; name: string; email: string; role: string; businessScope: string; inviteAccepted: boolean; createdAt: Date };
+
+  const inviteMutation = trpc.person.invite.useMutation({
+    onSuccess: (data) => {
+      setSending(false);
+      if (data.success) {
+        setInviteLink(data.inviteUrl);
+        setName("");
+        setEmail("");
+        toast.success(`Invite link created for ${email}`);
+        refetchMembers();
+      } else {
+        toast.error("Could not create invite. Check that the email isn't already registered.");
+      }
+    },
+    onError: () => {
+      setSending(false);
+      toast.error("Failed to send invite. Please try again.");
+    },
+  });
+
+  const handleInvite = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name.trim() || !email.trim()) return;
+    setSending(true);
+    setInviteLink(null);
+    inviteMutation.mutate({
+      accountId,
+      name: name.trim(),
+      email: email.trim(),
+      role: "employee",
+      businessScope: scope,
+      origin: window.location.origin,
+    });
+  };
+
+  const members: PersonRow[] = Array.isArray(membersData) ? membersData : [];
+
+  const roleLabel = (r: string) =>
+    r === "owner" ? "Owner" : r === "coowner" ? "Co-owner" : "Employee";
+
+  const inputClass = "w-full rounded-xl px-4 py-2.5 text-sm text-[#1A1A2E] placeholder-[#94A3B8] focus:outline-none transition-all";
+  const inputStyle = { backgroundColor: "#F8F7F4", border: "1.5px solid #E2E0DB" };
+
+  return (
+    <div className="mt-8">
+      <div
+        className="rounded-2xl p-6"
+        style={{ backgroundColor: "#FFFFFF", border: "1px solid #E2E0DB" }}
+      >
+        <h2 className="text-[#1E3A5F] font-bold text-[16px] mb-1" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+          👥 Team Members
+        </h2>
+        <p className="text-[#64748B] text-[12px] mb-6">
+          Add employees and send them an invite link to create their account.
+        </p>
+
+        {/* Current members */}
+        {members.length > 0 && (
+          <div className="mb-6">
+            <p className="text-[10px] uppercase tracking-widest text-[#94A3B8] mb-3">Current Members</p>
+            <div className="flex flex-col gap-2">
+              {members.map(m => (
+                <div
+                  key={m.id}
+                  className="flex items-center gap-3 px-4 py-2.5 rounded-xl"
+                  style={{ backgroundColor: "#F8F7F4", border: "1px solid #E2E0DB" }}
+                >
+                  <div
+                    className="w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold text-white flex-shrink-0"
+                    style={{ backgroundColor: m.role === "owner" ? "#2563EB" : m.role === "coowner" ? "#E11D48" : "#059669" }}
+                  >
+                    {m.name.charAt(0).toUpperCase()}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[13px] font-semibold text-[#1E3A5F] truncate" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>{m.name}</p>
+                    <p className="text-[11px] text-[#64748B] truncate">{m.email}</p>
+                  </div>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <span
+                      className="text-[10px] px-2 py-0.5 rounded-full font-semibold"
+                      style={{
+                        backgroundColor: m.role === "owner" ? "#DBEAFE" : m.role === "coowner" ? "#FFE4E6" : "#D1FAE5",
+                        color: m.role === "owner" ? "#1D4ED8" : m.role === "coowner" ? "#BE123C" : "#065F46",
+                      }}
+                    >
+                      {roleLabel(m.role)}
+                    </span>
+                    {!m.inviteAccepted && (
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 font-semibold">
+                        Pending
+                      </span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Invite form */}
+        <p className="text-[10px] uppercase tracking-widest text-[#94A3B8] mb-3">Invite New Employee</p>
+        <form onSubmit={handleInvite} className="flex flex-col gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[11px] font-semibold text-[#1E3A5F]">Name</label>
+              <input
+                type="text"
+                value={name}
+                onChange={e => setName(e.target.value)}
+                placeholder="e.g. Colleen"
+                className={inputClass}
+                style={inputStyle}
+                onFocus={e => (e.target.style.borderColor = "#0D9488")}
+                onBlur={e => (e.target.style.borderColor = "#E2E0DB")}
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[11px] font-semibold text-[#1E3A5F]">Email</label>
+              <input
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                placeholder="employee@email.com"
+                className={inputClass}
+                style={inputStyle}
+                onFocus={e => (e.target.style.borderColor = "#0D9488")}
+                onBlur={e => (e.target.style.borderColor = "#E2E0DB")}
+              />
+            </div>
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-[11px] font-semibold text-[#1E3A5F]">Business Access</label>
+            <select
+              value={scope}
+              onChange={e => setScope(e.target.value)}
+              className={inputClass}
+              style={{ ...inputStyle, cursor: "pointer" }}
+            >
+              <option value="chiro">New Beginnings Chiropractic only</option>
+              <option value="crossfit">Evolved CrossFit only</option>
+              <option value="realty">Realty only</option>
+              <option value="all">All businesses</option>
+            </select>
+          </div>
+          <button
+            type="submit"
+            disabled={sending || !name.trim() || !email.trim()}
+            className="w-full py-3 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-40"
+            style={{ backgroundColor: "#1E3A5F", boxShadow: "0 4px 16px rgba(30,58,95,0.20)" }}
+          >
+            {sending ? "Creating invite…" : "Send Invite Link →"}
+          </button>
+        </form>
+
+        {/* Invite link display */}
+        {inviteLink && (
+          <div
+            className="mt-4 p-4 rounded-xl"
+            style={{ backgroundColor: "#F0FDF4", border: "1px solid #86EFAC" }}
+          >
+            <p className="text-[12px] font-semibold text-[#065F46] mb-2">✓ Invite link created!</p>
+            <p className="text-[11px] text-[#64748B] mb-2">Copy and send this link to your employee:</p>
+            <div className="flex items-center gap-2">
+              <input
+                readOnly
+                value={inviteLink}
+                className="flex-1 text-[11px] px-3 py-2 rounded-lg bg-white border border-[#86EFAC] text-[#1E3A5F] font-mono"
+              />
+              <button
+                onClick={() => { navigator.clipboard.writeText(inviteLink); toast.success("Copied!"); }}
+                className="px-3 py-2 rounded-lg text-[11px] font-bold text-white flex-shrink-0"
+                style={{ backgroundColor: "#059669" }}
+              >
+                Copy
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

@@ -4,7 +4,7 @@
  * Employee sets their own password and is immediately logged in.
  */
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { usePerson } from "@/contexts/PersonContext";
@@ -16,30 +16,36 @@ export default function AcceptInvite() {
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [tokenError, setTokenError] = useState(false);
 
   // Get token from URL
   const token = new URLSearchParams(window.location.search).get("token") ?? "";
 
-  useEffect(() => {
-    if (!token) setTokenError(true);
-  }, [token]);
+  // Look up invite to show person's name
+  const { data: inviteData, isLoading: tokenLoading } = trpc.person.lookupInvite.useQuery(
+    { token },
+    { enabled: !!token, retry: false }
+  );
+
+  const tokenError = !token || (!tokenLoading && (!inviteData || !inviteData.valid));
 
   const accept = trpc.person.acceptInvite.useMutation({
     onSuccess: (data) => {
       setIsLoading(false);
       if (data.success && data.person) {
         setPerson(data.person as any);
+        try {
+          localStorage.setItem("bcc_account_id", String(data.person.accountId));
+          localStorage.setItem("bcc_auth_v1", "granted");
+        } catch { /* ignore */ }
         toast.success(`Welcome, ${data.person.name}! Your account is ready.`);
         navigate("/app/board");
       } else {
         const reason = (data as any).reason;
         if (reason === "already_accepted") {
-          toast.error("This invite has already been used. Please log in instead.");
+          toast.error("This invite has already been used. Please sign in instead.");
           navigate("/login");
         } else {
           toast.error("Invalid or expired invite link.");
-          setTokenError(true);
         }
       }
     },
@@ -106,7 +112,9 @@ export default function AcceptInvite() {
         ) : (
           <>
             <div className="text-center mb-8">
-              <h1 className="text-3xl font-bold text-[#1E3A5F] mb-2">You're Invited!</h1>
+              <h1 className="text-3xl font-bold text-[#1E3A5F] mb-2">
+                {inviteData?.name ? `Welcome, ${inviteData.name}!` : "You're Invited!"}
+              </h1>
               <p className="text-[#64748B] text-sm">
                 Set your password to activate your BusinessCadence account.
               </p>

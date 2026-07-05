@@ -815,6 +815,16 @@ Be concise and specific. If a field has nothing, use an empty array.`,
         };
       }),
 
+    /** Look up an invite token — returns name + validity without consuming the token. */
+    lookupInvite: publicProcedure
+      .input(z.object({ token: z.string() }))
+      .query(async ({ input }) => {
+        const person = await getPersonByInviteToken(input.token);
+        if (!person) return { valid: false as const, reason: "not_found" as const, name: null };
+        if (person.inviteAccepted) return { valid: false as const, reason: "already_accepted" as const, name: person.name };
+        return { valid: true as const, name: person.name, email: person.email, role: person.role };
+      }),
+
     /** List all persons for an account (owner only). */
     list: publicProcedure
       .input(z.object({ accountId: z.number() }))
@@ -896,7 +906,9 @@ Be concise and specific. If a field has nothing, use an empty array.`,
         return { success: true };
       }),
 
-    /** Owner registers themselves as the first person on their account. */
+    /** Owner registers themselves as the first person on their account.
+     * If accountId=0, a new app_users row is auto-created for them.
+     */
     register: publicProcedure
       .input(z.object({
         accountId: z.number(),
@@ -910,8 +922,26 @@ Be concise and specific. If a field has nothing, use an empty array.`,
         const existing = await getPersonByEmail(input.email);
         if (existing) return { success: false as const, reason: "already_exists" as const };
         const passwordHash = await bcrypt.hash(input.password, 10);
+
+        // Auto-create an app_users account row if this is a brand-new owner signup
+        let resolvedAccountId = input.accountId;
+        if (resolvedAccountId === 0) {
+          const db = await getDb();
+          if (!db) throw new Error("Database not available");
+          // Use email prefix as username (unique, lowercase)
+          const username = input.email.toLowerCase().replace(/[^a-z0-9]/g, "_").slice(0, 60);
+          const acctHash = await bcrypt.hash(input.password, 10);
+          const result = await db.insert(appUsers).values({
+            username,
+            passwordHash: acctHash,
+            scope: "owner",
+            displayName: input.name,
+          });
+          resolvedAccountId = (result as any).insertId ?? 0;
+        }
+
         const person = await createPerson({
-          accountId: input.accountId,
+          accountId: resolvedAccountId,
           name: input.name,
           email: input.email,
           role: input.role,
