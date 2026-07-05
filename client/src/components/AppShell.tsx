@@ -2,6 +2,7 @@ import { useState, createContext, useContext, ReactNode, useRef, useEffect } fro
 import { Link, useLocation } from "wouter";
 import { usePerson } from "@/contexts/PersonContext";
 import { clearAuth } from "@/components/PasswordGate";
+import BrandLogo from "@/components/BrandLogo";
 
 // ─── Identity Context (shim for Board.tsx useIdentity hook) ──────────────────
 // currentUser is now always the logged-in person's name from PersonContext.
@@ -124,36 +125,11 @@ export default function AppShell({ children }: AppShellProps) {
         >
           {/* Brand */}
           <div
-            className="flex items-center gap-3 px-5 py-4 flex-shrink-0"
+            className="flex items-center px-4 py-3 flex-shrink-0"
             style={{ borderBottom: "1px solid #F1F0ED" }}
           >
-            {/* Logo icon — matches BrandLogo: lavender pill + navy double-note */}
-            <div
-              className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
-              style={{
-                background: "#EEF2FF",
-                boxShadow: "0 2px 8px rgba(30,58,95,0.12)",
-              }}
-            >
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                {/* Beam */}
-                <rect x="7.5" y="4" width="10" height="2.5" rx="1" fill="#1E3A5F" transform="rotate(-8, 7.5, 4)" />
-                {/* Left stem */}
-                <rect x="7.5" y="5.5" width="2" height="12" rx="0.5" fill="#1E3A5F" />
-                {/* Right stem */}
-                <rect x="15.5" y="3.5" width="2" height="12" rx="0.5" fill="#1E3A5F" />
-                {/* Left note head */}
-                <ellipse cx="6.5" cy="18.5" rx="3.2" ry="2.4" fill="#1E3A5F" transform="rotate(-15, 6.5, 18.5)" />
-                {/* Right note head */}
-                <ellipse cx="14.5" cy="16.5" rx="3.2" ry="2.4" fill="#1E3A5F" transform="rotate(-15, 14.5, 16.5)" />
-              </svg>
-            </div>
-            <div>
-              <p className="text-[13px] font-bold text-[#1E3A5F] leading-tight" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-                BusinessCadence
-              </p>
-              <p className="text-[10px] text-slate-400">Co-owner OS</p>
-            </div>
+            {/* Use the same BrandLogo as the marketing site */}
+            <BrandLogo size="sm" />
           </div>
 
           {/* Nav items */}
