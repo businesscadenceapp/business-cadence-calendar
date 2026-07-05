@@ -369,8 +369,12 @@ export default function Settings() {
     });
   };
 
-  const selectedBizInfo = BUSINESSES_LIST.find((b) => b.key === selectedBiz)!;
-  const selectedMtInfo = MEETING_LIST.find((m) => m.key === selectedMt)!;
+  // Derive selectedBizInfo from the DB-driven visibleBusinesses list (not the hardcoded BUSINESSES_LIST)
+  const selectedBizInfo = visibleBusinesses.find((b) => b.key === effectiveSelectedBiz)
+    ?? visibleBusinesses[0]
+    ?? { key: "", bizKey: "", label: "Business", color: "#E2E0DB", icon: "🏢" };
+  const selectedMtInfo = MEETING_LIST.find((m) => m.key === selectedMt)
+    ?? MEETING_LIST[0];
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: "#F8F7F4", fontFamily: "'Inter', sans-serif" }}>
@@ -424,7 +428,7 @@ export default function Settings() {
                   className="text-[12px] font-semibold"
                   style={{                   color: selectedBiz === biz.key ? "#1E3A5F" : "#64748B", fontFamily: "'Space Grotesk', sans-serif" }}
                 >
-                  {biz.bizKey === "chiro" ? "Chiropractic" : biz.bizKey === "crossfit" ? "CrossFit" : "Realty"}
+                  {biz.label}
                 </span>
               </button>
             ))}
