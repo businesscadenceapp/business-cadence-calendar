@@ -127,14 +127,26 @@ export default function AppShell({ children }: AppShellProps) {
             className="flex items-center gap-3 px-5 py-4 flex-shrink-0"
             style={{ borderBottom: "1px solid #F1F0ED" }}
           >
+            {/* Logo icon — matches BrandLogo: lavender pill + navy double-note */}
             <div
-              className="w-9 h-9 rounded-xl flex items-center justify-center text-lg flex-shrink-0"
+              className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
               style={{
-                background: "linear-gradient(135deg, #2563EB 0%, #E11D48 100%)",
-                boxShadow: "0 2px 8px rgba(37,99,235,0.25)",
+                background: "#EEF2FF",
+                boxShadow: "0 2px 8px rgba(30,58,95,0.12)",
               }}
             >
-              🎵
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                {/* Beam */}
+                <rect x="7.5" y="4" width="10" height="2.5" rx="1" fill="#1E3A5F" transform="rotate(-8, 7.5, 4)" />
+                {/* Left stem */}
+                <rect x="7.5" y="5.5" width="2" height="12" rx="0.5" fill="#1E3A5F" />
+                {/* Right stem */}
+                <rect x="15.5" y="3.5" width="2" height="12" rx="0.5" fill="#1E3A5F" />
+                {/* Left note head */}
+                <ellipse cx="6.5" cy="18.5" rx="3.2" ry="2.4" fill="#1E3A5F" transform="rotate(-15, 6.5, 18.5)" />
+                {/* Right note head */}
+                <ellipse cx="14.5" cy="16.5" rx="3.2" ry="2.4" fill="#1E3A5F" transform="rotate(-15, 14.5, 16.5)" />
+              </svg>
             </div>
             <div>
               <p className="text-[13px] font-bold text-[#1E3A5F] leading-tight" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>

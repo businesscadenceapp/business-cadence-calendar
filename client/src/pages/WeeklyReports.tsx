@@ -7,6 +7,7 @@ import { useState, useMemo } from "react";
 import { Link } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
+import { usePerson } from "@/contexts/PersonContext";
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
@@ -309,7 +310,9 @@ function EmployeeCard({
 // ── Main Page ─────────────────────────────────────────────────────────────────
 
 export default function WeeklyReports() {
-  const accountId = parseInt(localStorage.getItem("bcc_account_id") ?? "0", 10);
+  const { person } = usePerson();
+  // Prefer PersonContext accountId; fall back to legacy localStorage key for backward compat
+  const accountId = person?.accountId ?? parseInt(localStorage.getItem("bcc_account_id") ?? "0", 10);
   const today = useMemo(() => new Date(), []);
   const currentWeekKey = useMemo(() => getWeekKey(today), [today]);
   const [selectedWeek, setSelectedWeek] = useState(currentWeekKey);
