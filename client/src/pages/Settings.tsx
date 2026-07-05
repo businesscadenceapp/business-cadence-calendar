@@ -9,7 +9,8 @@ import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { MEETING_TYPES, BUSINESSES } from "@/lib/calendarData";
-import { getBusinessSelection } from "./ClientLogin";
+import { usePerson } from "@/contexts/PersonContext";
+import { personScopeToBusinessSelection } from "@/lib/businessScope";
 import type { MeetingType, BusinessKey } from "@/lib/calendarData";
 
 // Map calendarData BusinessKey to the DB business enum
@@ -316,10 +317,11 @@ const SCOPE_DB_BUSINESSES: Record<string, DbBusiness[]> = {
 
 // ─── Main Settings Page ───────────────────────────────────────────────────────
 export default function Settings() {
-  const scope = getBusinessSelection();
+  const { person } = usePerson();
+  const scope = personScopeToBusinessSelection(person?.businessScope);
   const allowedDbBiz = SCOPE_DB_BUSINESSES[scope] ?? ["chiropractic", "crossfit", "realty"];
   const visibleBusinesses = BUSINESSES_LIST.filter(b => allowedDbBiz.includes(b.key));
-  const accountId = Number(localStorage.getItem("bcc_account_id") ?? "0");
+  const accountId = person?.accountId ?? Number(localStorage.getItem("bcc_account_id") ?? "0");
 
   const [selectedBiz, setSelectedBiz] = useState<DbBusiness>(
     allowedDbBiz[0] ?? "chiropractic"

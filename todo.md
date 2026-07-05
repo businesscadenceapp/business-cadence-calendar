@@ -340,3 +340,15 @@
 - [ ] Employee AppShell nav: Board + KPIs only (no Goals, Calendar, Schedule, Settings) (future)
 - [x] Owner AppShell nav: Board, Goals, Reports, KPIs, Calendar, Schedule, Settings
 - [ ] Save checkpoint
+
+## Unified Personal Sign-In (Phase 16)
+
+- [x] Replace ClientLogin business-selector with a single email + password sign-in form
+- [x] Sign-in calls `trpc.person.login` — returns person record with role + accountId + businessScope
+- [x] On success: store personId in localStorage, set PersonContext, redirect to /app/board
+- [x] Remove legacy business-selection logic — migrated to PersonContext + businessScope.ts helper
+- [x] PasswordGate: replace shared-password gate with PersonContext check (redirect to /login if no person)
+- [x] AppShell: remove "I am Matt/Lynn" identity selector, show logged-in person's name + role instead
+- [x] AppShell: add Sign Out button that clears PersonContext and redirects to /login
+- [x] Board.tsx: scope derived from person.businessScope (no manual selector)
+- [x] Save checkpoint

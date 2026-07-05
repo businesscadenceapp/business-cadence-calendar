@@ -9,7 +9,8 @@
 import { useState, useMemo } from "react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
-import { getBusinessSelection } from "./ClientLogin";
+import { usePerson } from "@/contexts/PersonContext";
+import { personScopeToBusinessSelection } from "@/lib/businessScope";
 
 type Business = "chiropractic" | "crossfit" | "realty" | "general";
 type Period = "annual" | "quarterly";
@@ -50,7 +51,7 @@ function EditGoalForm({
   onUpdated,
 }: {
   goal: { id: number; title: string; description: string | null; status: Status; owner: Owner; business: Business; period: Period; quarter: number | null; year: number };
-  businessScope: ReturnType<typeof getBusinessSelection>;
+  businessScope: string;
   onClose: () => void;
   onUpdated: () => void;
 }) {
@@ -169,7 +170,7 @@ function AddGoalForm({
   onCreated,
 }: {
   accountId: number;
-  businessScope: ReturnType<typeof getBusinessSelection>;
+  businessScope: string;
   onClose: () => void;
   onCreated: () => void;
 }) {
@@ -496,8 +497,9 @@ function GoalCard({
 // ─── Main Goals Page ───────────────────────────────────────────────────────────
 
 export default function Goals() {
-  const businessScope = getBusinessSelection();
-  const accountId = Number(localStorage.getItem("bcc_account_id") ?? "0");
+  const { person } = usePerson();
+  const businessScope = personScopeToBusinessSelection(person?.businessScope);
+  const accountId = person?.accountId ?? Number(localStorage.getItem("bcc_account_id") ?? "0");
   const [selectedYear, setSelectedYear] = useState(CURRENT_YEAR);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingGoal, setEditingGoal] = useState<typeof goalsData[0] | null>(null);

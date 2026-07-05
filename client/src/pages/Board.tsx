@@ -14,7 +14,8 @@
 import { useState, useEffect, useMemo } from "react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
-import { getBusinessSelection, type BusinessSelection } from "./ClientLogin";
+import { usePerson } from "@/contexts/PersonContext";
+import { personScopeToBusinessSelection, type BusinessSelection } from "@/lib/businessScope";
 import { useIdentity } from "@/components/AppShell";
 import { Link } from "wouter";
 
@@ -32,6 +33,7 @@ const SCOPE_BUSINESSES: Record<BusinessSelection, Business[]> = {
   chiro:    ["chiropractic"],
   crossfit: ["crossfit"],
   owner:    ["chiropractic", "crossfit", "realty", "general"],
+  all:      ["chiropractic", "crossfit", "realty", "general"],
 };
 
 // For single-business accounts, the default (and only) business to post under
@@ -39,6 +41,7 @@ const SCOPE_DEFAULT_BUSINESS: Record<BusinessSelection, Business> = {
   chiro:    "chiropractic",
   crossfit: "crossfit",
   owner:    "general",
+  all:      "general",
 };
 
 // Light-theme author colors — dynamically generated from name to support any person
@@ -613,8 +616,9 @@ export default function Board() {
   const [filterBusiness, setFilterBusiness] = useState<Business | "all">("all");
   const [showCompleted, setShowCompleted] = useState(false);
 
-  // Read account scope from localStorage (set at login)
-  const scope = useMemo<BusinessSelection>(() => getBusinessSelection(), []);
+  // Read account scope from PersonContext (falls back to localStorage)
+  const { person } = usePerson();
+  const scope = useMemo<BusinessSelection>(() => personScopeToBusinessSelection(person?.businessScope), [person?.businessScope]);
   const allowedBusinesses = useMemo<Business[]>(() => SCOPE_BUSINESSES[scope], [scope]);
   const defaultBusiness = useMemo<Business>(() => SCOPE_DEFAULT_BUSINESS[scope], [scope]);
 

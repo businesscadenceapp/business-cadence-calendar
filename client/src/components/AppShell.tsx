@@ -1,39 +1,27 @@
 import { useState, createContext, useContext, ReactNode, useRef, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { usePerson } from "@/contexts/PersonContext";
-import PersonLoginModal from "@/components/PersonLoginModal";
+import { clearAuth } from "@/components/PasswordGate";
 
-// ─── Identity Context (legacy shim — now backed by PersonContext) ─────────────
-
-type Author = string; // now any person's name
+// ─── Identity Context (shim for Board.tsx useIdentity hook) ──────────────────
+// currentUser is now always the logged-in person's name from PersonContext.
 
 interface IdentityCtx {
-  currentUser: Author | null;
-  setCurrentUser: (u: Author) => void;
+  currentUser: string | null;
 }
 
-const IdentityContext = createContext<IdentityCtx>({
-  currentUser: null,
-  setCurrentUser: () => {},
-});
+const IdentityContext = createContext<IdentityCtx>({ currentUser: null });
 
 export function useIdentity() {
   return useContext(IdentityContext);
 }
 
 // ─── Author colors ────────────────────────────────────────────────────────────
-// Generate a consistent color from a name string
-function nameToColor(name: string): { bg: string; text: string; border: string; dot: string } {
-  const colors = [
-    { bg: "#DBEAFE", text: "#1D4ED8", border: "#93C5FD", dot: "#2563EB" },
-    { bg: "#FFE4E6", text: "#BE123C", border: "#FECDD3", dot: "#E11D48" },
-    { bg: "#D1FAE5", text: "#065F46", border: "#6EE7B7", dot: "#059669" },
-    { bg: "#FEF3C7", text: "#92400E", border: "#FCD34D", dot: "#D97706" },
-    { bg: "#EDE9FE", text: "#5B21B6", border: "#C4B5FD", dot: "#7C3AED" },
-  ];
+function nameToColor(name: string): { dot: string } {
+  const dots = ["#2563EB", "#E11D48", "#059669", "#D97706", "#7C3AED"];
   let hash = 0;
   for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
-  return colors[Math.abs(hash) % colors.length];
+  return { dot: dots[Math.abs(hash) % dots.length] };
 }
 
 // ─── Nav items ────────────────────────────────────────────────────────────────
@@ -63,7 +51,6 @@ function PageTransition({ children, locationKey }: { children: ReactNode; locati
 
   useEffect(() => {
     if (locationKey !== prevKeyRef.current) {
-      // Start exit
       setTransitionState("out");
       const timer = setTimeout(() => {
         setDisplayChildren(children);
@@ -99,26 +86,25 @@ interface AppShellProps {
 }
 
 export default function AppShell({ children }: AppShellProps) {
-  const [location] = useLocation();
+  const [location, navigate] = useLocation();
   const { person, setPerson } = usePerson();
 
-  // Derive currentUser from person session
-  const currentUser = person?.name ?? null;
-  const setCurrentUser = (_u: Author) => {}; // no-op: identity comes from login
-
-  // Get accountId from localStorage (set during business account login)
-  const accountId = (() => {
-    try { return parseInt(localStorage.getItem("bcc_account_id") ?? "0", 10) || 0; } catch { return 0; }
-  })();
-
-  // Show person login modal if no person session exists (but business account is logged in)
-  const showPersonModal = !person && accountId > 0;
-
-  // Derive active path (normalize /app → /app/board)
   const activePath = location === "/app" ? "/app/board" : location;
 
+  const handleSignOut = () => {
+    setPerson(null);
+    clearAuth();
+    navigate("/login");
+  };
+
+  const roleLabel = person
+    ? person.role === "coowner" ? "Co-owner"
+    : person.role === "employee" ? "Employee"
+    : "Owner"
+    : "";
+
   return (
-    <IdentityContext.Provider value={{ currentUser, setCurrentUser }}>
+    <IdentityContext.Provider value={{ currentUser: person?.name ?? null }}>
       <div
         className="flex h-screen overflow-hidden"
         style={{ backgroundColor: "#F8F7F4", fontFamily: "'Inter', sans-serif" }}
@@ -126,11 +112,7 @@ export default function AppShell({ children }: AppShellProps) {
         {/* ── Desktop Sidebar ── */}
         <aside
           className="hidden md:flex flex-col flex-shrink-0 h-full"
-          style={{
-            width: "220px",
-            backgroundColor: "#FFFFFF",
-            borderRight: "1px solid #E2E8F0",
-          }}
+          style={{ width: "220px", backgroundColor: "#FFFFFF", borderRight: "1px solid #E2E8F0" }}
         >
           {/* Brand */}
           <div
@@ -182,7 +164,7 @@ export default function AppShell({ children }: AppShellProps) {
             })}
           </nav>
 
-          {/* Logged-in person display */}
+          {/* Logged-in person + sign out */}
           <div
             className="px-4 py-4 flex-shrink-0"
             style={{ borderTop: "1px solid #F1F0ED" }}
@@ -190,39 +172,38 @@ export default function AppShell({ children }: AppShellProps) {
             {person ? (
               <div className="flex items-center gap-2.5">
                 <div
-                  className="w-8 h-8 rounded-full flex items-center justify-center text-[13px] font-bold flex-shrink-0"
-                  style={{
-                    backgroundColor: nameToColor(person.name).dot,
-                    color: "white",
-                  }}
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-[13px] font-bold flex-shrink-0 text-white"
+                  style={{ backgroundColor: nameToColor(person.name).dot }}
                 >
                   {person.name.charAt(0).toUpperCase()}
                 </div>
-                <div className="min-w-0">
+                <div className="min-w-0 flex-1">
                   <p className="text-[12px] font-bold text-[#1E3A5F] truncate" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
                     {person.name}
                   </p>
-                  <p className="text-[10px] text-slate-400 truncate capitalize">{person.role === "coowner" ? "Co-owner" : person.role}</p>
+                  <p className="text-[10px] text-slate-400 truncate">{roleLabel}</p>
                 </div>
                 <button
-                  onClick={() => setPerson(null)}
-                  className="ml-auto text-[10px] text-slate-400 hover:text-red-500 transition-colors flex-shrink-0"
-                  title="Sign out of personal account"
+                  onClick={handleSignOut}
+                  className="flex-shrink-0 text-[10px] text-slate-400 hover:text-red-500 transition-colors px-1.5 py-1 rounded hover:bg-red-50"
+                  title="Sign out"
                 >
-                  ✕
+                  Sign out
                 </button>
               </div>
             ) : (
-              <p className="text-[10px] text-amber-600 text-center" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-                ⚠️ No personal account
-              </p>
+              <button
+                onClick={() => navigate("/login")}
+                className="w-full text-[11px] font-semibold text-[#2563EB] hover:underline text-center"
+              >
+                Sign in
+              </button>
             )}
           </div>
         </aside>
 
         {/* ── Main content area ── */}
         <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-          {/* Page content with animated transition */}
           <main className="flex-1 overflow-y-auto pb-16 md:pb-0">
             <PageTransition locationKey={activePath}>
               {children}
@@ -248,9 +229,7 @@ export default function AppShell({ children }: AppShellProps) {
                   key={item.path}
                   href={item.path}
                   className="relative flex-1 flex flex-col items-center justify-center gap-0.5 transition-all duration-150 active:scale-95"
-                  style={{
-                    color: isActive ? item.activeColor : "#94A3B8",
-                  }}
+                  style={{ color: isActive ? item.activeColor : "#94A3B8" }}
                 >
                   <span className="text-[18px] leading-none">{item.icon}</span>
                   <span
@@ -268,27 +247,31 @@ export default function AppShell({ children }: AppShellProps) {
                 </Link>
               );
             })}
-            {/* Mobile person avatar */}
-            <div className="flex flex-col items-center justify-center px-2 gap-0.5">
+            {/* Mobile person avatar — tap to sign out */}
+            <button
+              onClick={person ? handleSignOut : () => navigate("/login")}
+              className="flex flex-col items-center justify-center px-2 gap-0.5 active:scale-95 transition-transform"
+              title={person ? "Sign out" : "Sign in"}
+            >
               {person ? (
                 <div
-                  className="w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold"
-                  style={{ backgroundColor: nameToColor(person.name).dot, color: "white" }}
+                  className="w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold text-white"
+                  style={{ backgroundColor: nameToColor(person.name).dot }}
                 >
                   {person.name.charAt(0).toUpperCase()}
                 </div>
               ) : (
-                <div className="w-7 h-7 rounded-full flex items-center justify-center text-[11px] bg-amber-100 text-amber-600 font-bold">?</div>
+                <div className="w-7 h-7 rounded-full flex items-center justify-center text-[11px] bg-slate-100 text-slate-500 font-bold">
+                  👤
+                </div>
               )}
               <span className="text-[8px] text-slate-400" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-                {person ? person.name.split(" ")[0] : "Login"}
+                {person ? person.name.split(" ")[0] : "Sign in"}
               </span>
-            </div>
+            </button>
           </nav>
         </div>
       </div>
-      {/* Person login modal — shown when no person session exists */}
-      {showPersonModal && <PersonLoginModal accountId={accountId} />}
     </IdentityContext.Provider>
   );
 }

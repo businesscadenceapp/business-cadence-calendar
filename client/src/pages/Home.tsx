@@ -7,7 +7,8 @@
 import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import { Link } from "wouter";
 import { trpc } from "@/lib/trpc";
-import { getBusinessSelection, type BusinessSelection } from "./ClientLogin";
+import { usePerson } from "@/contexts/PersonContext";
+import { personScopeToBusinessSelection, type BusinessSelection } from "@/lib/businessScope";
 import { RecordMeeting } from "@/components/RecordMeeting";
 
 import {
@@ -706,17 +707,15 @@ function DetailPanel({
 
 
 export default function Home() {
+  const { person } = usePerson();
   const [selectedDay, setSelectedDay] = useState<CalendarDay | null>(null);
   const [highlightType, setHighlightType] = useState<MeetingType | null>(null);
-  // Business context from the login portal — re-read on every mount so switching accounts works
-  const [businessContext, setBusinessContext] = useState<BusinessSelection>(() => getBusinessSelection());
-  const [accountId] = useState<number>(() => {
+  // Business context derived from logged-in person's scope
+  const businessContext = personScopeToBusinessSelection(person?.businessScope);
+  const accountId = person?.accountId ?? (() => {
     const stored = localStorage.getItem("bcc_account_id");
     return stored ? parseInt(stored, 10) : 0;
-  });
-  useEffect(() => {
-    setBusinessContext(getBusinessSelection());
-  }, []);
+  })();
 
   // Fetch the DB-driven calendar (respects closed days, work days, meeting prefs)
   const { data: calendarData } = trpc.onboarding.generateCalendar.useQuery(
