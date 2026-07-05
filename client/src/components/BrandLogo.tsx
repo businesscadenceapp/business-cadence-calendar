@@ -2,7 +2,46 @@
  * BrandLogo — Inline SVG logo that exactly matches the approved design:
  * lavender pill background, purple double eighth note, "BusinessCadence" text.
  * No image file needed — renders crisply at any size with zero background bleed.
+ *
+ * BrandIcon — Just the note icon in a circle (no text), same colors.
+ * Use this for compact spaces like login cards and sidebar headers.
  */
+
+/**
+ * Standalone circular icon — lavender circle with the same beamed-quaver double-note
+ * as the homepage pill logo, drawn in its own 100×100 coordinate space so nothing clips.
+ */
+export function BrandIcon({ size = 48, className = "" }: { size?: number; className?: string }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 100 100"
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+      role="img"
+      aria-label="BusinessCadence"
+    >
+      {/* Lavender circle — same #EEF2FF as the pill background */}
+      <circle cx="50" cy="50" r="50" fill="#EEF2FF" />
+
+      {/* Beamed double eighth-note, hand-tuned to sit centred in the 100×100 circle */}
+      {/* Beam: slanted bar connecting the two stems at the top */}
+      <rect x="34" y="22" width="34" height="8" rx="4" fill="#1E3A5F"
+        transform="rotate(-8, 34, 22)" />
+      {/* Left stem */}
+      <rect x="34" y="26" width="7" height="38" rx="3" fill="#1E3A5F" />
+      {/* Right stem */}
+      <rect x="61" y="18" width="7" height="38" rx="3" fill="#1E3A5F" />
+      {/* Left note head */}
+      <ellipse cx="31" cy="66" rx="12" ry="9" fill="#1E3A5F"
+        transform="rotate(-15, 31, 66)" />
+      {/* Right note head */}
+      <ellipse cx="58" cy="58" rx="12" ry="9" fill="#1E3A5F"
+        transform="rotate(-15, 58, 58)" />
+    </svg>
+  );
+}
 
 interface BrandLogoProps {
   size?: "sm" | "md" | "lg" | "xl";

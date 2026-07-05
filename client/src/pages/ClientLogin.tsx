@@ -10,7 +10,7 @@ import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { usePerson } from "@/contexts/PersonContext";
 import { toast } from "sonner";
-import BrandLogo from "@/components/BrandLogo";
+import { BrandIcon } from "@/components/BrandLogo";
 
 export default function ClientLogin() {
   const [, navigate] = useLocation();
@@ -178,9 +178,9 @@ export default function ClientLogin() {
           >
             {/* Header */}
             <div className="text-center mb-7">
-              {/* Full BrandLogo — same pill+note as the marketing site header */}
+              {/* Brand icon — circular, same note + lavender/navy as the homepage logo */}
               <div className="flex justify-center mb-4">
-                <BrandLogo size="sm" />
+                <BrandIcon size={88} />
               </div>
               <h2
                 className="text-xl font-bold text-[#1E3A5F]"

@@ -2,7 +2,7 @@ import { useState, createContext, useContext, ReactNode, useRef, useEffect } fro
 import { Link, useLocation } from "wouter";
 import { usePerson } from "@/contexts/PersonContext";
 import { clearAuth } from "@/components/PasswordGate";
-import BrandLogo from "@/components/BrandLogo";
+import { BrandIcon } from "@/components/BrandLogo";
 
 // ─── Identity Context (shim for Board.tsx useIdentity hook) ──────────────────
 // currentUser is now always the logged-in person's name from PersonContext.
@@ -125,11 +125,17 @@ export default function AppShell({ children }: AppShellProps) {
         >
           {/* Brand */}
           <div
-            className="flex items-center px-4 py-3 flex-shrink-0"
+            className="flex items-center gap-3 px-5 py-4 flex-shrink-0"
             style={{ borderBottom: "1px solid #F1F0ED" }}
           >
-            {/* Use the same BrandLogo as the marketing site */}
-            <BrandLogo size="sm" />
+            {/* Circular icon — same note + lavender/navy as the homepage logo */}
+            <BrandIcon size={36} className="flex-shrink-0" />
+            <div>
+              <p className="text-[13px] font-bold text-[#1E3A5F] leading-tight" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+                BusinessCadence
+              </p>
+              <p className="text-[10px] text-slate-400">Co-owner OS</p>
+            </div>
           </div>
 
           {/* Nav items */}
