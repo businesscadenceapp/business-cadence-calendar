@@ -384,3 +384,59 @@ export const kpiEntries = mysqlTable("kpi_entries", {
 
 export type KpiEntry = typeof kpiEntries.$inferSelect;
 export type InsertKpiEntry = typeof kpiEntries.$inferInsert;
+
+/**
+ * Businesses — the actual businesses owned by an account.
+ * Created during onboarding; drives all business-scoped UI.
+ * slug: short identifier used throughout the app (e.g. "chiropractic", "crossfit")
+ */
+export const businesses = mysqlTable("businesses", {
+  id: int("id").autoincrement().primaryKey(),
+  accountId: int("accountId").notNull(),
+  name: varchar("name", { length: 256 }).notNull(),
+  slug: varchar("slug", { length: 64 }).notNull(),
+  icon: varchar("icon", { length: 8 }).default("🏢").notNull(),
+  color: varchar("color", { length: 16 }).default("#64748B").notNull(),
+  sortOrder: int("sortOrder").default(0).notNull(),
+  isActive: boolean("isActive").default(true).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Business = typeof businesses.$inferSelect;
+export type InsertBusiness = typeof businesses.$inferInsert;
+
+/**
+ * Report Questions — owner-configured questions for weekly employee check-ins.
+ * businessId references businesses.id (0 = applies to all businesses)
+ */
+export const reportQuestions = mysqlTable("report_questions", {
+  id: int("id").autoincrement().primaryKey(),
+  accountId: int("accountId").notNull(),
+  businessId: int("businessId").notNull().default(0), // 0 = all businesses
+  question: varchar("question", { length: 512 }).notNull(),
+  sortOrder: int("sortOrder").default(0).notNull(),
+  isActive: boolean("isActive").default(true).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type ReportQuestion = typeof reportQuestions.$inferSelect;
+export type InsertReportQuestion = typeof reportQuestions.$inferInsert;
+
+/**
+ * Report Answers — employee weekly check-in submissions.
+ * weekKey format: "YYYY-Www" (e.g. "2026-W27")
+ */
+export const reportAnswers = mysqlTable("report_answers", {
+  id: int("id").autoincrement().primaryKey(),
+  questionId: int("questionId").notNull(),
+  personId: varchar("personId", { length: 64 }).notNull(),
+  accountId: int("accountId").notNull(),
+  weekKey: varchar("weekKey", { length: 10 }).notNull(),
+  answer: text("answer").notNull(),
+  submittedAt: timestamp("submittedAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type ReportAnswer = typeof reportAnswers.$inferSelect;
+export type InsertReportAnswer = typeof reportAnswers.$inferInsert;

@@ -15,7 +15,6 @@ import { useState, useEffect, useMemo } from "react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { usePerson } from "@/contexts/PersonContext";
-import { personScopeToBusinessSelection, type BusinessSelection } from "@/lib/businessScope";
 import { useIdentity } from "@/components/AppShell";
 import { Link } from "wouter";
 
@@ -26,23 +25,6 @@ type Business = "chiropractic" | "crossfit" | "realty" | "general";
 // Identity is now managed by AppShell context (useIdentity hook)
 // IDENTITY_KEY kept for backward compatibility with localStorage reads
 const IDENTITY_KEY = "bcc_identity";
-
-// Map account scope → which board businesses are visible
-// Single-business accounts (chiro/crossfit) have no selector — posts auto-tag to their one business
-const SCOPE_BUSINESSES: Record<BusinessSelection, Business[]> = {
-  chiro:    ["chiropractic"],
-  crossfit: ["crossfit"],
-  owner:    ["chiropractic", "crossfit", "realty", "general"],
-  all:      ["chiropractic", "crossfit", "realty", "general"],
-};
-
-// For single-business accounts, the default (and only) business to post under
-const SCOPE_DEFAULT_BUSINESS: Record<BusinessSelection, Business> = {
-  chiro:    "chiropractic",
-  crossfit: "crossfit",
-  owner:    "general",
-  all:      "general",
-};
 
 // Light-theme author colors — dynamically generated from name to support any person
 const PALETTE = [
@@ -396,11 +378,12 @@ function BoardCard({ card, currentUser, onSeen, onArchive, onDelete }: {
 
 // ─── Add Card Form ────────────────────────────────────────────────────────────
 
-function AddCardForm({ currentUser, onAdded, allowedBusinesses, defaultBusiness }: {
+function AddCardForm({ currentUser, onAdded, allowedBusinesses, defaultBusiness, bizLabels }: {
   currentUser: Author | null;
   onAdded: () => void;
   allowedBusinesses: Business[];
   defaultBusiness: Business;
+  bizLabels?: Record<string, { label: string; icon: string; bg: string; text: string; border: string }>;
 }) {
   const [type, setType] = useState<CardType>("update");
   const [business, setBusiness] = useState<Business>(defaultBusiness);
@@ -519,7 +502,7 @@ function AddCardForm({ currentUser, onAdded, allowedBusinesses, defaultBusiness 
           <p className="text-[10px] text-slate-400 uppercase tracking-wider" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Which business?</p>
           <div className="flex gap-1.5 flex-wrap">
             {allowedBusinesses.map(key => {
-              const biz = BUSINESS_LABELS[key];
+              const biz = (bizLabels ?? BUSINESS_LABELS)[key] ?? { label: key, icon: "🏢", bg: "#F1F5F9", text: "#475569", border: "#CBD5E1" };
               return (
                 <button
                   key={key}
@@ -616,11 +599,42 @@ export default function Board() {
   const [filterBusiness, setFilterBusiness] = useState<Business | "all">("all");
   const [showCompleted, setShowCompleted] = useState(false);
 
-  // Read account scope from PersonContext (falls back to localStorage)
+  // Read account scope from PersonContext
   const { person } = usePerson();
-  const scope = useMemo<BusinessSelection>(() => personScopeToBusinessSelection(person?.businessScope), [person?.businessScope]);
-  const allowedBusinesses = useMemo<Business[]>(() => SCOPE_BUSINESSES[scope], [scope]);
-  const defaultBusiness = useMemo<Business>(() => SCOPE_DEFAULT_BUSINESS[scope], [scope]);
+  const accountId = person?.accountId ?? Number(localStorage.getItem("bcc_account_id") ?? "0");
+
+  // Load businesses from DB — the source of truth for this account
+  const { data: dbBusinesses = [] } = trpc.business.list.useQuery(
+    { accountId },
+    { enabled: accountId > 0 }
+  );
+
+  // Build allowed businesses from DB; fall back to empty while loading
+  // Employees see only their businessScope; owners see all account businesses
+  const personScope = person?.businessScope ?? "all";
+  const allowedBusinesses = useMemo<Business[]>(() => {
+    if (!dbBusinesses.length) return [];
+    if (personScope === "all") return dbBusinesses.map(b => b.slug as Business);
+    // Employee: filter to their assigned businesses
+    const scopes = personScope.split(",").map(s => s.trim());
+    return dbBusinesses.filter(b => scopes.includes(b.slug)).map(b => b.slug as Business);
+  }, [dbBusinesses, personScope]);
+
+  const defaultBusiness = useMemo<Business>(() => allowedBusinesses[0] ?? "general" as Business, [allowedBusinesses]);
+
+  // Build dynamic BUSINESS_LABELS from DB businesses (merges with hardcoded fallback)
+  const dynamicBizLabels = useMemo(() => {
+    const labels: Record<string, { label: string; icon: string; bg: string; text: string; border: string }> = { ...BUSINESS_LABELS };
+    for (const b of dbBusinesses) {
+      if (!labels[b.slug]) {
+        labels[b.slug] = { label: b.name, icon: b.icon, bg: "#F1F5F9", text: "#475569", border: "#CBD5E1" };
+      } else {
+        // Use DB name for known slugs
+        labels[b.slug] = { ...labels[b.slug], label: b.name, icon: b.icon };
+      }
+    }
+    return labels;
+  }, [dbBusinesses]);
 
   const { data, refetch, isLoading } = trpc.board.list.useQuery(undefined, {
     refetchInterval: 15_000,
@@ -687,7 +701,7 @@ export default function Board() {
             </div>
           )}
 
-          <AddCardForm currentUser={currentUser} onAdded={() => refetch()} allowedBusinesses={allowedBusinesses} defaultBusiness={defaultBusiness} />
+          <AddCardForm currentUser={currentUser} onAdded={() => refetch()} allowedBusinesses={allowedBusinesses} defaultBusiness={defaultBusiness} bizLabels={dynamicBizLabels} />
 
           {/* Business filter — only show businesses this account can access */}
           {allowedBusinesses.length > 1 && (
@@ -708,7 +722,7 @@ export default function Board() {
                   📋 All Businesses
                 </button>
                 {allowedBusinesses.map(key => {
-                  const biz = BUSINESS_LABELS[key];
+                  const biz = dynamicBizLabels[key] ?? { label: key, icon: "🏢", bg: "#F1F5F9", text: "#475569", border: "#CBD5E1" };
                   return (
                     <button
                       key={key}

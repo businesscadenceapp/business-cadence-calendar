@@ -363,3 +363,20 @@
 - [x] Build /accept-invite page: reads ?token= from URL, shows person's name, set-password form, calls person.acceptInvite, logs them in
 - [x] Gate AppShell nav: employees see Board + KPIs only; owners/co-owners see full nav
 - [x] Run tests and save checkpoint
+
+## Onboarding, Business Scoping & Weekly Reports (Phase 18)
+
+- [x] Add `businesses` table: id, accountId, name, slug, icon, color, sortOrder, isActive
+- [x] Push DB migration
+- [x] Server: business.list, business.create, business.update procedures
+- [x] Onboarding wizard: on complete, creates row in `businesses` table for the business entered
+- [x] Scope Board business list to account's businesses (from DB, not hardcoded)
+- [x] Settings: load business list from DB instead of hardcoded BUSINESSES_LIST
+- [x] Add co-owner role option to Settings invite panel
+- [x] Settings invite panel: Business Access dropdown uses DB business list
+- [x] Add `report_questions` table: id, accountId, businessId, question, sortOrder, isActive
+- [x] Add `report_answers` table: id, questionId, personId, accountId, weekKey (YYYY-Www), answer (text), submittedAt
+- [ ] Weekly report questions: owner configures questions per business in Settings (future)
+- [ ] Employee weekly report submission page (future)
+- [ ] Owner weekly report summary view in Reports page (future)
+- [x] Run tests and save checkpoint

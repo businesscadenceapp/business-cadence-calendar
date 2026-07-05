@@ -795,6 +795,7 @@ export default function Onboarding() {
   });
 
   const saveOnboarding = trpc.onboarding.save.useMutation();
+  const createBusiness = trpc.business.create.useMutation();
 
   const update = useCallback((updates: Partial<OnboardingData>) => {
     setData(prev => ({ ...prev, ...updates }));
@@ -810,6 +811,39 @@ export default function Onboarding() {
         ...data,
         onboardingComplete: true,
       });
+      // Also create the business record so the entire app is scoped to it
+      if (accountId && data.businessName.trim()) {
+        const slug = data.businessName.trim().toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "").slice(0, 60) || "business";
+        // Pick icon based on industry
+        const iconMap: Record<string, string> = {
+          healthcare: "🏥",
+          fitness: "💪",
+          realestate: "🏠",
+          food: "🍕",
+          retail: "🛍️",
+          professional: "💼",
+        };
+        const colorMap: Record<string, string> = {
+          healthcare: "#10B981",
+          fitness: "#F59E0B",
+          realestate: "#2563EB",
+          food: "#E11D48",
+          retail: "#7C3AED",
+          professional: "#0D9488",
+        };
+        try {
+          await createBusiness.mutateAsync({
+            accountId,
+            name: data.businessName.trim(),
+            slug,
+            icon: iconMap[data.industry] ?? "🏢",
+            color: colorMap[data.industry] ?? "#64748B",
+            sortOrder: 0,
+          });
+        } catch (bizErr) {
+          console.warn("Business create failed (non-fatal):", bizErr);
+        }
+      }
       next(); // go to Done step
     } catch (err) {
       console.error("Onboarding save failed:", err);

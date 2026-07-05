@@ -57,6 +57,14 @@ import {
   upsertKpiEntry,
   getKpiEntries,
   getKpiMonthlyTotals,
+  getBusinessesByAccount,
+  createBusiness,
+  updateBusiness,
+  getReportQuestions,
+  createReportQuestion,
+  deleteReportQuestion,
+  upsertReportAnswer,
+  getReportAnswers,
 } from "./db";
 import { generateMeetingSchedule } from "../shared/calendarEngine";
 import { notifyOwner } from "./_core/notification";
@@ -1037,6 +1045,97 @@ Be concise and specific. If a field has nothing, use an empty array.`,
       }))
       .query(async ({ input }) => {
         return getKpiMonthlyTotals(input.accountId, input.businessSlug, input.yearMonth);
+      }),
+  }),
+
+  /** Business management — list and configure account businesses. */
+  business: router({
+    /** List all active businesses for an account. */
+    list: publicProcedure
+      .input(z.object({ accountId: z.number() }))
+      .query(async ({ input }) => {
+        return getBusinessesByAccount(input.accountId);
+      }),
+
+    /** Create a new business for an account. */
+    create: publicProcedure
+      .input(z.object({
+        accountId: z.number(),
+        name: z.string().min(1),
+        slug: z.string().min(1),
+        icon: z.string().default("🏢"),
+        color: z.string().default("#64748B"),
+        sortOrder: z.number().default(0),
+      }))
+      .mutation(async ({ input }) => {
+        return createBusiness(input);
+      }),
+
+    /** Update a business. */
+    update: publicProcedure
+      .input(z.object({
+        id: z.number(),
+        name: z.string().min(1).optional(),
+        icon: z.string().optional(),
+        color: z.string().optional(),
+        sortOrder: z.number().optional(),
+        isActive: z.boolean().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { id, ...data } = input;
+        await updateBusiness(id, data);
+        return { success: true };
+      }),
+  }),
+
+  /** Weekly employee report questions and answers. */
+  report: router({
+    /** List report questions for an account (optionally filtered by businessId). */
+    listQuestions: publicProcedure
+      .input(z.object({ accountId: z.number(), businessId: z.number().optional() }))
+      .query(async ({ input }) => {
+        return getReportQuestions(input.accountId, input.businessId);
+      }),
+
+    /** Create a report question. */
+    createQuestion: publicProcedure
+      .input(z.object({
+        accountId: z.number(),
+        businessId: z.number().default(0),
+        question: z.string().min(1),
+        sortOrder: z.number().default(0),
+      }))
+      .mutation(async ({ input }) => {
+        return createReportQuestion(input);
+      }),
+
+    /** Soft-delete a report question. */
+    deleteQuestion: publicProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        await deleteReportQuestion(input.id);
+        return { success: true };
+      }),
+
+    /** Submit (upsert) a report answer for a week. */
+    submitAnswer: publicProcedure
+      .input(z.object({
+        questionId: z.number(),
+        personId: z.string(),
+        accountId: z.number(),
+        weekKey: z.string(), // "YYYY-Www"
+        answer: z.string(),
+      }))
+      .mutation(async ({ input }) => {
+        await upsertReportAnswer(input);
+        return { success: true };
+      }),
+
+    /** Get all answers for a week (owner view). */
+    getWeekAnswers: publicProcedure
+      .input(z.object({ accountId: z.number(), weekKey: z.string() }))
+      .query(async ({ input }) => {
+        return getReportAnswers(input.accountId, input.weekKey);
       }),
   }),
 });

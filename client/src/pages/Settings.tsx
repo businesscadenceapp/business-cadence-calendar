@@ -25,7 +25,7 @@ const BIZ_MAP_REVERSE: Record<"chiropractic" | "crossfit" | "realty", BusinessKe
   realty: "realty",
 };
 
-type DbBusiness = "chiropractic" | "crossfit" | "realty";
+type DbBusiness = string; // now dynamic from DB
 type DbMeetingType = "daily" | "weekly" | "monthly" | "quarterly";
 
 interface AgendaItem {
@@ -173,7 +173,7 @@ function AgendaEditor({
   savedItems: AgendaItem[] | null;
   onSaveRequest: (items: AgendaItem[]) => void;
 }) {
-  const bizKey = BIZ_MAP_REVERSE[biz];
+  const bizKey = (BIZ_MAP_REVERSE as Record<string, BusinessKey>)[biz] ?? (biz as BusinessKey);
   const defaultItems = getDefaultItems(bizKey, mt as MeetingType);
   const [items, setItems] = useState<AgendaItem[]>(savedItems ?? defaultItems);
   const [dirty, setDirty] = useState(false);
@@ -307,25 +307,31 @@ function AgendaEditor({
   );
 }
 
-// Scope → which DB businesses are visible in Settings
-const SCOPE_DB_BUSINESSES: Record<string, DbBusiness[]> = {
-  chiro:    ["chiropractic"],
-  crossfit: ["crossfit"],
-  owner:    ["chiropractic", "crossfit", "realty"],
-};
-
-
 // ─── Main Settings Page ───────────────────────────────────────────────────────
 export default function Settings() {
   const { person } = usePerson();
-  const scope = personScopeToBusinessSelection(person?.businessScope);
-  const allowedDbBiz = SCOPE_DB_BUSINESSES[scope] ?? ["chiropractic", "crossfit", "realty"];
-  const visibleBusinesses = BUSINESSES_LIST.filter(b => allowedDbBiz.includes(b.key));
   const accountId = person?.accountId ?? Number(localStorage.getItem("bcc_account_id") ?? "0");
 
-  const [selectedBiz, setSelectedBiz] = useState<DbBusiness>(
-    allowedDbBiz[0] ?? "chiropractic"
+  // Load businesses from DB — the source of truth for this account
+  const { data: dbBusinesses = [] } = trpc.business.list.useQuery(
+    { accountId },
+    { enabled: accountId > 0 }
   );
+
+  // Map DB businesses to the shape Settings expects
+  const visibleBusinesses = dbBusinesses.map(b => ({
+    key: b.slug as DbBusiness,
+    bizKey: b.slug as BusinessKey,
+    label: b.name,
+    color: b.color,
+    icon: b.icon,
+  }));
+
+  const [selectedBiz, setSelectedBiz] = useState<DbBusiness>("");
+  // Use first available business as default once loaded
+  const effectiveSelectedBiz = (selectedBiz && visibleBusinesses.some(b => b.key === selectedBiz))
+    ? selectedBiz
+    : (visibleBusinesses[0]?.key ?? "chiropractic" as DbBusiness);
   const [selectedMt, setSelectedMt] = useState<DbMeetingType>("daily");
   const [pendingSave, setPendingSave] = useState<{ items: AgendaItem[] } | null>(null);
 
@@ -355,7 +361,7 @@ export default function Settings() {
   const handlePasswordConfirm = (password: string, updatedBy: "Matt" | "Lynn") => {
     if (!pendingSave) return;
     saveTemplate.mutate({
-      business: selectedBiz,
+      business: effectiveSelectedBiz as "chiropractic" | "crossfit" | "realty",
       meetingType: selectedMt,
       items: pendingSave.items,
       updatedBy,
@@ -510,11 +516,16 @@ export default function Settings() {
 function EmployeeInvitePanel({ accountId }: { accountId: number }) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [scope, setScope] = useState("chiro");
+  const [role, setRole] = useState<"employee" | "coowner">("employee");
+  const [scope, setScope] = useState("all");
   const [sending, setSending] = useState(false);
   const [inviteLink, setInviteLink] = useState<string | null>(null);
 
   const { data: membersData, refetch: refetchMembers } = trpc.person.list.useQuery(
+    { accountId },
+    { enabled: accountId > 0 }
+  );
+  const { data: bizList = [] } = trpc.business.list.useQuery(
     { accountId },
     { enabled: accountId > 0 }
   );
@@ -548,8 +559,8 @@ function EmployeeInvitePanel({ accountId }: { accountId: number }) {
       accountId,
       name: name.trim(),
       email: email.trim(),
-      role: "employee",
-      businessScope: scope,
+      role,
+      businessScope: role === "coowner" ? "all" : scope,
       origin: window.location.origin,
     });
   };
@@ -619,7 +630,7 @@ function EmployeeInvitePanel({ accountId }: { accountId: number }) {
         )}
 
         {/* Invite form */}
-        <p className="text-[10px] uppercase tracking-widest text-[#94A3B8] mb-3">Invite New Employee</p>
+        <p className="text-[10px] uppercase tracking-widest text-[#94A3B8] mb-3">Invite New Team Member</p>
         <form onSubmit={handleInvite} className="flex flex-col gap-3">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="flex flex-col gap-1.5">
@@ -650,19 +661,33 @@ function EmployeeInvitePanel({ accountId }: { accountId: number }) {
             </div>
           </div>
           <div className="flex flex-col gap-1.5">
-            <label className="text-[11px] font-semibold text-[#1E3A5F]">Business Access</label>
+            <label className="text-[11px] font-semibold text-[#1E3A5F]">Role</label>
             <select
-              value={scope}
-              onChange={e => setScope(e.target.value)}
+              value={role}
+              onChange={e => setRole(e.target.value as "employee" | "coowner")}
               className={inputClass}
               style={{ ...inputStyle, cursor: "pointer" }}
             >
-              <option value="chiro">New Beginnings Chiropractic only</option>
-              <option value="crossfit">Evolved CrossFit only</option>
-              <option value="realty">Realty only</option>
-              <option value="all">All businesses</option>
+              <option value="employee">Employee (Board + KPIs only)</option>
+              <option value="coowner">Co-owner (full access)</option>
             </select>
           </div>
+          {role === "employee" && (
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[11px] font-semibold text-[#1E3A5F]">Business Access</label>
+              <select
+                value={scope}
+                onChange={e => setScope(e.target.value)}
+                className={inputClass}
+                style={{ ...inputStyle, cursor: "pointer" }}
+              >
+                {bizList.map(b => (
+                  <option key={b.slug} value={b.slug}>{b.name} only</option>
+                ))}
+                {bizList.length > 1 && <option value="all">All businesses</option>}
+              </select>
+            </div>
+          )}
           <button
             type="submit"
             disabled={sending || !name.trim() || !email.trim()}

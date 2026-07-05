@@ -918,3 +918,95 @@ export async function getKpiMonthlyTotals(accountId: number, businessSlug: strin
     };
   });
 }
+
+// ─── Business helpers ─────────────────────────────────────────────────────────
+import { businesses, reportQuestions, reportAnswers, type Business, type InsertBusiness, type ReportQuestion, type InsertReportQuestion, type ReportAnswer, type InsertReportAnswer } from "../drizzle/schema";
+
+export async function getBusinessesByAccount(accountId: number): Promise<Business[]> {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(businesses)
+    .where(and(eq(businesses.accountId, accountId), eq(businesses.isActive, true)))
+    .orderBy(asc(businesses.sortOrder), asc(businesses.id));
+}
+
+export async function createBusiness(data: Omit<InsertBusiness, "id" | "createdAt" | "updatedAt">): Promise<Business> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const [result] = await db.insert(businesses).values(data);
+  const [biz] = await db.select().from(businesses).where(eq(businesses.id, (result as any).insertId));
+  return biz;
+}
+
+export async function updateBusiness(id: number, data: Partial<Pick<Business, "name" | "slug" | "icon" | "color" | "sortOrder" | "isActive">>): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(businesses).set(data).where(eq(businesses.id, id));
+}
+
+// ─── Report Question helpers ──────────────────────────────────────────────────
+
+export async function getReportQuestions(accountId: number, businessId?: number): Promise<ReportQuestion[]> {
+  const db = await getDb();
+  if (!db) return [];
+  const conditions = [eq(reportQuestions.accountId, accountId), eq(reportQuestions.isActive, true)];
+  if (businessId !== undefined) {
+    // Return questions for this business OR questions that apply to all (businessId=0)
+    conditions.push(
+      // We use a raw OR: businessId = 0 OR businessId = input
+      // Drizzle doesn't have a clean OR in where array, so we filter in JS
+    );
+  }
+  const rows = await db.select().from(reportQuestions)
+    .where(and(...conditions))
+    .orderBy(asc(reportQuestions.sortOrder), asc(reportQuestions.id));
+  if (businessId !== undefined && businessId !== 0) {
+    return rows.filter(q => q.businessId === 0 || q.businessId === businessId);
+  }
+  return rows;
+}
+
+export async function createReportQuestion(data: Omit<InsertReportQuestion, "id" | "createdAt">): Promise<ReportQuestion> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const [result] = await db.insert(reportQuestions).values(data);
+  const [q] = await db.select().from(reportQuestions).where(eq(reportQuestions.id, (result as any).insertId));
+  return q;
+}
+
+export async function deleteReportQuestion(id: number): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(reportQuestions).set({ isActive: false }).where(eq(reportQuestions.id, id));
+}
+
+// ─── Report Answer helpers ────────────────────────────────────────────────────
+
+export async function upsertReportAnswer(data: Omit<InsertReportAnswer, "id" | "submittedAt" | "updatedAt">): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const [existing] = await db.select().from(reportAnswers)
+    .where(and(
+      eq(reportAnswers.questionId, data.questionId),
+      eq(reportAnswers.personId, data.personId),
+      eq(reportAnswers.weekKey, data.weekKey),
+    )).limit(1);
+  if (existing) {
+    await db.update(reportAnswers).set({ answer: data.answer }).where(eq(reportAnswers.id, existing.id));
+  } else {
+    await db.insert(reportAnswers).values(data);
+  }
+}
+
+export async function getReportAnswers(accountId: number, weekKey: string): Promise<(ReportAnswer & { questionText: string })[]> {
+  const db = await getDb();
+  if (!db) return [];
+  const rows = await db.select().from(reportAnswers)
+    .where(and(eq(reportAnswers.accountId, accountId), eq(reportAnswers.weekKey, weekKey)));
+  const qIds = Array.from(new Set(rows.map(r => r.questionId)));
+  if (qIds.length === 0) return [];
+  const qRows = await db.select().from(reportQuestions).where(inArray(reportQuestions.id, qIds));
+  const qMap: Record<number, string> = {};
+  for (const q of qRows) qMap[q.id] = q.question;
+  return rows.map(r => ({ ...r, questionText: qMap[r.questionId] ?? String(r.questionId) }));
+}
