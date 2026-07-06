@@ -8,37 +8,77 @@
  */
 
 /**
- * Standalone circular icon — lavender circle with the same beamed-quaver double-note
- * as the homepage pill logo, drawn in its own 100×100 coordinate space so nothing clips.
+ * Standalone circular icon — lavender circle with the exact same beamed-quaver double-note
+ * as the homepage pill logo. Uses the same noteIcon drawing logic as BrandLogo.
+ *
+ * Maths (verified in Python):
+ *   Note bounding box in 24px space: x=3.3–17.7 (w=14.4), y=3.0–20.9 (h=17.9)
+ *   Centre of bounding box: (10.5, 11.9)
+ *   Scale so height=65 in 100-unit viewBox: scale = 65/17.9 = 3.631
+ *   Translate so scaled centre lands at (50,50): tx=11.9, ty=6.6
+ *   All four corners land at distance 41.7 from centre (well inside r=50).
  */
 export function BrandIcon({ size = 48, className = "" }: { size?: number; className?: string }) {
+  const vb    = 100;    // viewBox is 100×100
+  const r     = vb / 2; // circle radius = 50
+  const scale = 3.631;  // pre-computed: fits note height in 65 units
+  const tx    = 11.9;   // pre-computed translate x
+  const ty    = 6.6;    // pre-computed translate y
+
+  const s = (v: number) => v * scale;
+
   return (
     <svg
       width={size}
       height={size}
-      viewBox="0 0 100 100"
+      viewBox={`0 0 ${vb} ${vb}`}
       xmlns="http://www.w3.org/2000/svg"
       className={className}
       role="img"
       aria-label="BusinessCadence"
     >
       {/* Lavender circle — same #EEF2FF as the pill background */}
-      <circle cx="50" cy="50" r="50" fill="#EEF2FF" />
+      <circle cx={r} cy={r} r={r} fill="#EEF2FF" />
 
-      {/* Beamed double eighth-note, hand-tuned to sit centred in the 100×100 circle */}
-      {/* Beam: slanted bar connecting the two stems at the top */}
-      <rect x="34" y="22" width="34" height="8" rx="4" fill="#1E3A5F"
-        transform="rotate(-8, 34, 22)" />
-      {/* Left stem */}
-      <rect x="34" y="26" width="7" height="38" rx="3" fill="#1E3A5F" />
-      {/* Right stem */}
-      <rect x="61" y="18" width="7" height="38" rx="3" fill="#1E3A5F" />
-      {/* Left note head */}
-      <ellipse cx="31" cy="66" rx="12" ry="9" fill="#1E3A5F"
-        transform="rotate(-15, 31, 66)" />
-      {/* Right note head */}
-      <ellipse cx="58" cy="58" rx="12" ry="9" fill="#1E3A5F"
-        transform="rotate(-15, 58, 58)" />
+      {/* Exact same note as BrandLogo, centred in the circle */}
+      <g transform={`translate(${tx}, ${ty})`}>
+        {/* Beam */}
+        <rect
+          x={s(7.5)} y={s(4)}
+          width={s(10)} height={s(2.5)}
+          rx={s(1)}
+          fill="#1E3A5F"
+          transform={`rotate(-8, ${s(7.5)}, ${s(4)})`}
+        />
+        {/* Left stem */}
+        <rect
+          x={s(7.5)} y={s(5.5)}
+          width={s(2)} height={s(12)}
+          rx={s(0.5)}
+          fill="#1E3A5F"
+        />
+        {/* Right stem */}
+        <rect
+          x={s(15.5)} y={s(3.5)}
+          width={s(2)} height={s(12)}
+          rx={s(0.5)}
+          fill="#1E3A5F"
+        />
+        {/* Left note head */}
+        <ellipse
+          cx={s(6.5)} cy={s(18.5)}
+          rx={s(3.2)} ry={s(2.4)}
+          fill="#1E3A5F"
+          transform={`rotate(-15, ${s(6.5)}, ${s(18.5)})`}
+        />
+        {/* Right note head */}
+        <ellipse
+          cx={s(14.5)} cy={s(16.5)}
+          rx={s(3.2)} ry={s(2.4)}
+          fill="#1E3A5F"
+          transform={`rotate(-15, ${s(14.5)}, ${s(16.5)})`}
+        />
+      </g>
     </svg>
   );
 }
