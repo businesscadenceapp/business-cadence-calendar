@@ -380,3 +380,11 @@
 - [ ] Employee weekly report submission page (future)
 - [ ] Owner weekly report summary view in Reports page (future)
 - [x] Run tests and save checkpoint
+
+## BrandIcon Fix (Phase 19)
+
+- [x] Replace BrandIcon SVG drawNote() approach with image-based implementation
+- [x] Crop double eighth note from original logo PNG (transparent background)
+- [x] Upload note PNG to /manus-storage/businesscadence-note-clean2_36202558.png
+- [x] BrandIcon now shows lavender circle with purple double note image
+- [x] Login card and AppShell sidebar both use the correct BrandIcon

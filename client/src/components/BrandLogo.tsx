@@ -58,48 +58,30 @@ function drawNote(tx: number, ty: number, sz: number) {
 
 // ---------------------------------------------------------------------------
 // BrandIcon — circular icon only, no text
-// The note bounding box in 24px space: x≈3.3–17.7 (centre x=10.5), y≈3–20.9 (centre y=11.95)
-// We scale to iconSize=58 (58% of the 100px circle), then translate so the note's
-// visual centre lands at (50, 50).
+// Uses the actual logo note PNG for pixel-perfect rendering.
 // ---------------------------------------------------------------------------
 export function BrandIcon({ size = 48, className = "" }: { size?: number; className?: string }) {
-  // Strategy: render the BrandLogo pill (lg size: 320×70) but crop to just the icon
-  // portion using a square viewBox, then clip to a circle via CSS border-radius.
-  // lg pill: iconX=20, cy=35, iconSize=30. The note is centred at x≈20+10.5*(30/24)=33.1, y=35.
-  // We crop a 70×70 square (the full pill height) starting at x=0 to capture the icon.
-  // Scale that 70×70 crop to `size×size`.
-  const pillH = 90;
-  const s = sizes['xl'];
-  const noteTx = s.px;                   // 26 — same as BrandLogo xl iconX
-  const noteTy = pillH / 2 - s.iconSize / 2; // 45 - 19 = 26 — top-left of note box, same formula as BrandLogo
-
   return (
     <div
       style={{
         width: size,
         height: size,
         borderRadius: '50%',
-        overflow: 'hidden',
-        display: 'inline-block',
+        background: '#EDE9FE',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
         flexShrink: 0,
-        lineHeight: 0,
       }}
       className={className}
       role="img"
       aria-label="BusinessCadence"
     >
-      {/* Render the pill but only show the first 70px (icon square) via the parent clip */}
-      <svg
-        width={size}
-        height={size}
-        viewBox={`0 0 ${pillH} ${pillH}`}
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        {/* Lavender background — fill the full square */}
-        <rect x={0} y={0} width={pillH} height={pillH} fill="#EEF2FF" />
-        {/* Note — exact same call as BrandLogo lg */}
-        {drawNote(noteTx, noteTy, s.iconSize)}
-      </svg>
+      <img
+        src="/manus-storage/businesscadence-note-clean2_36202558.png"
+        alt="BusinessCadence"
+        style={{ width: '65%', height: '65%', objectFit: 'contain' }}
+      />
     </div>
   );
 }
