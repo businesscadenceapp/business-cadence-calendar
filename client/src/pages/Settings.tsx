@@ -310,7 +310,7 @@ function AgendaEditor({
 // ─── Main Settings Page ───────────────────────────────────────────────────────
 export default function Settings() {
   const { person } = usePerson();
-  const accountId = person?.accountId ?? Number(localStorage.getItem("bcc_account_id") ?? "0");
+  const accountId = person?.accountId || Number(localStorage.getItem("bcc_account_id") ?? "0");
 
   // Load businesses from DB — the source of truth for this account
   const { data: dbBusinesses = [] } = trpc.business.list.useQuery(
@@ -501,6 +501,11 @@ export default function Settings() {
       {/* Employee Management — owners only */}
       {(person?.role === "owner" || person?.role === "coowner") && (
         <EmployeeInvitePanel accountId={accountId} />
+      )}
+
+      {/* Weekly Report Questions — owners only */}
+      {(person?.role === "owner" || person?.role === "coowner") && (
+        <ReportQuestionsPanel accountId={accountId} businesses={visibleBusinesses} />
       )}
 
       {/* Password confirmation modal */}
@@ -729,4 +734,181 @@ function EmployeeInvitePanel({ accountId }: { accountId: number }) {
       </div>
     </div>
   );
+}
+
+// ─── Report Questions Panel ───────────────────────────────────────────────────
+
+interface BizOption {
+  key: string;
+  label: string;
+  icon: string;
+  color: string;
+}
+
+function ReportQuestionsPanel({
+  accountId,
+  businesses,
+}: {
+  accountId: number;
+  businesses: BizOption[];
+}) {
+  const [selectedBizId, setSelectedBizId] = useState<number>(0); // 0 = all businesses
+  const [newQuestion, setNewQuestion] = useState("");
+
+  // Load DB businesses to get their IDs (the panel receives slugs/labels but we need IDs)
+  const { data: dbBizList = [] } = trpc.business.list.useQuery(
+    { accountId },
+    { enabled: accountId > 0 }
+  );
+
+  // Build display options: "All Businesses" + each DB business
+  const bizOptions: { id: number; label: string; icon: string }[] = [
+    { id: 0, label: "All Businesses", icon: "🌐" },
+    ...dbBizList.map(b => ({ id: b.id, label: b.name, icon: b.icon || "🏢" })),
+  ];
+
+  const questionsQuery = trpc.report.listQuestions.useQuery(
+    { accountId, businessId: selectedBizId === 0 ? undefined : selectedBizId },
+    { enabled: accountId > 0 }
+  );
+
+  const createQuestion = trpc.report.createQuestion.useMutation({
+    onSuccess: () => {
+      setNewQuestion("");
+      toast.success("Question added!");
+      questionsQuery.refetch();
+    },
+    onError: () => toast.error("Failed to add question."),
+  });
+
+  const deleteQuestion = trpc.report.deleteQuestion.useMutation({
+    onSuccess: () => {
+      toast.success("Question removed.");
+      questionsQuery.refetch();
+    },
+    onError: () => toast.error("Failed to remove question."),
+  });
+
+  const questions = questionsQuery.data ?? [];
+
+  return (
+    <div
+      className="relative z-10 max-w-4xl mx-auto px-4 py-8"
+    >
+      <div
+        className="rounded-2xl p-6"
+        style={{ backgroundColor: "#FFFFFF", border: "1px solid #E2E0DB" }}
+      >
+        {/* Header */}
+        <div className="flex items-center gap-3 mb-5">
+          <span className="text-xl">📝</span>
+          <div>
+            <h2 className="text-[#1E3A5F] font-bold text-[14px]" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+              Weekly Report Questions
+            </h2>
+            <p className="text-[#64748B] text-[11px]">
+              Configure the questions employees answer in their weekly check-in.
+            </p>
+          </div>
+        </div>
+
+        {/* Business filter tabs */}
+        <div className="flex gap-2 flex-wrap mb-5">
+          {bizOptions.map(b => (
+            <button
+              key={b.id}
+              onClick={() => setSelectedBizId(b.id)}
+              className="px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all flex items-center gap-1.5"
+              style={{
+                backgroundColor: selectedBizId === b.id ? "#1E3A5F" : "#F8F7F4",
+                color: selectedBizId === b.id ? "white" : "#475569",
+                border: `1.5px solid ${selectedBizId === b.id ? "#1E3A5F" : "#E2E0DB"}`,
+                fontFamily: "'Space Grotesk', sans-serif",
+              }}
+            >
+              {b.icon} {b.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Question list */}
+        {questionsQuery.isLoading ? (
+          <p className="text-[12px] text-slate-400 italic py-4">Loading questions…</p>
+        ) : questions.length === 0 ? (
+          <div
+            className="rounded-xl p-6 text-center mb-4"
+            style={{ backgroundColor: "#F8F7F4", border: "1.5px dashed #E2E0DB" }}
+          >
+            <p className="text-[12px] text-slate-400">
+              No questions configured yet for {selectedBizId === 0 ? "all businesses" : bizOptions.find(b => b.id === selectedBizId)?.label ?? "this business"}.
+            </p>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-2 mb-4">
+            {questions.map((q, idx) => (
+              <div
+                key={q.id}
+                className="flex items-center gap-3 px-4 py-3 rounded-xl group"
+                style={{ backgroundColor: "#F8F7F4", border: "1px solid #E2E0DB" }}
+              >
+                <span className="text-[12px] text-slate-400 font-bold w-5 flex-shrink-0">{idx + 1}.</span>
+                <p className="flex-1 text-[13px] text-[#1E3A5F]" style={{ fontFamily: "'Inter', sans-serif" }}>
+                  {q.question}
+                </p>
+                <span className="text-[10px] px-2 py-0.5 rounded-full flex-shrink-0"
+                  style={{ backgroundColor: q.businessId === 0 ? "#EDE9FE" : "#DBEAFE", color: q.businessId === 0 ? "#5B21B6" : "#1D4ED8" }}>
+                  {q.businessId === 0 ? "All" : bizOptions.find(b => b.id === q.businessId)?.label ?? "Business"}
+                </span>
+                <button
+                  onClick={() => deleteQuestion.mutate({ id: q.id })}
+                  className="w-6 h-6 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-50 text-red-400"
+                  title="Remove question"
+                >
+                  <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                    <path d="M1 1L9 9M9 1L1 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                  </svg>
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Add question form */}
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={newQuestion}
+            onChange={e => setNewQuestion(e.target.value)}
+            onKeyDown={e => { if (e.key === "Enter" && newQuestion.trim()) handleAddQuestion(); }}
+            placeholder="e.g. What was your biggest win this week?"
+            className="flex-1 rounded-xl px-4 py-2.5 text-[13px] text-[#1A1A2E] placeholder-[#94A3B8] focus:outline-none transition-all"
+            style={{ backgroundColor: "#F8F7F4", border: "1.5px solid #E2E0DB" }}
+            onFocus={e => (e.target.style.borderColor = "#7C3AED")}
+            onBlur={e => (e.target.style.borderColor = "#E2E0DB")}
+          />
+          <button
+            onClick={handleAddQuestion}
+            disabled={!newQuestion.trim() || createQuestion.isPending}
+            className="px-4 py-2.5 rounded-xl text-[12px] font-bold text-white transition-all hover:opacity-90 active:scale-[0.97] disabled:opacity-40"
+            style={{ backgroundColor: "#7C3AED", fontFamily: "'Space Grotesk', sans-serif" }}
+          >
+            {createQuestion.isPending ? "…" : "+ Add"}
+          </button>
+        </div>
+        <p className="text-[10px] text-slate-400 mt-2">
+          Questions tagged "All" appear for every business. Select a specific business tab to add questions for that business only.
+        </p>
+      </div>
+    </div>
+  );
+
+  function handleAddQuestion() {
+    if (!newQuestion.trim()) return;
+    createQuestion.mutate({
+      accountId,
+      businessId: selectedBizId,
+      question: newQuestion.trim(),
+      sortOrder: questions.length,
+    });
+  }
 }

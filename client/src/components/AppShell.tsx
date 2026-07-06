@@ -46,6 +46,7 @@ const OWNER_NAV: NavItem[] = [
 const EMPLOYEE_NAV: NavItem[] = [
   { path: "/app/board",    label: "Board",    icon: "📋", activeColor: "#2563EB" },
   { path: "/app/kpi",      label: "KPIs",     icon: "📈", activeColor: "#059669" },
+  { path: "/app/checkin",  label: "Check-in", icon: "✅", activeColor: "#7C3AED" },
 ];
 
 // ─── Page Transition ─────────────────────────────────────────────────────────

@@ -1046,6 +1046,46 @@ Be concise and specific. If a field has nothing, use an empty array.`,
       .query(async ({ input }) => {
         return getKpiMonthlyTotals(input.accountId, input.businessSlug, input.yearMonth);
       }),
+
+    /**
+     * Seed default KPI categories for a business if none exist yet.
+     * Chiro defaults: Adjustments/week, New Patients/week, Reactivated Patients/month.
+     * CrossFit defaults: Active Members/month, Classes Held/week, New Members/month.
+     * Realty defaults: Listings Active/month, Closings/month, Leads/week.
+     */
+    seedDefaults: publicProcedure
+      .input(z.object({ accountId: z.number(), businessSlug: z.string() }))
+      .mutation(async ({ input }) => {
+        const existing = await getKpiCategories(input.accountId, input.businessSlug);
+        if (existing.length > 0) return { seeded: false, message: "Categories already exist" };
+        const defaults: Record<string, { name: string; unit: string; frequency: "weekly" | "monthly" }[]> = {
+          chiropractic: [
+            { name: "Adjustments", unit: "visits", frequency: "weekly" },
+            { name: "New Patients", unit: "patients", frequency: "weekly" },
+            { name: "Reactivated Patients", unit: "patients", frequency: "monthly" },
+            { name: "Patient Visit Average (PVA)", unit: "visits", frequency: "monthly" },
+          ],
+          crossfit: [
+            { name: "Active Members", unit: "members", frequency: "monthly" },
+            { name: "Classes Held", unit: "classes", frequency: "weekly" },
+            { name: "New Members", unit: "members", frequency: "monthly" },
+            { name: "Attendance", unit: "check-ins", frequency: "weekly" },
+          ],
+          realty: [
+            { name: "Active Listings", unit: "listings", frequency: "monthly" },
+            { name: "Closings", unit: "closings", frequency: "monthly" },
+            { name: "New Leads", unit: "leads", frequency: "weekly" },
+          ],
+        };
+        const cats = defaults[input.businessSlug] ?? [
+          { name: "Revenue", unit: "$", frequency: "monthly" as const },
+          { name: "Tasks Completed", unit: "tasks", frequency: "weekly" as const },
+        ];
+        for (let i = 0; i < cats.length; i++) {
+          await createKpiCategory({ accountId: input.accountId, businessSlug: input.businessSlug, ...cats[i], sortOrder: i });
+        }
+        return { seeded: true, count: cats.length };
+      }),
   }),
 
   /** Business management — list and configure account businesses. */

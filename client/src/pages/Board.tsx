@@ -601,7 +601,7 @@ export default function Board() {
 
   // Read account scope from PersonContext
   const { person } = usePerson();
-  const accountId = person?.accountId ?? Number(localStorage.getItem("bcc_account_id") ?? "0");
+  const accountId = person?.accountId || Number(localStorage.getItem("bcc_account_id") ?? "0");
 
   // Load businesses from DB — the source of truth for this account
   const { data: dbBusinesses = [] } = trpc.business.list.useQuery(

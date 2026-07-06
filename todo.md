@@ -388,3 +388,12 @@
 - [x] Upload note PNG to /manus-storage/businesscadence-note-clean2_36202558.png
 - [x] BrandIcon now shows lavender circle with purple double note image
 - [x] Login card and AppShell sidebar both use the correct BrandIcon
+
+## Phase 20: Pending Features
+
+- [ ] Goals page: load business list from trpc.business.list (currently hardcoded)
+- [ ] Seed default KPI categories for chiro: Adjustments/week, New Patients/week, Reactivated Patients/month
+- [ ] Weekly report questions: owner configures questions per business in Settings
+- [ ] Employee weekly report submission page (/app/reports/submit)
+- [ ] Owner weekly report summary view in Reports page
+- [ ] Full review pass: check for bugs, broken flows, and inconsistencies

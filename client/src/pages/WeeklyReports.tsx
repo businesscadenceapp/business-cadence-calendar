@@ -309,14 +309,125 @@ function EmployeeCard({
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
 
+// ── Check-ins Summary (Owner view of employee narrative answers) ──────────────
+
+function CheckinsSummary({ accountId, weekKey }: { accountId: number; weekKey: string }) {
+  const answersQuery = trpc.report.getWeekAnswers.useQuery(
+    { accountId, weekKey },
+    { enabled: accountId > 0 }
+  );
+  const personsQuery = trpc.person.list.useQuery(
+    { accountId },
+    { enabled: accountId > 0 }
+  );
+
+  const answers = answersQuery.data ?? [];
+  const persons = personsQuery.data ?? [];
+
+  // Build person name map
+  const personMap = useMemo(() => {
+    const m: Record<string, string> = {};
+    for (const p of persons) m[p.id] = p.name;
+    return m;
+  }, [persons]);
+
+  // Group answers by personId
+  const byPerson = useMemo(() => {
+    const m: Record<string, typeof answers> = {};
+    for (const a of answers) {
+      if (!m[a.personId]) m[a.personId] = [];
+      m[a.personId].push(a);
+    }
+    return m;
+  }, [answers]);
+
+  const personIds = Object.keys(byPerson);
+
+  if (answersQuery.isLoading) {
+    return (
+      <div className="flex items-center justify-center py-16">
+        <div className="w-8 h-8 rounded-full border-2 border-purple-300 border-t-purple-600 animate-spin" />
+      </div>
+    );
+  }
+
+  if (personIds.length === 0) {
+    return (
+      <div
+        className="rounded-2xl p-10 text-center"
+        style={{ background: "#F1F0ED", border: "1px dashed #E2E0DB" }}
+      >
+        <p className="text-2xl mb-3">📝</p>
+        <p className="text-base font-semibold text-[#1E3A5F] mb-1" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+          No check-ins submitted yet
+        </p>
+        <p className="text-sm text-[#64748B]" style={{ fontFamily: "'Inter', sans-serif" }}>
+          Employees haven't submitted their weekly check-in answers for this week.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-6">
+      {personIds.map(pid => {
+        const personAnswers = byPerson[pid];
+        const name = personMap[pid] ?? pid;
+        return (
+          <div
+            key={pid}
+            className="rounded-2xl p-5 flex flex-col gap-4"
+            style={{ backgroundColor: "#FFFFFF", border: "1.5px solid #E2E0DB", boxShadow: "0 2px 12px rgba(30,58,95,0.04)" }}
+          >
+            {/* Employee header */}
+            <div className="flex items-center gap-3">
+              <div
+                className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold text-white flex-shrink-0"
+                style={{ backgroundColor: "#7C3AED" }}
+              >
+                {name.charAt(0).toUpperCase()}
+              </div>
+              <div>
+                <p className="text-[14px] font-bold text-[#1E3A5F]" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>{name}</p>
+                <p className="text-[11px] text-slate-400">{personAnswers.length} answer{personAnswers.length !== 1 ? "s" : ""}</p>
+              </div>
+              <span
+                className="ml-auto text-[10px] px-2 py-0.5 rounded-full font-semibold"
+                style={{ backgroundColor: "#DCFCE7", color: "#166534" }}
+              >
+                ✓ Submitted
+              </span>
+            </div>
+
+            {/* Answers */}
+            <div className="flex flex-col gap-3">
+              {personAnswers.map(a => (
+                <div key={a.id} className="rounded-xl p-4" style={{ backgroundColor: "#F8F7F4" }}>
+                  <p className="text-[11px] font-bold text-[#64748B] uppercase tracking-wider mb-2" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+                    {a.questionText}
+                  </p>
+                  <p className="text-[13px] text-[#1E3A5F] leading-relaxed" style={{ fontFamily: "'Inter', sans-serif" }}>
+                    {a.answer}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 export default function WeeklyReports() {
   const { person } = usePerson();
   // Prefer PersonContext accountId; fall back to legacy localStorage key for backward compat
-  const accountId = person?.accountId ?? parseInt(localStorage.getItem("bcc_account_id") ?? "0", 10);
+  const accountId = person?.accountId || parseInt(localStorage.getItem("bcc_account_id") ?? "0", 10);
   const today = useMemo(() => new Date(), []);
   const currentWeekKey = useMemo(() => getWeekKey(today), [today]);
   const [selectedWeek, setSelectedWeek] = useState(currentWeekKey);
   const prevWeekKey = useMemo(() => getPrevWeekKey(selectedWeek), [selectedWeek]);
+  const [activeTab, setActiveTab] = useState<"metrics" | "checkins">("metrics");
 
   const summaryQuery = trpc.weeklyReport.getSummary.useQuery(
     { accountId, weekKey: selectedWeek, prevWeekKey },
@@ -348,22 +459,40 @@ export default function WeeklyReports() {
   return (
     <div className="h-full flex flex-col" style={{ background: "#F8F7F4" }}>
       {/* Slim page title bar */}
-      <div
-        className="flex items-center justify-between px-6 py-3 border-b flex-shrink-0"
+              <div className="flex items-center justify-between px-6 py-3 border-b flex-shrink-0"
         style={{ background: "#FFFFFF", borderColor: "#E2E0DB" }}
       >
         <div className="flex items-center gap-3">
           <span className="text-base">📊</span>
           <h1 className="text-sm font-bold text-[#1E3A5F]" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Weekly Reports</h1>
-          <span
-            className="text-xs px-2 py-0.5 rounded-full"
-            style={{ background: "rgba(13,148,136,0.10)", color: "#0D9488", fontFamily: "'Space Grotesk', sans-serif" }}
-          >
-            Team Layer
-          </span>
+          {/* Tabs */}
+          <div className="flex gap-1 ml-2">
+            <button
+              onClick={() => setActiveTab("metrics")}
+              className="text-xs px-3 py-1 rounded-lg font-semibold transition-all"
+              style={{
+                backgroundColor: activeTab === "metrics" ? "#1E3A5F" : "transparent",
+                color: activeTab === "metrics" ? "white" : "#64748B",
+                fontFamily: "'Space Grotesk', sans-serif",
+              }}
+            >
+              Metrics
+            </button>
+            <button
+              onClick={() => setActiveTab("checkins")}
+              className="text-xs px-3 py-1 rounded-lg font-semibold transition-all"
+              style={{
+                backgroundColor: activeTab === "checkins" ? "#7C3AED" : "transparent",
+                color: activeTab === "checkins" ? "white" : "#64748B",
+                fontFamily: "'Space Grotesk', sans-serif",
+              }}
+            >
+              ✅ Check-ins
+            </button>
+          </div>
         </div>
         <div className="flex items-center gap-3">
-          {totalCount > 0 && (
+          {activeTab === "metrics" && totalCount > 0 && (
             <span className="text-xs text-[#64748B]" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
               {submittedCount}/{totalCount} submitted
             </span>
@@ -379,6 +508,41 @@ export default function WeeklyReports() {
       </div>
 
       <div className="max-w-5xl mx-auto px-6 py-8">
+        {/* Check-ins tab */}
+        {activeTab === "checkins" && (
+          <>
+            {/* Week selector for check-ins */}
+            <div className="flex items-center gap-4 mb-8">
+              <button
+                onClick={() => shiftWeek(-1)}
+                className="w-9 h-9 rounded-xl flex items-center justify-center transition-all hover:bg-[#E2E0DB] active:scale-95 text-lg"
+                style={{ border: "1px solid #E2E0DB", color: "#64748B" }}
+              >
+                ‹
+              </button>
+              <div className="flex-1 text-center">
+                <p className="text-lg font-bold text-[#1E3A5F]" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+                  {formatWeekRange(selectedWeek)}
+                </p>
+                <p className="text-xs text-[#94A3B8] mt-0.5" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                  Week {weekNum}{isCurrentWeek ? " · Current Week" : ""}
+                </p>
+              </div>
+              <button
+                onClick={() => shiftWeek(1)}
+                disabled={isCurrentWeek}
+                className="w-9 h-9 rounded-xl flex items-center justify-center transition-all hover:bg-[#E2E0DB] active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed text-lg"
+                style={{ border: "1px solid #E2E0DB", color: "#64748B" }}
+              >
+                ›
+              </button>
+            </div>
+            <CheckinsSummary accountId={accountId} weekKey={selectedWeek} />
+          </>
+        )}
+
+        {/* Metrics tab */}
+        {activeTab === "metrics" && (<>
         {/* Week selector */}
         <div className="flex items-center gap-4 mb-8">
           <button
@@ -488,6 +652,7 @@ export default function WeeklyReports() {
             )}
           </>
         )}
+        </>)}
       </div>
     </div>
   );

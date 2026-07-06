@@ -7,7 +7,7 @@
  * Period key format: "YYYY-Www" for weekly (e.g. "2026-W27")
  */
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
 import { usePerson } from "@/contexts/PersonContext";
 import { toast } from "sonner";
@@ -236,8 +236,19 @@ function EmployeeKpiView({ accountId, personId, businessScope }: {
 // ─── Owner Dashboard View ─────────────────────────────────────────────────────
 
 function OwnerKpiDashboard({ accountId }: { accountId: number }) {
-  const [selectedBusiness, setSelectedBusiness] = useState("chiropractic");
   const [selectedMonth, setSelectedMonth] = useState(getCurrentMonthKey());
+
+  // Load businesses from DB
+  const businessesQuery = trpc.business.list.useQuery({ accountId }, { staleTime: 60_000 });
+  const dbBusinesses = businessesQuery.data ?? [];
+  const [selectedBusiness, setSelectedBusiness] = useState("");  // set after load
+
+  // Once businesses load, default to first one
+  useEffect(() => {
+    if (dbBusinesses.length > 0 && !selectedBusiness) {
+      setSelectedBusiness(dbBusinesses[0].slug);
+    }
+  }, [dbBusinesses.length, selectedBusiness]);
 
   const categoriesQuery = trpc.kpi.listCategories.useQuery(
     { accountId, businessSlug: selectedBusiness },
@@ -292,12 +303,7 @@ function OwnerKpiDashboard({ accountId }: { accountId: number }) {
     } catch { return false; }
   });
 
-  const businesses = [
-    { slug: "chiropractic", label: "Chiropractic", icon: "🦴" },
-    { slug: "crossfit", label: "CrossFit", icon: "💪" },
-    { slug: "realty", label: "Realty", icon: "🏠" },
-    { slug: "general", label: "General", icon: "📋" },
-  ];
+  const businesses = dbBusinesses.map(b => ({ slug: b.slug, label: b.name, icon: b.icon || "🏢" }));
 
   // Generate last 12 months for selector
   const monthOptions = useMemo(() => {
@@ -313,6 +319,19 @@ function OwnerKpiDashboard({ accountId }: { accountId: number }) {
   const [showAddCategory, setShowAddCategory] = useState(false);
   const [newCatName, setNewCatName] = useState("");
   const [newCatUnit, setNewCatUnit] = useState("#");
+  const [newCatFrequency, setNewCatFrequency] = useState<"weekly" | "monthly">("weekly");
+
+  const seedDefaults = trpc.kpi.seedDefaults.useMutation({
+    onSuccess: (result) => {
+      if (result.seeded) {
+        toast.success(`Seeded ${result.count} default KPI categories!`);
+      } else {
+        toast.info("Categories already exist — nothing seeded.");
+      }
+      categoriesQuery.refetch();
+    },
+    onError: () => toast.error("Failed to seed defaults."),
+  });
 
   const createCategory = trpc.kpi.createCategory.useMutation({
     onSuccess: () => {
@@ -331,7 +350,7 @@ function OwnerKpiDashboard({ accountId }: { accountId: number }) {
       businessSlug: selectedBusiness,
       name: newCatName.trim(),
       unit: newCatUnit,
-      frequency: "weekly",
+      frequency: newCatFrequency,
       sortOrder: categories.length,
     });
   };
@@ -528,7 +547,17 @@ function OwnerKpiDashboard({ accountId }: { accountId: number }) {
         )}
 
         {categories.length === 0 ? (
-          <p className="text-[12px] text-slate-400 italic">No categories yet. Add one above.</p>
+          <div className="flex flex-col items-center gap-3 py-4">
+            <p className="text-[12px] text-slate-400 italic">No categories yet.</p>
+            <button
+              onClick={() => seedDefaults.mutate({ accountId, businessSlug: selectedBusiness })}
+              disabled={seedDefaults.isPending || !selectedBusiness}
+              className="px-4 py-2 rounded-lg text-[12px] font-semibold transition-all hover:opacity-90 active:scale-[0.97] disabled:opacity-40"
+              style={{ backgroundColor: "#EDE9FE", color: "#5B21B6", border: "1.5px solid #C4B5FD", fontFamily: "'Space Grotesk', sans-serif" }}
+            >
+              {seedDefaults.isPending ? "Seeding…" : "✨ Seed Default Categories"}
+            </button>
+          </div>
         ) : (
           <div className="flex flex-col gap-2">
             {categories.map(cat => (
