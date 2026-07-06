@@ -193,7 +193,7 @@ function Hero() {
           </div>
 
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-[#1E3A5F] leading-tight mb-6">
-            Stop Letting Business Talk{" "}
+            Stop Letting Your Business{" "}
             <span className="text-[#0D9488]">Invade Your Life.</span>
           </h1>
 
