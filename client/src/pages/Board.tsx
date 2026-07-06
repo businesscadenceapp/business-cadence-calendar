@@ -652,9 +652,10 @@ export default function Board() {
     onError: () => toast.error("Failed to confirm task"),
   });
 
-  // Only show cards for businesses this account is allowed to see
+  // Only show cards for businesses this account is allowed to see.
+  // Always include 'general' cards — they are not tied to a specific business.
   const allCards = ((data?.cards ?? []) as Card[]).filter(c =>
-    allowedBusinesses.includes(c.business)
+    c.business === "general" || allowedBusinesses.includes(c.business)
   );
 
   const filtered = filterBusiness === "all"
