@@ -825,7 +825,7 @@ export async function createKpiCategory(data: Omit<InsertKpiCategory, "id" | "cr
   return cat;
 }
 
-export async function updateKpiCategory(id: number, data: Partial<Pick<KpiCategory, "name" | "unit" | "frequency" | "sortOrder" | "isActive">>): Promise<void> {
+export async function updateKpiCategory(id: number, data: Partial<Pick<KpiCategory, "name" | "unit" | "frequency" | "sortOrder" | "isActive" | "monthlyTarget" | "showGoalToStaff">>): Promise<void> {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   await db.update(kpiCategories).set(data).where(eq(kpiCategories.id, id));
@@ -877,8 +877,8 @@ export async function getKpiMonthlyTotals(accountId: number, businessSlug: strin
   const cats = await getKpiCategories(accountId, businessSlug);
   if (cats.length === 0) return [];
   const catIds = cats.map(c => c.id);
-  const catMap: Record<number, { name: string; unit: string }> = {};
-  for (const c of cats) catMap[c.id] = { name: c.name, unit: c.unit };
+  const catMap: Record<number, { name: string; unit: string; monthlyTarget: number | null; showGoalToStaff: boolean }> = {};
+  for (const c of cats) catMap[c.id] = { name: c.name, unit: c.unit, monthlyTarget: c.monthlyTarget ?? null, showGoalToStaff: c.showGoalToStaff ?? false };
   const allEntries = await db
     .select()
     .from(kpiEntries)
@@ -913,6 +913,8 @@ export async function getKpiMonthlyTotals(accountId: number, businessSlug: strin
       categoryId: catId,
       categoryName: catMap[catId]?.name ?? String(catId),
       unit: catMap[catId]?.unit ?? "#",
+      monthlyTarget: catMap[catId]?.monthlyTarget ?? null,
+      showGoalToStaff: catMap[catId]?.showGoalToStaff ?? false,
       personId,
       total,
     };

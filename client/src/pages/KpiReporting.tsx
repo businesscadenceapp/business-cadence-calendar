@@ -2,9 +2,11 @@
  * KPI Reporting Page
  *
  * Employees: see their assigned KPI categories and submit weekly numbers.
- * Owners/Co-owners: see a dashboard with all employees' numbers and running monthly totals.
- *
- * Period key format: "YYYY-Www" for weekly (e.g. "2026-W27")
+ *            If showGoalToStaff is true for a category, they see the monthly goal next to their total.
+ * Owners/Co-owners: see a dashboard with:
+ *   - Monthly running totals per category, side-by-side with the monthly goal
+ *   - Per-employee breakdown for the current week
+ *   - Category editor with monthlyTarget and showGoalToStaff toggle
  */
 
 import { useState, useMemo, useEffect } from "react";
@@ -14,7 +16,6 @@ import { toast } from "sonner";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-/** Get ISO week number for a date */
 function getISOWeek(date: Date): number {
   const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
   const dayNum = d.getUTCDay() || 7;
@@ -23,20 +24,17 @@ function getISOWeek(date: Date): number {
   return Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
 }
 
-/** Get the current week's period key, e.g. "2026-W27" */
 function getCurrentWeekKey(): string {
   const now = new Date();
   const week = getISOWeek(now);
   return `${now.getFullYear()}-W${String(week).padStart(2, "0")}`;
 }
 
-/** Get the current month key, e.g. "2026-07" */
 function getCurrentMonthKey(): string {
   const now = new Date();
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
 }
 
-/** Format a period key for display */
 function formatPeriod(key: string): string {
   if (key.includes("-W")) {
     const [year, week] = key.split("-W");
@@ -58,14 +56,13 @@ function EmployeeKpiView({ accountId, personId, businessScope }: {
   const [values, setValues] = useState<Record<number, string>>({});
   const [saving, setSaving] = useState<Record<number, boolean>>({});
 
-  // Parse business scopes
   const scopes = useMemo(() => {
     if (businessScope === "all") return ["chiropractic", "crossfit", "realty", "general"];
     try { return JSON.parse(businessScope) as string[]; } catch { return [businessScope]; }
   }, [businessScope]);
 
-  // Use the first scope as the primary business
   const primarySlug = scopes[0] ?? "general";
+  const currentMonth = getCurrentMonthKey();
 
   const categoriesQuery = trpc.kpi.listCategories.useQuery(
     { accountId, businessSlug: primarySlug },
@@ -77,11 +74,18 @@ function EmployeeKpiView({ accountId, personId, businessScope }: {
     { staleTime: 30_000 }
   );
 
+  // Monthly totals so employee can see their running total vs goal
+  const monthlyTotalsQuery = trpc.kpi.getMonthlyTotals.useQuery(
+    { accountId, businessSlug: primarySlug, yearMonth: currentMonth },
+    { staleTime: 30_000 }
+  );
+
   const submitEntry = trpc.kpi.submitEntry.useMutation({
     onSuccess: (_, vars) => {
       setSaving(s => ({ ...s, [vars.categoryId]: false }));
       toast.success("Number saved!");
       entriesQuery.refetch();
+      monthlyTotalsQuery.refetch();
     },
     onError: (_, vars) => {
       setSaving(s => ({ ...s, [vars.categoryId]: false }));
@@ -91,8 +95,8 @@ function EmployeeKpiView({ accountId, personId, businessScope }: {
 
   const categories = categoriesQuery.data?.filter(c => c.isActive) ?? [];
   const entries = entriesQuery.data ?? [];
+  const monthlyTotals = monthlyTotalsQuery.data ?? [];
 
-  // Build a lookup: categoryId → existing entry value
   const existingValues = useMemo(() => {
     const map: Record<number, number> = {};
     for (const e of entries) {
@@ -100,6 +104,15 @@ function EmployeeKpiView({ accountId, personId, businessScope }: {
     }
     return map;
   }, [entries, personId]);
+
+  // My monthly total per category
+  const myMonthlyTotals = useMemo(() => {
+    const map: Record<number, number> = {};
+    for (const t of monthlyTotals) {
+      if (t.personId === personId) map[t.categoryId] = t.total;
+    }
+    return map;
+  }, [monthlyTotals, personId]);
 
   const handleSave = (categoryId: number) => {
     const raw = values[categoryId];
@@ -109,7 +122,6 @@ function EmployeeKpiView({ accountId, personId, businessScope }: {
     submitEntry.mutate({ accountId, categoryId, personId, periodKey: selectedPeriod, value: num });
   };
 
-  // Generate last 8 weeks for the period selector
   const weekOptions = useMemo(() => {
     const opts: string[] = [];
     const now = new Date();
@@ -169,6 +181,9 @@ function EmployeeKpiView({ accountId, personId, businessScope }: {
           const existing = existingValues[cat.id];
           const inputVal = values[cat.id] ?? (existing !== undefined ? String(existing) : "");
           const isSaved = existing !== undefined && String(existing) === inputVal;
+          const myTotal = myMonthlyTotals[cat.id] ?? 0;
+          const target = (cat as any).monthlyTarget as number | null;
+          const showGoal = (cat as any).showGoalToStaff as boolean;
 
           return (
             <div
@@ -180,7 +195,7 @@ function EmployeeKpiView({ accountId, personId, businessScope }: {
                 boxShadow: "0 2px 12px rgba(30,58,95,0.04)",
               }}
             >
-              <div className="flex items-center justify-between">
+              <div className="flex items-start justify-between gap-2">
                 <div>
                   <p className="text-[14px] font-bold text-[#1E3A5F]" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
                     {cat.name}
@@ -190,11 +205,50 @@ function EmployeeKpiView({ accountId, personId, businessScope }: {
                   </p>
                 </div>
                 {isSaved && (
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: "#DCFCE7", color: "#166534" }}>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0" style={{ backgroundColor: "#DCFCE7", color: "#166534" }}>
                     ✓ Saved
                   </span>
                 )}
               </div>
+
+              {/* Monthly running total + goal (if visible to staff) */}
+              {showGoal && target !== null && (
+                <div
+                  className="rounded-xl px-3 py-2.5 flex items-center justify-between"
+                  style={{ backgroundColor: "#F0FDF4", border: "1px solid #BBF7D0" }}
+                >
+                  <div>
+                    <p className="text-[10px] font-bold text-emerald-700 uppercase tracking-wider">This Month</p>
+                    <p className="text-[18px] font-bold text-emerald-800" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+                      {myTotal}
+                      <span className="text-[11px] text-emerald-600 font-normal ml-1">/ Goal: {target} {cat.unit}</span>
+                    </p>
+                  </div>
+                  {/* Progress bar */}
+                  <div className="w-20 h-2 rounded-full bg-emerald-100 overflow-hidden">
+                    <div
+                      className="h-full rounded-full transition-all"
+                      style={{
+                        width: `${Math.min(100, Math.round((myTotal / target) * 100))}%`,
+                        backgroundColor: myTotal >= target ? "#16A34A" : "#34D399",
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* If goal not shown to staff, just show their running total */}
+              {!showGoal && (
+                <div
+                  className="rounded-xl px-3 py-2 flex items-center gap-2"
+                  style={{ backgroundColor: "#F8F7F4", border: "1px solid #E2E0DB" }}
+                >
+                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Month Total</p>
+                  <p className="text-[16px] font-bold text-[#1E3A5F] ml-auto" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+                    {myTotal} <span className="text-[11px] text-slate-400 font-normal">{cat.unit}</span>
+                  </p>
+                </div>
+              )}
 
               <div className="flex items-center gap-2">
                 <input
@@ -233,17 +287,168 @@ function EmployeeKpiView({ accountId, personId, businessScope }: {
   );
 }
 
+// ─── Category Editor Row ──────────────────────────────────────────────────────
+
+function CategoryEditorRow({ cat, onUpdated }: {
+  cat: { id: number; name: string; unit: string; frequency: string; isActive: boolean; monthlyTarget?: number | null; showGoalToStaff?: boolean };
+  onUpdated: () => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [target, setTarget] = useState(cat.monthlyTarget != null ? String(cat.monthlyTarget) : "");
+  const [showGoal, setShowGoal] = useState(cat.showGoalToStaff ?? false);
+  const [saving, setSaving] = useState(false);
+
+  const updateCategory = trpc.kpi.updateCategory.useMutation({
+    onSuccess: () => {
+      setSaving(false);
+      setEditing(false);
+      toast.success("Category updated!");
+      onUpdated();
+    },
+    onError: () => {
+      setSaving(false);
+      toast.error("Failed to update category.");
+    },
+  });
+
+  const handleSave = () => {
+    setSaving(true);
+    const numTarget = target.trim() ? parseFloat(target) : null;
+    updateCategory.mutate({
+      id: cat.id,
+      monthlyTarget: isNaN(numTarget as number) ? null : numTarget,
+      showGoalToStaff: showGoal,
+    });
+  };
+
+  const toggleActive = () => {
+    updateCategory.mutate({ id: cat.id, isActive: !cat.isActive });
+    onUpdated();
+  };
+
+  return (
+    <div
+      className="rounded-xl overflow-hidden"
+      style={{ border: "1.5px solid #E2E8F0", opacity: cat.isActive ? 1 : 0.5 }}
+    >
+      {/* Main row */}
+      <div className="flex items-center gap-3 px-4 py-3" style={{ backgroundColor: "#F8F7F4" }}>
+        <div className="flex-1">
+          <p className="text-[13px] font-semibold text-[#1E3A5F]" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+            {cat.name}
+          </p>
+          <p className="text-[11px] text-slate-400 mt-0.5">
+            {cat.unit} · {cat.frequency}
+            {cat.monthlyTarget != null && (
+              <span className="ml-2 text-emerald-600 font-semibold">
+                Goal: {cat.monthlyTarget} {cat.unit}/mo
+                {cat.showGoalToStaff ? " · visible to staff" : " · owner only"}
+              </span>
+            )}
+          </p>
+        </div>
+        <button
+          onClick={() => setEditing(v => !v)}
+          className="text-[11px] px-2.5 py-1 rounded-lg font-semibold transition-all hover:opacity-80"
+          style={{ backgroundColor: "#EDE9FE", color: "#5B21B6", border: "1px solid #C4B5FD" }}
+        >
+          {editing ? "Cancel" : "Edit Goal"}
+        </button>
+        <button
+          onClick={toggleActive}
+          className="text-[11px] px-2.5 py-1 rounded-lg font-semibold transition-all hover:opacity-80"
+          style={{
+            backgroundColor: cat.isActive ? "#FEF2F2" : "#F0FDF4",
+            color: cat.isActive ? "#DC2626" : "#16A34A",
+            border: `1px solid ${cat.isActive ? "#FECACA" : "#BBF7D0"}`,
+          }}
+        >
+          {cat.isActive ? "Deactivate" : "Activate"}
+        </button>
+      </div>
+
+      {/* Edit goal panel */}
+      {editing && (
+        <div
+          className="px-4 py-4 flex flex-col gap-3"
+          style={{ backgroundColor: "#FFFFFF", borderTop: "1px solid #E2E8F0" }}
+        >
+          <div className="flex items-center gap-3 flex-wrap">
+            <div className="flex flex-col gap-1">
+              <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                Monthly Goal ({cat.unit})
+              </label>
+              <input
+                type="number"
+                value={target}
+                onChange={e => setTarget(e.target.value)}
+                placeholder="e.g. 36"
+                className="rounded-lg px-3 py-2 text-[13px] text-[#1E3A5F] font-bold focus:outline-none w-28"
+                style={{ backgroundColor: "#F8F7F4", border: "1.5px solid #E2E0DB" }}
+                onFocus={e => (e.target.style.borderColor = "#7C3AED")}
+                onBlur={e => (e.target.style.borderColor = "#E2E0DB")}
+              />
+            </div>
+
+            {/* Visibility toggle */}
+            <div className="flex flex-col gap-1">
+              <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                Show Goal to Staff
+              </label>
+              <button
+                onClick={() => setShowGoal(v => !v)}
+                className="flex items-center gap-2 rounded-lg px-3 py-2 text-[12px] font-semibold transition-all"
+                style={{
+                  backgroundColor: showGoal ? "#F0FDF4" : "#F8F7F4",
+                  border: `1.5px solid ${showGoal ? "#86EFAC" : "#E2E0DB"}`,
+                  color: showGoal ? "#16A34A" : "#64748B",
+                }}
+              >
+                <span
+                  className="w-8 h-4 rounded-full relative transition-all"
+                  style={{ backgroundColor: showGoal ? "#22C55E" : "#CBD5E1" }}
+                >
+                  <span
+                    className="absolute top-0.5 w-3 h-3 rounded-full bg-white transition-all"
+                    style={{ left: showGoal ? "calc(100% - 14px)" : "2px" }}
+                  />
+                </span>
+                {showGoal ? "Visible to staff" : "Owner only"}
+              </button>
+            </div>
+
+            <div className="flex flex-col gap-1 justify-end" style={{ paddingTop: 18 }}>
+              <button
+                onClick={handleSave}
+                disabled={saving}
+                className="px-4 py-2 rounded-lg text-[12px] font-bold transition-all hover:opacity-90 active:scale-[0.97] disabled:opacity-40"
+                style={{ backgroundColor: "#1E3A5F", color: "white", fontFamily: "'Space Grotesk', sans-serif" }}
+              >
+                {saving ? "Saving…" : "Save Goal"}
+              </button>
+            </div>
+          </div>
+
+          <p className="text-[11px] text-slate-400">
+            {showGoal
+              ? "Staff will see their running monthly total alongside this goal when submitting numbers."
+              : "Only owners and co-owners will see this goal. Staff will see their running total without the target."}
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Owner Dashboard View ─────────────────────────────────────────────────────
 
 function OwnerKpiDashboard({ accountId }: { accountId: number }) {
   const [selectedMonth, setSelectedMonth] = useState(getCurrentMonthKey());
 
-  // Load businesses from DB
   const businessesQuery = trpc.business.list.useQuery({ accountId }, { staleTime: 60_000 });
   const dbBusinesses = businessesQuery.data ?? [];
-  const [selectedBusiness, setSelectedBusiness] = useState("");  // set after load
+  const [selectedBusiness, setSelectedBusiness] = useState("");
 
-  // Once businesses load, default to first one
   useEffect(() => {
     if (dbBusinesses.length > 0 && !selectedBusiness) {
       setSelectedBusiness(dbBusinesses[0].slug);
@@ -260,12 +465,8 @@ function OwnerKpiDashboard({ accountId }: { accountId: number }) {
     { staleTime: 30_000 }
   );
 
-  const personsQuery = trpc.person.list.useQuery(
-    { accountId },
-    { staleTime: 60_000 }
-  );
+  const personsQuery = trpc.person.list.useQuery({ accountId }, { staleTime: 60_000 });
 
-  // Current week entries for the "this week" view
   const currentWeekKey = getCurrentWeekKey();
   const weekEntriesQuery = trpc.kpi.getEntries.useQuery(
     { accountId, businessSlug: selectedBusiness, periodKey: currentWeekKey },
@@ -273,18 +474,17 @@ function OwnerKpiDashboard({ accountId }: { accountId: number }) {
   );
 
   const categories = categoriesQuery.data?.filter(c => c.isActive) ?? [];
+  const allCategories = categoriesQuery.data ?? [];
   const persons = personsQuery.data ?? [];
   const weekEntries = weekEntriesQuery.data ?? [];
   const monthlyTotals = monthlyTotalsQuery.data ?? [];
 
-  // Build person lookup
   const personMap = useMemo(() => {
     const m: Record<string, string> = {};
     for (const p of persons) m[p.id] = p.name;
     return m;
   }, [persons]);
 
-  // Build week entries lookup: categoryId → personId → value
   const weekMatrix = useMemo(() => {
     const m: Record<number, Record<string, number>> = {};
     for (const e of weekEntries) {
@@ -294,7 +494,6 @@ function OwnerKpiDashboard({ accountId }: { accountId: number }) {
     return m;
   }, [weekEntries]);
 
-  // Employees for this business
   const employees = persons.filter(p => {
     if (p.role === "owner" || p.role === "coowner") return false;
     try {
@@ -305,7 +504,6 @@ function OwnerKpiDashboard({ accountId }: { accountId: number }) {
 
   const businesses = dbBusinesses.map(b => ({ slug: b.slug, label: b.name, icon: b.icon || "🏢" }));
 
-  // Generate last 12 months for selector
   const monthOptions = useMemo(() => {
     const opts: string[] = [];
     const now = new Date();
@@ -315,6 +513,38 @@ function OwnerKpiDashboard({ accountId }: { accountId: number }) {
     }
     return opts;
   }, []);
+
+  // Aggregate monthly totals by category (sum across all employees)
+  const categoryTotals = useMemo(() => {
+    const m: Record<number, number> = {};
+    for (const t of monthlyTotals) {
+      m[t.categoryId] = (m[t.categoryId] ?? 0) + t.total;
+    }
+    return m;
+  }, [monthlyTotals]);
+
+  // Get goal metadata from monthly totals (same for all employees in a category)
+  const categoryGoalMeta = useMemo(() => {
+    const m: Record<number, { monthlyTarget: number | null; showGoalToStaff: boolean }> = {};
+    for (const t of monthlyTotals) {
+      if (!m[t.categoryId]) {
+        m[t.categoryId] = {
+          monthlyTarget: (t as any).monthlyTarget ?? null,
+          showGoalToStaff: (t as any).showGoalToStaff ?? false,
+        };
+      }
+    }
+    // Also pull from categories for ones with no entries yet
+    for (const cat of categories) {
+      if (!m[cat.id]) {
+        m[cat.id] = {
+          monthlyTarget: (cat as any).monthlyTarget ?? null,
+          showGoalToStaff: (cat as any).showGoalToStaff ?? false,
+        };
+      }
+    }
+    return m;
+  }, [monthlyTotals, categories]);
 
   const [showAddCategory, setShowAddCategory] = useState(false);
   const [newCatName, setNewCatName] = useState("");
@@ -358,36 +588,127 @@ function OwnerKpiDashboard({ accountId }: { accountId: number }) {
   return (
     <div className="flex flex-col gap-6">
       {/* Business selector */}
-      <div className="flex gap-2 flex-wrap">
-        {businesses.map(b => (
-          <button
-            key={b.slug}
-            onClick={() => setSelectedBusiness(b.slug)}
-            className="px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all flex items-center gap-1.5"
-            style={{
-              backgroundColor: selectedBusiness === b.slug ? "#1E3A5F" : "#FFFFFF",
-              color: selectedBusiness === b.slug ? "white" : "#475569",
-              border: `1.5px solid ${selectedBusiness === b.slug ? "#1E3A5F" : "#E2E8F0"}`,
-              fontFamily: "'Space Grotesk', sans-serif",
-            }}
-          >
-            {b.icon} {b.label}
-          </button>
-        ))}
-      </div>
+      {businesses.length > 1 && (
+        <div className="flex gap-2 flex-wrap">
+          {businesses.map(b => (
+            <button
+              key={b.slug}
+              onClick={() => setSelectedBusiness(b.slug)}
+              className="px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all flex items-center gap-1.5"
+              style={{
+                backgroundColor: selectedBusiness === b.slug ? "#1E3A5F" : "#FFFFFF",
+                color: selectedBusiness === b.slug ? "white" : "#475569",
+                border: `1.5px solid ${selectedBusiness === b.slug ? "#1E3A5F" : "#E2E8F0"}`,
+                fontFamily: "'Space Grotesk', sans-serif",
+              }}
+            >
+              {b.icon} {b.label}
+            </button>
+          ))}
+        </div>
+      )}
 
-      {/* This Week — per-employee matrix */}
+      {/* ── Monthly Totals vs Goals ── */}
       <div
         className="rounded-2xl p-5 flex flex-col gap-4"
         style={{ backgroundColor: "#FFFFFF", border: "1.5px solid #E2E8F0" }}
       >
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between flex-wrap gap-3">
           <div>
-            <h3 className="text-[14px] font-bold text-[#1E3A5F]" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-              This Week — {formatPeriod(currentWeekKey)}
+            <h3 className="text-[15px] font-bold text-[#1E3A5F]" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+              Monthly Totals
             </h3>
-            <p className="text-[11px] text-slate-400 mt-0.5">Employee submissions for the current week</p>
+            <p className="text-[11px] text-slate-400 mt-0.5">Running totals for the month, compared to your goals</p>
           </div>
+          <select
+            value={selectedMonth}
+            onChange={e => setSelectedMonth(e.target.value)}
+            className="rounded-lg px-3 py-1.5 text-[12px] text-[#1E3A5F] focus:outline-none"
+            style={{ backgroundColor: "#F8F7F4", border: "1.5px solid #E2E0DB", fontFamily: "'Space Grotesk', sans-serif" }}
+          >
+            {monthOptions.map(m => (
+              <option key={m} value={m}>{formatPeriod(m)}{m === getCurrentMonthKey() ? " (current)" : ""}</option>
+            ))}
+          </select>
+        </div>
+
+        {categories.length === 0 ? (
+          <p className="text-[12px] text-slate-400 italic">No KPI categories configured for this business yet.</p>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {categories.map(cat => {
+              const total = categoryTotals[cat.id] ?? 0;
+              const meta = categoryGoalMeta[cat.id];
+              const target = meta?.monthlyTarget ?? null;
+              const pct = target ? Math.min(100, Math.round((total / target) * 100)) : null;
+              const onTrack = target !== null && total >= target;
+
+              return (
+                <div
+                  key={cat.id}
+                  className="rounded-xl p-4 flex flex-col gap-2"
+                  style={{
+                    backgroundColor: onTrack ? "#F0FDF4" : "#F8F7F4",
+                    border: `1.5px solid ${onTrack ? "#86EFAC" : "#E2E0DB"}`,
+                  }}
+                >
+                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+                    {cat.name}
+                  </p>
+
+                  {/* Total vs Goal side-by-side */}
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-[28px] font-bold text-[#1E3A5F]" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+                      {total}
+                    </span>
+                    <span className="text-[12px] text-slate-400">{cat.unit}</span>
+                    {target !== null && (
+                      <span className="text-[12px] font-semibold ml-auto" style={{ color: onTrack ? "#16A34A" : "#64748B" }}>
+                        / {target} goal
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Progress bar */}
+                  {pct !== null && (
+                    <div className="w-full h-1.5 rounded-full bg-slate-200 overflow-hidden">
+                      <div
+                        className="h-full rounded-full transition-all"
+                        style={{
+                          width: `${pct}%`,
+                          backgroundColor: onTrack ? "#16A34A" : pct >= 75 ? "#F59E0B" : "#7C3AED",
+                        }}
+                      />
+                    </div>
+                  )}
+
+                  {/* Visibility indicator */}
+                  {target !== null && (
+                    <p className="text-[10px]" style={{ color: meta?.showGoalToStaff ? "#16A34A" : "#94A3B8" }}>
+                      {meta?.showGoalToStaff ? "👁 Goal visible to staff" : "🔒 Owner only"}
+                    </p>
+                  )}
+
+                  {target === null && (
+                    <p className="text-[10px] text-slate-400 italic">No goal set — click Edit Goal in settings below</p>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* ── This Week — per-employee matrix ── */}
+      <div
+        className="rounded-2xl p-5 flex flex-col gap-4"
+        style={{ backgroundColor: "#FFFFFF", border: "1.5px solid #E2E8F0" }}
+      >
+        <div>
+          <h3 className="text-[15px] font-bold text-[#1E3A5F]" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+            This Week — {formatPeriod(currentWeekKey)}
+          </h3>
+          <p className="text-[11px] text-slate-400 mt-0.5">Employee submissions for the current week</p>
         </div>
 
         {categories.length === 0 ? (
@@ -434,65 +755,17 @@ function OwnerKpiDashboard({ accountId }: { accountId: number }) {
         )}
       </div>
 
-      {/* Monthly Totals */}
-      <div
-        className="rounded-2xl p-5 flex flex-col gap-4"
-        style={{ backgroundColor: "#FFFFFF", border: "1.5px solid #E2E8F0" }}
-      >
-        <div className="flex items-center justify-between flex-wrap gap-3">
-          <div>
-            <h3 className="text-[14px] font-bold text-[#1E3A5F]" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-              Monthly Totals
-            </h3>
-            <p className="text-[11px] text-slate-400 mt-0.5">Sum of all weekly submissions per category</p>
-          </div>
-          <select
-            value={selectedMonth}
-            onChange={e => setSelectedMonth(e.target.value)}
-            className="rounded-lg px-3 py-1.5 text-[12px] text-[#1E3A5F] focus:outline-none"
-            style={{ backgroundColor: "#F8F7F4", border: "1.5px solid #E2E0DB", fontFamily: "'Space Grotesk', sans-serif" }}
-          >
-            {monthOptions.map(m => (
-              <option key={m} value={m}>{formatPeriod(m)}{m === getCurrentMonthKey() ? " (current)" : ""}</option>
-            ))}
-          </select>
-        </div>
-
-        {monthlyTotals.length === 0 ? (
-          <p className="text-[12px] text-slate-400 italic">No submissions recorded for this month yet.</p>
-        ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            {monthlyTotals.map(t => (
-              <div
-                key={`${t.categoryId}-${t.personId}`}
-                className="rounded-xl p-3.5"
-                style={{ backgroundColor: "#F8F7F4", border: "1px solid #E2E0DB" }}
-              >
-                <p className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold mb-1" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-                  {t.categoryName}
-                </p>
-                <p className="text-[11px] text-slate-500 mb-1.5">{personMap[t.personId] ?? t.personId}</p>
-                <p className="text-[22px] font-bold text-[#1E3A5F]" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-                  {t.total}
-                  <span className="text-[12px] text-slate-400 font-normal ml-1">{t.unit}</span>
-                </p>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Manage KPI Categories */}
+      {/* ── Manage KPI Categories ── */}
       <div
         className="rounded-2xl p-5 flex flex-col gap-4"
         style={{ backgroundColor: "#FFFFFF", border: "1.5px solid #E2E8F0" }}
       >
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-[14px] font-bold text-[#1E3A5F]" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-              KPI Categories
+            <h3 className="text-[15px] font-bold text-[#1E3A5F]" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+              KPI Categories & Goals
             </h3>
-            <p className="text-[11px] text-slate-400 mt-0.5">Configure what employees track for this business</p>
+            <p className="text-[11px] text-slate-400 mt-0.5">Set monthly targets and control what staff can see</p>
           </div>
           <button
             onClick={() => setShowAddCategory(v => !v)}
@@ -513,13 +786,13 @@ function OwnerKpiDashboard({ accountId }: { accountId: number }) {
             className="rounded-xl p-4 flex flex-col gap-3"
             style={{ backgroundColor: "#F8F7F4", border: "1px solid #E2E0DB" }}
           >
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
               <input
                 type="text"
                 value={newCatName}
                 onChange={e => setNewCatName(e.target.value)}
                 placeholder="e.g. New Patients, Adjustments…"
-                className="flex-1 rounded-lg px-3 py-2 text-[12px] text-[#1E3A5F] focus:outline-none"
+                className="flex-1 rounded-lg px-3 py-2 text-[12px] text-[#1E3A5F] focus:outline-none min-w-40"
                 style={{ backgroundColor: "#FFFFFF", border: "1.5px solid #E2E0DB" }}
                 onFocus={e => (e.target.style.borderColor = "#7C3AED")}
                 onBlur={e => (e.target.style.borderColor = "#E2E0DB")}
@@ -534,6 +807,15 @@ function OwnerKpiDashboard({ accountId }: { accountId: number }) {
                 <option value="$">$</option>
                 <option value="%">%</option>
               </select>
+              <select
+                value={newCatFrequency}
+                onChange={e => setNewCatFrequency(e.target.value as "weekly" | "monthly")}
+                className="rounded-lg px-2 py-2 text-[12px] text-[#1E3A5F] focus:outline-none"
+                style={{ backgroundColor: "#FFFFFF", border: "1.5px solid #E2E0DB", minWidth: 80 }}
+              >
+                <option value="weekly">Weekly</option>
+                <option value="monthly">Monthly</option>
+              </select>
               <button
                 onClick={handleAddCategory}
                 disabled={createCategory.isPending}
@@ -546,7 +828,7 @@ function OwnerKpiDashboard({ accountId }: { accountId: number }) {
           </div>
         )}
 
-        {categories.length === 0 ? (
+        {allCategories.length === 0 ? (
           <div className="flex flex-col items-center gap-3 py-4">
             <p className="text-[12px] text-slate-400 italic">No categories yet.</p>
             <button
@@ -559,16 +841,13 @@ function OwnerKpiDashboard({ accountId }: { accountId: number }) {
             </button>
           </div>
         ) : (
-          <div className="flex flex-col gap-2">
-            {categories.map(cat => (
-              <div
+          <div className="flex flex-col gap-3">
+            {allCategories.map(cat => (
+              <CategoryEditorRow
                 key={cat.id}
-                className="flex items-center gap-3 py-2 px-3 rounded-lg"
-                style={{ backgroundColor: "#F8F7F4" }}
-              >
-                <span className="text-[13px] font-semibold text-[#1E3A5F] flex-1">{cat.name}</span>
-                <span className="text-[11px] text-slate-400">{cat.unit} · {cat.frequency}</span>
-              </div>
+                cat={cat as any}
+                onUpdated={() => categoriesQuery.refetch()}
+              />
             ))}
           </div>
         )}
@@ -590,6 +869,7 @@ export default function KpiReporting() {
     );
   }
 
+  const accountId = person.accountId || parseInt(localStorage.getItem("bcc_account_id") ?? "0", 10);
   const isOwner = person.role === "owner" || person.role === "coowner";
 
   return (
@@ -598,7 +878,6 @@ export default function KpiReporting() {
       style={{ backgroundColor: "#F8F7F4", fontFamily: "'Inter', sans-serif" }}
     >
       <div className="max-w-4xl mx-auto px-5 py-6">
-        {/* Header */}
         <div className="mb-6">
           <h1
             className="text-2xl font-bold text-[#1E3A5F] mb-1"
@@ -608,16 +887,16 @@ export default function KpiReporting() {
           </h1>
           <p className="text-[13px] text-slate-500">
             {isOwner
-              ? "Track employee performance metrics across your businesses."
-              : "Submit your weekly numbers and track your progress."}
+              ? "Monthly running totals, goals, and weekly employee submissions."
+              : "Submit your weekly numbers and track your progress toward monthly goals."}
           </p>
         </div>
 
         {isOwner ? (
-          <OwnerKpiDashboard accountId={person.accountId} />
+          <OwnerKpiDashboard accountId={accountId} />
         ) : (
           <EmployeeKpiView
-            accountId={person.accountId}
+            accountId={accountId}
             personId={person.id}
             businessScope={person.businessScope}
           />
