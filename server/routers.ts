@@ -995,7 +995,7 @@ Be concise and specific. If a field has nothing, use an empty array.`,
         return createKpiCategory(input);
       }),
 
-    /** Update a KPI category (name, unit, frequency, target, visibility). */
+    /** Update a KPI category. */
     updateCategory: publicProcedure
       .input(z.object({
         id: z.number(),
@@ -1004,8 +1004,6 @@ Be concise and specific. If a field has nothing, use an empty array.`,
         frequency: z.enum(["weekly", "monthly"]).optional(),
         sortOrder: z.number().optional(),
         isActive: z.boolean().optional(),
-        monthlyTarget: z.number().nullable().optional(),
-        showGoalToStaff: z.boolean().optional(),
       }))
       .mutation(async ({ input }) => {
         const { id, ...data } = input;

@@ -439,7 +439,7 @@ export default function Goals() {
   // Load businesses from DB
   const { data: dbBusinesses = [] } = trpc.business.list.useQuery(
     { accountId },
-    { enabled: accountId !== undefined }
+    { enabled: accountId > 0 }
   );
 
   // Filter businesses by person scope
@@ -463,7 +463,7 @@ export default function Goals() {
 
   const { data: goalsData = [], refetch } = trpc.goals.list.useQuery(
     { accountId, year: selectedYear },
-    { enabled: accountId !== undefined }
+    { enabled: accountId > 0 }
   );
 
   const updateGoal = trpc.goals.update.useMutation({

@@ -378,30 +378,24 @@ function BoardCard({ card, currentUser, onSeen, onArchive, onDelete }: {
 
 // ─── Add Card Form ────────────────────────────────────────────────────────────
 
-// ─── Quick Capture Bar (top of main content) ─────────────────────────────────
-
-function QuickCaptureBar({ currentUser, onAdded, allowedBusinesses, defaultBusiness, bizLabels }: {
+function AddCardForm({ currentUser, onAdded, allowedBusinesses, defaultBusiness, bizLabels }: {
   currentUser: Author | null;
   onAdded: () => void;
   allowedBusinesses: Business[];
   defaultBusiness: Business;
   bizLabels?: Record<string, { label: string; icon: string; bg: string; text: string; border: string }>;
 }) {
-  const [content, setContent] = useState("");
-  const [expanded, setExpanded] = useState(false);
   const [type, setType] = useState<CardType>("update");
   const [business, setBusiness] = useState<Business>(defaultBusiness);
+  const [content, setContent] = useState("");
   const [assignedTo, setAssignedTo] = useState<string | null>(null);
-  const [dueDate, setDueDate] = useState("");
-  const textareaRef = useState<HTMLTextAreaElement | null>(null);
+  const [dueDate, setDueDate] = useState(""); // YYYY-MM-DD string from date input
 
   const createCard = trpc.board.create.useMutation({
     onSuccess: () => {
       setContent("");
       setAssignedTo(null);
       setDueDate("");
-      setExpanded(false);
-      setType("update");
       onAdded();
       toast.success("Posted to the board");
     },
@@ -409,7 +403,7 @@ function QuickCaptureBar({ currentUser, onAdded, allowedBusinesses, defaultBusin
   });
 
   const handleSubmit = () => {
-    if (!currentUser) { toast.error("Select who you are first — use the sidebar"); return; }
+    if (!currentUser) { toast.error("Select who you are first (top right)"); return; }
     if (!content.trim()) { toast.error("Please write something"); return; }
     if (type === "task" && !assignedTo) { toast.error("Please select who this task is assigned to"); return; }
     const dueAt = dueDate ? new Date(dueDate + "T23:59:59").getTime() : undefined;
@@ -423,192 +417,178 @@ function QuickCaptureBar({ currentUser, onAdded, allowedBusinesses, defaultBusin
     });
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === "Enter" && !e.shiftKey && type !== "task") {
-      e.preventDefault();
-      handleSubmit();
-    }
-  };
+  // 'other' is used for the awaiting message
+  const other = currentUser ?? "the other owner";
 
-  const typeConfig: Record<CardType, { label: string; icon: string; activeBg: string; activeBorder: string; activeText: string; placeholder: string }> = {
-    update: { label: "Update", icon: "✅", activeBg: "#D1FAE5", activeBorder: "#6EE7B7", activeText: "#065F46", placeholder: "What did you do? (Enter to post)" },
-    issue:  { label: "Issue", icon: "💬", activeBg: "#FEF3C7", activeBorder: "#FCD34D", activeText: "#92400E", placeholder: "What needs to be discussed? (Enter to post)" },
-    task:   { label: "Task", icon: "☑", activeBg: "#EDE9FE", activeBorder: "#C4B5FD", activeText: "#5B21B6", placeholder: "Describe the task…" },
+  // Type button styles
+  const typeStyles: Record<CardType, { activeBg: string; activeBorder: string; activeText: string }> = {
+    update: { activeBg: "#D1FAE5", activeBorder: "#6EE7B7", activeText: "#065F46" },
+    issue:  { activeBg: "#FEF3C7", activeBorder: "#FCD34D", activeText: "#92400E" },
+    task:   { activeBg: "#EDE9FE", activeBorder: "#C4B5FD", activeText: "#5B21B6" },
   };
-
-  const authorColor = currentUser ? getAuthorColors(currentUser) : null;
 
   return (
     <div
-      className="rounded-2xl flex flex-col gap-0 transition-all"
-      style={{ backgroundColor: "#FFFFFF", border: "1.5px solid #E2E8F0", boxShadow: expanded ? "0 4px 24px rgba(30,58,95,0.08)" : "none" }}
+      className="rounded-xl p-4 flex flex-col gap-4"
+      style={{ backgroundColor: "#FFFFFF", border: "1.5px solid #E2E8F0" }}
     >
-      {/* Quick capture row */}
-      <div className="flex items-center gap-3 px-4 py-3">
-        {/* Author dot */}
-        {currentUser && (
-          <div
-            className="w-8 h-8 rounded-full flex items-center justify-center text-[12px] font-bold flex-shrink-0"
-            style={{ backgroundColor: authorColor?.btnBg ?? "#E2E8F0", color: authorColor?.btnText ?? "#64748B" }}
-          >
-            {currentUser.charAt(0)}
-          </div>
-        )}
-        {!currentUser && (
-          <div className="w-8 h-8 rounded-full flex-shrink-0" style={{ backgroundColor: "#F1F5F9", border: "1.5px dashed #CBD5E1" }} />
-        )}
-        {/* Text input */}
-        <textarea
-          value={content}
-          onChange={e => { setContent(e.target.value); if (e.target.value && !expanded) setExpanded(true); }}
-          onFocus={() => setExpanded(true)}
-          onKeyDown={handleKeyDown}
-          placeholder={!currentUser ? "Select who you are in the sidebar first…" : typeConfig[type].placeholder}
-          rows={expanded ? 2 : 1}
-          disabled={!currentUser}
-          className="flex-1 resize-none bg-transparent text-[14px] text-[#1E3A5F] placeholder-slate-400 focus:outline-none"
-          style={{ fontFamily: "'Inter', sans-serif", lineHeight: "1.6", minHeight: expanded ? "52px" : "24px", transition: "min-height 0.15s ease" }}
-        />
-        {/* Post button — visible when content exists */}
-        {content.trim() && (
-          <button
-            onClick={handleSubmit}
-            disabled={createCard.isPending || (type === "task" && !assignedTo)}
-            className="flex-shrink-0 px-4 py-2 rounded-xl text-[12px] font-bold transition-all hover:opacity-90 disabled:opacity-40 active:scale-[0.97]"
-            style={{
-              background: authorColor ? `linear-gradient(135deg, ${authorColor.btnBg} 0%, ${authorColor.btnBorder} 100%)` : "#E2E8F0",
-              color: authorColor?.btnText ?? "#94A3B8",
-              fontFamily: "'Space Grotesk', sans-serif",
-              boxShadow: "0 2px 8px rgba(30,58,95,0.12)",
-            }}
-          >
-            {createCard.isPending ? "…" : "Post"}
-          </button>
-        )}
+      <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+        + Post to Board
+      </p>
+
+      {/* Type selector */}
+      <div className="flex flex-col gap-1.5">
+        <p className="text-[10px] text-slate-400 uppercase tracking-wider" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>What kind of post?</p>
+        <div className="flex flex-col gap-1.5">
+          {(["update", "issue", "task"] as CardType[]).map(t => {
+            const s = typeStyles[t];
+            const isActive = type === t;
+            const labels: Record<CardType, string> = {
+              update: "✅ Update — What I did",
+              issue:  "💬 Issue — Need to discuss",
+              task:   "☑ Task — Assign to someone",
+            };
+            return (
+              <button
+                key={t}
+                onClick={() => setType(t)}
+                className="w-full py-2 rounded-lg text-[11px] font-semibold transition-all text-left px-3"
+                style={{
+                  backgroundColor: isActive ? s.activeBg : "#F8FAFC",
+                  border: `1.5px solid ${isActive ? s.activeBorder : "#E2E8F0"}`,
+                  color: isActive ? s.activeText : "#64748B",
+                  fontFamily: "'Space Grotesk', sans-serif",
+                }}
+              >
+                {labels[t]}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
-      {/* Expanded options */}
-      {expanded && (
-        <div className="px-4 pb-4 flex flex-col gap-3" style={{ borderTop: "1px solid #F1F5F9" }}>
-          {/* Type pills */}
-          <div className="flex gap-2 pt-3">
-            {(["update", "issue", "task"] as CardType[]).map(t => {
-              const cfg = typeConfig[t];
-              const isActive = type === t;
+      {/* Assign to (only for tasks) */}
+      {type === "task" && (
+        <div className="flex flex-col gap-1.5">
+          <p className="text-[10px] text-slate-500 uppercase tracking-wider font-medium" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Assign to:</p>
+          <div className="flex gap-2">
+            {(["Matt", "Lynn"] as string[]).map(a => {
+              const c = getAuthorColors(a);
+              const isActive = assignedTo === a;
+              const isSelf = a === currentUser;
               return (
                 <button
-                  key={t}
-                  onClick={() => setType(t)}
-                  className="px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all flex items-center gap-1"
+                  key={a}
+                  onClick={() => setAssignedTo(a)}
+                  className="flex-1 py-2 rounded-lg text-[12px] font-bold transition-all"
                   style={{
-                    backgroundColor: isActive ? cfg.activeBg : "#F8FAFC",
-                    border: `1.5px solid ${isActive ? cfg.activeBorder : "#E2E8F0"}`,
-                    color: isActive ? cfg.activeText : "#64748B",
+                    backgroundColor: isActive ? c.btnBg : "#F8FAFC",
+                    border: `2px solid ${isActive ? c.btnBorder : "#E2E8F0"}`,
+                    color: isActive ? c.btnText : "#475569",
                     fontFamily: "'Space Grotesk', sans-serif",
                   }}
                 >
-                  {cfg.icon} {cfg.label}
+                  {a}{isSelf ? " (me)" : ""}
                 </button>
               );
             })}
-            {/* Dismiss */}
-            <button
-              onClick={() => { setExpanded(false); setContent(""); setType("update"); setAssignedTo(null); setDueDate(""); }}
-              className="ml-auto text-[11px] text-slate-400 hover:text-slate-600 transition-colors px-2"
-              style={{ fontFamily: "'Space Grotesk', sans-serif" }}
-            >
-              ✕ Cancel
-            </button>
           </div>
-
-          {/* Task-specific: assign to */}
-          {type === "task" && (
-            <div className="flex flex-col gap-1.5">
-              <p className="text-[10px] text-slate-500 uppercase tracking-wider font-medium" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Assign to:</p>
-              <div className="flex gap-2">
-                {(["Matt", "Lynn"] as string[]).map(a => {
-                  const c = getAuthorColors(a);
-                  const isActive = assignedTo === a;
-                  const isSelf = a === currentUser;
-                  return (
-                    <button
-                      key={a}
-                      onClick={() => setAssignedTo(a)}
-                      className="flex-1 py-2 rounded-lg text-[12px] font-bold transition-all"
-                      style={{
-                        backgroundColor: isActive ? c.btnBg : "#F8FAFC",
-                        border: `2px solid ${isActive ? c.btnBorder : "#E2E8F0"}`,
-                        color: isActive ? c.btnText : "#475569",
-                        fontFamily: "'Space Grotesk', sans-serif",
-                      }}
-                    >
-                    {a}{isSelf ? " (me)" : ""}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* Task-specific: due date */}
-          {type === "task" && (
-            <div className="flex flex-col gap-1.5">
-              <p className="text-[10px] text-slate-500 uppercase tracking-wider font-medium" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Due date <span className="normal-case text-slate-400">(optional)</span></p>
-              <input
-                type="date"
-                value={dueDate}
-                onChange={e => setDueDate(e.target.value)}
-                min={new Date().toISOString().split("T")[0]}
-                className="w-full rounded-lg px-3 py-2 text-[12px] text-[#1E3A5F] focus:outline-none transition-colors"
-                style={{ backgroundColor: "#F8FAFC", border: "1.5px solid #CBD5E1", fontFamily: "'Inter', sans-serif" }}
-                onFocus={e => (e.target.style.borderColor = "#7C3AED")}
-                onBlur={e => (e.target.style.borderColor = "#CBD5E1")}
-              />
-            </div>
-          )}
-
-          {/* Business selector — only when multiple businesses */}
-          {allowedBusinesses.length > 1 && (
-            <div className="flex flex-col gap-1.5">
-              <p className="text-[10px] text-slate-400 uppercase tracking-wider" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Which business?</p>
-              <div className="flex gap-1.5 flex-wrap">
-                {allowedBusinesses.map(key => {
-                  const biz = (bizLabels ?? BUSINESS_LABELS)[key] ?? { label: key, icon: "🏢", bg: "#F1F5F9", text: "#475569", border: "#CBD5E1" };
-                  return (
-                    <button
-                      key={key}
-                      onClick={() => setBusiness(key)}
-                      className="px-3 py-1.5 rounded-lg text-[11px] font-medium transition-all flex items-center gap-1"
-                      style={{
-                        backgroundColor: business === key ? biz.bg : "#F8FAFC",
-                        border: `1.5px solid ${business === key ? biz.border : "#E2E8F0"}`,
-                        color: business === key ? biz.text : "#64748B",
-                        fontFamily: "'Space Grotesk', sans-serif",
-                      }}
-                    >
-                      {biz.icon} {biz.label}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
         </div>
       )}
+
+      {/* Business — only show businesses this account can access */}
+      {allowedBusinesses.length > 1 && (
+        <div className="flex flex-col gap-1.5">
+          <p className="text-[10px] text-slate-400 uppercase tracking-wider" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Which business?</p>
+          <div className="flex gap-1.5 flex-wrap">
+            {allowedBusinesses.map(key => {
+              const biz = (bizLabels ?? BUSINESS_LABELS)[key] ?? { label: key, icon: "🏢", bg: "#F1F5F9", text: "#475569", border: "#CBD5E1" };
+              return (
+                <button
+                  key={key}
+                  onClick={() => setBusiness(key)}
+                  className="px-3 py-1.5 rounded-lg text-[11px] font-medium transition-all flex items-center gap-1"
+                  style={{
+                    backgroundColor: business === key ? biz.bg : "#F8FAFC",
+                    border: `1.5px solid ${business === key ? biz.border : "#E2E8F0"}`,
+                    color: business === key ? biz.text : "#64748B",
+                    fontFamily: "'Space Grotesk', sans-serif",
+                  }}
+                >
+                  {biz.icon} {biz.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Due date — only for tasks */}
+      {type === "task" && (
+        <div className="flex flex-col gap-1.5">
+          <p className="text-[10px] text-slate-500 uppercase tracking-wider font-medium" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Due date <span className="normal-case text-slate-400">(optional)</span></p>
+          <input
+            type="date"
+            value={dueDate}
+            onChange={e => setDueDate(e.target.value)}
+            min={new Date().toISOString().split("T")[0]}
+            className="w-full rounded-lg px-3 py-2 text-[12px] text-[#1E3A5F] focus:outline-none transition-colors"
+            style={{
+              backgroundColor: "#F8FAFC",
+              border: "1.5px solid #CBD5E1",
+              fontFamily: "'Inter', sans-serif",
+            }}
+            onFocus={e => (e.target.style.borderColor = "#7C3AED")}
+            onBlur={e => (e.target.style.borderColor = "#CBD5E1")}
+          />
+        </div>
+      )}
+
+      {/* Content textarea */}
+      <textarea
+        value={content}
+        onChange={e => setContent(e.target.value)}
+        placeholder={
+          type === "update"
+            ? "What did you do since the last meeting?"
+            : type === "issue"
+            ? "What do we need to discuss at the next meeting?"
+            : assignedTo
+            ? `What needs to be done by ${assignedTo}?`
+            : "Describe the task…"
+        }
+        rows={3}
+        className="w-full rounded-lg px-3 py-2.5 text-[13px] text-[#1E3A5F] placeholder-slate-400 resize-none focus:outline-none transition-colors"
+        style={{
+          backgroundColor: "#F8FAFC",
+          border: "1.5px solid #CBD5E1",
+          fontFamily: "'Inter', sans-serif",
+          lineHeight: "1.6",
+        }}
+        onFocus={e => (e.target.style.borderColor = "#94A3B8")}
+        onBlur={e => (e.target.style.borderColor =
+          "#CBD5E1")}
+      />
+
+      <button
+        onClick={handleSubmit}
+        disabled={createCard.isPending || !currentUser || !content.trim() || (type === "task" && !assignedTo)}
+        className="w-full py-3 rounded-xl text-[13px] font-bold transition-all hover:opacity-90 disabled:opacity-40 active:scale-[0.97]"
+        style={{
+          background: currentUser
+            ? `linear-gradient(135deg, ${getAuthorColors(currentUser).btnBg} 0%, ${getAuthorColors(currentUser).btnBorder} 100%)`
+            : "#E2E8F0",
+          border: `none`,
+          color: currentUser ? getAuthorColors(currentUser).btnText : "#94A3B8",
+          fontFamily: "'Space Grotesk', sans-serif",
+          boxShadow: currentUser && !createCard.isPending ? "0 4px 14px rgba(30,58,95,0.18)" : "none",
+          letterSpacing: "0.02em",
+        }}
+      >
+        {createCard.isPending ? "Posting…" : "📤 Post to Board"}
+      </button>
     </div>
   );
-}
-
-// ─── Legacy AddCardForm (sidebar) — kept for reference but replaced by QuickCaptureBar
-function AddCardForm({ currentUser, onAdded, allowedBusinesses, defaultBusiness, bizLabels }: {
-  currentUser: Author | null;
-  onAdded: () => void;
-  allowedBusinesses: Business[];
-  defaultBusiness: Business;
-  bizLabels?: Record<string, { label: string; icon: string; bg: string; text: string; border: string }>;
-}) {
-  // Delegate to QuickCaptureBar — this component is no longer rendered
-  return <QuickCaptureBar currentUser={currentUser} onAdded={onAdded} allowedBusinesses={allowedBusinesses} defaultBusiness={defaultBusiness} bizLabels={bizLabels} />;
 }
 
 // ─── Main Board Page ──────────────────────────────────────────────────────────
@@ -626,7 +606,7 @@ export default function Board() {
   // Load businesses from DB — the source of truth for this account
   const { data: dbBusinesses = [] } = trpc.business.list.useQuery(
     { accountId },
-    { enabled: accountId !== undefined }
+    { enabled: accountId > 0 }
   );
 
   // Build allowed businesses from DB; fall back to empty while loading
@@ -722,6 +702,8 @@ export default function Board() {
             </div>
           )}
 
+          <AddCardForm currentUser={currentUser} onAdded={() => refetch()} allowedBusinesses={allowedBusinesses} defaultBusiness={defaultBusiness} bizLabels={dynamicBizLabels} />
+
           {/* Business filter — only show businesses this account can access */}
           {allowedBusinesses.length > 1 && (
             <div className="mt-5 flex flex-col gap-2">
@@ -786,16 +768,7 @@ export default function Board() {
         </aside>
 
         {/* Main board */}
-        <main className="flex-1 overflow-y-auto p-5 flex flex-col gap-6">
-          {/* Quick capture bar — always visible at top */}
-          <QuickCaptureBar
-            currentUser={currentUser}
-            onAdded={() => refetch()}
-            allowedBusinesses={allowedBusinesses}
-            defaultBusiness={defaultBusiness}
-            bizLabels={dynamicBizLabels}
-          />
-
+        <main className="flex-1 overflow-y-auto p-5 flex flex-col gap-8">
           {isLoading ? (
             <div className="flex items-center justify-center h-40">
               <span className="text-slate-400 text-sm animate-pulse">Loading board…</span>

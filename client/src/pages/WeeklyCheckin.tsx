@@ -63,7 +63,7 @@ export default function WeeklyCheckin() {
   // Determine which business IDs this employee belongs to
   const businessesQuery = trpc.business.list.useQuery(
     { accountId },
-    { enabled: accountId !== undefined }
+    { enabled: accountId > 0 }
   );
   const dbBusinesses = businessesQuery.data ?? [];
 
@@ -85,7 +85,7 @@ export default function WeeklyCheckin() {
   // Load questions: "all businesses" (businessId=0) + employee's specific businesses
   const questionsQuery = trpc.report.listQuestions.useQuery(
     { accountId },
-    { enabled: accountId !== undefined }
+    { enabled: accountId > 0 }
   );
 
   // Filter questions relevant to this employee
@@ -99,7 +99,7 @@ export default function WeeklyCheckin() {
   // Load existing answers for selected week
   const answersQuery = trpc.report.getWeekAnswers.useQuery(
     { accountId, weekKey: selectedWeek },
-    { enabled: accountId !== undefined }
+    { enabled: accountId > 0 }
   );
 
   // Pre-fill answers from DB
