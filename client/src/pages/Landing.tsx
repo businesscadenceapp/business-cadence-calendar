@@ -170,10 +170,10 @@ function Hero() {
   const { data } = trpc.waitlist.count.useQuery();
 
   return (
-    <section className="pt-32 pb-20 px-4 text-center bg-[#F8F7F4]">
+    <section className="pt-32 pb-24 px-4 bg-[#F8F7F4]">
       <div className="max-w-4xl mx-auto">
-        {/* Logo above headline */}
-        <div className="flex justify-center mb-8 animate-fade-in">
+        {/* Logo */}
+        <div className="flex justify-center mb-10 animate-fade-in">
           <div style={{
             filter:
               "drop-shadow(0 2px 0px rgba(30,58,95,0.35)) " +
@@ -186,29 +186,57 @@ function Hero() {
           </div>
         </div>
 
-        <div className="inline-flex items-center gap-2 bg-[#CCFBF1] text-[#0D9488] text-xs font-semibold px-4 py-1.5 rounded-full mb-8 animate-fade-in">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#0D9488] animate-pulse" />
-          Coming Soon — Join the Waitlist
+        {/* Story-first hero */}
+        <div className="text-center mb-12 animate-fade-up">
+          <div className="inline-flex items-center gap-2 bg-[#CCFBF1] text-[#0D9488] text-xs font-semibold px-4 py-1.5 rounded-full mb-8">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#0D9488] animate-pulse" />
+            Coming Soon — Join the Waitlist
+          </div>
+
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-[#1E3A5F] leading-tight mb-8">
+            We built Business Cadence because{" "}
+            <span className="text-[#0D9488]">our communication had no rhythm.</span>
+          </h1>
         </div>
 
-        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-[#1E3A5F] leading-tight mb-6 animate-fade-up">
-          Stop Letting Business Talk{" "}
-          <span className="text-[#0D9488]">Invade Your Life.</span>
-        </h1>
-
-        <p className="text-lg sm:text-xl text-[#64748B] max-w-2xl mx-auto mb-10 leading-relaxed animate-fade-up animation-delay-100">
-          BusinessCadence gives co-owners, family businesses, and small business teams a structured meeting rhythm — so every conversation happens at the right time, in the right place, with the right agenda.
-        </p>
-
-        <div className="animate-fade-up animation-delay-200">
-          <WaitlistForm variant="hero" />
+        {/* Story block */}
+        <div className="bg-white rounded-2xl border border-[#E2E0DB] shadow-sm p-8 sm:p-10 mb-12 animate-fade-up animation-delay-100">
+          <div className="text-[#0D9488] text-5xl font-serif leading-none mb-6 opacity-25 select-none">“</div>
+          <div className="space-y-5 text-[#374151] text-lg leading-relaxed">
+            <p>
+              When an idea hit us it didn’t matter what day — we could be on vacation — or what time — we could be lying in bed trying to fall asleep. We would discuss it. And most of the time the idea would be forgotten anyway, and all that bringing it up did was stress us out more.
+            </p>
+            <p>
+              We realized we were <strong className="text-[#1E3A5F]">adding more stress to our relationship and partnership</strong> when the goal was to take it away.
+            </p>
+            <p>
+              Business Cadence aims to be that pressure release valve your partnership — and for some of you, your relationship — has been waiting for. No more ill-timed business questions. No more late-night texts that make it feel like boundaries have been crossed.
+            </p>
+            <p className="text-[#1E3A5F] font-medium">
+              Business Cadence gives your ideas a place to land, your conversations a time and place to happen, and your relationship permission to be something other than a business meeting.
+            </p>
+          </div>
+          <div className="mt-8 pt-6 border-t border-[#E2E0DB] flex items-center gap-4">
+            <div className="w-12 h-12 rounded-full bg-[#1E3A5F] flex items-center justify-center text-white font-bold text-lg flex-shrink-0">BC</div>
+            <div>
+              <p className="font-semibold text-[#1E3A5F]">The Founders</p>
+              <p className="text-sm text-[#64748B]">Co-owners of three businesses, married 20+ years</p>
+            </div>
+          </div>
         </div>
 
-        {data && data.count > 0 && (
-          <p className="mt-5 text-sm text-[#94A3B8] animate-fade-in animation-delay-300">
-            Join <span className="font-semibold text-[#64748B]">{data.count}</span> business owners already on the waitlist.
+        {/* CTA */}
+        <div className="text-center animate-fade-up animation-delay-200">
+          <p className="text-[#64748B] text-lg mb-6 max-w-xl mx-auto">
+            Join the waitlist and be among the first to put your business conversations in their place.
           </p>
-        )}
+          <WaitlistForm variant="hero" />
+          {data && data.count > 0 && (
+            <p className="mt-5 text-sm text-[#94A3B8]">
+              Join <span className="font-semibold text-[#64748B]">{data.count}</span> business owners already on the waitlist.
+            </p>
+          )}
+        </div>
       </div>
     </section>
   );
@@ -418,46 +446,52 @@ function HowItWorksSection() {
   );
 }
 
-// ─── Founder story ─────────────────────────────────────────────────────────
+// ─── Who it's for ──────────────────────────────────────────────────────────
 function StorySection() {
   return (
     <section id="story" className="py-20 px-4 bg-[#F1F0ED]">
-      <div className="max-w-3xl mx-auto">
-        <div className="text-center mb-10">
-          <p className="text-[#0D9488] text-sm font-semibold uppercase tracking-widest mb-3">Our Story</p>
-          <h2 className="text-3xl sm:text-4xl font-bold text-[#1E3A5F]">
-            Built at 1am Because We Needed It
+      <div className="max-w-4xl mx-auto">
+        <div className="text-center mb-14">
+          <p className="text-[#0D9488] text-sm font-semibold uppercase tracking-widest mb-3">Who It's For</p>
+          <h2 className="text-3xl sm:text-4xl font-bold text-[#1E3A5F] mb-4">
+            If any of this sounds familiar, you're in the right place.
           </h2>
+          <p className="text-[#64748B] max-w-xl mx-auto">
+            BusinessCadence was built for co-owners who are also partners — in business and in life.
+          </p>
         </div>
 
-        <div className="bg-[#F8F7F4] rounded-2xl p-8 sm:p-10 border border-[#E2E0DB] relative">
-          {/* Quote mark */}
-          <div className="text-[#0D9488] text-6xl font-serif leading-none mb-4 opacity-30 select-none">"</div>
-
-          <div className="space-y-5 text-[#374151] leading-relaxed">
-            <p>
-              We own three completely different businesses together — all running simultaneously, with the same two people at the helm. For years, we were that couple: talking about business at dinner, in the car, before bed, and first thing in the morning. Business was everywhere, all the time.
-            </p>
-            <p>
-              The same issues kept coming up in every conversation. Nothing ever felt fully resolved. And our personal time — the time we were supposed to be <em>us</em>, not business partners — kept getting hijacked by whatever fire was burning that day.
-            </p>
-            <p>
-              We tried calendars, shared notes apps, project management tools. Nothing was built for what we actually needed: a structured meeting cadence that kept business conversations in their lane, with a real agenda, a real record, and a real off switch.
-            </p>
-            <p>
-              So one night at 1am, we built it ourselves. BusinessCadence is the tool we wished existed — and now we're making it available to every small business owner who's been having the same conversations we were.
-            </p>
-          </div>
-
-          <div className="mt-8 pt-6 border-t border-[#E2E0DB] flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-[#1E3A5F] flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
-              BC
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {[
+            {
+              icon: "🌙",
+              title: "The late-night texter",
+              body: "You work best at midnight. Your partner does not. You've sent more than a few texts that probably should have waited until morning.",
+            },
+            {
+              icon: "🏖️",
+              title: "The vacation interrupter",
+              body: "You're supposed to be relaxing but the business doesn't stop. An idea hits and suddenly you're both in work mode at the dinner table.",
+            },
+            {
+              icon: "🔁",
+              title: "The repeat conversation",
+              body: "You've had the same discussion three times this month. Nothing sticks because there's no system, no record, and no dedicated time to actually resolve it.",
+            },
+          ].map((item, i) => (
+            <div key={i} className="bg-[#F8F7F4] rounded-2xl p-6 border border-[#E2E0DB] hover:border-[#0D9488]/40 hover:shadow-md transition-all duration-200">
+              <div className="text-3xl mb-4">{item.icon}</div>
+              <h3 className="font-semibold text-[#1E3A5F] mb-2 text-lg">{item.title}</h3>
+              <p className="text-[#64748B] text-sm leading-relaxed">{item.body}</p>
             </div>
-            <div>
-              <p className="font-semibold text-[#1E3A5F]">The Founders</p>
-              <p className="text-sm text-[#64748B]">Co-owners of three businesses, married 20+ years</p>
-            </div>
-          </div>
+          ))}
+        </div>
+
+        <div className="mt-10 bg-[#1E3A5F] rounded-2xl p-8 sm:p-10 text-center">
+          <p className="text-white text-xl font-medium leading-relaxed max-w-2xl mx-auto">
+            Business Cadence gives your ideas a place to land, your conversations a time and place to happen, and your relationship{" "}
+            <span className="text-[#5EEAD4]">permission to be something other than a business meeting.</span>
+          </p>
         </div>
       </div>
     </section>
@@ -477,10 +511,11 @@ function WaitlistSection() {
         </div>
 
         <h2 className="text-3xl sm:text-4xl font-bold text-white mb-5">
-          Ready to Put Your Business Conversations in Their Place?
+          Stop sending the 1am text.<br />
+          <span className="text-[#5EEAD4]">Start building a better rhythm.</span>
         </h2>
         <p className="text-[#93C5FD] text-lg mb-10 leading-relaxed">
-          Join the waitlist and be the first to know when BusinessCadence launches. Early access members get free access and a direct line to shape the product.
+          Join the waitlist and be among the first to use BusinessCadence. Early access is free, and you'll have a direct line to shape the product.
         </p>
 
         <WaitlistForm variant="footer" />

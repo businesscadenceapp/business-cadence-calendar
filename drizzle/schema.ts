@@ -361,6 +361,16 @@ export const kpiCategories = mysqlTable("kpi_categories", {
   frequency: mysqlEnum("frequency", ["weekly", "monthly"]).default("weekly").notNull(),
   sortOrder: int("sortOrder").default(0).notNull(),
   isActive: boolean("isActive").default(true).notNull(),
+  /**
+   * monthlyTarget: optional numeric goal for this KPI per month.
+   * Used for the running total vs goal cross-reference in the owner dashboard.
+   */
+  monthlyTarget: double("monthlyTarget"),
+  /**
+   * showGoalToStaff: if true, employees can see the monthly target when submitting KPIs.
+   * Defaults to false so sensitive targets (e.g. collections) stay owner-only.
+   */
+  showGoalToStaff: boolean("showGoalToStaff").default(false).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 
