@@ -397,3 +397,14 @@
 - [ ] Employee weekly report submission page (/app/reports/submit)
 - [ ] Owner weekly report summary view in Reports page
 - [ ] Full review pass: check for bugs, broken flows, and inconsistencies
+
+## Phase 21: Core Product Rebuild
+
+- [ ] Make Board the default landing page after login (redirect /app to /app/board)
+- [ ] Board quick-capture: single prominent text field at top, hit enter to capture instantly, details optional after
+- [ ] KPI running monthly totals: sum weekly submissions per month, reset each month
+- [ ] KPI goal cross-reference: show "36 new patients (goal: 45)" next to each KPI metric
+- [ ] KPI goal visibility toggle: per-category setting, owner can hide goal from employee view
+- [ ] Owner heartbeat dashboard: single-screen summary of all key KPI numbers + goal progress
+- [ ] Goals page: show relevant KPI trend inline next to each goal
+- [ ] Homepage rewrite: lead with 1am text story, Command Board as hero, cadence as the guarantee

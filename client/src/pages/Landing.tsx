@@ -170,45 +170,87 @@ function Hero() {
   const { data } = trpc.waitlist.count.useQuery();
 
   return (
-    <section className="pt-32 pb-20 px-4 text-center bg-[#F8F7F4]">
-      <div className="max-w-4xl mx-auto">
-        {/* Logo above headline */}
-        <div className="flex justify-center mb-8 animate-fade-in">
-          <div style={{
-            filter:
-              "drop-shadow(0 2px 0px rgba(30,58,95,0.35)) " +
-              "drop-shadow(0 4px 0px rgba(30,58,95,0.25)) " +
-              "drop-shadow(0 8px 0px rgba(30,58,95,0.15)) " +
-              "drop-shadow(0 14px 20px rgba(30,58,95,0.20)) " +
-              "saturate(1.5) brightness(0.90)"
-          }}>
-            <Logo height={220} />
+    <section className="pt-32 pb-20 px-4 bg-[#F8F7F4]">
+      <div className="max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+          {/* Left: copy */}
+          <div>
+            <div className="inline-flex items-center gap-2 bg-[#CCFBF1] text-[#0D9488] text-xs font-semibold px-4 py-1.5 rounded-full mb-8 animate-fade-in">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#0D9488] animate-pulse" />
+              Coming Soon — Join the Waitlist
+            </div>
+
+            <h1 className="text-4xl sm:text-5xl font-bold text-[#1E3A5F] leading-tight mb-6 animate-fade-up">
+              Stop Texting Your Partner{" "}
+              <span className="text-[#0D9488]">Business at 1am.</span>
+            </h1>
+
+            <p className="text-lg text-[#64748B] mb-4 leading-relaxed animate-fade-up animation-delay-100">
+              You have an idea at midnight. You text your partner. They read it at 7am — during breakfast, during their workout, during what was supposed to be their time. Now they're thinking about work again.
+            </p>
+            <p className="text-lg text-[#64748B] mb-10 leading-relaxed animate-fade-up animation-delay-100">
+              <strong className="text-[#1E3A5F]">BusinessCadence is the place that idea goes instead.</strong> Capture it now. It waits. Your partner sees it when they're ready — at the right time, with the right headspace, in a structured meeting that actually resolves things.
+            </p>
+
+            <div className="animate-fade-up animation-delay-200">
+              <WaitlistForm variant="hero" />
+            </div>
+
+            {data && data.count > 0 && (
+              <p className="mt-5 text-sm text-[#94A3B8] animate-fade-in animation-delay-300">
+                Join <span className="font-semibold text-[#64748B]">{data.count}</span> business owners already on the waitlist.
+              </p>
+            )}
+          </div>
+
+          {/* Right: mock Command Board preview */}
+          <div className="hidden lg:block animate-fade-in animation-delay-200">
+            <div className="rounded-2xl border border-[#E2E0DB] bg-white shadow-xl overflow-hidden">
+              {/* Mock board header */}
+              <div className="bg-[#1E3A5F] px-5 py-3 flex items-center gap-3">
+                <div className="flex gap-1.5">
+                  <div className="w-3 h-3 rounded-full bg-white/20" />
+                  <div className="w-3 h-3 rounded-full bg-white/20" />
+                  <div className="w-3 h-3 rounded-full bg-white/20" />
+                </div>
+                <span className="text-white/70 text-xs font-medium ml-2">Command Board</span>
+              </div>
+              {/* Quick capture bar */}
+              <div className="px-5 py-4 border-b border-[#F1F0ED]">
+                <div className="flex items-center gap-3 bg-[#F8F7F4] rounded-xl px-4 py-3">
+                  <svg className="w-4 h-4 text-[#94A3B8] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                  <span className="text-sm text-[#94A3B8]">Capture a thought, task, or update…</span>
+                </div>
+              </div>
+              {/* Mock cards */}
+              <div className="p-5 flex flex-col gap-3">
+                {[
+                  { type: "Task", typeColor: "#8B5CF6", typeBg: "rgba(139,92,246,0.08)", text: "Call insurance rep about the new patient billing issue", from: "Matt", time: "1:14 AM", tag: "For Lynn" },
+                  { type: "Update", typeColor: "#0D9488", typeBg: "rgba(13,148,136,0.08)", text: "Finished the Q3 financial summary — numbers look strong", from: "Lynn", time: "8:02 AM", tag: "" },
+                  { type: "Issue", typeColor: "#F43F5E", typeBg: "rgba(244,63,94,0.08)", text: "Front desk scheduling is creating gaps on Tuesdays — discuss at huddle", from: "Matt", time: "Yesterday", tag: "Agenda" },
+                ].map((card, i) => (
+                  <div key={i} className="rounded-xl p-4 border border-[#E2E0DB] bg-[#FAFAF9]">
+                    <div className="flex items-start justify-between gap-2 mb-2">
+                      <span
+                        className="text-[11px] font-bold px-2 py-0.5 rounded-full"
+                        style={{ backgroundColor: card.typeBg, color: card.typeColor }}
+                      >
+                        {card.type}
+                      </span>
+                      {card.tag && (
+                        <span className="text-[11px] font-medium text-[#94A3B8] bg-[#F1F0ED] px-2 py-0.5 rounded-full">{card.tag}</span>
+                      )}
+                    </div>
+                    <p className="text-sm text-[#1E3A5F] leading-snug mb-2">{card.text}</p>
+                    <p className="text-xs text-[#94A3B8]">{card.from} · {card.time}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
-
-        <div className="inline-flex items-center gap-2 bg-[#CCFBF1] text-[#0D9488] text-xs font-semibold px-4 py-1.5 rounded-full mb-8 animate-fade-in">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#0D9488] animate-pulse" />
-          Coming Soon — Join the Waitlist
-        </div>
-
-        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-[#1E3A5F] leading-tight mb-6 animate-fade-up">
-          Stop Letting Business Talk{" "}
-          <span className="text-[#0D9488]">Invade Your Life.</span>
-        </h1>
-
-        <p className="text-lg sm:text-xl text-[#64748B] max-w-2xl mx-auto mb-10 leading-relaxed animate-fade-up animation-delay-100">
-          BusinessCadence gives co-owners, family businesses, and small business teams a structured meeting rhythm — so every conversation happens at the right time, in the right place, with the right agenda.
-        </p>
-
-        <div className="animate-fade-up animation-delay-200">
-          <WaitlistForm variant="hero" />
-        </div>
-
-        {data && data.count > 0 && (
-          <p className="mt-5 text-sm text-[#94A3B8] animate-fade-in animation-delay-300">
-            Join <span className="font-semibold text-[#64748B]">{data.count}</span> business owners already on the waitlist.
-          </p>
-        )}
       </div>
     </section>
   );
@@ -217,29 +259,29 @@ function Hero() {
 // ─── Problem section ───────────────────────────────────────────────────────
 const PROBLEMS = [
   {
-    icon: "🔄",
-    title: "You're always in reactive mode",
-    body: "Business conversations happen randomly — at dinner, in bed, during the kids' game. There's no structure, no agenda, and nothing ever fully gets resolved.",
+    icon: "📱",
+    title: "The 1am text",
+    body: "You have an idea. You text your partner. They read it during breakfast, during their workout, during what was supposed to be their time off. You didn't mean to interrupt — but you did.",
   },
   {
     icon: "🧠",
-    title: "Cognitive switching is draining you",
-    body: "Every time you shift from 'parent' to 'business partner' mid-conversation, your brain pays a tax. Research shows context-switching costs up to 40% of productive time.",
+    title: "Three texts, one response",
+    body: "You send three things. They respond to one. The other two get lost in the thread. A week later you're wondering why nothing happened — they're wondering why you're upset.",
   },
   {
     icon: "😤",
-    title: "The same issues come up over and over",
-    body: "You discuss a problem, agree on something, and two weeks later you're having the exact same conversation again. Nothing sticks because there's no system.",
+    title: "The same conversation, again",
+    body: "You discuss a problem at dinner. You agree on something. Two weeks later you're having the exact same conversation. Nothing sticks because there's no system to hold it.",
+  },
+  {
+    icon: "📉",
+    title: "\"How are we doing?\" — nobody knows",
+    body: "One partner is in the weeds, the other is guessing. You wait for the monthly meeting to find out the numbers — by which point it's too late to course-correct.",
   },
   {
     icon: "🏠",
-    title: "Personal time doesn't feel personal",
-    body: "When you co-own a business with your spouse or partner, the line between home and work disappears. Your relationship suffers when business never has a proper 'off switch.'",
-  },
-  {
-    icon: "😰",
-    title: "Decision fatigue hits at the worst times",
-    body: "Making business decisions at 10pm after a full day is a recipe for bad choices. Without a dedicated time and structure, decisions happen whenever — not when you're at your best.",
+    title: "Work never turns off",
+    body: "When you co-own a business with your spouse, the line between home and work disappears. Dinner becomes a meeting. Vacation becomes a strategy session. Your relationship pays the price.",
   },
 ];
 
@@ -250,10 +292,10 @@ function ProblemSection() {
         <div className="text-center mb-14">
           <p className="text-[#0D9488] text-sm font-semibold uppercase tracking-widest mb-3">Sound Familiar?</p>
           <h2 className="text-3xl sm:text-4xl font-bold text-[#1E3A5F] mb-4">
-            The 5 Mistakes Most Small Business Owners Make
+            The Text Message Is Destroying Your Partnership
           </h2>
           <p className="text-[#64748B] max-w-xl mx-auto">
-            If you own a business with a partner, spouse, or small team, you're probably making at least three of these right now.
+            Not your relationship — your working relationship. The way ideas, tasks, and updates flow between co-owners is broken. And it's not your fault. There's just never been a better option.
           </p>
         </div>
 
@@ -272,9 +314,9 @@ function ProblemSection() {
           <div className="bg-[#1E3A5F] rounded-2xl p-6 flex flex-col justify-between">
             <div>
               <div className="text-3xl mb-4">✅</div>
-              <h3 className="font-semibold text-white mb-2 text-lg">There's a better way</h3>
+              <h3 className="font-semibold text-white mb-2 text-lg">There's a better place for it</h3>
               <p className="text-[#93C5FD] text-sm leading-relaxed">
-                BusinessCadence gives you a proven meeting rhythm that keeps business conversations structured, productive, and out of your personal time.
+                BusinessCadence gives every idea, task, and update a proper home — so nothing gets lost, no one gets interrupted, and both partners always know exactly how the business is doing.
               </p>
             </div>
             <button
@@ -298,17 +340,17 @@ const FEATURES = [
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
       </svg>
     ),
-    title: "Meeting Cadence Calendar",
-    body: "A full-year visual calendar showing exactly when each meeting type happens — daily check-ins, weekly reviews, monthly financials, and quarterly strategy sessions. No guesswork, no missed meetings.",
+    title: "Command Board",
+    body: "The place your 1am idea goes instead of your partner's phone. Post tasks, updates, and issues any time. They wait until your next structured meeting — no interruptions, nothing lost.",
   },
   {
     icon: (
       <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
       </svg>
     ),
-    title: "Command Board",
-    body: "A shared digital board where each team member posts updates and issues before the meeting. Everyone arrives prepared, nothing gets forgotten, and the meeting stays focused.",
+    title: "Meeting Cadence Calendar",
+    body: "The guarantee that nothing on the Board gets forgotten. A full-year rhythm of daily huddles, weekly reviews, monthly financials, and quarterly strategy sessions — so every captured idea has a scheduled moment to be resolved.",
   },
   {
     icon: (
@@ -316,8 +358,8 @@ const FEATURES = [
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
       </svg>
     ),
-    title: "AI Meeting Summaries",
-    body: "After each meeting, AI generates a concise summary of what was discussed, what was decided, and what needs follow-up. Your meeting history becomes a searchable record of your business.",
+    title: "Live KPI Dashboard",
+    body: "Running monthly totals for every metric that matters — adjustments, new patients, collections, whatever you track. Both partners see the same live numbers. No more \"how are we doing?\" conversations.",
   },
   {
     icon: (
@@ -325,8 +367,8 @@ const FEATURES = [
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
       </svg>
     ),
-    title: "Customizable Agendas",
-    body: "Every business is different. Customize the agenda for each meeting type to match your specific needs — add items, reorder them, and save templates that your whole team can use.",
+    title: "Goals → Numbers, Side by Side",
+    body: "Set a goal (36 new patients this month), and see the actual number next to it in real time. Your team reports their weekly numbers; the running total builds automatically. You always know where you stand.",
   },
   {
     icon: (
@@ -335,7 +377,7 @@ const FEATURES = [
       </svg>
     ),
     title: "Built for Multiple Businesses",
-    body: "Running multiple completely different businesses at once? BusinessCadence handles them all in one place — with separate time allocations and agendas for each.",
+    body: "Running a chiropractic practice, a CrossFit gym, and a rental property? BusinessCadence handles all of them in one place — separate KPIs, separate goals, separate agendas, one shared operating system.",
   },
   {
     icon: (
@@ -355,10 +397,10 @@ function FeaturesSection() {
         <div className="text-center mb-14">
           <p className="text-[#0D9488] text-sm font-semibold uppercase tracking-widest mb-3">What's Inside</p>
           <h2 className="text-3xl sm:text-4xl font-bold text-[#1E3A5F] mb-4">
-            Everything You Need to Run Your Business Meetings
+            One System. Two Partners. Zero Interruptions.
           </h2>
           <p className="text-[#64748B] max-w-xl mx-auto">
-            BusinessCadence is a complete meeting management system designed specifically for small business owners and co-owning teams.
+            BusinessCadence is a shared operating system for co-owners — built around the Command Board, backed by a live business heartbeat, and held together by a meeting rhythm that actually works.
           </p>
         </div>
 
@@ -396,10 +438,10 @@ function HowItWorksSection() {
         <div className="text-center mb-14">
           <p className="text-[#93C5FD] text-sm font-semibold uppercase tracking-widest mb-3">The Cadence</p>
           <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
-            Four Meeting Types. One Proven Rhythm.
+            Nothing on the Board Gets Forgotten.
           </h2>
           <p className="text-[#93C5FD] max-w-xl mx-auto">
-            BusinessCadence is built around a time-tested meeting structure used by the world's most effective small business teams.
+            The meeting cadence is the guarantee. Every idea captured on the Board has a scheduled moment to be addressed — at the right time, with both partners present and ready.
           </p>
         </div>
 
@@ -477,10 +519,10 @@ function WaitlistSection() {
         </div>
 
         <h2 className="text-3xl sm:text-4xl font-bold text-white mb-5">
-          Ready to Put Your Business Conversations in Their Place?
+          Send the Last 1am Business Text You'll Ever Send.
         </h2>
         <p className="text-[#93C5FD] text-lg mb-10 leading-relaxed">
-          Join the waitlist and be the first to know when BusinessCadence launches. Early access members get free access and a direct line to shape the product.
+          Join the waitlist and be among the first co-owners to use BusinessCadence. Early access is free, and you'll have a direct line to shape the product.
         </p>
 
         <WaitlistForm variant="footer" />

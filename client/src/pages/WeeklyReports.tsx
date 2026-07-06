@@ -307,6 +307,219 @@ function EmployeeCard({
   );
 }
 
+// ── HeartbeatDashboard ───────────────────────────────────────────────────────
+
+function HeartbeatDashboard({ accountId }: { accountId: number }) {
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const currentMonth = String(now.getMonth() + 1).padStart(2, "0");
+  const yearMonth = `${currentYear}-${currentMonth}`;
+
+  const businessesQuery = trpc.business.list.useQuery(
+    { accountId },
+    { enabled: accountId !== undefined }
+  );
+  const businesses = businessesQuery.data ?? [];
+
+  const [selectedBizSlug, setSelectedBizSlug] = useState<string | null>(null);
+  const bizSlug = selectedBizSlug ?? (businesses[0]?.slug ?? null);
+  const selectedBiz = businesses.find(b => b.slug === bizSlug) ?? businesses[0] ?? null;
+
+  const categoriesQuery = trpc.kpi.listCategories.useQuery(
+    { accountId, businessSlug: bizSlug ?? "" },
+    { enabled: bizSlug !== null }
+  );
+  const totalsQuery = trpc.kpi.getMonthlyTotals.useQuery(
+    { accountId, businessSlug: bizSlug ?? "", yearMonth },
+    { enabled: bizSlug !== null }
+  );
+  const goalsQuery = trpc.goals.list.useQuery(
+    { accountId, year: currentYear },
+    { enabled: accountId !== undefined }
+  );
+
+  const categories = (categoriesQuery.data ?? []) as Array<{
+    id: number; name: string; unit: string | null;
+    monthlyTarget: number | null; showGoalToStaff: boolean;
+  }>;
+  const totals = (totalsQuery.data ?? []) as Array<{ categoryId: number; total: number }>;
+  const goals = (goalsQuery.data ?? [] as unknown[]) as Array<{
+    id: number; title: string;
+    business: string;
+    status: string;
+    period: string;
+    quarter: number | null;
+  }>;
+
+  const totalMap = useMemo(() => {
+    const m: Record<number, number> = {};
+    for (const t of totals) m[t.categoryId] = t.total;
+    return m;
+  }, [totals]);
+
+  const monthName = now.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+
+  const isLoading = categoriesQuery.isLoading || totalsQuery.isLoading;
+
+  return (
+    <div className="flex flex-col gap-8">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-xl font-bold text-[#1E3A5F]" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+            Business Heartbeat
+          </h2>
+          <p className="text-sm text-[#64748B] mt-0.5" style={{ fontFamily: "'Inter', sans-serif" }}>
+            {monthName} · Running totals vs. monthly targets
+          </p>
+        </div>
+        {/* Business selector */}
+        {businesses.length > 1 && (
+          <div className="flex gap-2">
+            {businesses.map(b => (
+              <button
+                key={b.id}
+                onClick={() => setSelectedBizSlug(b.slug)}
+                className="text-xs px-3 py-1.5 rounded-lg font-semibold transition-all"
+                style={{
+                  backgroundColor: (bizSlug === b.slug) ? "#1E3A5F" : "rgba(30,58,95,0.06)",
+                  color: (bizSlug === b.slug) ? "white" : "#64748B",
+                  fontFamily: "'Space Grotesk', sans-serif",
+                }}
+              >
+                {b.name}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* KPI Monthly Totals */}
+      {isLoading ? (
+        <div className="flex items-center justify-center py-12">
+          <div className="w-8 h-8 rounded-full border-2 border-emerald-300 border-t-emerald-600 animate-spin" />
+        </div>
+      ) : categories.length === 0 ? (
+        <div
+          className="rounded-2xl p-10 text-center"
+          style={{ background: "#F1F0ED", border: "1px dashed #E2E0DB" }}
+        >
+          <p className="text-2xl mb-3">📈</p>
+          <p className="text-base font-semibold text-[#1E3A5F] mb-1" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+            No KPI categories set up yet
+          </p>
+          <p className="text-sm text-[#64748B]" style={{ fontFamily: "'Inter', sans-serif" }}>
+            Go to KPIs to add categories and seed defaults for this business.
+          </p>
+        </div>
+      ) : (
+        <>
+          <div>
+            <h3 className="text-xs font-bold text-[#64748B] uppercase tracking-wider mb-4" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+              Monthly KPI Totals
+            </h3>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {categories.map(cat => {
+                const actual = totalMap[cat.id] ?? 0;
+                const target = cat.monthlyTarget;
+                const pct = target && target > 0 ? Math.min(100, Math.round((actual / target) * 100)) : null;
+                const onTrack = pct !== null && pct >= 70;
+                const behind = pct !== null && pct < 50;
+                return (
+                  <div
+                    key={cat.id}
+                    className="rounded-2xl p-5 flex flex-col gap-3"
+                    style={{
+                      background: "#FFFFFF",
+                      border: onTrack ? "1.5px solid rgba(5,150,105,0.35)" : behind ? "1.5px solid rgba(220,38,38,0.20)" : "1.5px solid #E2E0DB",
+                      boxShadow: "0 2px 12px rgba(30,58,95,0.04)",
+                    }}
+                  >
+                    <p className="text-[11px] font-bold text-[#64748B] uppercase tracking-wider" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+                      {cat.name}
+                    </p>
+                    <div className="flex items-end gap-1.5">
+                      <span className="text-3xl font-bold text-[#1E3A5F]" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                        {actual.toLocaleString()}
+                      </span>
+                      {cat.unit && (
+                        <span className="text-xs text-[#94A3B8] mb-1" style={{ fontFamily: "'Inter', sans-serif" }}>{cat.unit}</span>
+                      )}
+                    </div>
+                    {target !== null && (
+                      <>
+                        <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "#F1F0ED" }}>
+                          <div
+                            className="h-full rounded-full transition-all duration-500"
+                            style={{
+                              width: `${pct}%`,
+                              background: onTrack ? "#059669" : behind ? "#DC2626" : "#D97706",
+                            }}
+                          />
+                        </div>
+                        <p className="text-[11px] text-[#64748B]" style={{ fontFamily: "'Inter', sans-serif" }}>
+                          {actual.toLocaleString()} / {target.toLocaleString()} goal · {pct}%
+                        </p>
+                      </>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Goals cross-reference */}
+          {goals.filter(g => g.business === bizSlug || g.business === "general").length > 0 && (
+            <div>
+              <h3 className="text-xs font-bold text-[#64748B] uppercase tracking-wider mb-4" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+                Current Goals
+              </h3>
+              <div className="flex flex-col gap-3">
+                {goals
+                  .filter(g => g.business === bizSlug || g.business === "general")
+                  .map(goal => {
+                    const statusColors: Record<string, { bg: string; text: string; label: string }> = {
+                      active:   { bg: "rgba(37,99,235,0.08)",  text: "#2563EB", label: "In Progress" },
+                      achieved: { bg: "rgba(5,150,105,0.10)",  text: "#059669", label: "✓ Achieved" },
+                      missed:   { bg: "rgba(220,38,38,0.08)",  text: "#DC2626", label: "Missed" },
+                      deferred: { bg: "rgba(100,116,139,0.08)",text: "#64748B", label: "Deferred" },
+                    };
+                    const sc = statusColors[goal.status] ?? statusColors.active;
+                    const periodLabel = goal.period === "quarterly" && goal.quarter
+                      ? `Q${goal.quarter}`
+                      : "Annual";
+                    return (
+                      <div
+                        key={goal.id}
+                        className="rounded-xl p-4 flex items-center gap-4"
+                        style={{ background: "#FFFFFF", border: "1px solid #E2E0DB" }}
+                      >
+                        <div className="flex-1">
+                          <p className="text-sm font-semibold text-[#1E3A5F]" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+                            {goal.title}
+                          </p>
+                          <p className="text-xs text-[#94A3B8] mt-0.5" style={{ fontFamily: "'Inter', sans-serif" }}>
+                            {periodLabel}
+                          </p>
+                        </div>
+                        <span
+                          className="text-[11px] font-bold px-2.5 py-1 rounded-full"
+                          style={{ backgroundColor: sc.bg, color: sc.text, fontFamily: "'Space Grotesk', sans-serif" }}
+                        >
+                          {sc.label}
+                        </span>
+                      </div>
+                    );
+                  })}
+              </div>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
 // ── Main Page ─────────────────────────────────────────────────────────────────
 
 // ── Check-ins Summary (Owner view of employee narrative answers) ──────────────
@@ -427,7 +640,7 @@ export default function WeeklyReports() {
   const currentWeekKey = useMemo(() => getWeekKey(today), [today]);
   const [selectedWeek, setSelectedWeek] = useState(currentWeekKey);
   const prevWeekKey = useMemo(() => getPrevWeekKey(selectedWeek), [selectedWeek]);
-  const [activeTab, setActiveTab] = useState<"metrics" | "checkins">("metrics");
+  const [activeTab, setActiveTab] = useState<"dashboard" | "metrics" | "checkins">("dashboard");
 
   const summaryQuery = trpc.weeklyReport.getSummary.useQuery(
     { accountId, weekKey: selectedWeek, prevWeekKey },
@@ -467,6 +680,17 @@ export default function WeeklyReports() {
           <h1 className="text-sm font-bold text-[#1E3A5F]" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Weekly Reports</h1>
           {/* Tabs */}
           <div className="flex gap-1 ml-2">
+            <button
+              onClick={() => setActiveTab("dashboard")}
+              className="text-xs px-3 py-1 rounded-lg font-semibold transition-all"
+              style={{
+                backgroundColor: activeTab === "dashboard" ? "#059669" : "transparent",
+                color: activeTab === "dashboard" ? "white" : "#64748B",
+                fontFamily: "'Space Grotesk', sans-serif",
+              }}
+            >
+              📊 Dashboard
+            </button>
             <button
               onClick={() => setActiveTab("metrics")}
               className="text-xs px-3 py-1 rounded-lg font-semibold transition-all"
@@ -508,6 +732,11 @@ export default function WeeklyReports() {
       </div>
 
       <div className="max-w-5xl mx-auto px-6 py-8">
+        {/* Dashboard tab */}
+        {activeTab === "dashboard" && (
+          <HeartbeatDashboard accountId={accountId} />
+        )}
+
         {/* Check-ins tab */}
         {activeTab === "checkins" && (
           <>

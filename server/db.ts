@@ -825,7 +825,7 @@ export async function createKpiCategory(data: Omit<InsertKpiCategory, "id" | "cr
   return cat;
 }
 
-export async function updateKpiCategory(id: number, data: Partial<Pick<KpiCategory, "name" | "unit" | "frequency" | "sortOrder" | "isActive">>): Promise<void> {
+export async function updateKpiCategory(id: number, data: Partial<Pick<KpiCategory, "name" | "unit" | "frequency" | "sortOrder" | "isActive" | "monthlyTarget" | "showGoalToStaff">>): Promise<void> {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   await db.update(kpiCategories).set(data).where(eq(kpiCategories.id, id));
@@ -870,15 +870,18 @@ export async function getKpiEntries(accountId: number, businessSlug: string, per
     ));
 }
 
-export async function getKpiMonthlyTotals(accountId: number, businessSlug: string, yearMonth: string): Promise<{ categoryId: number; categoryName: string; unit: string; personId: string; total: number }[]> {
+export async function getKpiMonthlyTotals(
+  accountId: number,
+  businessSlug: string,
+  yearMonth: string
+): Promise<{ categoryId: number; categoryName: string; unit: string; personId: string; total: number; monthlyTarget: number | null; showGoalToStaff: boolean }[]> {
   const db = await getDb();
   if (!db) return [];
-  // Get all weekly entries for the month (periodKey starts with yearMonth for weekly, or equals for monthly)
   const cats = await getKpiCategories(accountId, businessSlug);
   if (cats.length === 0) return [];
   const catIds = cats.map(c => c.id);
-  const catMap: Record<number, { name: string; unit: string }> = {};
-  for (const c of cats) catMap[c.id] = { name: c.name, unit: c.unit };
+  const catMap: Record<number, { name: string; unit: string; monthlyTarget: number | null; showGoalToStaff: boolean }> = {};
+  for (const c of cats) catMap[c.id] = { name: c.name, unit: c.unit, monthlyTarget: c.monthlyTarget ?? null, showGoalToStaff: c.showGoalToStaff };
   const allEntries = await db
     .select()
     .from(kpiEntries)
@@ -888,10 +891,8 @@ export async function getKpiMonthlyTotals(accountId: number, businessSlug: strin
     ));
   // Filter by month: weekly entries have periodKey "YYYY-Www", monthly have "YYYY-MM"
   const monthEntries = allEntries.filter(e => {
-    if (e.periodKey.startsWith(yearMonth)) return true; // monthly exact match
-    // For weekly: check if the week falls in the month
+    if (e.periodKey.startsWith(yearMonth)) return true;
     if (e.periodKey.match(/^\d{4}-W\d{2}$/)) {
-      // Parse the week start date
       const [year, week] = e.periodKey.split("-W").map(Number);
       const jan4 = new Date(year, 0, 4);
       const weekStart = new Date(jan4.getTime() + (week - 1) * 7 * 86400000);
@@ -915,6 +916,8 @@ export async function getKpiMonthlyTotals(accountId: number, businessSlug: strin
       unit: catMap[catId]?.unit ?? "#",
       personId,
       total,
+      monthlyTarget: catMap[catId]?.monthlyTarget ?? null,
+      showGoalToStaff: catMap[catId]?.showGoalToStaff ?? false,
     };
   });
 }
