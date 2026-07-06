@@ -315,7 +315,7 @@ export default function Settings() {
   // Load businesses from DB — the source of truth for this account
   const { data: dbBusinesses = [] } = trpc.business.list.useQuery(
     { accountId },
-    { enabled: accountId > 0 }
+    { enabled: accountId !== undefined }
   );
 
   // Map DB businesses to the shape Settings expects
@@ -532,11 +532,11 @@ function EmployeeInvitePanel({ accountId }: { accountId: number }) {
 
   const { data: membersData, refetch: refetchMembers } = trpc.person.list.useQuery(
     { accountId },
-    { enabled: accountId > 0 }
+    { enabled: accountId !== undefined }
   );
   const { data: bizList = [] } = trpc.business.list.useQuery(
     { accountId },
-    { enabled: accountId > 0 }
+    { enabled: accountId !== undefined }
   );
   type PersonRow = { id: string; name: string; email: string; role: string; businessScope: string; inviteAccepted: boolean; createdAt: Date };
 
@@ -758,7 +758,7 @@ function ReportQuestionsPanel({
   // Load DB businesses to get their IDs (the panel receives slugs/labels but we need IDs)
   const { data: dbBizList = [] } = trpc.business.list.useQuery(
     { accountId },
-    { enabled: accountId > 0 }
+    { enabled: accountId !== undefined }
   );
 
   // Build display options: "All Businesses" + each DB business
@@ -769,7 +769,7 @@ function ReportQuestionsPanel({
 
   const questionsQuery = trpc.report.listQuestions.useQuery(
     { accountId, businessId: selectedBizId === 0 ? undefined : selectedBizId },
-    { enabled: accountId > 0 }
+    { enabled: accountId !== undefined }
   );
 
   const createQuestion = trpc.report.createQuestion.useMutation({

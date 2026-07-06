@@ -712,15 +712,21 @@ export default function Home() {
   const [highlightType, setHighlightType] = useState<MeetingType | null>(null);
   // Business context derived from logged-in person's scope
   const businessContext = personScopeToBusinessSelection(person?.businessScope);
-  const accountId = person?.accountId ?? (() => {
+  const accountId = person?.accountId || (() => {
     const stored = localStorage.getItem("bcc_account_id");
     return stored ? parseInt(stored, 10) : 0;
   })();
 
+  // Load businesses from DB — drives the sidebar list
+  const { data: dbBusinesses = [] } = trpc.business.list.useQuery(
+    { accountId },
+    { enabled: accountId !== undefined }
+  );
+
   // Fetch the DB-driven calendar (respects closed days, work days, meeting prefs)
   const { data: calendarData } = trpc.onboarding.generateCalendar.useQuery(
     { accountId, year: YEAR },
-    { enabled: accountId > 0, refetchOnWindowFocus: true }
+    { enabled: accountId !== undefined, refetchOnWindowFocus: true }
   );
 
   // Build the calendar grid — use DB data when available, fall back to static
@@ -941,39 +947,29 @@ export default function Home() {
               )}
             </div>
             <div className="flex flex-col gap-1">
-              {(Object.entries(BUSINESSES) as [keyof typeof BUSINESSES, typeof BUSINESSES[keyof typeof BUSINESSES]][]).filter(([key]) => {
-                if (businessContext === "owner") return true;
-                if (businessContext === "chiro") return key === "chiro";
-                if (businessContext === "crossfit") return key === "crossfit";
-                return false;
-              }).map(([key, biz]) => {
-                const isActive = true; // already filtered to only active businesses
-                const isFiltered = false;
-                const isSingleSelected = businessContext !== "owner";
-                return (
-                  <div
-                    key={key}
-                    className="flex items-center gap-2.5 px-3 py-2 rounded-lg transition-opacity"
-                    style={{
-                      backgroundColor: isActive ? "#F1F0ED" : "#F8F7F4",
-                      opacity: isFiltered ? 0.35 : 1,
-                      border: isSingleSelected ? `1px solid ${biz.color}40` : "1px solid transparent",
-                    }}
-                  >
-                    <span className="text-base leading-none">{biz.icon}</span>
-                    <div className="flex-1 min-w-0">
-                      <p
-                        className="text-xs font-medium text-[#1E3A5F]"
-                        style={{ fontFamily: "'Space Grotesk', sans-serif" }}
-                      >
-                        {biz.shortName}
-                      </p>
-                      <p className="text-[9px] text-[#94A3B8] truncate">{biz.tagline}</p>
-                    </div>
-                    <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: biz.color }} />
+              {dbBusinesses.length === 0 ? (
+                <p className="text-[10px] text-[#94A3B8] px-1 italic">Loading…</p>
+              ) : dbBusinesses.map((biz) => (
+                <div
+                  key={biz.slug}
+                  className="flex items-center gap-2.5 px-3 py-2 rounded-lg"
+                  style={{
+                    backgroundColor: "#F1F0ED",
+                    border: `1px solid ${biz.color}40`,
+                  }}
+                >
+                  <span className="text-base leading-none">{biz.icon || "🏢"}</span>
+                  <div className="flex-1 min-w-0">
+                    <p
+                      className="text-xs font-medium text-[#1E3A5F]"
+                      style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+                    >
+                      {biz.name}
+                    </p>
                   </div>
-                );
-              })}
+                  <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: biz.color }} />
+                </div>
+              ))}
             </div>
           </div>
 

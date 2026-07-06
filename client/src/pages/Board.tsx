@@ -606,7 +606,7 @@ export default function Board() {
   // Load businesses from DB — the source of truth for this account
   const { data: dbBusinesses = [] } = trpc.business.list.useQuery(
     { accountId },
-    { enabled: accountId > 0 }
+    { enabled: accountId !== undefined }
   );
 
   // Build allowed businesses from DB; fall back to empty while loading

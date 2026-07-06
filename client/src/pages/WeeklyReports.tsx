@@ -314,11 +314,11 @@ function EmployeeCard({
 function CheckinsSummary({ accountId, weekKey }: { accountId: number; weekKey: string }) {
   const answersQuery = trpc.report.getWeekAnswers.useQuery(
     { accountId, weekKey },
-    { enabled: accountId > 0 }
+    { enabled: accountId !== undefined }
   );
   const personsQuery = trpc.person.list.useQuery(
     { accountId },
-    { enabled: accountId > 0 }
+    { enabled: accountId !== undefined }
   );
 
   const answers = answersQuery.data ?? [];
@@ -431,7 +431,7 @@ export default function WeeklyReports() {
 
   const summaryQuery = trpc.weeklyReport.getSummary.useQuery(
     { accountId, weekKey: selectedWeek, prevWeekKey },
-    { enabled: accountId > 0 }
+    { enabled: accountId !== undefined }
   );
 
   const rows: SummaryRow[] = (summaryQuery.data as SummaryRow[] | undefined) ?? [];
