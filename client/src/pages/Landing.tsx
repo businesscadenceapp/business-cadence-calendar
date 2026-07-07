@@ -482,8 +482,8 @@ function WaitlistSection() {
         </div>
 
         <h2 className="text-3xl sm:text-4xl font-bold text-white mb-5">
-          Stop sending texts that get left on read.<br />
-          <span className="text-[#5EEAD4]">Start building a better rhythm.</span>
+          Stop being out of sync.<br />
+          <span className="text-[#5EEAD4]">Start building a rhythm.</span>
         </h2>
         <p className="text-[#93C5FD] text-lg mb-10 leading-relaxed">
           Join the waitlist and be among the first to use BusinessCadence. Early access is free, and you'll have a direct line to shape the product.
