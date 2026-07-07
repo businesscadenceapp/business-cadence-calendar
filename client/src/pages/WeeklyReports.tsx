@@ -314,11 +314,11 @@ function EmployeeCard({
 function CheckinsSummary({ accountId, weekKey }: { accountId: number; weekKey: string }) {
   const answersQuery = trpc.report.getWeekAnswers.useQuery(
     { accountId, weekKey },
-    { enabled: accountId > 0 }
+    { enabled: accountId !== undefined }
   );
   const personsQuery = trpc.person.list.useQuery(
     { accountId },
-    { enabled: accountId > 0 }
+    { enabled: accountId !== undefined }
   );
 
   const answers = answersQuery.data ?? [];
@@ -431,7 +431,7 @@ export default function WeeklyReports() {
 
   const summaryQuery = trpc.weeklyReport.getSummary.useQuery(
     { accountId, weekKey: selectedWeek, prevWeekKey },
-    { enabled: accountId > 0 }
+    { enabled: accountId !== undefined }
   );
 
   const rows: SummaryRow[] = (summaryQuery.data as SummaryRow[] | undefined) ?? [];
@@ -448,10 +448,10 @@ export default function WeeklyReports() {
   const weekNum = selectedWeek.split("-W")[1];
   const isCurrentWeek = selectedWeek === currentWeekKey;
 
-  if (!accountId) {
+  if (person === undefined) {
     return (
       <div className="flex items-center justify-center h-screen" style={{ background: "#F8F7F4" }}>
-        <p className="text-[#94A3B8] text-sm">Please log in first.</p>
+        <p className="text-[#94A3B8] text-sm">Loading...</p>
       </div>
     );
   }
