@@ -800,9 +800,12 @@ export default function Home() {
     return stored ? parseInt(stored, 10) : undefined;
   })();
 
+  // Currently viewed year — starts at current year, can navigate forward/back
+  const [viewYear, setViewYear] = useState(() => new Date().getFullYear());
+
   // Fetch the DB-driven calendar (respects closed days, work days, meeting prefs)
   const { data: calendarData } = trpc.onboarding.generateCalendar.useQuery(
-    { accountId: accountId ?? 0, year: YEAR },
+    { accountId: accountId ?? 0, year: viewYear },
     { enabled: accountId !== undefined, refetchOnWindowFocus: true }
   );
 
@@ -810,13 +813,44 @@ export default function Home() {
   const calendar = useMemo<CalendarMonth[]>(() => {
     if (calendarData?.meetings && calendarData.meetings.length > 0) {
       return buildCalendarFromSchedule(
-        YEAR,
+        viewYear,
         calendarData.meetings,
         calendarData.closedDates ?? []
       );
     }
-    return generateCalendar();
-  }, [calendarData]);
+    // Generate a static calendar for the viewed year
+    const months: CalendarMonth[] = [];
+    const today = new Date();
+    const MONTH_NAMES_LOCAL = [
+      "January", "February", "March", "April", "May", "June",
+      "July", "August", "September", "October", "November", "December",
+    ];
+    for (let m = 0; m < 12; m++) {
+      const firstDay = new Date(viewYear, m, 1);
+      const lastDay = new Date(viewYear, m + 1, 0);
+      const startDow = firstDay.getDay();
+      const days: (CalendarDay | null)[] = [];
+      for (let i = 0; i < startDow; i++) days.push(null);
+      for (let d = 1; d <= lastDay.getDate(); d++) {
+        const date = new Date(viewYear, m, d);
+        const dow = date.getDay();
+        const isWeekend = dow === 0 || dow === 6;
+        const isToday = today.getFullYear() === viewYear && today.getMonth() === m && today.getDate() === d;
+        const meetings: MeetingType[] = [];
+        if (!isWeekend) {
+          meetings.push("daily");
+          if (dow === 2) {
+            meetings.push("weekly");
+            if (date.getDate() <= 7) meetings.push("monthly");
+          }
+          if (dow === 5 && date.getDate() <= 7 && [0, 3, 6, 9].includes(m)) meetings.push("quarterly");
+        }
+        days.push({ date, dayOfMonth: d, isWeekend, meetings, isToday });
+      }
+      months.push({ month: m, name: MONTH_NAMES_LOCAL[m], days });
+    }
+    return months;
+  }, [calendarData, viewYear]);
 
   // Fetch all days that have saved meeting logs for the green indicator dot
   const { data: loggedDatesData } = trpc.meetingLog.getLoggedDates.useQuery(undefined, {
@@ -865,12 +899,31 @@ export default function Home() {
     });
   };
 
-  const goToPrevMonth = () => setViewMonthIndex(i => Math.max(0, i - 1));
-  const goToNextMonth = () => setViewMonthIndex(i => Math.min(11, i + 1));
-  const goToToday = () => setViewMonthIndex(new Date().getMonth());
+  const goToPrevMonth = () => {
+    if (viewMonthIndex === 0) {
+      setViewYear(y => y - 1);
+      setViewMonthIndex(11);
+    } else {
+      setViewMonthIndex(i => i - 1);
+    }
+  };
+  const goToNextMonth = () => {
+    if (viewMonthIndex === 11) {
+      setViewYear(y => y + 1);
+      setViewMonthIndex(0);
+    } else {
+      setViewMonthIndex(i => i + 1);
+    }
+  };
+  const goToToday = () => {
+    const now = new Date();
+    setViewYear(now.getFullYear());
+    setViewMonthIndex(now.getMonth());
+  };
 
   const todayMonthIndex = new Date().getMonth();
-  const isViewingToday = viewMonthIndex === todayMonthIndex;
+  const todayYear = new Date().getFullYear();
+  const isViewingToday = viewMonthIndex === todayMonthIndex && viewYear === todayYear;
 
   return (
     <div
@@ -1164,20 +1217,18 @@ export default function Home() {
               <div className="flex items-center gap-2">
                 <button
                   onClick={goToPrevMonth}
-                  disabled={viewMonthIndex === 0}
-                  className="w-8 h-8 flex items-center justify-center rounded-lg transition-all disabled:opacity-30"
+                  className="w-8 h-8 flex items-center justify-center rounded-lg transition-all hover:opacity-70"
                   style={{ background: "rgba(30,58,95,0.06)", border: "1px solid rgba(30,58,95,0.12)", color: "#1E3A5F" }}
                   aria-label="Previous month"
                 >
                   <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 11L5 7l4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
                 </button>
                 <h2 className="text-sm font-bold text-[#1E3A5F] min-w-[120px] text-center" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-                  {calendar[viewMonthIndex]?.name ?? ""} {YEAR}
+                  {calendar[viewMonthIndex]?.name ?? ""} {viewYear}
                 </h2>
                 <button
                   onClick={goToNextMonth}
-                  disabled={viewMonthIndex === 11}
-                  className="w-8 h-8 flex items-center justify-center rounded-lg transition-all disabled:opacity-30"
+                  className="w-8 h-8 flex items-center justify-center rounded-lg transition-all hover:opacity-70"
                   style={{ background: "rgba(30,58,95,0.06)", border: "1px solid rgba(30,58,95,0.12)", color: "#1E3A5F" }}
                   aria-label="Next month"
                 >
