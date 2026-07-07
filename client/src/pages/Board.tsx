@@ -378,13 +378,14 @@ function BoardCard({ card, currentUser, onSeen, onArchive, onDelete }: {
 
 // ─── Add Card Form ────────────────────────────────────────────────────────────
 
-function AddCardForm({ currentUser, onAdded, allowedBusinesses, defaultBusiness, bizLabels, assignablePersons }: {
+function AddCardForm({ currentUser, onAdded, allowedBusinesses, defaultBusiness, bizLabels, assignablePersons, accountId }: {
   currentUser: Author | null;
   onAdded: () => void;
   allowedBusinesses: Business[];
   defaultBusiness: Business;
   bizLabels?: Record<string, { label: string; icon: string; bg: string; text: string; border: string }>;
   assignablePersons?: { id: string; name: string }[];
+  accountId?: number;
 }) {
   const [type, setType] = useState<CardType>("update");
   const [business, setBusiness] = useState<Business>(defaultBusiness);
@@ -415,6 +416,7 @@ function AddCardForm({ currentUser, onAdded, allowedBusinesses, defaultBusiness,
       content: content.trim(),
       ...(type === "task" && assignedTo ? { assignedTo } : {}),
       ...(dueAt ? { dueAt } : {}),
+      ...(accountId ? { accountId } : {}),
     });
   };
 
@@ -718,7 +720,7 @@ export default function Board() {
             </div>
           )}
 
-          <AddCardForm currentUser={currentUser} onAdded={() => refetch()} allowedBusinesses={allowedBusinesses} defaultBusiness={defaultBusiness} bizLabels={dynamicBizLabels} assignablePersons={allPersons} />
+          <AddCardForm currentUser={currentUser} onAdded={() => refetch()} allowedBusinesses={allowedBusinesses} defaultBusiness={defaultBusiness} bizLabels={dynamicBizLabels} assignablePersons={allPersons} accountId={accountId} />
 
           {/* Business filter — only show businesses this account can access */}
           {allowedBusinesses.length > 1 && (
@@ -821,8 +823,8 @@ export default function Board() {
                         key={card.id}
                         card={card}
                         currentUser={currentUser}
-                        onMarkDone={id => currentUser && markDone.mutate({ id, completedBy: currentUser })}
-                        onConfirmDone={id => currentUser && confirmDone.mutate({ id, confirmedBy: currentUser })}
+                        onMarkDone={id => currentUser && markDone.mutate({ id, completedBy: currentUser, ...(accountId ? { accountId } : {}) })}
+                        onConfirmDone={id => currentUser && confirmDone.mutate({ id, confirmedBy: currentUser, ...(accountId ? { accountId } : {}) })}
                         onDelete={id => deleteCard.mutate({ id })}
                       />
                     ))}
@@ -841,8 +843,8 @@ export default function Board() {
                         key={card.id}
                         card={card}
                         currentUser={currentUser}
-                        onMarkDone={id => currentUser && markDone.mutate({ id, completedBy: currentUser })}
-                        onConfirmDone={id => currentUser && confirmDone.mutate({ id, confirmedBy: currentUser })}
+                        onMarkDone={id => currentUser && markDone.mutate({ id, completedBy: currentUser, ...(accountId ? { accountId } : {}) })}
+                        onConfirmDone={id => currentUser && confirmDone.mutate({ id, confirmedBy: currentUser, ...(accountId ? { accountId } : {}) })}
                         onDelete={id => deleteCard.mutate({ id })}
                       />
                     ))}

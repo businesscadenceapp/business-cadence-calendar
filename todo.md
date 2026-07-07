@@ -412,3 +412,13 @@
 - [x] Add Ctrl+Enter keyboard shortcut to Board quick-capture textarea
 - [x] Fix Reports Metrics tab: add empty state guidance when no employees configured
 - [x] Fix Calendar page: accountId guard and DB integration for schedule overrides
+
+## Notification Bell Feature
+- [x] Add notifications table to drizzle/schema.ts (id, accountId, recipientPersonId, type, title, body, linkTo, isRead, createdAt)
+- [x] Add DB helpers: createNotification, getNotificationsForPerson, markNotificationRead, markAllRead
+- [x] Add tRPC procedures: notification.list, notification.markRead, notification.markAllRead
+- [x] Generate notifications on board events: task assigned, task marked done (awaiting confirm), new update/issue posted
+- [x] Build NotificationBell component: bell icon with unread badge, dropdown panel with notification list
+- [x] Wire NotificationBell into AppShell sidebar header
+- [x] Auto-poll for new notifications every 30 seconds
+- [x] Mark notifications as read when dropdown is opened

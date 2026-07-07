@@ -450,3 +450,23 @@ export const reportAnswers = mysqlTable("report_answers", {
 
 export type ReportAnswer = typeof reportAnswers.$inferSelect;
 export type InsertReportAnswer = typeof reportAnswers.$inferInsert;
+
+/**
+ * In-app notifications — per-person alerts for board events.
+ * type: "task_assigned" | "task_done_pending" | "task_confirmed" | "new_update" | "new_issue" | "overdue_task"
+ * recipientPersonId references persons.id (the person who should see this notification)
+ * linkTo: optional route to navigate to when tapped (e.g. "/app/board")
+ */
+export const notifications = mysqlTable("notifications", {
+  id: int("id").autoincrement().primaryKey(),
+  accountId: int("accountId").notNull(),
+  recipientPersonId: varchar("recipientPersonId", { length: 64 }).notNull(),
+  type: mysqlEnum("type", ["task_assigned", "task_done_pending", "task_confirmed", "new_update", "new_issue", "overdue_task"]).notNull(),
+  title: varchar("title", { length: 256 }).notNull(),
+  body: varchar("body", { length: 512 }).notNull(),
+  linkTo: varchar("linkTo", { length: 256 }).default("/app/board").notNull(),
+  isRead: boolean("isRead").default(false).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type Notification = typeof notifications.$inferSelect;
+export type InsertNotification = typeof notifications.$inferInsert;

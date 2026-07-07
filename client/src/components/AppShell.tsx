@@ -3,6 +3,7 @@ import { Link, useLocation } from "wouter";
 import { usePerson } from "@/contexts/PersonContext";
 import { clearAuth } from "@/components/PasswordGate";
 import { BrandIcon } from "@/components/BrandLogo";
+import { NotificationBell } from "@/components/NotificationBell";
 
 // ─── Identity Context (shim for Board.tsx useIdentity hook) ──────────────────
 // currentUser is now always the logged-in person's name from PersonContext.
@@ -131,12 +132,13 @@ export default function AppShell({ children }: AppShellProps) {
           >
             {/* Circular icon — same note + lavender/navy as the homepage logo */}
             <BrandIcon size={36} className="flex-shrink-0" />
-            <div>
+            <div className="flex-1 min-w-0">
               <p className="text-[13px] font-bold text-[#1E3A5F] leading-tight" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
                 BusinessCadence
               </p>
               <p className="text-[10px] text-slate-400">Co-owner OS</p>
             </div>
+            <NotificationBell accountId={person?.accountId} personId={person?.id} />
           </div>
 
           {/* Nav items */}
@@ -250,6 +252,11 @@ export default function AppShell({ children }: AppShellProps) {
                 </Link>
               );
             })}
+            {/* Mobile notification bell */}
+            <div className="flex flex-col items-center justify-center px-2 gap-0.5">
+              <NotificationBell accountId={person?.accountId} personId={person?.id} />
+              <span className="text-[8px] text-slate-400" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Alerts</span>
+            </div>
             {/* Mobile person avatar — tap to sign out */}
             <button
               onClick={person ? handleSignOut : () => navigate("/login")}

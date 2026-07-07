@@ -65,6 +65,11 @@ import {
   deleteReportQuestion,
   upsertReportAnswer,
   getReportAnswers,
+  createNotification,
+  getNotificationsForPerson,
+  countUnreadNotifications,
+  markNotificationRead,
+  markAllNotificationsRead,
 } from "./db";
 import { generateMeetingSchedule } from "../shared/calendarEngine";
 import { notifyOwner } from "./_core/notification";
@@ -610,9 +615,44 @@ Be concise and specific. If a field has nothing, use an empty array.`,
         content: z.string().min(1).max(1000),
         assignedTo: z.string().min(1).max(128).optional(),
         dueAt: z.number().optional(), // ms since epoch
+        accountId: z.number().optional(), // for notification routing
       }))
       .mutation(async ({ input }) => {
         const card = await createBoardCard(input);
+        // Generate notifications for relevant recipients
+        if (input.accountId) {
+          const allPersons = await getPersonsByAccount(input.accountId);
+          if (input.type === "task" && input.assignedTo) {
+            // Notify the assignee
+            const recipient = allPersons.find(p => p.name === input.assignedTo);
+            if (recipient) {
+              await createNotification({
+                accountId: input.accountId,
+                recipientPersonId: recipient.id,
+                type: "task_assigned",
+                title: "New task assigned to you",
+                body: `${input.author} assigned you a task: "${input.content.slice(0, 120)}"`,
+                linkTo: "/app/board",
+              });
+            }
+          } else if (input.type === "update" || input.type === "issue") {
+            // Notify everyone else on the account
+            const notifType = input.type === "issue" ? "new_issue" : "new_update";
+            const notifTitle = input.type === "issue" ? "New issue posted" : "New update posted";
+            for (const p of allPersons) {
+              if (p.name !== input.author) {
+                await createNotification({
+                  accountId: input.accountId,
+                  recipientPersonId: p.id,
+                  type: notifType,
+                  title: notifTitle,
+                  body: `${input.author}: "${input.content.slice(0, 120)}"`,
+                  linkTo: "/app/board",
+                });
+              }
+            }
+          }
+        }
         return { card };
       }),
 
@@ -621,9 +661,28 @@ Be concise and specific. If a field has nothing, use an empty array.`,
       .input(z.object({
         id: z.number(),
         completedBy: z.string().min(1).max(128),
+        accountId: z.number().optional(),
       }))
       .mutation(async ({ input }) => {
+        // Fetch card before marking done to get the author
+        const cards = await getBoardCards(false);
+        const card = cards.find(c => c.id === input.id);
         await markTaskDone(input.id, input.completedBy);
+        // Notify the task author (requester) that it's awaiting their confirmation
+        if (input.accountId && card) {
+          const allPersons = await getPersonsByAccount(input.accountId);
+          const requester = allPersons.find(p => p.name === card.author);
+          if (requester && requester.name !== input.completedBy) {
+            await createNotification({
+              accountId: input.accountId,
+              recipientPersonId: requester.id,
+              type: "task_done_pending",
+              title: "Task completed — needs your confirmation",
+              body: `${input.completedBy} marked done: "${card.content.slice(0, 120)}"`,
+              linkTo: "/app/board",
+            });
+          }
+        }
         return { success: true };
       }),
 
@@ -632,9 +691,28 @@ Be concise and specific. If a field has nothing, use an empty array.`,
       .input(z.object({
         id: z.number(),
         confirmedBy: z.string().min(1).max(128),
+        accountId: z.number().optional(),
       }))
       .mutation(async ({ input }) => {
+        // Fetch card before archiving to get the doer
+        const cards = await getBoardCards(false);
+        const card = cards.find(c => c.id === input.id);
         await confirmTaskDone(input.id, input.confirmedBy);
+        // Notify the doer that their work was confirmed
+        if (input.accountId && card?.assignedTo) {
+          const allPersons = await getPersonsByAccount(input.accountId);
+          const doer = allPersons.find(p => p.name === card.assignedTo);
+          if (doer && doer.name !== input.confirmedBy) {
+            await createNotification({
+              accountId: input.accountId,
+              recipientPersonId: doer.id,
+              type: "task_confirmed",
+              title: "Task confirmed complete!",
+              body: `${input.confirmedBy} confirmed your task: "${card.content.slice(0, 120)}"`,
+              linkTo: "/app/board",
+            });
+          }
+        }
         return { success: true };
       }),
 
@@ -1178,6 +1256,40 @@ Be concise and specific. If a field has nothing, use an empty array.`,
       .input(z.object({ accountId: z.number(), weekKey: z.string() }))
       .query(async ({ input }) => {
         return getReportAnswers(input.accountId, input.weekKey);
+      }),
+  }),
+  /** In-app notifications — per-person alerts for board events. */
+  notification: router({
+    /** Get notifications for the logged-in person. */
+    list: publicProcedure
+      .input(z.object({ accountId: z.number(), personId: z.string() }))
+      .query(async ({ input }) => {
+        const items = await getNotificationsForPerson(input.accountId, input.personId);
+        return { items };
+      }),
+
+    /** Count unread notifications for badge display. */
+    unreadCount: publicProcedure
+      .input(z.object({ accountId: z.number(), personId: z.string() }))
+      .query(async ({ input }) => {
+        const count = await countUnreadNotifications(input.accountId, input.personId);
+        return { count };
+      }),
+
+    /** Mark a single notification as read. */
+    markRead: publicProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        await markNotificationRead(input.id);
+        return { success: true };
+      }),
+
+    /** Mark all notifications as read for a person. */
+    markAllRead: publicProcedure
+      .input(z.object({ accountId: z.number(), personId: z.string() }))
+      .mutation(async ({ input }) => {
+        await markAllNotificationsRead(input.accountId, input.personId);
+        return { success: true };
       }),
   }),
 });

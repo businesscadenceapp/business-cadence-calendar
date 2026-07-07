@@ -1,6 +1,6 @@
 import { eq, and, desc, inArray, asc } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, meetingLogs, agendaItems, MeetingLog, AgendaItem, boardCards, agendaTemplates, type BoardCard, type InsertBoardCard, waitlistEmails, meetingRecordings, type MeetingRecording, businessProfiles, type BusinessProfile, closedPeriods, type ClosedPeriod, meetingScheduleOverrides, employees, employeeMetrics, weeklyReports, weeklyReportEntries, type Employee, type EmployeeMetric, type WeeklyReport, type WeeklyReportEntry, goals, type Goal, type InsertGoal } from "../drizzle/schema";
+import { InsertUser, users, meetingLogs, agendaItems, MeetingLog, AgendaItem, boardCards, agendaTemplates, type BoardCard, type InsertBoardCard, waitlistEmails, meetingRecordings, type MeetingRecording, businessProfiles, type BusinessProfile, closedPeriods, type ClosedPeriod, meetingScheduleOverrides, employees, employeeMetrics, weeklyReports, weeklyReportEntries, type Employee, type EmployeeMetric, type WeeklyReport, type WeeklyReportEntry, goals, type Goal, type InsertGoal, notifications, type Notification } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -1011,4 +1011,93 @@ export async function getReportAnswers(accountId: number, weekKey: string): Prom
   const qMap: Record<number, string> = {};
   for (const q of qRows) qMap[q.id] = q.question;
   return rows.map(r => ({ ...r, questionText: qMap[r.questionId] ?? String(r.questionId) }));
+}
+
+// ─── Notification helpers ─────────────────────────────────────────────────────
+
+/** Create a new in-app notification for a specific person. */
+export async function createNotification(data: {
+  accountId: number;
+  recipientPersonId: string;
+  type: Notification["type"];
+  title: string;
+  body: string;
+  linkTo?: string;
+}): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  await db.insert(notifications).values({
+    accountId: data.accountId,
+    recipientPersonId: data.recipientPersonId,
+    type: data.type,
+    title: data.title,
+    body: data.body,
+    linkTo: data.linkTo ?? "/app/board",
+  });
+}
+
+/** Get the most recent 50 notifications for a person, newest first. */
+export async function getNotificationsForPerson(
+  accountId: number,
+  recipientPersonId: string
+): Promise<Notification[]> {
+  const db = await getDb();
+  if (!db) return [];
+  return db
+    .select()
+    .from(notifications)
+    .where(
+      and(
+        eq(notifications.accountId, accountId),
+        eq(notifications.recipientPersonId, recipientPersonId)
+      )
+    )
+    .orderBy(desc(notifications.createdAt))
+    .limit(50);
+}
+
+/** Count unread notifications for a person. */
+export async function countUnreadNotifications(
+  accountId: number,
+  recipientPersonId: string
+): Promise<number> {
+  const db = await getDb();
+  if (!db) return 0;
+  const rows = await db
+    .select()
+    .from(notifications)
+    .where(
+      and(
+        eq(notifications.accountId, accountId),
+        eq(notifications.recipientPersonId, recipientPersonId),
+        eq(notifications.isRead, false)
+      )
+    );
+  return rows.length;
+}
+
+/** Mark a single notification as read. */
+export async function markNotificationRead(id: number): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  await db.update(notifications).set({ isRead: true }).where(eq(notifications.id, id));
+}
+
+/** Mark all notifications as read for a person. */
+export async function markAllNotificationsRead(
+  accountId: number,
+  recipientPersonId: string
+): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  await db
+    .update(notifications)
+    .set({ isRead: true })
+    .where(
+      and(
+        eq(notifications.accountId, accountId),
+        eq(notifications.recipientPersonId, recipientPersonId),
+        eq(notifications.isRead, false)
+      )
+    );
 }
