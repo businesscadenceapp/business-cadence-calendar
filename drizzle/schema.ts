@@ -103,7 +103,7 @@ export const agendaTemplates = mysqlTable("agenda_templates", {
   business: mysqlEnum("business", ["chiropractic", "crossfit", "realty"]).notNull(),
   meetingType: mysqlEnum("meetingType", ["daily", "weekly", "monthly", "quarterly"]).notNull(),
   itemsJson: text("itemsJson").notNull(), // JSON: Array<{ key: string; label: string; sortOrder: number }>
-  updatedBy: mysqlEnum("updatedBy", ["Matt", "Lynn"]).notNull(),
+  updatedBy: varchar("updatedBy", { length: 128 }).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
@@ -312,7 +312,7 @@ export const goals = mysqlTable("goals", {
   title: varchar("title", { length: 256 }).notNull(),
   description: text("description"),
   status: mysqlEnum("status", ["active", "achieved", "missed", "deferred"]).notNull().default("active"),
-  owner: mysqlEnum("owner", ["Matt", "Lynn", "both"]).notNull().default("both"),
+  owner: varchar("owner", { length: 128 }).notNull().default("both"),
   sortOrder: int("sortOrder").default(0).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),

@@ -57,13 +57,16 @@ export default function WeeklyCheckin() {
   const [saving, setSaving] = useState<Record<number, boolean>>({});
   const [saved, setSaved] = useState<Record<number, boolean>>({});
 
-  const accountId = person?.accountId || Number(localStorage.getItem("bcc_account_id") ?? "0");
+  const accountId = person?.accountId ?? (() => {
+    const stored = localStorage.getItem("bcc_account_id");
+    return stored ? parseInt(stored, 10) : undefined;
+  })();
   const personId = person?.id ?? "";
 
   // Determine which business IDs this employee belongs to
   const businessesQuery = trpc.business.list.useQuery(
-    { accountId },
-    { enabled: accountId > 0 }
+    { accountId: accountId ?? 0 },
+    { enabled: accountId !== undefined }
   );
   const dbBusinesses = businessesQuery.data ?? [];
 
@@ -84,8 +87,8 @@ export default function WeeklyCheckin() {
 
   // Load questions: "all businesses" (businessId=0) + employee's specific businesses
   const questionsQuery = trpc.report.listQuestions.useQuery(
-    { accountId },
-    { enabled: accountId > 0 }
+    { accountId: accountId ?? 0 },
+    { enabled: accountId !== undefined }
   );
 
   // Filter questions relevant to this employee
@@ -98,8 +101,8 @@ export default function WeeklyCheckin() {
 
   // Load existing answers for selected week
   const answersQuery = trpc.report.getWeekAnswers.useQuery(
-    { accountId, weekKey: selectedWeek },
-    { enabled: accountId > 0 }
+    { accountId: accountId ?? 0, weekKey: selectedWeek },
+    { enabled: accountId !== undefined }
   );
 
   // Pre-fill answers from DB
@@ -132,7 +135,7 @@ export default function WeeklyCheckin() {
     if (!text) { toast.error("Please write an answer before saving."); return; }
     setSaving(s => ({ ...s, [questionId]: true }));
     setSaved(s => ({ ...s, [questionId]: false }));
-    submitAnswer.mutate({ questionId, personId, accountId, weekKey: selectedWeek, answer: text });
+    submitAnswer.mutate({ questionId, personId, accountId: accountId ?? 0, weekKey: selectedWeek, answer: text });
   };
 
   const handleSaveAll = () => {

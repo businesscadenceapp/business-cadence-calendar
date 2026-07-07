@@ -56,10 +56,12 @@ function EmployeeKpiView({ accountId, personId, businessScope }: {
   const [values, setValues] = useState<Record<number, string>>({});
   const [saving, setSaving] = useState<Record<number, boolean>>({});
 
+  const businessesQuery = trpc.business.list.useQuery({ accountId }, { staleTime: 60_000 });
+  const dbBusinessSlugs = useMemo(() => (businessesQuery.data ?? []).map(b => b.slug), [businessesQuery.data]);
   const scopes = useMemo(() => {
-    if (businessScope === "all") return ["chiropractic", "crossfit", "realty", "general"];
+    if (businessScope === "all") return dbBusinessSlugs.length > 0 ? dbBusinessSlugs : ["general"];
     try { return JSON.parse(businessScope) as string[]; } catch { return [businessScope]; }
-  }, [businessScope]);
+  }, [businessScope, dbBusinessSlugs]);
 
   const primarySlug = scopes[0] ?? "general";
   const currentMonth = getCurrentMonthKey();
@@ -869,7 +871,10 @@ export default function KpiReporting() {
     );
   }
 
-  const accountId = person.accountId || parseInt(localStorage.getItem("bcc_account_id") ?? "0", 10);
+  const accountId = person.accountId ?? (() => {
+    const stored = localStorage.getItem("bcc_account_id");
+    return stored ? parseInt(stored, 10) : 0;
+  })();
   const isOwner = person.role === "owner" || person.role === "coowner";
 
   return (

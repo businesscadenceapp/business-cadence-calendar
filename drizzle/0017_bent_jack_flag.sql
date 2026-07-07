@@ -1,0 +1,1 @@
+ALTER TABLE `agenda_templates` MODIFY COLUMN `updatedBy` varchar(128) NOT NULL;

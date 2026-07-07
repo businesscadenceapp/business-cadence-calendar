@@ -714,13 +714,13 @@ export default function Home() {
   const businessContext = personScopeToBusinessSelection(person?.businessScope);
   const accountId = person?.accountId ?? (() => {
     const stored = localStorage.getItem("bcc_account_id");
-    return stored ? parseInt(stored, 10) : 0;
+    return stored ? parseInt(stored, 10) : undefined;
   })();
 
   // Fetch the DB-driven calendar (respects closed days, work days, meeting prefs)
   const { data: calendarData } = trpc.onboarding.generateCalendar.useQuery(
-    { accountId, year: YEAR },
-    { enabled: accountId > 0, refetchOnWindowFocus: true }
+    { accountId: accountId ?? 0, year: YEAR },
+    { enabled: accountId !== undefined, refetchOnWindowFocus: true }
   );
 
   // Build the calendar grid — use DB data when available, fall back to static

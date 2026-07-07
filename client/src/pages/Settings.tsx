@@ -3,7 +3,7 @@
  * Password re-entry is required before any changes are saved.
  */
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Link } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
@@ -60,17 +60,23 @@ const MEETING_LIST: { key: DbMeetingType; label: string; color: string }[] = [
 ];
 
 // ─── Password Confirm Modal ───────────────────────────────────────────────────
+const AUTHOR_PALETTE = [
+  "#2563EB", "#E11D48", "#059669", "#D97706", "#7C3AED",
+];
+
 function PasswordModal({
   onConfirm,
   onCancel,
   isPending,
+  ownerNames,
 }: {
-  onConfirm: (password: string, author: "Matt" | "Lynn") => void;
+  onConfirm: (password: string, author: string) => void;
   onCancel: () => void;
   isPending: boolean;
+  ownerNames: string[];
 }) {
   const [pw, setPw] = useState("");
-  const [author, setAuthor] = useState<"Matt" | "Lynn">("Matt");
+  const [author, setAuthor] = useState<string>(ownerNames[0] ?? "");
   const [shake, setShake] = useState(false);
 
   return (
@@ -91,16 +97,14 @@ function PasswordModal({
           Saved by
         </p>
         <div className="flex gap-2 mb-4">
-          {(["Matt", "Lynn"] as const).map((name) => (
+          {ownerNames.map((name, idx) => (
             <button
               key={name}
               onClick={() => setAuthor(name)}
               className="flex-1 py-2 rounded-xl text-[13px] font-bold transition-all"
               style={{
                 fontFamily: "'Space Grotesk', sans-serif",
-                backgroundColor: author === name
-                  ? name === "Matt" ? "#2563EB" : "#E11D48"
-                  : "#F1F0ED",
+                backgroundColor: author === name ? AUTHOR_PALETTE[idx % AUTHOR_PALETTE.length] : "#F1F0ED",
                 color: author === name ? "white" : "#64748B",
                 border: "1px solid #E2E0DB",
               }}
@@ -310,12 +314,23 @@ function AgendaEditor({
 // ─── Main Settings Page ───────────────────────────────────────────────────────
 export default function Settings() {
   const { person } = usePerson();
-  const accountId = person?.accountId || Number(localStorage.getItem("bcc_account_id") ?? "0");
-
+    const accountId = person?.accountId ?? (() => {
+    const stored = localStorage.getItem("bcc_account_id");
+    return stored ? parseInt(stored, 10) : undefined;
+  })();
   // Load businesses from DB — the source of truth for this account
   const { data: dbBusinesses = [] } = trpc.business.list.useQuery(
-    { accountId },
-    { enabled: accountId > 0 }
+    { accountId: accountId ?? 0 },
+    { enabled: accountId !== undefined }
+  );
+  // Load persons for dynamic owner picker in PasswordModal
+  const { data: personsData = [] } = trpc.person.list.useQuery(
+    { accountId: accountId ?? 0 },
+    { enabled: accountId !== undefined }
+  );
+  const ownerNames = useMemo(
+    () => personsData.filter(p => p.role === "owner" || p.role === "coowner").map(p => p.name),
+    [personsData]
   );
 
   // Map DB businesses to the shape Settings expects
@@ -358,7 +373,7 @@ export default function Settings() {
     setPendingSave({ items });
   };
 
-  const handlePasswordConfirm = (password: string, updatedBy: "Matt" | "Lynn") => {
+  const handlePasswordConfirm = (password: string, updatedBy: string) => {
     if (!pendingSave) return;
     saveTemplate.mutate({
       business: effectiveSelectedBiz as "chiropractic" | "crossfit" | "realty",
@@ -500,12 +515,12 @@ export default function Settings() {
 
       {/* Employee Management — owners only */}
       {(person?.role === "owner" || person?.role === "coowner") && (
-        <EmployeeInvitePanel accountId={accountId} />
+        <EmployeeInvitePanel accountId={accountId ?? 0} />
       )}
 
       {/* Weekly Report Questions — owners only */}
       {(person?.role === "owner" || person?.role === "coowner") && (
-        <ReportQuestionsPanel accountId={accountId} businesses={visibleBusinesses} />
+        <ReportQuestionsPanel accountId={accountId ?? 0} businesses={visibleBusinesses} />
       )}
 
       {/* Password confirmation modal */}
@@ -514,6 +529,7 @@ export default function Settings() {
           onConfirm={handlePasswordConfirm}
           onCancel={() => setPendingSave(null)}
           isPending={saveTemplate.isPending}
+          ownerNames={ownerNames}
         />
       )}
     </div>
@@ -532,11 +548,11 @@ function EmployeeInvitePanel({ accountId }: { accountId: number }) {
 
   const { data: membersData, refetch: refetchMembers } = trpc.person.list.useQuery(
     { accountId },
-    { enabled: accountId > 0 }
+    { enabled: accountId !== undefined }
   );
   const { data: bizList = [] } = trpc.business.list.useQuery(
     { accountId },
-    { enabled: accountId > 0 }
+    { enabled: accountId !== undefined }
   );
   type PersonRow = { id: string; name: string; email: string; role: string; businessScope: string; inviteAccepted: boolean; createdAt: Date };
 
@@ -758,7 +774,7 @@ function ReportQuestionsPanel({
   // Load DB businesses to get their IDs (the panel receives slugs/labels but we need IDs)
   const { data: dbBizList = [] } = trpc.business.list.useQuery(
     { accountId },
-    { enabled: accountId > 0 }
+    { enabled: accountId !== undefined }
   );
 
   // Build display options: "All Businesses" + each DB business
@@ -769,7 +785,7 @@ function ReportQuestionsPanel({
 
   const questionsQuery = trpc.report.listQuestions.useQuery(
     { accountId, businessId: selectedBizId === 0 ? undefined : selectedBizId },
-    { enabled: accountId > 0 }
+    { enabled: accountId !== undefined }
   );
 
   const createQuestion = trpc.report.createQuestion.useMutation({

@@ -422,7 +422,10 @@ function CheckinsSummary({ accountId, weekKey }: { accountId: number; weekKey: s
 export default function WeeklyReports() {
   const { person } = usePerson();
   // Prefer PersonContext accountId; fall back to legacy localStorage key for backward compat
-  const accountId = person?.accountId || parseInt(localStorage.getItem("bcc_account_id") ?? "0", 10);
+  const accountId = person?.accountId ?? (() => {
+    const stored = localStorage.getItem("bcc_account_id");
+    return stored ? parseInt(stored, 10) : undefined;
+  })();
   const today = useMemo(() => new Date(), []);
   const currentWeekKey = useMemo(() => getWeekKey(today), [today]);
   const [selectedWeek, setSelectedWeek] = useState(currentWeekKey);
@@ -430,7 +433,7 @@ export default function WeeklyReports() {
   const [activeTab, setActiveTab] = useState<"metrics" | "checkins">("metrics");
 
   const summaryQuery = trpc.weeklyReport.getSummary.useQuery(
-    { accountId, weekKey: selectedWeek, prevWeekKey },
+    { accountId: accountId ?? 0, weekKey: selectedWeek, prevWeekKey },
     { enabled: accountId !== undefined }
   );
 
@@ -537,7 +540,7 @@ export default function WeeklyReports() {
                 ›
               </button>
             </div>
-            <CheckinsSummary accountId={accountId} weekKey={selectedWeek} />
+            <CheckinsSummary accountId={accountId ?? 0} weekKey={selectedWeek} />
           </>
         )}
 
@@ -548,7 +551,7 @@ export default function WeeklyReports() {
           <button
             onClick={() => shiftWeek(-1)}
             className="w-9 h-9 rounded-xl flex items-center justify-center transition-all hover:bg-[#E2E0DB] active:scale-95 text-lg"
-            style={{ border: "1px solid #E2E0DB.12)", color: "rgba(255,255,255,0.5)" }}
+            style={{ border: "1px solid #E2E0DB", color: "#64748B" }}
           >
             ‹
           </button>

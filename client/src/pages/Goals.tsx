@@ -12,7 +12,7 @@ import { usePerson } from "@/contexts/PersonContext";
 
 type Period = "annual" | "quarterly";
 type Status = "active" | "achieved" | "missed" | "deferred";
-type Owner = "Matt" | "Lynn" | "both";
+type Owner = string; // dynamic: owner name or "both"
 
 const CURRENT_YEAR = new Date().getFullYear();
 const CURRENT_QUARTER = Math.ceil((new Date().getMonth() + 1) / 3) as 1 | 2 | 3 | 4;
@@ -38,11 +38,20 @@ const STATUS_CONFIG: Record<Status, { label: string; color: string; bg: string; 
   deferred: { label: "Deferred",  color: "#92400E", bg: "#FEF3C7", border: "#FCD34D", icon: "⏸️" },
 };
 
-const OWNER_CONFIG: Record<Owner, { label: string; color: string; bg: string }> = {
-  Matt: { label: "Matt",  color: "#1D4ED8", bg: "#DBEAFE" },
-  Lynn: { label: "Lynn",  color: "#BE123C", bg: "#FFE4E6" },
-  both: { label: "Both",  color: "#0F766E", bg: "#CCFBF1" },
-};
+// Dynamic owner display — generates a stable color from the owner string
+const OWNER_COLORS = [
+  { color: "#1D4ED8", bg: "#DBEAFE" },
+  { color: "#BE123C", bg: "#FFE4E6" },
+  { color: "#065F46", bg: "#D1FAE5" },
+  { color: "#92400E", bg: "#FEF3C7" },
+  { color: "#5B21B6", bg: "#EDE9FE" },
+];
+function getOwnerStyle(owner: string, ownerNames: string[]): { label: string; color: string; bg: string } {
+  if (owner === "both") return { label: "Both", color: "#0F766E", bg: "#CCFBF1" };
+  const idx = ownerNames.indexOf(owner);
+  const style = OWNER_COLORS[(idx >= 0 ? idx : 0) % OWNER_COLORS.length];
+  return { label: owner, color: style.color, bg: style.bg };
+}
 
 const QUARTER_LABELS: Record<number, string> = { 1: "Q1", 2: "Q2", 3: "Q3", 4: "Q4" };
 
@@ -72,18 +81,20 @@ function bizConfig(b: DbBusiness, idx: number) {
 function EditGoalForm({
   goal,
   businesses,
+  ownerNames,
   onClose,
   onUpdated,
 }: {
   goal: { id: number; title: string; description: string | null; status: Status; owner: Owner; business: string; period: Period; quarter: number | null; year: number };
   businesses: DbBusiness[];
+  ownerNames: string[];
   onClose: () => void;
   onUpdated: () => void;
 }) {
   const [title, setTitle] = useState(goal.title);
   const [description, setDescription] = useState(goal.description ?? "");
   const [status, setStatus] = useState<Status>(goal.status);
-  const [owner, setOwner] = useState<Owner>(goal.owner);
+  const [owner, setOwner] = useState<string>(goal.owner);
 
   const updateGoal = trpc.goals.update.useMutation({
     onSuccess: () => { toast.success("Goal updated!"); onUpdated(); onClose(); },
@@ -140,12 +151,11 @@ function EditGoalForm({
             </div>
             <div className="flex flex-col gap-1.5">
               <label className="text-xs font-semibold text-[#1E3A5F]">Owner</label>
-              <select value={owner} onChange={e => setOwner(e.target.value as Owner)}
+              <select value={owner} onChange={e => setOwner(e.target.value)}
                 className="rounded-xl px-3 py-2.5 text-sm text-[#1A1A2E] focus:outline-none"
                 style={{ backgroundColor: "#F8F7F4", border: "1.5px solid #E2E0DB" }}>
                 <option value="both">Both</option>
-                <option value="Matt">Matt</option>
-                <option value="Lynn">Lynn</option>
+                {ownerNames.map(n => <option key={n} value={n}>{n}</option>)}
               </select>
             </div>
           </div>
@@ -170,11 +180,13 @@ function EditGoalForm({
 function AddGoalForm({
   accountId,
   businesses,
+  ownerNames,
   onClose,
   onCreated,
 }: {
   accountId: number;
   businesses: DbBusiness[];
+  ownerNames: string[];
   onClose: () => void;
   onCreated: () => void;
 }) {
@@ -184,7 +196,7 @@ function AddGoalForm({
   const [quarter, setQuarter] = useState<number>(CURRENT_QUARTER);
   const [year, setYear] = useState(CURRENT_YEAR);
   const [businessSlug, setBusinessSlug] = useState<string>(businesses[0]?.slug ?? "general");
-  const [owner, setOwner] = useState<Owner>("both");
+  const [owner, setOwner] = useState<string>("both");
 
   const createGoal = trpc.goals.create.useMutation({
     onSuccess: () => { toast.success("Goal added!"); onCreated(); onClose(); },
@@ -196,7 +208,7 @@ function AddGoalForm({
     if (!title.trim()) return;
     createGoal.mutate({
       accountId,
-      business: businessSlug as any,
+      business: (businessSlug || "general") as "chiropractic" | "crossfit" | "realty" | "general",
       period,
       quarter: period === "quarterly" ? quarter : undefined,
       year,
@@ -289,12 +301,11 @@ function AddGoalForm({
             </div>
             <div className="flex flex-col gap-1.5">
               <label className="text-xs font-semibold text-[#1E3A5F]">Owner</label>
-              <select value={owner} onChange={e => setOwner(e.target.value as Owner)}
+              <select value={owner} onChange={e => setOwner(e.target.value)}
                 className="rounded-xl px-3 py-2.5 text-sm text-[#1A1A2E] focus:outline-none"
                 style={{ backgroundColor: "#F8F7F4", border: "1.5px solid #E2E0DB" }}>
                 <option value="both">Both</option>
-                <option value="Matt">Matt</option>
-                <option value="Lynn">Lynn</option>
+                {ownerNames.map(n => <option key={n} value={n}>{n}</option>)}
               </select>
             </div>
           </div>
@@ -315,6 +326,7 @@ function AddGoalForm({
 function GoalCard({
   goal,
   bizStyleMap,
+  ownerNames,
   onStatusChange,
   onDelete,
   onEdit,
@@ -331,13 +343,14 @@ function GoalCard({
     year: number;
   };
   bizStyleMap: Record<string, { label: string; icon: string; color: string; bg: string; border: string }>;
+  ownerNames: string[];
   onStatusChange: (id: number, status: Status) => void;
   onDelete: (id: number) => void;
   onEdit: (goal: { id: number; title: string; description: string | null; status: Status; owner: Owner; business: string; period: Period; quarter: number | null; year: number }) => void;
 }) {
   const [showMenu, setShowMenu] = useState(false);
   const statusCfg = STATUS_CONFIG[goal.status];
-  const ownerCfg = OWNER_CONFIG[goal.owner];
+  const ownerCfg = getOwnerStyle(goal.owner, ownerNames);
   const bizCfg = bizStyleMap[goal.business] ?? { label: goal.business, icon: "🏢", color: "#475569", bg: "#F1F5F9", border: "#CBD5E1" };
 
   return (
@@ -429,7 +442,10 @@ function GoalCard({
 
 export default function Goals() {
   const { person } = usePerson();
-  const accountId = person?.accountId || Number(localStorage.getItem("bcc_account_id") ?? "0");
+  const accountId = person?.accountId ?? (() => {
+    const stored = localStorage.getItem("bcc_account_id");
+    return stored ? parseInt(stored, 10) : undefined;
+  })();
   const personScope = person?.businessScope ?? "all";
 
   const [selectedYear, setSelectedYear] = useState(CURRENT_YEAR);
@@ -438,8 +454,18 @@ export default function Goals() {
 
   // Load businesses from DB
   const { data: dbBusinesses = [] } = trpc.business.list.useQuery(
-    { accountId },
-    { enabled: accountId > 0 }
+    { accountId: accountId ?? 0 },
+    { enabled: accountId !== undefined }
+  );
+
+  // Load persons for dynamic owner dropdown
+  const { data: personsData = [] } = trpc.person.list.useQuery(
+    { accountId: accountId ?? 0 },
+    { enabled: accountId !== undefined }
+  );
+  const ownerNames = useMemo(
+    () => personsData.filter(p => p.role === "owner" || p.role === "coowner").map(p => p.name),
+    [personsData]
   );
 
   // Filter businesses by person scope
@@ -462,8 +488,8 @@ export default function Goals() {
   }, [dbBusinesses]);
 
   const { data: goalsData = [], refetch } = trpc.goals.list.useQuery(
-    { accountId, year: selectedYear },
-    { enabled: accountId > 0 }
+    { accountId: accountId ?? 0, year: selectedYear },
+    { enabled: accountId !== undefined }
   );
 
   const updateGoal = trpc.goals.update.useMutation({
@@ -568,7 +594,7 @@ export default function Goals() {
               ) : (
                 <div className="flex flex-col gap-2">
                   {annualGoals.map(g => (
-                    <GoalCard key={g.id} goal={g as any} bizStyleMap={bizStyleMap}
+                    <GoalCard key={g.id} goal={g as any} bizStyleMap={bizStyleMap} ownerNames={ownerNames}
                       onStatusChange={handleStatusChange} onDelete={handleDelete}
                       onEdit={g2 => setEditingGoal(g2 as any)} />
                   ))}
@@ -598,7 +624,7 @@ export default function Goals() {
                   ) : (
                     <div className="flex flex-col gap-2">
                       {qGoals.map(g => (
-                        <GoalCard key={g.id} goal={g as any} bizStyleMap={bizStyleMap}
+                        <GoalCard key={g.id} goal={g as any} bizStyleMap={bizStyleMap} ownerNames={ownerNames}
                           onStatusChange={handleStatusChange} onDelete={handleDelete}
                           onEdit={g2 => setEditingGoal(g2 as any)} />
                       ))}
@@ -612,12 +638,12 @@ export default function Goals() {
       </div>
 
       {showAddForm && (
-        <AddGoalForm accountId={accountId} businesses={allowedBusinesses}
+        <AddGoalForm accountId={accountId ?? 0} businesses={allowedBusinesses} ownerNames={ownerNames}
           onClose={() => setShowAddForm(false)} onCreated={() => refetch()} />
       )}
 
       {editingGoal && (
-        <EditGoalForm goal={editingGoal as any} businesses={allowedBusinesses}
+        <EditGoalForm goal={editingGoal as any} businesses={allowedBusinesses} ownerNames={ownerNames}
           onClose={() => setEditingGoal(null)} onUpdated={() => refetch()} />
       )}
     </div>

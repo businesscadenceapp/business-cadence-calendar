@@ -397,3 +397,18 @@
 - [ ] Employee weekly report submission page (/app/reports/submit)
 - [ ] Owner weekly report summary view in Reports page
 - [ ] Full review pass: check for bugs, broken flows, and inconsistencies
+
+## Bug Fix Batch (Phase 22 — Audit Fixes)
+- [x] Fix accountId > 0 guard in Board.tsx (business.list query)
+- [x] Fix accountId > 0 guard in Goals.tsx (business.list + goals.list queries)
+- [x] Fix accountId > 0 guard in Home.tsx (calendar schedule overrides query)
+- [x] Fix accountId > 0 guard in Settings.tsx (5 occurrences)
+- [x] Fix accountId > 0 guard in ManageSchedule.tsx (2 occurrences)
+- [x] Fix accountId > 0 guard in WeeklyCheckin.tsx (3 occurrences)
+- [x] Fix business enum/slug mismatch: migrate DB slug from 'new-beginnings-chiropractic' to 'chiropractic'
+- [x] Fix Goals create: business field uses 'as any' cast, needs proper enum alignment
+- [x] Fix Board assignee list: load from persons table instead of hardcoded ['Matt', 'Lynn']
+- [x] Fix KPI employee view: hardcoded scope -> load from DB
+- [x] Add Ctrl+Enter keyboard shortcut to Board quick-capture textarea
+- [x] Fix Reports Metrics tab: add empty state guidance when no employees configured
+- [x] Fix Calendar page: accountId guard and DB integration for schedule overrides

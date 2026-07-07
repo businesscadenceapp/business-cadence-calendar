@@ -329,7 +329,7 @@ function BoardCard({ card, currentUser, onSeen, onArchive, onDelete }: {
           )}
           {!alreadySeen && isOwnCard && (
             <span className="text-[10px] text-slate-400 italic">
-              Awaiting {card.author === "Matt" ? "Lynn" : "Matt"}
+              Awaiting acknowledgement
             </span>
           )}
 
@@ -378,12 +378,13 @@ function BoardCard({ card, currentUser, onSeen, onArchive, onDelete }: {
 
 // ─── Add Card Form ────────────────────────────────────────────────────────────
 
-function AddCardForm({ currentUser, onAdded, allowedBusinesses, defaultBusiness, bizLabels }: {
+function AddCardForm({ currentUser, onAdded, allowedBusinesses, defaultBusiness, bizLabels, assignablePersons }: {
   currentUser: Author | null;
   onAdded: () => void;
   allowedBusinesses: Business[];
   defaultBusiness: Business;
   bizLabels?: Record<string, { label: string; icon: string; bg: string; text: string; border: string }>;
+  assignablePersons?: { id: string; name: string }[];
 }) {
   const [type, setType] = useState<CardType>("update");
   const [business, setBusiness] = useState<Business>(defaultBusiness);
@@ -472,7 +473,7 @@ function AddCardForm({ currentUser, onAdded, allowedBusinesses, defaultBusiness,
         <div className="flex flex-col gap-1.5">
           <p className="text-[10px] text-slate-500 uppercase tracking-wider font-medium" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Assign to:</p>
           <div className="flex gap-2">
-            {(["Matt", "Lynn"] as string[]).map(a => {
+            {(assignablePersons && assignablePersons.length > 0 ? assignablePersons.map(p => p.name) : [] as string[]).map(a => {
               const c = getAuthorColors(a);
               const isActive = assignedTo === a;
               const isSelf = a === currentUser;
@@ -566,8 +567,13 @@ function AddCardForm({ currentUser, onAdded, allowedBusinesses, defaultBusiness,
           lineHeight: "1.6",
         }}
         onFocus={e => (e.target.style.borderColor = "#94A3B8")}
-        onBlur={e => (e.target.style.borderColor =
-          "#CBD5E1")}
+        onBlur={e => (e.target.style.borderColor = "#CBD5E1")}
+        onKeyDown={e => {
+          if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+            e.preventDefault();
+            handleSubmit();
+          }
+        }}
       />
 
       <button
@@ -601,13 +607,23 @@ export default function Board() {
 
   // Read account scope from PersonContext
   const { person } = usePerson();
-  const accountId = person?.accountId || Number(localStorage.getItem("bcc_account_id") ?? "0");
+  const accountId = person?.accountId ?? (() => {
+    const stored = localStorage.getItem("bcc_account_id");
+    return stored ? parseInt(stored, 10) : undefined;
+  })();
 
   // Load businesses from DB — the source of truth for this account
   const { data: dbBusinesses = [] } = trpc.business.list.useQuery(
-    { accountId },
-    { enabled: accountId > 0 }
+    { accountId: accountId ?? 0 },
+    { enabled: accountId !== undefined }
   );
+
+  // Load all persons for this account — used to populate the assignee list
+  const { data: personsData } = trpc.person.list.useQuery(
+    { accountId: accountId ?? 0 },
+    { enabled: accountId !== undefined, staleTime: 60_000 }
+  );
+  const allPersons = useMemo(() => (personsData ?? []).map(p => ({ id: p.id, name: p.name })), [personsData]);
 
   // Build allowed businesses from DB; fall back to empty while loading
   // Employees see only their businessScope; owners see all account businesses
@@ -702,7 +718,7 @@ export default function Board() {
             </div>
           )}
 
-          <AddCardForm currentUser={currentUser} onAdded={() => refetch()} allowedBusinesses={allowedBusinesses} defaultBusiness={defaultBusiness} bizLabels={dynamicBizLabels} />
+          <AddCardForm currentUser={currentUser} onAdded={() => refetch()} allowedBusinesses={allowedBusinesses} defaultBusiness={defaultBusiness} bizLabels={dynamicBizLabels} assignablePersons={allPersons} />
 
           {/* Business filter — only show businesses this account can access */}
           {allowedBusinesses.length > 1 && (

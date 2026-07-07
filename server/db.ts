@@ -278,7 +278,7 @@ export async function upsertAgendaTemplate(
   business: "chiropractic" | "crossfit" | "realty",
   meetingType: "daily" | "weekly" | "monthly" | "quarterly",
   items: AgendaTemplateItem[],
-  updatedBy: "Matt" | "Lynn"
+  updatedBy: string
 ): Promise<void> {
   const db = await getDb();
   if (!db) return;

@@ -1,0 +1,1 @@
+ALTER TABLE `goals` MODIFY COLUMN `owner` varchar(128) NOT NULL DEFAULT 'both';

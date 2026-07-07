@@ -150,7 +150,7 @@ type MeetingPrefs = {
 
 function MeetingScheduleSection({ accountId }: { accountId: number }) {
   const utils = trpc.useUtils();
-  const { data: statusData, refetch } = trpc.onboarding.getStatus.useQuery({ accountId }, { enabled: accountId > 0 });
+  const { data: statusData, refetch } = trpc.onboarding.getStatus.useQuery({ accountId }, { enabled: accountId !== undefined });
   const updatePrefs = trpc.onboarding.updateMeetingPrefs.useMutation({
     onSuccess: () => {
       toast.success("Meeting schedule saved.");
@@ -268,7 +268,7 @@ export default function ManageSchedule() {
 
   const { data: periodsData, isLoading } = trpc.schedule.getClosedPeriods.useQuery(
     { accountId },
-    { enabled: accountId > 0 }
+    { enabled: accountId !== undefined }
   );
 
   const addPeriod = trpc.schedule.addClosedPeriod.useMutation({

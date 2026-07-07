@@ -244,7 +244,7 @@ Keep the tone warm but professional. This summary will be saved under this speci
           label: z.string().min(1).max(200),
           sortOrder: z.number(),
         })),
-        updatedBy: z.enum(["Matt", "Lynn"]),
+        updatedBy: z.string().min(1),
         password: z.string(),
       }))
       .mutation(async ({ input }) => {
@@ -746,7 +746,7 @@ Be concise and specific. If a field has nothing, use an empty array.`,
         title: z.string().min(1).max(256),
         description: z.string().optional(),
         status: z.enum(["active", "achieved", "missed", "deferred"]).default("active"),
-        owner: z.enum(["Matt", "Lynn", "both"]).default("both"),
+        owner: z.string().default("both"),
         sortOrder: z.number().default(0),
       }))
       .mutation(async ({ input }) => {
@@ -760,7 +760,7 @@ Be concise and specific. If a field has nothing, use an empty array.`,
         title: z.string().min(1).max(256).optional(),
         description: z.string().optional(),
         status: z.enum(["active", "achieved", "missed", "deferred"]).optional(),
-        owner: z.enum(["Matt", "Lynn", "both"]).optional(),
+        owner: z.string().optional(),
         sortOrder: z.number().optional(),
       }))
       .mutation(async ({ input }) => {
