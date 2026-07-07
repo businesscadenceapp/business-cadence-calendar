@@ -533,13 +533,23 @@ export default function WeeklyReports() {
               </div>
               <button
                 onClick={() => shiftWeek(1)}
-                disabled={isCurrentWeek}
-                className="w-9 h-9 rounded-xl flex items-center justify-center transition-all hover:bg-[#E2E0DB] active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed text-lg"
+                className="w-9 h-9 rounded-xl flex items-center justify-center transition-all hover:bg-[#E2E0DB] active:scale-95 text-lg"
                 style={{ border: "1px solid #E2E0DB", color: "#64748B" }}
               >
                 ›
               </button>
             </div>
+            {!isCurrentWeek && (
+              <div className="flex justify-center mb-4">
+                <button
+                  onClick={() => setSelectedWeek(currentWeekKey)}
+                  className="text-xs px-3 py-1 rounded-lg font-semibold transition-all"
+                  style={{ background: "rgba(13,148,136,0.1)", border: "1px solid rgba(13,148,136,0.25)", color: "#0D9488", fontFamily: "'Space Grotesk', sans-serif" }}
+                >
+                  Today
+                </button>
+              </div>
+            )}
             <CheckinsSummary accountId={accountId ?? 0} weekKey={selectedWeek} />
           </>
         )}
@@ -565,13 +575,23 @@ export default function WeeklyReports() {
           </div>
           <button
             onClick={() => shiftWeek(1)}
-            disabled={isCurrentWeek}
-            className="w-9 h-9 rounded-xl flex items-center justify-center transition-all hover:bg-[#E2E0DB] active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed text-lg"
+            className="w-9 h-9 rounded-xl flex items-center justify-center transition-all hover:bg-[#E2E0DB] active:scale-95 text-lg"
             style={{ border: "1px solid #E2E0DB", color: "#64748B" }}
           >
             ›
           </button>
         </div>
+        {!isCurrentWeek && (
+          <div className="flex justify-center mb-4">
+            <button
+              onClick={() => setSelectedWeek(currentWeekKey)}
+              className="text-xs px-3 py-1 rounded-lg font-semibold transition-all"
+              style={{ background: "rgba(13,148,136,0.1)", border: "1px solid rgba(13,148,136,0.25)", color: "#0D9488", fontFamily: "'Space Grotesk', sans-serif" }}
+            >
+              Today
+            </button>
+          </div>
+        )}
 
         {/* Loading */}
         {summaryQuery.isLoading && (
