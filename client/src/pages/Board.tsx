@@ -395,6 +395,7 @@ function AddCardForm({ currentUser, onAdded, allowedBusinesses, defaultBusiness,
   const [updateDate, setUpdateDate] = useState(""); // YYYY-MM-DD — date this update covers
   const [meetingType, setMeetingType] = useState<"daily_huddle" | "weekly_meeting" | "quarterly_review" | null>(null);
   const [scheduledDate, setScheduledDate] = useState(""); // YYYY-MM-DD — date of the meeting occurrence
+  const [notifyPersonIds, setNotifyPersonIds] = useState<string[]>([]); // explicit notification recipients
 
   const createCard = trpc.board.create.useMutation({
     onSuccess: () => {
@@ -404,6 +405,7 @@ function AddCardForm({ currentUser, onAdded, allowedBusinesses, defaultBusiness,
       setUpdateDate("");
       setMeetingType(null);
       setScheduledDate("");
+      setNotifyPersonIds([]);
       onAdded();
       toast.success("Posted to the board");
     },
@@ -429,6 +431,7 @@ function AddCardForm({ currentUser, onAdded, allowedBusinesses, defaultBusiness,
       ...(type === "issue" && meetingType ? { meetingType } : {}),
       ...(type === "issue" && scheduledDateMs ? { scheduledDate: scheduledDateMs } : {}),
       ...(accountId ? { accountId } : {}),
+      ...((type === "update" || type === "issue") && notifyPersonIds.length > 0 ? { notifyPersonIds } : {}),
     });
   };
 
@@ -655,6 +658,48 @@ function AddCardForm({ currentUser, onAdded, allowedBusinesses, defaultBusiness,
           }
         }}
       />
+
+      {/* Notify — recipient picker for Update and Issue */}
+      {(type === "update" || type === "issue") && assignablePersons && assignablePersons.length > 0 && (
+        <div className="flex flex-col gap-1.5">
+          <p className="text-[10px] text-slate-500 uppercase tracking-wider font-medium" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+            Notify <span className="normal-case text-slate-400">(tap names — leave blank to notify owners only)</span>
+          </p>
+          <div className="flex flex-wrap gap-1.5">
+            {assignablePersons
+              .filter(p => p.name !== currentUser)
+              .map(p => {
+                const selected = notifyPersonIds.includes(p.id);
+                return (
+                  <button
+                    key={p.id}
+                    type="button"
+                    onClick={() =>
+                      setNotifyPersonIds(prev =>
+                        selected ? prev.filter(id => id !== p.id) : [...prev, p.id]
+                      )
+                    }
+                    className="px-3 py-1.5 rounded-full text-[12px] font-medium transition-all active:scale-[0.96]"
+                    style={{
+                      backgroundColor: selected ? "#1E3A5F" : "#F1F5F9",
+                      color: selected ? "#FFFFFF" : "#475569",
+                      border: selected ? "1.5px solid #1E3A5F" : "1.5px solid #CBD5E1",
+                      fontFamily: "'Space Grotesk', sans-serif",
+                    }}
+                  >
+                    {selected ? "✓ " : ""}{p.name}
+                  </button>
+                );
+              })
+            }
+          </div>
+          {notifyPersonIds.length === 0 && (
+            <p className="text-[10px] text-slate-400 italic" style={{ fontFamily: "'Inter', sans-serif" }}>
+              No one selected — owners will be notified by default
+            </p>
+          )}
+        </div>
+      )}
 
       <button
         onClick={handleSubmit}

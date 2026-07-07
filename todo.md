@@ -431,3 +431,9 @@
 - [x] Board form: add optional date field for Update post type
 - [x] Board form: add meeting picker (Daily Huddle / Weekly / Quarterly) + date for Issue post type
 - [x] Update Calendar page to display Issues grouped by meeting type and date
+
+## Notification Recipient Picker for Updates & Issues
+- [ ] Add notifyPersonIds array to board.create router input
+- [ ] Update notification logic: use notifyPersonIds when provided, fall back to all owners
+- [ ] Add recipient picker UI to AddCardForm for Update and Issue types
+- [ ] Load all persons from DB in AddCardForm for the picker

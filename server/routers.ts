@@ -619,6 +619,7 @@ Be concise and specific. If a field has nothing, use an empty array.`,
         meetingType: z.enum(["daily_huddle", "weekly_meeting", "quarterly_review"]).optional(), // issue: which meeting
         scheduledDate: z.number().optional(),  // ms since epoch — date of the meeting occurrence
         accountId: z.number().optional(),      // for notification routing
+        notifyPersonIds: z.array(z.string()).optional(), // explicit recipient list (person IDs)
       }))
       .mutation(async ({ input }) => {
         const card = await createBoardCard(input);
@@ -639,11 +640,13 @@ Be concise and specific. If a field has nothing, use an empty array.`,
               });
             }
           } else if (input.type === "update" || input.type === "issue") {
-            // Notify owners and co-owners only (not employees)
             const notifType = input.type === "issue" ? "new_issue" : "new_update";
             const notifTitle = input.type === "issue" ? "New issue posted" : "New update posted";
-            const ownerPersons = allPersons.filter(p => p.role === "owner" || p.role === "coowner");
-            for (const p of ownerPersons) {
+            // Use explicitly selected recipients if provided; otherwise fall back to owners/coowners
+            const recipients = input.notifyPersonIds && input.notifyPersonIds.length > 0
+              ? allPersons.filter(p => input.notifyPersonIds!.includes(p.id))
+              : allPersons.filter(p => p.role === "owner" || p.role === "coowner");
+            for (const p of recipients) {
               if (p.name !== input.author) {
                 await createNotification({
                   accountId: input.accountId,
