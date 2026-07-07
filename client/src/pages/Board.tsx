@@ -450,10 +450,6 @@ function AddCardForm({ currentUser, onAdded, allowedBusinesses, defaultBusiness,
       className="rounded-xl p-4 flex flex-col gap-4"
       style={{ backgroundColor: "#FFFFFF", border: "1.5px solid #E2E8F0" }}
     >
-      <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-        + Post to Board
-      </p>
-
       {/* Type selector */}
       <div className="flex flex-col gap-1.5">
         <p className="text-[10px] text-slate-400 uppercase tracking-wider" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>What kind of post?</p>
@@ -819,98 +815,90 @@ export default function Board() {
 
   const totalBadge = unseenCount + pendingTaskCount;
 
+  const [formOpen, setFormOpen] = useState(false);
+
   return (
     <div
       className="h-full flex flex-col"
       style={{ backgroundColor: "#F8F7F4", fontFamily: "'Inter', sans-serif" }}
     >
-      <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
-        {/* Left sidebar — full width on mobile, fixed width on desktop */}
-        <aside
-          className="board-aside w-full md:w-80 flex-shrink-0 p-4 overflow-y-auto"
-          style={{ borderBottom: "1px solid #E2E8F0", borderRight: "none" }}
-        >
-          <style>{`@media (min-width: 768px) { .board-aside { border-right: 1px solid #E2E8F0 !important; border-bottom: none !important; background-color: #FAFAF9; } }`}</style>
-          {/* Identity prompt if not set */}
-          {!currentUser && (
-            <div
-              className="rounded-xl p-3 mb-4 flex items-center gap-2"
-              style={{ backgroundColor: "#FFFBEB", border: "1.5px solid #FCD34D" }}
+      {/* ── Top bar: filter + post button ── */}
+      <div
+        className="flex-shrink-0 px-4 py-3 flex items-center gap-3 flex-wrap"
+        style={{ backgroundColor: "#FFFFFF", borderBottom: "1px solid #E2E8F0" }}
+      >
+        {/* Business filter pills */}
+        {allowedBusinesses.length > 1 && (
+          <div className="flex items-center gap-1.5 flex-wrap flex-1 min-w-0">
+            <button
+              onClick={() => setFilterBusiness("all")}
+              className="px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all"
+              style={{
+                backgroundColor: filterBusiness === "all" ? "#1E3A5F" : "#F1F5F9",
+                color: filterBusiness === "all" ? "#FFFFFF" : "#64748B",
+                fontFamily: "'Space Grotesk', sans-serif",
+              }}
             >
-              <span>👈</span>
-              <p className="text-[11px] text-amber-800">
-                Select <strong>who you are</strong> in the sidebar — saved for next time.
-              </p>
-            </div>
-          )}
-
-          <AddCardForm currentUser={currentUser} onAdded={() => refetch()} allowedBusinesses={allowedBusinesses} defaultBusiness={defaultBusiness} bizLabels={dynamicBizLabels} assignablePersons={allPersons} accountId={accountId} />
-
-          {/* Business filter — only show businesses this account can access */}
-          {allowedBusinesses.length > 1 && (
-            <div className="mt-5 flex flex-col gap-2">
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-                Filter by Business
-              </p>
-              <div className="flex flex-col gap-1">
+              All
+            </button>
+            {allowedBusinesses.map(key => {
+              const biz = dynamicBizLabels[key] ?? { label: key, icon: "🏢", bg: "#F1F5F9", text: "#475569", border: "#CBD5E1" };
+              return (
                 <button
-                  onClick={() => setFilterBusiness("all")}
-                  className="text-left px-3 py-2 rounded-lg text-[11px] font-medium transition-all"
+                  key={key}
+                  onClick={() => setFilterBusiness(key)}
+                  className="px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all"
                   style={{
-                    backgroundColor: filterBusiness === "all" ? "#E2E8F0" : "transparent",
-                    color: filterBusiness === "all" ? "#1E3A5F" : "#64748B",
+                    backgroundColor: filterBusiness === key ? biz.bg : "#F1F5F9",
+                    color: filterBusiness === key ? biz.text : "#64748B",
+                    border: filterBusiness === key ? `1.5px solid ${biz.border}` : "1.5px solid transparent",
                     fontFamily: "'Space Grotesk', sans-serif",
                   }}
                 >
-                  📋 All Businesses
+                  {biz.icon} {biz.label}
                 </button>
-                {allowedBusinesses.map(key => {
-                  const biz = dynamicBizLabels[key] ?? { label: key, icon: "🏢", bg: "#F1F5F9", text: "#475569", border: "#CBD5E1" };
-                  return (
-                    <button
-                      key={key}
-                      onClick={() => setFilterBusiness(key)}
-                      className="text-left px-3 py-2 rounded-lg text-[11px] font-medium transition-all"
-                      style={{
-                        backgroundColor: filterBusiness === key ? biz.bg : "transparent",
-                        color: filterBusiness === key ? biz.text : "#64748B",
-                        fontFamily: "'Space Grotesk', sans-serif",
-                      }}
-                    >
-                      {biz.icon} {biz.label}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* Legend */}
-          <div className="mt-5 rounded-xl p-3.5" style={{ backgroundColor: "#FFFFFF", border: "1px solid #E2E8F0" }}>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2.5" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Color Key</p>
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center gap-2">
-                <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: "#2563EB" }} />
-                <span className="text-[11px] text-slate-600">Matt's posts</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: "#E11D48" }} />
-                <span className="text-[11px] text-slate-600">Lynn's posts</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: "#7C3AED" }} />
-                <span className="text-[11px] text-slate-600">Tasks (assigned)</span>
-              </div>
-              <div className="flex items-center gap-2 mt-0.5">
-                <span className="text-[11px]" style={{ color: "#16A34A" }}>✓</span>
-                <span className="text-[11px] text-slate-600">Seen / confirmed done</span>
-              </div>
-            </div>
+              );
+            })}
           </div>
-        </aside>
+        )}
+        <div className="ml-auto flex-shrink-0">
+          <button
+            onClick={() => setFormOpen(o => !o)}
+            className="px-4 py-2 rounded-xl text-[12px] font-bold transition-all active:scale-[0.97]"
+            style={{
+              backgroundColor: formOpen ? "#F1F5F9" : "#1E3A5F",
+              color: formOpen ? "#64748B" : "#FFFFFF",
+              fontFamily: "'Space Grotesk', sans-serif",
+              boxShadow: formOpen ? "none" : "0 2px 8px rgba(30,58,95,0.18)",
+            }}
+          >
+            {formOpen ? "✕ Close" : "+ Post to Board"}
+          </button>
+        </div>
+      </div>
 
-        {/* Main board */}
-        <main className="flex-1 overflow-y-auto p-3 md:p-5 flex flex-col gap-6 md:gap-8">
+      {/* ── Collapsible post form ── */}
+      {formOpen && (
+        <div
+          className="flex-shrink-0 px-4 py-4"
+          style={{ backgroundColor: "#FAFAF9", borderBottom: "1px solid #E2E8F0" }}
+        >
+          <div className="max-w-xl">
+            <AddCardForm
+              currentUser={currentUser}
+              onAdded={() => { refetch(); setFormOpen(false); }}
+              allowedBusinesses={allowedBusinesses}
+              defaultBusiness={defaultBusiness}
+              bizLabels={dynamicBizLabels}
+              assignablePersons={allPersons}
+              accountId={accountId}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Main board */}
+      <main className="flex-1 overflow-y-auto p-3 md:p-5 flex flex-col gap-6 md:gap-8">
           {isLoading ? (
             <div className="flex items-center justify-center h-40">
               <span className="text-slate-400 text-sm animate-pulse">Loading board…</span>
@@ -1004,7 +992,7 @@ export default function Board() {
               </section>
 
               {/* ── Updates + Issues columns ── */}
-              <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Updates */}
                 <div className="flex flex-col gap-3">
                   <div className="flex items-center gap-3 pb-2" style={{ borderBottom: "2px solid #2563EB" }}>
@@ -1080,7 +1068,6 @@ export default function Board() {
             </>
           )}
         </main>
-      </div>
     </div>
   );
 }
