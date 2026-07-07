@@ -910,9 +910,9 @@ export default function Board() {
             <>
               {/* ── Tasks section ── */}
               <section className="flex flex-col gap-3">
-                <div className="flex items-center gap-3 pb-2" style={{ borderBottom: "2px solid #7C3AED" }}>
+                <div className="flex items-center gap-3 pb-2 min-w-0" style={{ borderBottom: "2px solid #7C3AED" }}>
                   <div className="w-7 h-7 rounded-lg flex items-center justify-center text-sm flex-shrink-0" style={{ backgroundColor: "#EDE9FE" }}>☑</div>
-                  <div>
+                  <div className="min-w-0 flex-1">
                     <h2 className="text-sm font-bold text-[#1E3A5F] leading-tight" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Tasks</h2>
                     <p className="text-[10px] text-slate-400">Assigned to-dos between owners</p>
                   </div>
@@ -998,9 +998,9 @@ export default function Board() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Updates */}
                 <div className="flex flex-col gap-3">
-                  <div className="flex items-center gap-3 pb-2" style={{ borderBottom: "2px solid #2563EB" }}>
+                  <div className="flex items-center gap-3 pb-2 min-w-0" style={{ borderBottom: "2px solid #2563EB" }}>
                     <div className="w-7 h-7 rounded-lg flex items-center justify-center text-sm flex-shrink-0" style={{ backgroundColor: "#DBEAFE" }}>✅</div>
-                    <div>
+                    <div className="min-w-0 flex-1">
                       <h2 className="text-sm font-bold text-[#1E3A5F] leading-tight" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Updates</h2>
                       <p className="text-[10px] text-slate-400">What I did since last meeting</p>
                     </div>
@@ -1034,9 +1034,9 @@ export default function Board() {
 
                 {/* Issues */}
                 <div className="flex flex-col gap-3">
-                  <div className="flex items-center gap-3 pb-2" style={{ borderBottom: "2px solid #E11D48" }}>
+                  <div className="flex items-center gap-3 pb-2 min-w-0" style={{ borderBottom: "2px solid #E11D48" }}>
                     <div className="w-7 h-7 rounded-lg flex items-center justify-center text-sm flex-shrink-0" style={{ backgroundColor: "#FFE4E6" }}>💬</div>
-                    <div>
+                    <div className="min-w-0 flex-1">
                       <h2 className="text-sm font-bold text-[#1E3A5F] leading-tight" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Issues</h2>
                       <p className="text-[10px] text-slate-400">What we need to discuss</p>
                     </div>
