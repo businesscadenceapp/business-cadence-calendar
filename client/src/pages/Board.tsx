@@ -147,6 +147,7 @@ function TaskCard({ card, currentUser, onMarkDone, onConfirmDone, onDelete }: {
           </div>
 
           <div className="flex-1 min-w-0">
+            {/* Top line: author + task badge + arrow + assignee + timestamp */}
             <div className="flex items-center gap-2 flex-wrap mb-1">
               <span className="text-[13px] font-bold" style={{ color: authorColors.badgeText, fontFamily: "'Space Grotesk', sans-serif" }}>
                 {card.author}
@@ -159,13 +160,18 @@ function TaskCard({ card, currentUser, onMarkDone, onConfirmDone, onDelete }: {
                   → <span className="font-semibold" style={{ color: AUTHOR_COLORS[card.assignedTo].badgeText }}>{card.assignedTo}</span>
                 </span>
               )}
+              <span className="text-[10px] text-slate-400 ml-auto flex-shrink-0" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                {timeAgo(card.createdAt)}
+              </span>
+            </div>
+            {/* Second line: business badge + due date */}
+            <div className="flex items-center gap-1.5 flex-wrap mb-1">
               <span
                 className="text-[10px] font-medium px-2 py-0.5 rounded-full flex items-center gap-1"
                 style={{ backgroundColor: biz.bg, color: biz.text, border: `1px solid ${biz.border}`, fontFamily: "'Space Grotesk', sans-serif" }}
               >
                 {biz.icon} {biz.label}
               </span>
-              {/* Due date badge */}
               {dueLabel && (
                 <span
                   className="text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1"
@@ -179,9 +185,6 @@ function TaskCard({ card, currentUser, onMarkDone, onConfirmDone, onDelete }: {
                   {isOverdue ? "⚠️" : "📅"} {isOverdue ? "Overdue" : "Due"} {dueLabel}
                 </span>
               )}
-              <span className="text-[10px] text-slate-400 ml-auto" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-                {timeAgo(card.createdAt)}
-              </span>
             </div>
 
             {/* Content */}
@@ -310,7 +313,7 @@ function BoardCard({ card, currentUser, onSeen, onArchive, onDelete }: {
               >
                 {biz.icon} {biz.label}
               </span>
-              <span className="text-[10px] text-slate-400 ml-auto" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+              <span className="text-[10px] text-slate-400 ml-auto flex-shrink-0" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
                 {timeAgo(card.createdAt)}
               </span>
             </div>
