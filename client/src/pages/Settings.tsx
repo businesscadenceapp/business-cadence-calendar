@@ -343,7 +343,12 @@ export default function Settings() {
   }));
 
   const [selectedBiz, setSelectedBiz] = useState<DbBusiness>("");
-  // Use first available business as default once loaded
+  // Sync selectedBiz to the first available business once DB data loads
+  useEffect(() => {
+    if (!selectedBiz && visibleBusinesses.length > 0) {
+      setSelectedBiz(visibleBusinesses[0].key);
+    }
+  }, [visibleBusinesses, selectedBiz]);
   const effectiveSelectedBiz = (selectedBiz && visibleBusinesses.some(b => b.key === selectedBiz))
     ? selectedBiz
     : (visibleBusinesses[0]?.key ?? "chiropractic" as DbBusiness);
@@ -434,14 +439,14 @@ export default function Settings() {
                 onClick={() => setSelectedBiz(biz.key)}
                 className="flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all"
                 style={{
-                  backgroundColor: selectedBiz === biz.key ? "#FFFFFF" : "#F8F7F4",
-                  border: selectedBiz === biz.key ? `1px solid ${biz.color}` : "1px solid #E2E0DB",
+                  backgroundColor: effectiveSelectedBiz === biz.key ? "#FFFFFF" : "#F8F7F4",
+                  border: effectiveSelectedBiz === biz.key ? `1px solid ${biz.color}` : "1px solid #E2E0DB",
                 }}
               >
                 <span className="text-lg">{biz.icon}</span>
                 <span
                   className="text-[12px] font-semibold"
-                  style={{                   color: selectedBiz === biz.key ? "#1E3A5F" : "#64748B", fontFamily: "'Space Grotesk', sans-serif" }}
+                  style={{                   color: effectiveSelectedBiz === biz.key ? "#1E3A5F" : "#64748B", fontFamily: "'Space Grotesk', sans-serif" }}
                 >
                   {biz.label}
                 </span>
@@ -487,7 +492,7 @@ export default function Settings() {
                   <span className="text-[#64748B] text-[11px]">{selectedMtInfo.label}</span>
                 </div>
               </div>
-              {getSavedItems(selectedBiz, selectedMt) && (
+              {getSavedItems(effectiveSelectedBiz, selectedMt) && (
                 <span
                   className="ml-auto text-[10px] px-2 py-0.5 rounded-full"
                   style={{ backgroundColor: "rgba(13,148,136,0.10)", color: "#0D9488" }}
@@ -503,10 +508,10 @@ export default function Settings() {
             </p>
 
             <AgendaEditor
-              key={`${selectedBiz}-${selectedMt}`}
-              biz={selectedBiz}
+              key={`${effectiveSelectedBiz}-${selectedMt}`}
+              biz={effectiveSelectedBiz}
               mt={selectedMt}
-              savedItems={getSavedItems(selectedBiz, selectedMt)}
+              savedItems={getSavedItems(effectiveSelectedBiz, selectedMt)}
               onSaveRequest={handleSaveRequest}
             />
           </div>

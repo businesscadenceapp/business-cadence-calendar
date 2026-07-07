@@ -257,7 +257,7 @@ function AddGoalForm({
               onBlur={e => (e.target.style.borderColor = "#E2E0DB")} />
           </div>
 
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             <div className="flex flex-col gap-1.5">
               <label className="text-xs font-semibold text-[#1E3A5F]">Period</label>
               <select value={period} onChange={e => setPeriod(e.target.value as Period)}
@@ -287,7 +287,7 @@ function AddGoalForm({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="flex flex-col gap-1.5">
               <label className="text-xs font-semibold text-[#1E3A5F]">Business</label>
               <select value={businessSlug} onChange={e => setBusinessSlug(e.target.value)}
@@ -545,7 +545,7 @@ export default function Goals() {
 
       {/* Stats bar */}
       {total > 0 && (
-        <div className="px-5 py-3 flex items-center gap-6 flex-shrink-0"
+        <div className="px-5 py-3 flex items-center gap-4 flex-wrap flex-shrink-0"
           style={{ borderBottom: "1px solid #E2E0DB", backgroundColor: "#FAFAF9" }}>
           <div className="flex items-center gap-2">
             <div className="h-2 rounded-full overflow-hidden flex-shrink-0" style={{ width: 120, backgroundColor: "#E2E0DB" }}>

@@ -928,7 +928,7 @@ export default function Board() {
                     <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl" style={{ backgroundColor: "#EDE9FE" }}>☑</div>
                     <div>
                       <p className="text-[13px] font-semibold text-[#1E3A5F]">All clear on tasks</p>
-                      <p className="text-[11px] text-slate-400 mt-0.5">Use the form on the left to assign a task to Matt or Lynn.</p>
+                      <p className="text-[11px] text-slate-400 mt-0.5">Tap "+ Post to Board" above and choose Task to assign one.</p>
                     </div>
                   </div>
                 ) : (

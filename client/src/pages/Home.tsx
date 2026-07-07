@@ -951,7 +951,7 @@ export default function Home() {
           </button>
           <span className="text-base">📅</span>
           <h1 className="text-sm font-bold text-[#1E3A5F]" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Calendar</h1>
-          <span className="text-xs font-mono font-bold text-[#94A3B8] ml-1" style={{ fontFamily: "'JetBrains Mono', monospace" }}>{YEAR}</span>
+          <span className="text-xs font-mono font-bold text-[#94A3B8] ml-1" style={{ fontFamily: "'JetBrains Mono', monospace" }}>{viewYear}</span>
         </div>
         {/* Meeting type legend — desktop only */}
         <div className="hidden md:flex items-center gap-3">
@@ -1246,7 +1246,7 @@ export default function Home() {
               </div>
             ) : (
               <h2 className="text-sm font-bold text-[#1E3A5F]" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-                {YEAR} — Full Year
+                {viewYear} — Full Year
               </h2>
             )}
             <button

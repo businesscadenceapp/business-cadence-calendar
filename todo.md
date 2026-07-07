@@ -457,3 +457,14 @@
 - [x] Fix Lynn's account (bubblz2828@yahoo.com) to be coowner linked to Matt's accountId=0
 - [x] Add Admin Panel route to App.tsx and AppShell nav (owner-only, visible only to role=owner)
 - [x] Verify task isDoer/isRequester matching works correctly after invite-based login
+
+## Stability Review Pass (Phase N+1)
+- [x] Board: fix empty task state message (was "Use the form on the left", now "Tap + Post to Board")
+- [x] Goals: fix form grid-cols-3 and grid-cols-2 to be responsive on mobile (sm breakpoints added)
+- [x] Goals: fix stats bar to flex-wrap on mobile
+- [x] Settings: fix business selector + editor sync on first load (useEffect to set selectedBiz from DB)
+- [x] Settings: fix editor key and getSavedItems to use effectiveSelectedBiz consistently
+- [x] Settings: fix business selector highlight to use effectiveSelectedBiz
+- [x] Calendar: fix year display in header and year-view title to show viewYear instead of static YEAR constant
+- [x] Mobile card layout: TaskCard and BoardCard badges no longer overflow on phone screens
+- [x] Duplicate account: Dr. Lynn Charles removed, cards reassigned to Lynn
