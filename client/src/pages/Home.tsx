@@ -658,6 +658,79 @@ function MeetingSection({
   );
 }
 
+// Map calendar MeetingType to board meetingType enum
+const CALENDAR_TO_BOARD_MEETING: Record<MeetingType, "daily_huddle" | "weekly_meeting" | "quarterly_review" | null> = {
+  daily: "daily_huddle",
+  weekly: "weekly_meeting",
+  monthly: "weekly_meeting",   // monthly maps to weekly_meeting as closest
+  quarterly: "quarterly_review",
+};
+
+const MEETING_TYPE_LABELS: Record<string, { label: string; icon: string; color: string }> = {
+  daily_huddle:     { label: "Daily Huddle",    icon: "🌅", color: "#0D9488" },
+  weekly_meeting:   { label: "Weekly Meeting",  icon: "📅", color: "#7C3AED" },
+  quarterly_review: { label: "Quarterly Review",icon: "📊", color: "#D97706" },
+};
+
+function BoardIssuesForMeeting({
+  meetingType,
+  dateMs,
+}: {
+  meetingType: "daily_huddle" | "weekly_meeting" | "quarterly_review";
+  dateMs: number;
+}) {
+  const { data: boardData } = trpc.board.list.useQuery();
+  const dayStart = new Date(dateMs); dayStart.setHours(0, 0, 0, 0);
+  const dayEnd   = new Date(dateMs); dayEnd.setHours(23, 59, 59, 999);
+
+  const issues = useMemo(() => {
+    if (!boardData?.cards) return [];
+    return boardData.cards.filter(c =>
+      c.type === "issue" &&
+      c.meetingType === meetingType &&
+      (
+        // Show if scheduledDate matches this day, OR if no date set (unscheduled)
+        !c.scheduledDate ||
+        (c.scheduledDate >= dayStart.getTime() && c.scheduledDate <= dayEnd.getTime())
+      )
+    );
+  }, [boardData, meetingType, dayStart, dayEnd]);
+
+  if (issues.length === 0) return null;
+
+  const meta = MEETING_TYPE_LABELS[meetingType];
+
+  return (
+    <div className="flex flex-col gap-2">
+      <p className="text-[9px] font-bold text-[#94A3B8] uppercase tracking-widest px-1" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+        💬 Issues to Discuss
+      </p>
+      <div className="flex flex-col gap-1.5">
+        {issues.map(issue => (
+          <div
+            key={issue.id}
+            className="rounded-lg px-3 py-2.5 flex flex-col gap-1"
+            style={{ backgroundColor: `${meta.color}10`, border: `1px solid ${meta.color}30` }}
+          >
+            <div className="flex items-center gap-1.5">
+              <span className="text-[10px]" style={{ color: meta.color }}>⚠️</span>
+              <span className="text-[10px] font-semibold" style={{ color: meta.color, fontFamily: "'Space Grotesk', sans-serif" }}>
+                {issue.author}
+              </span>
+              {issue.scheduledDate && (
+                <span className="text-[9px] text-[#94A3B8] ml-auto">
+                  {new Date(issue.scheduledDate).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                </span>
+              )}
+            </div>
+            <p className="text-[11px] text-[#374151] leading-relaxed">{issue.content}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function DetailPanel({
   day,
   onClose,
@@ -697,10 +770,20 @@ function DetailPanel({
         </button>
       </div>
 
-      {/* Each meeting type as its own interactive section */}
-      {sortedMeetings.map((type) => (
-        <MeetingSection key={type} type={type} day={day} dateKey={dateKey} businessContext={businessContext} />
-      ))}
+      {/* Each meeting type as its own interactive section, with its queued issues */}
+      {sortedMeetings.map((type) => {
+        const boardMeetingType = CALENDAR_TO_BOARD_MEETING[type];
+        return (
+          <div key={type} className="flex flex-col gap-3">
+            <MeetingSection type={type} day={day} dateKey={dateKey} businessContext={businessContext} />
+            {boardMeetingType && (
+              <div className="px-3">
+                <BoardIssuesForMeeting meetingType={boardMeetingType} dateMs={day.date.getTime()} />
+              </div>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }

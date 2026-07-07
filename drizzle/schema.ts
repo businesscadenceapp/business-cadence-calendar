@@ -82,6 +82,11 @@ export const boardCards = mysqlTable("board_cards", {
   completedBy: varchar("completedBy", { length: 128 }),    // who marked it done
   confirmedAt: timestamp("confirmedAt"),                   // when requester confirmed it done
   confirmedBy: varchar("confirmedBy", { length: 128 }),    // who confirmed it done
+  // Issue-specific fields — meeting assignment
+  meetingType: mysqlEnum("meetingType", ["daily_huddle", "weekly_meeting", "quarterly_review"]),  // which meeting to discuss in
+  scheduledDate: bigint("scheduledDate", { mode: "number" }),  // ms since epoch — date of the meeting occurrence
+  // Update-specific fields — date coverage
+  updateDate: bigint("updateDate", { mode: "number" }),  // ms since epoch — date this update covers
   // Legacy seen/archive fields (updates + issues)
   seenAt: timestamp("seenAt"),
   seenBy: varchar("seenBy", { length: 128 }),

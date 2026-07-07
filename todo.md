@@ -422,3 +422,12 @@
 - [x] Wire NotificationBell into AppShell sidebar header
 - [x] Auto-poll for new notifications every 30 seconds
 - [x] Mark notifications as read when dropdown is opened
+
+## Board Form Extension + Meeting Assignment
+- [x] Add meetingType (varchar, nullable) and scheduledDate (bigint, nullable) to boardCards schema
+- [x] Push DB migration for new columns
+- [x] Update board.create router to accept meetingType and scheduledDate
+- [x] Restrict Update/Issue notifications to owner/coowner roles only
+- [x] Board form: add optional date field for Update post type
+- [x] Board form: add meeting picker (Daily Huddle / Weekly / Quarterly) + date for Issue post type
+- [x] Update Calendar page to display Issues grouped by meeting type and date

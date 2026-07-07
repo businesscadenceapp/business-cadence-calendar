@@ -392,12 +392,18 @@ function AddCardForm({ currentUser, onAdded, allowedBusinesses, defaultBusiness,
   const [content, setContent] = useState("");
   const [assignedTo, setAssignedTo] = useState<string | null>(null);
   const [dueDate, setDueDate] = useState(""); // YYYY-MM-DD string from date input
+  const [updateDate, setUpdateDate] = useState(""); // YYYY-MM-DD — date this update covers
+  const [meetingType, setMeetingType] = useState<"daily_huddle" | "weekly_meeting" | "quarterly_review" | null>(null);
+  const [scheduledDate, setScheduledDate] = useState(""); // YYYY-MM-DD — date of the meeting occurrence
 
   const createCard = trpc.board.create.useMutation({
     onSuccess: () => {
       setContent("");
       setAssignedTo(null);
       setDueDate("");
+      setUpdateDate("");
+      setMeetingType(null);
+      setScheduledDate("");
       onAdded();
       toast.success("Posted to the board");
     },
@@ -409,6 +415,9 @@ function AddCardForm({ currentUser, onAdded, allowedBusinesses, defaultBusiness,
     if (!content.trim()) { toast.error("Please write something"); return; }
     if (type === "task" && !assignedTo) { toast.error("Please select who this task is assigned to"); return; }
     const dueAt = dueDate ? new Date(dueDate + "T23:59:59").getTime() : undefined;
+    const updateDateMs = updateDate ? new Date(updateDate + "T12:00:00").getTime() : undefined;
+    const scheduledDateMs = scheduledDate ? new Date(scheduledDate + "T12:00:00").getTime() : undefined;
+    if (type === "issue" && !meetingType) { toast.error("Please select which meeting to discuss this in"); return; }
     createCard.mutate({
       author: currentUser,
       type,
@@ -416,6 +425,9 @@ function AddCardForm({ currentUser, onAdded, allowedBusinesses, defaultBusiness,
       content: content.trim(),
       ...(type === "task" && assignedTo ? { assignedTo } : {}),
       ...(dueAt ? { dueAt } : {}),
+      ...(type === "update" && updateDateMs ? { updateDate: updateDateMs } : {}),
+      ...(type === "issue" && meetingType ? { meetingType } : {}),
+      ...(type === "issue" && scheduledDateMs ? { scheduledDate: scheduledDateMs } : {}),
       ...(accountId ? { accountId } : {}),
     });
   };
@@ -524,6 +536,72 @@ function AddCardForm({ currentUser, onAdded, allowedBusinesses, defaultBusiness,
             })}
           </div>
         </div>
+      )}
+
+      {/* Update date — optional date this update covers */}
+      {type === "update" && (
+        <div className="flex flex-col gap-1.5">
+          <p className="text-[10px] text-slate-500 uppercase tracking-wider font-medium" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Date <span className="normal-case text-slate-400">(optional — which date does this cover?)</span></p>
+          <input
+            type="date"
+            value={updateDate}
+            onChange={e => setUpdateDate(e.target.value)}
+            className="w-full rounded-lg px-3 py-2 text-[12px] text-[#1E3A5F] focus:outline-none transition-colors"
+            style={{
+              backgroundColor: "#F8FAFC",
+              border: "1.5px solid #CBD5E1",
+              fontFamily: "'Inter', sans-serif",
+            }}
+            onFocus={e => (e.target.style.borderColor = "#065F46")}
+            onBlur={e => (e.target.style.borderColor = "#CBD5E1")}
+          />
+        </div>
+      )}
+
+      {/* Issue — meeting picker (required) + scheduled date */}
+      {type === "issue" && (
+        <>
+          <div className="flex flex-col gap-1.5">
+            <p className="text-[10px] text-slate-500 uppercase tracking-wider font-medium" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Discuss in: <span className="normal-case text-red-400">*</span></p>
+            <div className="flex flex-col gap-1.5">
+              {([
+                { key: "daily_huddle",     label: "🌅 Daily Huddle",      desc: "Needs to be handled today" },
+                { key: "weekly_meeting",   label: "📅 Weekly Meeting",     desc: "Can wait for the weekly sit-down" },
+                { key: "quarterly_review", label: "📊 Quarterly Review",   desc: "Strategic — not urgent" },
+              ] as const).map(m => (
+                <button
+                  key={m.key}
+                  onClick={() => setMeetingType(m.key)}
+                  className="w-full py-2 px-3 rounded-lg text-left transition-all"
+                  style={{
+                    backgroundColor: meetingType === m.key ? "#FEF3C7" : "#F8FAFC",
+                    border: `1.5px solid ${meetingType === m.key ? "#FCD34D" : "#E2E8F0"}`,
+                    fontFamily: "'Space Grotesk', sans-serif",
+                  }}
+                >
+                  <span className="text-[12px] font-semibold" style={{ color: meetingType === m.key ? "#92400E" : "#475569" }}>{m.label}</span>
+                  <span className="text-[10px] text-slate-400 ml-2">{m.desc}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <p className="text-[10px] text-slate-500 uppercase tracking-wider font-medium" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Meeting date <span className="normal-case text-slate-400">(optional)</span></p>
+            <input
+              type="date"
+              value={scheduledDate}
+              onChange={e => setScheduledDate(e.target.value)}
+              className="w-full rounded-lg px-3 py-2 text-[12px] text-[#1E3A5F] focus:outline-none transition-colors"
+              style={{
+                backgroundColor: "#F8FAFC",
+                border: "1.5px solid #CBD5E1",
+                fontFamily: "'Inter', sans-serif",
+              }}
+              onFocus={e => (e.target.style.borderColor = "#D97706")}
+              onBlur={e => (e.target.style.borderColor = "#CBD5E1")}
+            />
+          </div>
+        </>
       )}
 
       {/* Due date — only for tasks */}

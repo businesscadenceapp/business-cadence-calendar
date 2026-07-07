@@ -185,7 +185,14 @@ export async function getBoardCards(includeArchived = false): Promise<BoardCard[
 }
 
 export async function createBoardCard(
-  data: Pick<InsertBoardCard, "type" | "business" | "content"> & { author: string; assignedTo?: string; dueAt?: number }
+  data: Pick<InsertBoardCard, "type" | "business" | "content"> & {
+    author: string;
+    assignedTo?: string;
+    dueAt?: number;
+    meetingType?: "daily_huddle" | "weekly_meeting" | "quarterly_review";
+    scheduledDate?: number;
+    updateDate?: number;
+  }
 ): Promise<BoardCard> {
   const db = await getDb();
   if (!db) throw new Error("Database not available");

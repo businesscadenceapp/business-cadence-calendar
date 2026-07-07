@@ -614,8 +614,11 @@ Be concise and specific. If a field has nothing, use an empty array.`,
         business: z.enum(["chiropractic", "crossfit", "realty", "general"]),
         content: z.string().min(1).max(1000),
         assignedTo: z.string().min(1).max(128).optional(),
-        dueAt: z.number().optional(), // ms since epoch
-        accountId: z.number().optional(), // for notification routing
+        dueAt: z.number().optional(),          // ms since epoch — task due date
+        updateDate: z.number().optional(),     // ms since epoch — date this update covers
+        meetingType: z.enum(["daily_huddle", "weekly_meeting", "quarterly_review"]).optional(), // issue: which meeting
+        scheduledDate: z.number().optional(),  // ms since epoch — date of the meeting occurrence
+        accountId: z.number().optional(),      // for notification routing
       }))
       .mutation(async ({ input }) => {
         const card = await createBoardCard(input);
@@ -636,10 +639,11 @@ Be concise and specific. If a field has nothing, use an empty array.`,
               });
             }
           } else if (input.type === "update" || input.type === "issue") {
-            // Notify everyone else on the account
+            // Notify owners and co-owners only (not employees)
             const notifType = input.type === "issue" ? "new_issue" : "new_update";
             const notifTitle = input.type === "issue" ? "New issue posted" : "New update posted";
-            for (const p of allPersons) {
+            const ownerPersons = allPersons.filter(p => p.role === "owner" || p.role === "coowner");
+            for (const p of ownerPersons) {
               if (p.name !== input.author) {
                 await createNotification({
                   accountId: input.accountId,
