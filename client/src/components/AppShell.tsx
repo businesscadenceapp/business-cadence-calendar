@@ -132,13 +132,12 @@ export default function AppShell({ children }: AppShellProps) {
           >
             {/* Circular icon — same note + lavender/navy as the homepage logo */}
             <BrandIcon size={36} className="flex-shrink-0" />
-            <div className="flex-1 min-w-0">
+            <div>
               <p className="text-[13px] font-bold text-[#1E3A5F] leading-tight" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
                 BusinessCadence
               </p>
               <p className="text-[10px] text-slate-400">Co-owner OS</p>
             </div>
-            <NotificationBell accountId={person?.accountId} personId={person?.id} />
           </div>
 
           {/* Nav items */}
@@ -188,6 +187,7 @@ export default function AppShell({ children }: AppShellProps) {
                   </p>
                   <p className="text-[10px] text-slate-400 truncate">{roleLabel}</p>
                 </div>
+                <NotificationBell accountId={person?.accountId} personId={person?.id} />
                 <button
                   onClick={handleSignOut}
                   className="flex-shrink-0 text-[10px] text-slate-400 hover:text-red-500 transition-colors px-1.5 py-1 rounded hover:bg-red-50"
