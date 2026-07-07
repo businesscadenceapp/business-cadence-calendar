@@ -325,6 +325,14 @@ export async function getWaitlistCount(): Promise<number> {
   return rows.length;
 }
 
+/** Get all waitlist emails for the admin panel. */
+export async function getWaitlistEmails(): Promise<{ id: number; email: string; createdAt: Date }[]> {
+  const db = await getDb();
+  if (!db) return [];
+  const rows = await db.select().from(waitlistEmails).orderBy(desc(waitlistEmails.createdAt));
+  return rows as { id: number; email: string; createdAt: Date }[];
+}
+
 // ─── Meeting Recording helpers ────────────────────────────────────────────────
 
 /** Create a new recording row in pending state. Returns the new row id. */

@@ -450,3 +450,10 @@
 - [ ] Mobile-optimize Calendar page: touch-friendly day cells
 - [ ] Mobile-optimize Settings page: stacked panels
 - [ ] Mobile-optimize WeeklyCheckin page: full-width form
+
+## Invite System + Admin Panel (Phase N)
+- [x] Block self-registration: remove "Create your account" from login page; only invite links can create accounts
+- [x] Admin Panel page (/app/admin): waitlist viewer, team member management, invite generation (owner-only)
+- [x] Fix Lynn's account (bubblz2828@yahoo.com) to be coowner linked to Matt's accountId=0
+- [x] Add Admin Panel route to App.tsx and AppShell nav (owner-only, visible only to role=owner)
+- [x] Verify task isDoer/isRequester matching works correctly after invite-based login

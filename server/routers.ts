@@ -24,6 +24,7 @@ import {
   upsertAgendaTemplate,
   addWaitlistEmail,
   getWaitlistCount,
+  getWaitlistEmails,
   createMeetingRecording,
   updateMeetingRecording,
   getMeetingRecording,
@@ -333,6 +334,15 @@ Keep the tone warm but professional. This summary will be saved under this speci
       const count = await getWaitlistCount();
       return { count };
     }),
+
+    /** List all waitlist emails (owner admin only). */
+    list: publicProcedure
+      .input(z.object({ accountId: z.number() }))
+      .query(async ({ input }) => {
+        if (input.accountId < 0) return { emails: [] };
+        const emails = await getWaitlistEmails();
+        return { emails };
+      }),
   }),
 
   /** Meeting recording — upload audio, transcribe, and generate AI notes. */

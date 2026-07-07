@@ -41,6 +41,7 @@ const OWNER_NAV: NavItem[] = [
   { path: "/app/reports",  label: "Reports",  icon: "📊", activeColor: "#0D9488" },
   { path: "/app/calendar", label: "Calendar", icon: "📅", activeColor: "#0EA5E9" },
   { path: "/app/settings", label: "Settings", icon: "⚙️", activeColor: "#64748B" },
+  { path: "/app/admin",    label: "Admin",    icon: "🔑", activeColor: "#DC2626" },
 ];
 
 const EMPLOYEE_NAV: NavItem[] = [
@@ -204,7 +205,11 @@ export default function AppShell({ children }: AppShellProps) {
   const activePath = location === "/app" ? "/app/board" : location;
 
   // Employees only see Board + KPIs; owners/co-owners see full nav
-  const NAV_ITEMS = person?.role === "employee" ? EMPLOYEE_NAV : OWNER_NAV;
+  // Admin panel is only visible to owners (not co-owners)
+  const baseNav = person?.role === "employee" ? EMPLOYEE_NAV : OWNER_NAV;
+  const NAV_ITEMS = person?.role === "owner"
+    ? baseNav
+    : baseNav.filter(item => item.path !== "/app/admin");
 
   // Split nav for mobile bottom bar
   const mobilePrimary = NAV_ITEMS.slice(0, MOBILE_PRIMARY_COUNT);
