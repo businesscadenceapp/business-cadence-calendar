@@ -821,15 +821,16 @@ export default function Board() {
 
   return (
     <div
-      className="h-full flex"
+      className="h-full flex flex-col"
       style={{ backgroundColor: "#F8F7F4", fontFamily: "'Inter', sans-serif" }}
     >
-      <div className="flex flex-1 overflow-hidden">
-        {/* Left sidebar */}
+      <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
+        {/* Left sidebar — full width on mobile, fixed width on desktop */}
         <aside
-          className="w-80 flex-shrink-0 p-4 overflow-y-auto"
-          style={{ borderRight: "1px solid #E2E8F0", backgroundColor: "#FAFAF9" }}
+          className="board-aside w-full md:w-80 flex-shrink-0 p-4 overflow-y-auto"
+          style={{ borderBottom: "1px solid #E2E8F0", borderRight: "none" }}
         >
+          <style>{`@media (min-width: 768px) { .board-aside { border-right: 1px solid #E2E8F0 !important; border-bottom: none !important; background-color: #FAFAF9; } }`}</style>
           {/* Identity prompt if not set */}
           {!currentUser && (
             <div
@@ -909,7 +910,7 @@ export default function Board() {
         </aside>
 
         {/* Main board */}
-        <main className="flex-1 overflow-y-auto p-5 flex flex-col gap-8">
+        <main className="flex-1 overflow-y-auto p-3 md:p-5 flex flex-col gap-6 md:gap-8">
           {isLoading ? (
             <div className="flex items-center justify-center h-40">
               <span className="text-slate-400 text-sm animate-pulse">Loading board…</span>

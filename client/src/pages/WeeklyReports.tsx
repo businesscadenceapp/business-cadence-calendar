@@ -462,7 +462,7 @@ export default function WeeklyReports() {
   return (
     <div className="h-full flex flex-col" style={{ background: "#F8F7F4" }}>
       {/* Slim page title bar */}
-              <div className="flex items-center justify-between px-6 py-3 border-b flex-shrink-0"
+              <div className="flex items-center justify-between px-3 sm:px-6 py-3 border-b flex-shrink-0"
         style={{ background: "#FFFFFF", borderColor: "#E2E0DB" }}
       >
         <div className="flex items-center gap-3">
@@ -510,7 +510,7 @@ export default function WeeklyReports() {
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto px-6 py-8">
+      <div className="max-w-5xl mx-auto px-3 sm:px-6 py-4 sm:py-8">
         {/* Check-ins tab */}
         {activeTab === "checkins" && (
           <>

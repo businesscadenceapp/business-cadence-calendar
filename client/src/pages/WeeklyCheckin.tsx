@@ -172,7 +172,7 @@ export default function WeeklyCheckin() {
       className="h-full overflow-y-auto"
       style={{ backgroundColor: "#F8F7F4", fontFamily: "'Inter', sans-serif" }}
     >
-      <div className="max-w-2xl mx-auto px-5 py-6">
+      <div className="max-w-2xl mx-auto px-3 sm:px-5 py-4 sm:py-6">
         {/* Header */}
         <div className="mb-6">
           <h1

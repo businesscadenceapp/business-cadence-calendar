@@ -882,7 +882,7 @@ export default function KpiReporting() {
       className="h-full overflow-y-auto"
       style={{ backgroundColor: "#F8F7F4", fontFamily: "'Inter', sans-serif" }}
     >
-      <div className="max-w-4xl mx-auto px-5 py-6">
+      <div className="max-w-4xl mx-auto px-3 sm:px-5 py-4 sm:py-6">
         <div className="mb-6">
           <h1
             className="text-2xl font-bold text-[#1E3A5F] mb-1"

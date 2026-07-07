@@ -437,3 +437,16 @@
 - [ ] Update notification logic: use notifyPersonIds when provided, fall back to all owners
 - [ ] Add recipient picker UI to AddCardForm for Update and Issue types
 - [ ] Load all persons from DB in AddCardForm for the picker
+
+## PWA Build
+- [ ] Add manifest.json with app name, icons, theme color, display: standalone
+- [x] Add service worker for offline shell caching
+- [ ] Add iOS meta tags (apple-mobile-web-app-capable, status-bar-style, apple-touch-icon)
+- [ ] Mobile-optimize AppShell: collapsible sidebar, bottom nav bar for mobile
+- [ ] Mobile-optimize Board page: single-column layout, full-width form, scrollable card columns
+- [ ] Mobile-optimize Goals page: card stack layout on mobile
+- [ ] Mobile-optimize KPIs page: responsive tables/cards
+- [ ] Mobile-optimize Reports page: full-width week nav
+- [ ] Mobile-optimize Calendar page: touch-friendly day cells
+- [ ] Mobile-optimize Settings page: stacked panels
+- [ ] Mobile-optimize WeeklyCheckin page: full-width form

@@ -225,3 +225,34 @@ html {
     animation-duration: 0.01ms !important;
   }
 }
+
+/* ── PWA / Safe Area ──────────────────────────────────────────────────────── */
+/* Prevent content from sitting behind iPhone notch or home indicator */
+.pb-safe {
+  padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+}
+
+/* Bottom nav bar should account for home indicator on iPhone */
+.mobile-bottom-nav {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Prevent double-tap zoom on iOS for interactive elements */
+button, a, input, select, textarea {
+  touch-action: manipulation;
+}
+
+/* Smooth scrolling on iOS */
+.overflow-y-auto, .overflow-y-scroll {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Board aside panel — hidden on mobile, visible on md+ */
+.board-aside {
+  display: none;
+}
+@media (min-width: 768px) {
+  .board-aside {
+    display: flex;
+  }
+}

@@ -5,8 +5,7 @@ import { clearAuth } from "@/components/PasswordGate";
 import { BrandIcon } from "@/components/BrandLogo";
 import { NotificationBell } from "@/components/NotificationBell";
 
-// ─── Identity Context (shim for Board.tsx useIdentity hook) ──────────────────
-// currentUser is now always the logged-in person's name from PersonContext.
+// ─── Identity Context ─────────────────────────────────────────────────────────
 
 interface IdentityCtx {
   currentUser: string | null;
@@ -50,6 +49,9 @@ const EMPLOYEE_NAV: NavItem[] = [
   { path: "/app/checkin",  label: "Check-in", icon: "✅", activeColor: "#7C3AED" },
 ];
 
+// Mobile bottom bar: show first 4 items + "More" for the rest
+const MOBILE_PRIMARY_COUNT = 4;
+
 // ─── Page Transition ─────────────────────────────────────────────────────────
 
 function PageTransition({ children, locationKey }: { children: ReactNode; locationKey: string }) {
@@ -87,6 +89,107 @@ function PageTransition({ children, locationKey }: { children: ReactNode; locati
   );
 }
 
+// ─── More Sheet (mobile) ──────────────────────────────────────────────────────
+
+function MoreSheet({
+  items,
+  activePath,
+  person,
+  onClose,
+  onSignOut,
+}: {
+  items: NavItem[];
+  activePath: string;
+  person: { name: string; role: string; accountId?: number; id?: string } | null;
+  onClose: () => void;
+  onSignOut: () => void;
+}) {
+  const roleLabel = person
+    ? person.role === "coowner" ? "Co-owner"
+    : person.role === "employee" ? "Employee"
+    : "Owner"
+    : "";
+
+  return (
+    <>
+      {/* Backdrop */}
+      <div
+        className="fixed inset-0 bg-black/40 z-40"
+        onClick={onClose}
+        style={{ backdropFilter: "blur(2px)" }}
+      />
+      {/* Sheet */}
+      <div
+        className="fixed bottom-0 left-0 right-0 z-50 rounded-t-2xl overflow-hidden"
+        style={{ backgroundColor: "#FFFFFF", paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
+      >
+        {/* Handle */}
+        <div className="flex justify-center pt-3 pb-1">
+          <div className="w-10 h-1 rounded-full bg-slate-200" />
+        </div>
+
+        {/* Person row */}
+        {person && (
+          <div className="px-5 py-3 flex items-center gap-3" style={{ borderBottom: "1px solid #F1F0ED" }}>
+            <div
+              className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-white flex-shrink-0"
+              style={{ backgroundColor: nameToColor(person.name).dot }}
+            >
+              {person.name.charAt(0).toUpperCase()}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-bold text-[#1E3A5F] truncate" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+                {person.name}
+              </p>
+              <p className="text-xs text-slate-400">{roleLabel}</p>
+            </div>
+            <NotificationBell accountId={person.accountId} personId={person.id} />
+          </div>
+        )}
+
+        {/* Extra nav items */}
+        <div className="px-4 py-3 flex flex-col gap-1">
+          {items.map(item => {
+            const isActive = activePath === item.path || activePath.startsWith(item.path + "/");
+            return (
+              <Link
+                key={item.path}
+                href={item.path}
+                onClick={onClose}
+                className="flex items-center gap-4 px-4 py-3 rounded-xl text-sm font-semibold transition-all"
+                style={{
+                  backgroundColor: isActive ? `${item.activeColor}15` : "transparent",
+                  color: isActive ? item.activeColor : "#1E3A5F",
+                  fontFamily: "'Space Grotesk', sans-serif",
+                }}
+              >
+                <span className="text-xl w-7 text-center">{item.icon}</span>
+                {item.label}
+                {isActive && (
+                  <div className="ml-auto w-2 h-2 rounded-full" style={{ backgroundColor: item.activeColor }} />
+                )}
+              </Link>
+            );
+          })}
+        </div>
+
+        {/* Sign out */}
+        {person && (
+          <div className="px-4 pb-4">
+            <button
+              onClick={onSignOut}
+              className="w-full py-3 rounded-xl text-sm font-semibold text-red-500 transition-all active:scale-[0.98]"
+              style={{ backgroundColor: "#FEF2F2", border: "1px solid #FECACA", fontFamily: "'Space Grotesk', sans-serif" }}
+            >
+              Sign out
+            </button>
+          </div>
+        )}
+      </div>
+    </>
+  );
+}
+
 // ─── AppShell ─────────────────────────────────────────────────────────────────
 
 interface AppShellProps {
@@ -96,15 +199,24 @@ interface AppShellProps {
 export default function AppShell({ children }: AppShellProps) {
   const [location, navigate] = useLocation();
   const { person, setPerson } = usePerson();
+  const [moreOpen, setMoreOpen] = useState(false);
 
   const activePath = location === "/app" ? "/app/board" : location;
 
   // Employees only see Board + KPIs; owners/co-owners see full nav
   const NAV_ITEMS = person?.role === "employee" ? EMPLOYEE_NAV : OWNER_NAV;
 
+  // Split nav for mobile bottom bar
+  const mobilePrimary = NAV_ITEMS.slice(0, MOBILE_PRIMARY_COUNT);
+  const moreItems = NAV_ITEMS.slice(MOBILE_PRIMARY_COUNT);
+  const moreIsActive = moreItems.some(
+    item => activePath === item.path || activePath.startsWith(item.path + "/")
+  );
+
   const handleSignOut = () => {
     setPerson(null);
     clearAuth();
+    setMoreOpen(false);
     navigate("/login");
   };
 
@@ -130,7 +242,6 @@ export default function AppShell({ children }: AppShellProps) {
             className="flex items-center gap-3 px-5 py-4 flex-shrink-0"
             style={{ borderBottom: "1px solid #F1F0ED" }}
           >
-            {/* Circular icon — same note + lavender/navy as the homepage logo */}
             <BrandIcon size={36} className="flex-shrink-0" />
             <div>
               <p className="text-[13px] font-bold text-[#1E3A5F] leading-tight" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
@@ -209,7 +320,35 @@ export default function AppShell({ children }: AppShellProps) {
 
         {/* ── Main content area ── */}
         <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-          <main className="flex-1 overflow-y-auto pb-16 md:pb-0">
+          {/* Mobile top bar — shows brand + notification bell */}
+          <header
+            className="md:hidden flex items-center justify-between px-4 flex-shrink-0"
+            style={{
+              backgroundColor: "#FFFFFF",
+              borderBottom: "1px solid #E2E8F0",
+              height: "52px",
+              paddingTop: "env(safe-area-inset-top, 0px)",
+            }}
+          >
+            <div className="flex items-center gap-2.5">
+              <BrandIcon size={28} />
+              <p className="text-sm font-bold text-[#1E3A5F]" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+                BusinessCadence
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              {person && (
+                <NotificationBell accountId={person.accountId} personId={person.id} />
+              )}
+            </div>
+          </header>
+
+          <main
+            className="flex-1 overflow-y-auto"
+            style={{
+              paddingBottom: "calc(64px + env(safe-area-inset-bottom, 0px))",
+            }}
+          >
             <PageTransition locationKey={activePath}>
               {children}
             </PageTransition>
@@ -221,13 +360,16 @@ export default function AppShell({ children }: AppShellProps) {
             style={{
               backgroundColor: "#FFFFFF",
               borderTop: "1px solid #E2E8F0",
-              height: "60px",
-              position: "sticky",
+              height: "calc(56px + env(safe-area-inset-bottom, 0px))",
+              paddingBottom: "env(safe-area-inset-bottom, 0px)",
+              position: "fixed",
               bottom: 0,
-              zIndex: 50,
+              left: 0,
+              right: 0,
+              zIndex: 40,
             }}
           >
-            {NAV_ITEMS.map(item => {
+            {mobilePrimary.map(item => {
               const isActive = activePath === item.path || activePath.startsWith(item.path + "/");
               return (
                 <Link
@@ -236,7 +378,7 @@ export default function AppShell({ children }: AppShellProps) {
                   className="relative flex-1 flex flex-col items-center justify-center gap-0.5 transition-all duration-150 active:scale-95"
                   style={{ color: isActive ? item.activeColor : "#94A3B8" }}
                 >
-                  <span className="text-[18px] leading-none">{item.icon}</span>
+                  <span className="text-[20px] leading-none">{item.icon}</span>
                   <span
                     className="text-[9px] font-semibold leading-none"
                     style={{ fontFamily: "'Space Grotesk', sans-serif" }}
@@ -245,43 +387,47 @@ export default function AppShell({ children }: AppShellProps) {
                   </span>
                   {isActive && (
                     <div
-                      className="absolute bottom-0 w-8 h-0.5 rounded-full"
+                      className="absolute top-0 w-8 h-0.5 rounded-full"
                       style={{ backgroundColor: item.activeColor }}
                     />
                   )}
                 </Link>
               );
             })}
-            {/* Mobile notification bell */}
-            <div className="flex flex-col items-center justify-center px-2 gap-0.5">
-              <NotificationBell accountId={person?.accountId} personId={person?.id} />
-              <span className="text-[8px] text-slate-400" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Alerts</span>
-            </div>
-            {/* Mobile person avatar — tap to sign out */}
-            <button
-              onClick={person ? handleSignOut : () => navigate("/login")}
-              className="flex flex-col items-center justify-center px-2 gap-0.5 active:scale-95 transition-transform"
-              title={person ? "Sign out" : "Sign in"}
-            >
-              {person ? (
-                <div
-                  className="w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold text-white"
-                  style={{ backgroundColor: nameToColor(person.name).dot }}
+
+            {/* More button — shows remaining nav items + person info */}
+            {(moreItems.length > 0 || true) && (
+              <button
+                onClick={() => setMoreOpen(true)}
+                className="relative flex-1 flex flex-col items-center justify-center gap-0.5 transition-all duration-150 active:scale-95"
+                style={{ color: moreIsActive ? "#64748B" : "#94A3B8" }}
+              >
+                <span className="text-[20px] leading-none">☰</span>
+                <span
+                  className="text-[9px] font-semibold leading-none"
+                  style={{ fontFamily: "'Space Grotesk', sans-serif" }}
                 >
-                  {person.name.charAt(0).toUpperCase()}
-                </div>
-              ) : (
-                <div className="w-7 h-7 rounded-full flex items-center justify-center text-[11px] bg-slate-100 text-slate-500 font-bold">
-                  👤
-                </div>
-              )}
-              <span className="text-[8px] text-slate-400" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-                {person ? person.name.split(" ")[0] : "Sign in"}
-              </span>
-            </button>
+                  More
+                </span>
+                {moreIsActive && (
+                  <div className="absolute top-0 w-8 h-0.5 rounded-full bg-slate-400" />
+                )}
+              </button>
+            )}
           </nav>
         </div>
       </div>
+
+      {/* More Sheet */}
+      {moreOpen && (
+        <MoreSheet
+          items={moreItems}
+          activePath={activePath}
+          person={person}
+          onClose={() => setMoreOpen(false)}
+          onSignOut={handleSignOut}
+        />
+      )}
     </IdentityContext.Provider>
   );
 }

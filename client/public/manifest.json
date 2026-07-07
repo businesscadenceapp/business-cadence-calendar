@@ -1,0 +1,26 @@
+{
+  "name": "BusinessCadence",
+  "short_name": "BizCadence",
+  "description": "Structured meeting rhythm for co-owner teams",
+  "start_url": "/app/board",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F5F4F0",
+  "theme_color": "#1E3A5F",
+  "icons": [
+    {
+      "src": "/manus-storage/icon-192_a4529c68.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/manus-storage/icon-512_dda54606.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business", "productivity"],
+  "screenshots": []
+}
