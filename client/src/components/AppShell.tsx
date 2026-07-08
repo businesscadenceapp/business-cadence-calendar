@@ -260,7 +260,7 @@ export default function AppShell({ children }: AppShellProps) {
             className="flex items-center gap-3 px-5 py-4 flex-shrink-0"
             style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}
           >
-            <BrandIcon size={36} className="flex-shrink-0" />
+            <BrandIcon size={36} className="flex-shrink-0" variant="teal" />
             <div>
               <p className="text-[13px] font-bold text-white leading-tight" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
                 BusinessCadence
@@ -353,7 +353,7 @@ export default function AppShell({ children }: AppShellProps) {
             }}
           >
             <div className="flex items-center gap-2.5">
-              <BrandIcon size={28} />
+              <BrandIcon size={28} variant="teal" />
               <p className="text-sm font-bold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
                 BusinessCadence
               </p>
