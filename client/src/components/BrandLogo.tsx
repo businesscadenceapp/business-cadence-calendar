@@ -61,20 +61,53 @@ function drawNote(tx: number, ty: number, sz: number) {
 // Uses the actual logo note PNG for pixel-perfect rendering.
 // ---------------------------------------------------------------------------
 export function BrandIcon({ size = 48, className = "", variant = "purple" }: { size?: number; className?: string; variant?: "purple" | "teal" }) {
-  const bg = variant === "teal" ? "rgba(94,234,212,0.18)" : "#EDE9FE";
-  const filter = variant === "teal" ? "brightness(0) saturate(100%) invert(86%) sepia(42%) saturate(400%) hue-rotate(120deg) brightness(105%)" : undefined;
+  if (variant === "teal") {
+    // Inline SVG note — perfectly centered, no PNG padding issues
+    const n = size;
+    return (
+      <div
+        style={{
+          width: n,
+          height: n,
+          borderRadius: '50%',
+          background: 'rgba(94,234,212,0.18)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          flexShrink: 0,
+          boxShadow: '0 0 0 1px rgba(94,234,212,0.3)',
+        }}
+        className={className}
+        role="img"
+        aria-label="BusinessCadence"
+      >
+        <svg width={n * 0.52} height={n * 0.52} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          {/* Beam */}
+          <rect x="8" y="3.5" width="11" height="2.5" rx="1.2" fill="#5EEAD4" transform="rotate(-8 8 3.5)" />
+          {/* Left stem */}
+          <rect x="8" y="5" width="2" height="12" rx="1" fill="#5EEAD4" />
+          {/* Right stem */}
+          <rect x="17" y="2.5" width="2" height="12" rx="1" fill="#5EEAD4" />
+          {/* Left note head */}
+          <ellipse cx="7" cy="18" rx="3.5" ry="2.5" fill="#5EEAD4" transform="rotate(-15 7 18)" />
+          {/* Right note head */}
+          <ellipse cx="16" cy="15.5" rx="3.5" ry="2.5" fill="#5EEAD4" transform="rotate(-15 16 15.5)" />
+        </svg>
+      </div>
+    );
+  }
+
   return (
     <div
       style={{
         width: size,
         height: size,
         borderRadius: '50%',
-        background: bg,
+        background: '#EDE9FE',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         flexShrink: 0,
-        boxShadow: variant === "teal" ? "0 0 0 1px rgba(94,234,212,0.3)" : undefined,
       }}
       className={className}
       role="img"
@@ -83,7 +116,7 @@ export function BrandIcon({ size = 48, className = "", variant = "purple" }: { s
       <img
         src="/manus-storage/businesscadence-note-clean2_36202558.png"
         alt="BusinessCadence"
-        style={{ width: '65%', height: '65%', objectFit: 'contain', filter }}
+        style={{ width: '65%', height: '65%', objectFit: 'contain' }}
       />
     </div>
   );
