@@ -115,9 +115,9 @@ function MoreSheet({
     <>
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/40 z-40"
+        className="fixed inset-0 z-40"
         onClick={onClose}
-        style={{ backdropFilter: "blur(2px)" }}
+        style={{ backgroundColor: "rgba(0,0,0,0.65)" }}
       />
       {/* Sheet */}
       <div
