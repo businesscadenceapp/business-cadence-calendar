@@ -1012,12 +1012,115 @@ export default function Board() {
   return (
     <div
       className="flex flex-col min-h-full"
-      style={{ backgroundColor: "#0F2440", fontFamily: "'Inter', sans-serif" }}
+      style={{ backgroundColor: "#0A1929", fontFamily: "'Inter', sans-serif" }}
     >
+      {/* ── Hero header ── */}
+      <div
+        className="flex-shrink-0 px-5 pt-6 pb-5"
+        style={{
+          background: "linear-gradient(135deg, #0D2035 0%, #0F2440 50%, #0D1F38 100%)",
+          borderBottom: "1px solid rgba(94,234,212,0.12)",
+          position: "relative",
+          overflow: "hidden",
+        }}
+      >
+        {/* Subtle glow orb */}
+        <div style={{
+          position: "absolute", top: "-40px", right: "-40px",
+          width: "200px", height: "200px",
+          background: "radial-gradient(circle, rgba(94,234,212,0.08) 0%, transparent 70%)",
+          pointerEvents: "none",
+        }} />
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2.5 mb-1.5">
+              <div style={{
+                width: 32, height: 32,
+                borderRadius: "10px",
+                background: "linear-gradient(135deg, rgba(94,234,212,0.2) 0%, rgba(94,234,212,0.08) 100%)",
+                border: "1px solid rgba(94,234,212,0.3)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontSize: "16px",
+                boxShadow: "0 0 12px rgba(94,234,212,0.15)",
+              }}>⚡</div>
+              <span className="text-[11px] font-bold uppercase tracking-[0.15em]" style={{ color: "#5EEAD4", fontFamily: "'Space Grotesk', sans-serif", letterSpacing: "0.15em" }}>Command Board</span>
+            </div>
+            <h1 className="text-[22px] font-black text-white leading-tight" style={{ fontFamily: "'Space Grotesk', sans-serif", letterSpacing: "-0.02em" }}>
+              Your Business,<br />
+              <span style={{ background: "linear-gradient(90deg, #5EEAD4, #A78BFA)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>In Sync.</span>
+            </h1>
+            <p className="text-[12px] mt-1.5" style={{ color: "rgba(255,255,255,0.45)", fontFamily: "'Inter', sans-serif" }}>Real-time updates between owners — no more missed conversations.</p>
+          </div>
+        </div>
+
+        {/* Stats row */}
+        <div className="flex items-center gap-3 mt-4 flex-wrap">
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl" style={{ backgroundColor: "rgba(124,58,237,0.15)", border: "1px solid rgba(124,58,237,0.25)" }}>
+            <span className="text-[11px] font-bold" style={{ color: "#C4B5FD", fontFamily: "'Space Grotesk', sans-serif" }}>☑ {openTasks.length + donePendingTasks.length} Tasks</span>
+          </div>
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl" style={{ backgroundColor: "rgba(37,99,235,0.15)", border: "1px solid rgba(37,99,235,0.25)" }}>
+            <span className="text-[11px] font-bold" style={{ color: "#93C5FD", fontFamily: "'Space Grotesk', sans-serif" }}>📢 {updates.length} Updates</span>
+          </div>
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl" style={{ backgroundColor: "rgba(225,29,72,0.15)", border: "1px solid rgba(225,29,72,0.25)" }}>
+            <span className="text-[11px] font-bold" style={{ color: "#FDA4AF", fontFamily: "'Space Grotesk', sans-serif" }}>🔥 {issues.length} Issues</span>
+          </div>
+          <div className="ml-auto">
+            <button
+              onClick={() => setFormOpen(o => !o)}
+              className="px-4 py-2 rounded-xl text-[12px] font-bold transition-all active:scale-[0.97]"
+              style={{
+                background: formOpen ? "rgba(255,255,255,0.08)" : "linear-gradient(135deg, #5EEAD4, #38BDF8)",
+                color: formOpen ? "rgba(255,255,255,0.5)" : "#0F2440",
+                fontFamily: "'Space Grotesk', sans-serif",
+                boxShadow: formOpen ? "none" : "0 4px 16px rgba(94,234,212,0.3), 0 2px 6px rgba(0,0,0,0.3)",
+                border: formOpen ? "1px solid rgba(255,255,255,0.1)" : "none",
+              }}
+            >
+              {formOpen ? "✕ Close" : "+ Post to Board"}
+            </button>
+          </div>
+        </div>
+
+        {/* Business filter pills */}
+        {allowedBusinesses.length > 1 && (
+          <div className="flex items-center gap-1.5 flex-wrap mt-3">
+            <button
+              onClick={() => setFilterBusiness("all")}
+              className="px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all"
+              style={{
+                backgroundColor: filterBusiness === "all" ? "#5EEAD4" : "rgba(255,255,255,0.06)",
+                color: filterBusiness === "all" ? "#0F2440" : "rgba(255,255,255,0.5)",
+                fontFamily: "'Space Grotesk', sans-serif",
+              }}
+            >
+              All
+            </button>
+            {allowedBusinesses.map(key => {
+              const biz = dynamicBizLabels[key] ?? { label: key, icon: "🏢", bg: "rgba(255,255,255,0.08)", text: "rgba(255,255,255,0.6)", border: "rgba(255,255,255,0.15)" };
+              return (
+                <button
+                  key={key}
+                  onClick={() => setFilterBusiness(key)}
+                  className="px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all"
+                  style={{
+                    backgroundColor: filterBusiness === key ? biz.bg : "rgba(255,255,255,0.06)",
+                    color: filterBusiness === key ? biz.text : "rgba(255,255,255,0.5)",
+                    border: filterBusiness === key ? `1.5px solid ${biz.border}` : "1.5px solid transparent",
+                    fontFamily: "'Space Grotesk', sans-serif",
+                  }}
+                >
+                  {biz.icon} {biz.label}
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
       {/* ── Top bar: filter + post button ── */}
       <div
         className="flex-shrink-0 px-4 py-3 flex items-center gap-3 flex-wrap"
-        style={{ backgroundColor: "#0A1929", borderBottom: "1px solid rgba(255,255,255,0.08)" }}
+        style={{ backgroundColor: "#0A1929", borderBottom: "1px solid rgba(255,255,255,0.08)", display: "none" }}
       >
         {/* Business filter pills */}
         {allowedBusinesses.length > 1 && (
@@ -1073,7 +1176,11 @@ export default function Board() {
       {formOpen && (
         <div
           className="flex-shrink-0 px-4 py-4"
-          style={{ backgroundColor: "#0D2035", borderBottom: "1px solid rgba(255,255,255,0.08)" }}
+          style={{
+            background: "linear-gradient(180deg, #0D2035 0%, #0A1929 100%)",
+            borderBottom: "1px solid rgba(94,234,212,0.1)",
+            boxShadow: "inset 0 -1px 0 rgba(94,234,212,0.08)",
+          }}
         >
           <div className="max-w-xl">
             <AddCardForm
@@ -1090,23 +1197,33 @@ export default function Board() {
       )}
 
       {/* Main board */}
-      <main className="flex-1 p-3 md:p-5 flex flex-col gap-6 md:gap-8">
+      <main className="flex-1 p-3 md:p-5 flex flex-col gap-5 md:gap-7">
         {isLoading ? (
           <div className="flex items-center justify-center h-40">
-            <span className="text-sm animate-pulse" style={{ color: "rgba(255,255,255,0.4)" }}>Loading board…</span>
+            <div className="flex flex-col items-center gap-3">
+              <div className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: "rgba(94,234,212,0.5)", borderTopColor: "transparent" }} />
+              <span className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>Loading board…</span>
+            </div>
           </div>
         ) : (
           <>
             {/* ── Tasks section ── */}
-            <section className="flex flex-col gap-3">
-              <div className="flex items-center gap-3 pb-3 min-w-0" style={{ borderBottom: "2px solid rgba(124,58,237,0.5)" }}>
-                <div className="w-7 h-7 rounded-lg flex items-center justify-center text-sm flex-shrink-0" style={{ backgroundColor: "rgba(124,58,237,0.2)" }}>☑</div>
+            <section
+              className="flex flex-col gap-3 rounded-2xl p-4"
+              style={{
+                background: "linear-gradient(135deg, rgba(124,58,237,0.08) 0%, rgba(124,58,237,0.04) 100%)",
+                border: "1.5px solid rgba(124,58,237,0.2)",
+                boxShadow: "0 4px 24px rgba(124,58,237,0.08), inset 0 1px 0 rgba(255,255,255,0.04)",
+              }}
+            >
+              <div className="flex items-center gap-3 pb-3 min-w-0" style={{ borderBottom: "1px solid rgba(124,58,237,0.25)" }}>
+                <div className="w-8 h-8 rounded-xl flex items-center justify-center text-sm flex-shrink-0" style={{ background: "linear-gradient(135deg, rgba(124,58,237,0.3), rgba(124,58,237,0.15))", border: "1px solid rgba(124,58,237,0.4)", boxShadow: "0 0 10px rgba(124,58,237,0.2)" }}>☑</div>
                 <div className="min-w-0 flex-1">
                   <h2 className="text-sm font-bold text-white leading-tight" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Tasks</h2>
                   <p className="text-[10px]" style={{ color: "rgba(255,255,255,0.4)" }}>Assigned to-dos between owners</p>
                 </div>
                 {openTasks.length > 0 && (
-                  <span className="ml-auto text-[11px] font-bold px-2.5 py-1 rounded-full" style={{ backgroundColor: "rgba(124,58,237,0.3)", color: "#C4B5FD", fontFamily: "'Space Grotesk', sans-serif" }}>
+                  <span className="ml-auto text-[11px] font-bold px-2.5 py-1 rounded-full" style={{ background: "linear-gradient(135deg, rgba(124,58,237,0.4), rgba(124,58,237,0.25))", color: "#C4B5FD", border: "1px solid rgba(124,58,237,0.4)", fontFamily: "'Space Grotesk', sans-serif" }}>
                     {openTasks.length}
                   </span>
                 )}
@@ -1189,27 +1306,34 @@ export default function Board() {
             </section>
 
             {/* ── Updates + Issues columns ── */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               {/* Updates */}
-              <div className="flex flex-col gap-3">
-                <div className="flex items-center gap-3 pb-3 min-w-0" style={{ borderBottom: "2px solid rgba(37,99,235,0.5)" }}>
-                  <div className="w-7 h-7 rounded-lg flex items-center justify-center text-sm flex-shrink-0" style={{ backgroundColor: "rgba(37,99,235,0.2)" }}>✅</div>
+              <div
+                className="flex flex-col gap-3 rounded-2xl p-4"
+                style={{
+                  background: "linear-gradient(135deg, rgba(37,99,235,0.08) 0%, rgba(37,99,235,0.04) 100%)",
+                  border: "1.5px solid rgba(37,99,235,0.2)",
+                  boxShadow: "0 4px 24px rgba(37,99,235,0.08), inset 0 1px 0 rgba(255,255,255,0.04)",
+                }}
+              >
+                <div className="flex items-center gap-3 pb-3 min-w-0" style={{ borderBottom: "1px solid rgba(37,99,235,0.25)" }}>
+                  <div className="w-8 h-8 rounded-xl flex items-center justify-center text-sm flex-shrink-0" style={{ background: "linear-gradient(135deg, rgba(37,99,235,0.3), rgba(37,99,235,0.15))", border: "1px solid rgba(37,99,235,0.4)", boxShadow: "0 0 10px rgba(37,99,235,0.2)" }}>✅</div>
                   <div className="min-w-0 flex-1">
                     <h2 className="text-sm font-bold text-white leading-tight" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Updates</h2>
                     <p className="text-[10px]" style={{ color: "rgba(255,255,255,0.4)" }}>What I did since last meeting</p>
                   </div>
                   {updates.length > 0 && (
-                    <span className="ml-auto text-[11px] font-bold px-2.5 py-1 rounded-full" style={{ backgroundColor: "rgba(37,99,235,0.3)", color: "#93C5FD", fontFamily: "'Space Grotesk', sans-serif" }}>
+                    <span className="ml-auto text-[11px] font-bold px-2.5 py-1 rounded-full" style={{ background: "linear-gradient(135deg, rgba(37,99,235,0.4), rgba(37,99,235,0.25))", color: "#93C5FD", border: "1px solid rgba(37,99,235,0.4)", fontFamily: "'Space Grotesk', sans-serif" }}>
                       {updates.length}
                     </span>
                   )}
                 </div>
                 {updates.length === 0 ? (
-                  <div className="rounded-2xl p-8 text-center flex flex-col items-center gap-3" style={{ backgroundColor: "rgba(255,255,255,0.03)", border: "1.5px dashed rgba(37,99,235,0.3)" }}>
-                    <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl" style={{ backgroundColor: "rgba(37,99,235,0.15)" }}>✅</div>
+                  <div className="rounded-xl p-6 text-center flex flex-col items-center gap-2" style={{ backgroundColor: "rgba(37,99,235,0.05)", border: "1px dashed rgba(37,99,235,0.2)" }}>
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl" style={{ backgroundColor: "rgba(37,99,235,0.15)" }}>✅</div>
                     <div>
-                      <p className="text-[13px] font-semibold text-white">No updates yet</p>
-                      <p className="text-[11px] mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>Share what you've been working on.</p>
+                      <p className="text-[12px] font-semibold text-white">No updates yet</p>
+                      <p className="text-[10px] mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>Share what you've been working on.</p>
                     </div>
                   </div>
                 ) : (
@@ -1228,25 +1352,32 @@ export default function Board() {
               </div>
 
               {/* Issues */}
-              <div className="flex flex-col gap-3">
-                <div className="flex items-center gap-3 pb-3 min-w-0" style={{ borderBottom: "2px solid rgba(225,29,72,0.5)" }}>
-                  <div className="w-7 h-7 rounded-lg flex items-center justify-center text-sm flex-shrink-0" style={{ backgroundColor: "rgba(225,29,72,0.2)" }}>💬</div>
+              <div
+                className="flex flex-col gap-3 rounded-2xl p-4"
+                style={{
+                  background: "linear-gradient(135deg, rgba(225,29,72,0.08) 0%, rgba(225,29,72,0.04) 100%)",
+                  border: "1.5px solid rgba(225,29,72,0.2)",
+                  boxShadow: "0 4px 24px rgba(225,29,72,0.08), inset 0 1px 0 rgba(255,255,255,0.04)",
+                }}
+              >
+                <div className="flex items-center gap-3 pb-3 min-w-0" style={{ borderBottom: "1px solid rgba(225,29,72,0.25)" }}>
+                  <div className="w-8 h-8 rounded-xl flex items-center justify-center text-sm flex-shrink-0" style={{ background: "linear-gradient(135deg, rgba(225,29,72,0.3), rgba(225,29,72,0.15))", border: "1px solid rgba(225,29,72,0.4)", boxShadow: "0 0 10px rgba(225,29,72,0.2)" }}>💬</div>
                   <div className="min-w-0 flex-1">
                     <h2 className="text-sm font-bold text-white leading-tight" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Issues</h2>
                     <p className="text-[10px]" style={{ color: "rgba(255,255,255,0.4)" }}>What we need to discuss</p>
                   </div>
                   {issues.length > 0 && (
-                    <span className="ml-auto text-[11px] font-bold px-2.5 py-1 rounded-full" style={{ backgroundColor: "rgba(225,29,72,0.3)", color: "#FDA4AF", fontFamily: "'Space Grotesk', sans-serif" }}>
+                    <span className="ml-auto text-[11px] font-bold px-2.5 py-1 rounded-full" style={{ background: "linear-gradient(135deg, rgba(225,29,72,0.4), rgba(225,29,72,0.25))", color: "#FDA4AF", border: "1px solid rgba(225,29,72,0.4)", fontFamily: "'Space Grotesk', sans-serif" }}>
                       {issues.length}
                     </span>
                   )}
                 </div>
                 {issues.length === 0 ? (
-                  <div className="rounded-2xl p-8 text-center flex flex-col items-center gap-3" style={{ backgroundColor: "rgba(255,255,255,0.03)", border: "1.5px dashed rgba(225,29,72,0.3)" }}>
-                    <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl" style={{ backgroundColor: "rgba(225,29,72,0.15)" }}>💬</div>
+                  <div className="rounded-xl p-6 text-center flex flex-col items-center gap-2" style={{ backgroundColor: "rgba(225,29,72,0.05)", border: "1px dashed rgba(225,29,72,0.2)" }}>
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl" style={{ backgroundColor: "rgba(225,29,72,0.15)" }}>💬</div>
                     <div>
-                      <p className="text-[13px] font-semibold text-white">No issues queued</p>
-                      <p className="text-[11px] mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>Queue something to discuss at the next meeting.</p>
+                      <p className="text-[12px] font-semibold text-white">No issues queued</p>
+                      <p className="text-[10px] mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>Queue something to discuss at the next meeting.</p>
                     </div>
                   </div>
                 ) : (
