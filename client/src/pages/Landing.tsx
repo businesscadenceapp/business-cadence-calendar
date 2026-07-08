@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
-import { Link } from "wouter";
 // ─── Logo ─────────────────────────────────────────────────────────────────
 function Logo({ className = "", height = 40 }: { className?: string; height?: number }) {
   return (
@@ -24,39 +23,39 @@ function Nav() {
   };
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-[#F8F7F4]/95 backdrop-blur-sm border-b border-[#E2E0DB]">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-[#0F2440]/95 backdrop-blur-sm border-b border-white/10">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-24">
-          <div style={{ filter: "drop-shadow(0 2px 0px rgba(30,58,95,0.30)) drop-shadow(0 5px 10px rgba(30,58,95,0.18)) saturate(1.4) brightness(0.92)" }}>
+          <div style={{ filter: "drop-shadow(0 2px 0px rgba(255,255,255,0.15)) drop-shadow(0 5px 10px rgba(0,0,0,0.40)) saturate(1.2) brightness(1.05)" }}>
             <Logo height={80} />
           </div>
           {/* Desktop nav */}
           <div className="hidden md:flex items-center gap-6">
-            <button onClick={() => scrollTo("problem")} className="text-sm text-[#64748B] hover:text-[#1E3A5F] transition-colors">
+            <button onClick={() => scrollTo("problem")} className="text-sm text-white/60 hover:text-white transition-colors">
               The Problem
             </button>
-            <button onClick={() => scrollTo("features")} className="text-sm text-[#64748B] hover:text-[#1E3A5F] transition-colors">
+            <button onClick={() => scrollTo("features")} className="text-sm text-white/60 hover:text-white transition-colors">
               Features
             </button>
-            <button onClick={() => scrollTo("story")} className="text-sm text-[#64748B] hover:text-[#1E3A5F] transition-colors">
+            <button onClick={() => scrollTo("story")} className="text-sm text-white/60 hover:text-white transition-colors">
               Our Story
             </button>
             <a
               href="/login"
-              className="text-sm text-[#0D9488] font-medium hover:text-[#0a7a70] transition-colors border border-[#0D9488]/30 px-4 py-2 rounded-lg hover:border-[#0D9488]/60 hover:bg-[#CCFBF1]/40"
+              className="text-sm text-[#5EEAD4] font-medium hover:text-[#2dd4bf] transition-colors border border-[#5EEAD4]/30 px-4 py-2 rounded-lg hover:border-[#5EEAD4]/60 hover:bg-[#5EEAD4]/10"
             >
               Client Login
             </a>
             <button
               onClick={() => scrollTo("waitlist")}
-              className="bg-[#1E3A5F] text-white text-sm font-medium px-5 py-2 rounded-lg hover:bg-[#162d4a] transition-colors active:scale-[0.97]"
+              className="bg-[#5EEAD4] text-[#0F2440] text-sm font-semibold px-5 py-2 rounded-lg hover:bg-[#2dd4bf] transition-colors active:scale-[0.97]"
             >
               Join the Waitlist
             </button>
           </div>
           {/* Mobile menu button */}
           <button
-            className="md:hidden p-2 rounded-md text-[#64748B] hover:text-[#1E3A5F]"
+            className="md:hidden p-2 rounded-md text-white/60 hover:text-white"
             onClick={() => setMenuOpen(!menuOpen)}
             aria-label="Toggle menu"
           >
@@ -71,16 +70,16 @@ function Nav() {
             )}
           </button>
         </div>
-          {/* Mobile menu */}
+        {/* Mobile menu */}
         {menuOpen && (
-          <div className="md:hidden border-t border-[#E2E0DB] py-4 flex flex-col gap-4">
-            <button onClick={() => scrollTo("problem")} className="text-sm text-[#64748B] text-left px-2">The Problem</button>
-            <button onClick={() => scrollTo("features")} className="text-sm text-[#64748B] text-left px-2">Features</button>
-            <button onClick={() => scrollTo("story")} className="text-sm text-[#64748B] text-left px-2">Our Story</button>
-            <a href="/login" className="text-sm text-[#0D9488] font-medium px-2">Client Login</a>
+          <div className="md:hidden border-t border-white/10 py-4 flex flex-col gap-4">
+            <button onClick={() => scrollTo("problem")} className="text-sm text-white/60 text-left px-2">The Problem</button>
+            <button onClick={() => scrollTo("features")} className="text-sm text-white/60 text-left px-2">Features</button>
+            <button onClick={() => scrollTo("story")} className="text-sm text-white/60 text-left px-2">Our Story</button>
+            <a href="/login" className="text-sm text-[#5EEAD4] font-medium px-2">Client Login</a>
             <button
               onClick={() => scrollTo("waitlist")}
-              className="bg-[#1E3A5F] text-white text-sm font-medium px-5 py-2 rounded-lg mx-2"
+              className="bg-[#5EEAD4] text-[#0F2440] text-sm font-semibold px-5 py-2 rounded-lg mx-2"
             >
               Join the Waitlist
             </button>
@@ -124,12 +123,12 @@ function WaitlistForm({ variant = "default" }: { variant?: "default" | "hero" | 
   if (submitted) {
     return (
       <div className={`flex items-center gap-3 ${variant === "hero" ? "justify-center" : ""}`}>
-        <div className="w-10 h-10 rounded-full bg-[#CCFBF1] flex items-center justify-center flex-shrink-0">
-          <svg className="w-5 h-5 text-[#0D9488]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="w-10 h-10 rounded-full bg-[#5EEAD4]/20 flex items-center justify-center flex-shrink-0">
+          <svg className="w-5 h-5 text-[#5EEAD4]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
           </svg>
         </div>
-        <p className={`font-medium ${variant === "footer" ? "text-white" : "text-[#1E3A5F]"}`}>
+        <p className="font-medium text-white">
           You're on the list — we'll be in touch!
         </p>
       </div>
@@ -144,20 +143,12 @@ function WaitlistForm({ variant = "default" }: { variant?: "default" | "hero" | 
         onChange={(e) => setEmail(e.target.value)}
         placeholder="Enter your email address"
         required
-        className={`flex-1 px-4 py-3 rounded-lg border text-sm outline-none transition-all
-          ${variant === "footer"
-            ? "bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-white/50"
-            : "bg-white border-[#E2E0DB] text-[#1A1A2E] placeholder:text-[#94A3B8] focus:border-[#0D9488] focus:ring-2 focus:ring-[#0D9488]/20"
-          }`}
+        className="flex-1 px-4 py-3 rounded-lg border bg-white/10 border-white/20 text-white placeholder:text-white/40 focus:border-[#5EEAD4]/60 focus:ring-2 focus:ring-[#5EEAD4]/20 outline-none transition-all text-sm"
       />
       <button
         type="submit"
         disabled={join.isPending}
-        className={`px-6 py-3 rounded-lg text-sm font-semibold transition-all active:scale-[0.97] whitespace-nowrap
-          ${variant === "footer"
-            ? "bg-white text-[#1E3A5F] hover:bg-[#F1F0ED]"
-            : "bg-[#1E3A5F] text-white hover:bg-[#162d4a]"
-          } disabled:opacity-60`}
+        className="px-6 py-3 rounded-lg text-sm font-semibold transition-all active:scale-[0.97] whitespace-nowrap bg-[#5EEAD4] text-[#0F2440] hover:bg-[#2dd4bf] disabled:opacity-60"
       >
         {join.isPending ? "Joining..." : "Join the Waitlist"}
       </button>
@@ -170,44 +161,42 @@ function Hero() {
   const { data } = trpc.waitlist.count.useQuery();
 
   return (
-    <section className="pt-32 pb-24 px-4 bg-[#F8F7F4]">
+    <section className="pt-32 pb-28 px-4" style={{ background: "linear-gradient(160deg, #0F2440 0%, #1E3A5F 60%, #0D2D4A 100%)" }}>
       <div className="max-w-4xl mx-auto">
         {/* Logo */}
         <div className="flex justify-center mb-10 animate-fade-in">
           <div style={{
             filter:
-              "drop-shadow(0 2px 0px rgba(30,58,95,0.35)) " +
-              "drop-shadow(0 4px 0px rgba(30,58,95,0.25)) " +
-              "drop-shadow(0 8px 0px rgba(30,58,95,0.15)) " +
-              "drop-shadow(0 14px 20px rgba(30,58,95,0.20)) " +
-              "saturate(1.5) brightness(0.90)"
+              "drop-shadow(0 2px 0px rgba(255,255,255,0.15)) " +
+              "drop-shadow(0 8px 24px rgba(0,0,0,0.40)) " +
+              "saturate(1.2) brightness(1.05)"
           }}>
             <Logo height={220} />
           </div>
         </div>
 
         <div className="text-center animate-fade-up">
-          <div className="inline-flex items-center gap-2 bg-[#CCFBF1] text-[#0D9488] text-xs font-semibold px-4 py-1.5 rounded-full mb-8">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#0D9488] animate-pulse" />
+          <div className="inline-flex items-center gap-2 bg-white/10 text-[#5EEAD4] text-xs font-semibold px-4 py-1.5 rounded-full mb-8 border border-white/10">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#5EEAD4] animate-pulse" />
             Coming Soon — Join the Waitlist
           </div>
 
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-[#1E3A5F] leading-tight mb-6">
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight mb-6">
             Stop Letting Your Business Invade{" "}
-            <span className="text-[#0D9488]">Your Personal Life.</span>
+            <span className="text-[#5EEAD4]">Your Personal Life.</span>
           </h1>
 
-          <p className="text-lg sm:text-xl text-[#64748B] max-w-2xl mx-auto mb-10 leading-relaxed">
+          <p className="text-lg sm:text-xl text-white/70 max-w-2xl mx-auto mb-10 leading-relaxed">
             BusinessCadence gives co-owners, family businesses, and small business teams a structured meeting rhythm — so every conversation happens at the right time, in the right place, with the right agenda.
           </p>
 
           <div className="animate-fade-up animation-delay-200">
-            <WaitlistForm variant="hero" />
+            <WaitlistForm variant="footer" />
           </div>
 
           {data && data.count > 0 && (
-            <p className="mt-5 text-sm text-[#94A3B8] animate-fade-in animation-delay-300">
-              Join <span className="font-semibold text-[#64748B]">{data.count}</span> business owners already on the waitlist.
+            <p className="mt-5 text-sm text-white/40 animate-fade-in animation-delay-300">
+              Join <span className="font-semibold text-white/60">{data.count}</span> business owners already on the waitlist.
             </p>
           )}
         </div>
@@ -247,14 +236,14 @@ const PROBLEMS = [
 
 function ProblemSection() {
   return (
-    <section id="problem" className="py-20 px-4 bg-[#F1F0ED]">
+    <section id="problem" className="py-20 px-4" style={{ background: "linear-gradient(180deg, #0D2D4A 0%, #0F2440 100%)" }}>
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-14">
-          <p className="text-[#0D9488] text-sm font-semibold uppercase tracking-widest mb-3">Sound Familiar?</p>
-          <h2 className="text-3xl sm:text-4xl font-bold text-[#1E3A5F] mb-4">
+          <p className="text-[#5EEAD4] text-sm font-semibold uppercase tracking-widest mb-3">Sound Familiar?</p>
+          <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
             The 5 Mistakes Most Small Business Owners Make
           </h2>
-          <p className="text-[#64748B] max-w-xl mx-auto">
+          <p className="text-white/60 max-w-xl mx-auto">
             If you own a business with a partner, spouse, or small team, you're probably making at least three of these right now.
           </p>
         </div>
@@ -263,25 +252,25 @@ function ProblemSection() {
           {PROBLEMS.map((p, i) => (
             <div
               key={i}
-              className="bg-[#F8F7F4] rounded-2xl p-6 border border-[#E2E0DB] hover:border-[#0D9488]/40 hover:shadow-md transition-all duration-200"
+              className="bg-white/5 rounded-2xl p-6 border border-white/10 hover:border-[#5EEAD4]/30 hover:bg-white/8 transition-all duration-200"
             >
               <div className="text-3xl mb-4">{p.icon}</div>
-              <h3 className="font-semibold text-[#1E3A5F] mb-2 text-lg">{p.title}</h3>
-              <p className="text-[#64748B] text-sm leading-relaxed">{p.body}</p>
+              <h3 className="font-semibold text-white mb-2 text-lg">{p.title}</h3>
+              <p className="text-white/60 text-sm leading-relaxed">{p.body}</p>
             </div>
           ))}
           {/* CTA card */}
-          <div className="bg-[#1E3A5F] rounded-2xl p-6 flex flex-col justify-between">
+          <div className="bg-[#5EEAD4]/10 rounded-2xl p-6 border border-[#5EEAD4]/20 flex flex-col justify-between">
             <div>
               <div className="text-3xl mb-4">✅</div>
               <h3 className="font-semibold text-white mb-2 text-lg">There's a better way</h3>
-              <p className="text-[#93C5FD] text-sm leading-relaxed">
+              <p className="text-[#5EEAD4]/80 text-sm leading-relaxed">
                 BusinessCadence gives you a proven meeting rhythm that keeps business conversations structured, productive, and out of your personal time.
               </p>
             </div>
             <button
               onClick={() => document.getElementById("waitlist")?.scrollIntoView({ behavior: "smooth" })}
-              className="mt-6 bg-white text-[#1E3A5F] text-sm font-semibold px-5 py-2.5 rounded-lg hover:bg-[#F1F0ED] transition-colors active:scale-[0.97]"
+              className="mt-6 bg-[#5EEAD4] text-[#0F2440] text-sm font-semibold px-5 py-2.5 rounded-lg hover:bg-[#2dd4bf] transition-colors active:scale-[0.97]"
             >
               Get Early Access →
             </button>
@@ -352,14 +341,14 @@ const FEATURES = [
 
 function FeaturesSection() {
   return (
-    <section id="features" className="py-20 px-4 bg-[#F8F7F4]">
+    <section id="features" className="py-20 px-4 bg-[#0F2440]">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-14">
-          <p className="text-[#0D9488] text-sm font-semibold uppercase tracking-widest mb-3">What's Inside</p>
-          <h2 className="text-3xl sm:text-4xl font-bold text-[#1E3A5F] mb-4">
+          <p className="text-[#5EEAD4] text-sm font-semibold uppercase tracking-widest mb-3">What's Inside</p>
+          <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
             Everything You Need to Run Your Business Meetings
           </h2>
-          <p className="text-[#64748B] max-w-xl mx-auto">
+          <p className="text-white/60 max-w-xl mx-auto">
             BusinessCadence is a complete meeting management system designed specifically for small business owners and co-owning teams.
           </p>
         </div>
@@ -368,13 +357,13 @@ function FeaturesSection() {
           {FEATURES.map((f, i) => (
             <div
               key={i}
-              className="bg-[#F1F0ED] rounded-2xl p-6 border border-[#E2E0DB] hover:border-[#0D9488]/40 hover:shadow-md transition-all duration-200 group"
+              className="bg-white/5 rounded-2xl p-6 border border-white/10 hover:border-[#5EEAD4]/30 hover:bg-white/8 transition-all duration-200 group"
             >
-              <div className="w-11 h-11 rounded-xl bg-[#1E3A5F] text-white flex items-center justify-center mb-4 group-hover:bg-[#0D9488] transition-colors">
+              <div className="w-11 h-11 rounded-xl bg-[#1E3A5F] text-[#5EEAD4] flex items-center justify-center mb-4 group-hover:bg-[#5EEAD4]/20 transition-colors border border-white/10">
                 {f.icon}
               </div>
-              <h3 className="font-semibold text-[#1E3A5F] mb-2 text-lg">{f.title}</h3>
-              <p className="text-[#64748B] text-sm leading-relaxed">{f.body}</p>
+              <h3 className="font-semibold text-white mb-2 text-lg">{f.title}</h3>
+              <p className="text-white/60 text-sm leading-relaxed">{f.body}</p>
             </div>
           ))}
         </div>
@@ -387,20 +376,20 @@ function FeaturesSection() {
 const CADENCE = [
   { freq: "Daily", time: "10–15 min", color: "#8B5CF6", desc: "A quick morning check-in to align on the day's priorities and flag anything urgent before it becomes a fire." },
   { freq: "Weekly", time: "90 min", color: "#0EA5E9", desc: "A structured Weekly Review to review scorecard, discuss issues, and make decisions. Every week, same time, same agenda." },
-  { freq: "Monthly", time: "60 min", color: "#14B8A6", desc: "A financial review to go over the numbers, check progress against goals, and course-correct before the quarter ends." },
+  { freq: "Monthly", time: "60 min", color: "#5EEAD4", desc: "A financial review to go over the numbers, check progress against goals, and course-correct before the quarter ends." },
   { freq: "Quarterly", time: "Half day", color: "#F43F5E", desc: "A strategic offsite to review the past quarter, set 90-day priorities, and reconnect as business partners — not just co-workers." },
 ];
 
 function HowItWorksSection() {
   return (
-    <section className="py-20 px-4 bg-[#1E3A5F]">
+    <section className="py-20 px-4" style={{ background: "linear-gradient(180deg, #1E3A5F 0%, #162d4a 100%)" }}>
       <div className="max-w-5xl mx-auto">
         <div className="text-center mb-14">
-          <p className="text-[#93C5FD] text-sm font-semibold uppercase tracking-widest mb-3">The Cadence</p>
+          <p className="text-[#5EEAD4] text-sm font-semibold uppercase tracking-widest mb-3">The Cadence</p>
           <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
             Four Meeting Types. One Proven Rhythm.
           </h2>
-          <p className="text-[#93C5FD] max-w-xl mx-auto">
+          <p className="text-white/60 max-w-xl mx-auto">
             BusinessCadence is built around a time-tested meeting structure used by the world's most effective small business teams.
           </p>
         </div>
@@ -410,8 +399,8 @@ function HowItWorksSection() {
             <div key={i} className="bg-white/5 rounded-2xl p-6 border border-white/10 hover:bg-white/10 transition-colors">
               <div className="w-3 h-3 rounded-full mb-4" style={{ backgroundColor: c.color }} />
               <div className="text-white font-bold text-xl mb-1">{c.freq}</div>
-              <div className="text-[#93C5FD] text-sm font-medium mb-3">{c.time}</div>
-              <p className="text-[#CBD5E1] text-sm leading-relaxed">{c.desc}</p>
+              <div className="text-[#5EEAD4]/80 text-sm font-medium mb-3">{c.time}</div>
+              <p className="text-white/60 text-sm leading-relaxed">{c.desc}</p>
             </div>
           ))}
         </div>
@@ -423,27 +412,27 @@ function HowItWorksSection() {
 // ─── Founder story ─────────────────────────────────────────────────────────
 function StorySection() {
   return (
-    <section id="story" className="py-20 px-4 bg-[#F1F0ED]">
+    <section id="story" className="py-20 px-4 bg-[#0F2440]">
       <div className="max-w-3xl mx-auto">
         <div className="text-center mb-10">
-          <p className="text-[#0D9488] text-sm font-semibold uppercase tracking-widest mb-3">Our Story</p>
-          <h2 className="text-3xl sm:text-4xl font-bold text-[#1E3A5F]">
+          <p className="text-[#5EEAD4] text-sm font-semibold uppercase tracking-widest mb-3">Our Story</p>
+          <h2 className="text-3xl sm:text-4xl font-bold text-white">
             We built this because we needed it.
           </h2>
         </div>
 
-        <div className="bg-[#F8F7F4] rounded-2xl p-8 sm:p-10 border border-[#E2E0DB]">
-          <div className="text-[#0D9488] text-6xl font-serif leading-none mb-4 opacity-30 select-none">“</div>
+        <div className="bg-white/5 rounded-2xl p-8 sm:p-10 border border-white/10">
+          <div className="text-[#5EEAD4] text-6xl font-serif leading-none mb-4 opacity-30 select-none">"</div>
 
-          <div className="space-y-5 text-[#374151] leading-relaxed">
+          <div className="space-y-5 text-white/70 leading-relaxed">
             <p>
               We built Business Cadence because our communication had no rhythm.
             </p>
             <p>
-              When an idea hit us it didn’t matter what day — we could be on vacation — or what time — we could be lying in bed trying to fall asleep. We would discuss it. And most of the time the idea would be forgotten anyway, and all that bringing it up did was stress us out more.
+              When an idea hit us it didn't matter what day — we could be on vacation — or what time — we could be lying in bed trying to fall asleep. We would discuss it. And most of the time the idea would be forgotten anyway, and all that bringing it up did was stress us out more.
             </p>
             <p>
-              We realized we were <strong>adding more stress to our relationship and partnership</strong> when the goal was to take it away.
+              We realized we were <strong className="text-white">adding more stress to our relationship and partnership</strong> when the goal was to take it away.
             </p>
             <p>
               Business Cadence aims to be that pressure release valve your partnership — and for some of you, your relationship — has been waiting for. No more ill-timed business questions that stress your partnership out. No more late-night texts that make it feel like boundaries have been crossed.
@@ -451,16 +440,16 @@ function StorySection() {
             <p>
               Business Cadence gives you the tools you need to keep your business and relationship separate and distinct. It will keep you on task and create a rhythm that allows for strong business habits.
             </p>
-            <p className="text-[#1E3A5F] font-medium">
+            <p className="text-white font-medium">
               Business Cadence gives your ideas a place to land, your conversations a time and place to happen, and your relationship permission to be something other than a business meeting.
             </p>
           </div>
 
-          <div className="mt-8 pt-6 border-t border-[#E2E0DB] flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-[#1E3A5F] flex items-center justify-center text-white font-bold text-lg flex-shrink-0">BC</div>
+          <div className="mt-8 pt-6 border-t border-white/10 flex items-center gap-4">
+            <div className="w-12 h-12 rounded-full bg-[#1E3A5F] border border-white/20 flex items-center justify-center text-[#5EEAD4] font-bold text-lg flex-shrink-0">BC</div>
             <div>
-              <p className="font-semibold text-[#1E3A5F]">The Founders</p>
-              <p className="text-sm text-[#64748B]">Co-owners of three businesses, married 20+ years</p>
+              <p className="font-semibold text-white">The Founders</p>
+              <p className="text-sm text-white/50">Co-owners of three businesses, married 20+ years</p>
             </div>
           </div>
         </div>
@@ -474,10 +463,10 @@ function WaitlistSection() {
   const { data } = trpc.waitlist.count.useQuery();
 
   return (
-    <section id="waitlist" className="py-24 px-4 bg-[#1E3A5F]">
+    <section id="waitlist" className="py-24 px-4" style={{ background: "linear-gradient(180deg, #162d4a 0%, #0F2440 100%)" }}>
       <div className="max-w-2xl mx-auto text-center">
-        <div className="inline-flex items-center gap-2 bg-white/10 text-[#93C5FD] text-xs font-semibold px-4 py-1.5 rounded-full mb-8">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#0D9488] animate-pulse" />
+        <div className="inline-flex items-center gap-2 bg-white/10 text-[#5EEAD4] text-xs font-semibold px-4 py-1.5 rounded-full mb-8 border border-white/10">
+          <span className="w-1.5 h-1.5 rounded-full bg-[#5EEAD4] animate-pulse" />
           Free During Early Access
         </div>
 
@@ -485,15 +474,15 @@ function WaitlistSection() {
           Stop being out of sync.<br />
           <span className="text-[#5EEAD4]">Start building a rhythm.</span>
         </h2>
-        <p className="text-[#93C5FD] text-lg mb-10 leading-relaxed">
+        <p className="text-white/60 text-lg mb-10 leading-relaxed">
           Join the waitlist and be among the first to use BusinessCadence. Early access is free, and you'll have a direct line to shape the product.
         </p>
 
         <WaitlistForm variant="footer" />
 
         {data && data.count > 0 && (
-          <p className="mt-6 text-sm text-[#64748B]">
-            <span className="text-[#93C5FD] font-semibold">{data.count} business owners</span> are already waiting.
+          <p className="mt-6 text-sm text-white/40">
+            <span className="text-[#5EEAD4] font-semibold">{data.count} business owners</span> are already waiting.
           </p>
         )}
 
@@ -504,10 +493,10 @@ function WaitlistSection() {
             { label: "Cancel anytime", icon: "✓" },
           ].map((item, i) => (
             <div key={i} className="flex items-center gap-3">
-              <div className="w-6 h-6 rounded-full bg-[#0D9488]/20 flex items-center justify-center text-[#0D9488] text-xs font-bold flex-shrink-0">
+              <div className="w-6 h-6 rounded-full bg-[#5EEAD4]/20 flex items-center justify-center text-[#5EEAD4] text-xs font-bold flex-shrink-0">
                 {item.icon}
               </div>
-              <span className="text-[#93C5FD] text-sm">{item.label}</span>
+              <span className="text-white/60 text-sm">{item.label}</span>
             </div>
           ))}
         </div>
@@ -519,35 +508,37 @@ function WaitlistSection() {
 // ─── Footer ────────────────────────────────────────────────────────────────
 function Footer() {
   return (
-    <footer className="bg-[#F1F0ED] border-t border-[#E2E0DB] py-10 px-4">
+    <footer className="bg-[#0A1929] border-t border-white/10 py-10 px-4">
       <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6">
         <div className="flex flex-col items-center sm:items-start gap-1">
-          <Logo height={36} />
-          <p className="text-xs text-[#94A3B8] mt-2">Structure your business. Protect your life.</p>
+          <div style={{ filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.4)) brightness(1.05)" }}>
+            <Logo height={36} />
+          </div>
+          <p className="text-xs text-white/30 mt-2">Structure your business. Protect your life.</p>
         </div>
-        <div className="flex items-center gap-6 text-sm text-[#94A3B8]">
+        <div className="flex items-center gap-6 text-sm text-white/40">
           <button
             onClick={() => document.getElementById("problem")?.scrollIntoView({ behavior: "smooth" })}
-            className="hover:text-[#1E3A5F] transition-colors"
+            className="hover:text-white transition-colors"
           >
             The Problem
           </button>
           <button
             onClick={() => document.getElementById("features")?.scrollIntoView({ behavior: "smooth" })}
-            className="hover:text-[#1E3A5F] transition-colors"
+            className="hover:text-white transition-colors"
           >
             Features
           </button>
           <button
             onClick={() => document.getElementById("story")?.scrollIntoView({ behavior: "smooth" })}
-            className="hover:text-[#1E3A5F] transition-colors"
+            className="hover:text-white transition-colors"
           >
             Our Story
           </button>
         </div>
         <div className="flex items-center gap-4">
-          <p className="text-xs text-[#94A3B8]">© {new Date().getFullYear()} BusinessCadence. All rights reserved.</p>
-          <a href="/login" className="text-xs text-[#94A3B8] hover:text-[#1E3A5F] transition-colors">Client Login</a>
+          <p className="text-xs text-white/30">© {new Date().getFullYear()} BusinessCadence. All rights reserved.</p>
+          <a href="/login" className="text-xs text-white/40 hover:text-white transition-colors">Client Login</a>
         </div>
       </div>
     </footer>
@@ -557,7 +548,7 @@ function Footer() {
 // ─── Main Landing page ─────────────────────────────────────────────────────
 export default function Landing() {
   return (
-    <div className="min-h-screen bg-[#F8F7F4]">
+    <div className="min-h-screen bg-[#0F2440]">
       <Nav />
       <Hero />
       <ProblemSection />

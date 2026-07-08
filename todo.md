@@ -468,3 +468,9 @@
 - [x] Calendar: fix year display in header and year-view title to show viewYear instead of static YEAR constant
 - [x] Mobile card layout: TaskCard and BoardCard badges no longer overflow on phone screens
 - [x] Duplicate account: Dr. Lynn Charles removed, cards reassigned to Lynn
+
+## Dark Navy Theme Redesign (Phase N+2)
+- [x] Hero section: deep navy gradient background, white text, teal accent
+- [ ] Landing page: full dark navy theme (nav, all sections, footer)
+- [ ] App UI: dark navy theme (AppShell sidebar, bottom nav, Board, all pages)
+- [ ] Global CSS variables in index.css updated for dark theme

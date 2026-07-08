@@ -41,31 +41,31 @@
 
   /* ── Brand palette ── */
   --navy:       #1E3A5F;   /* Slate navy — primary brand, headers, CTAs */
-  --teal:       #0D9488;   /* Deep teal — secondary accent, links, highlights */
-  --teal-light: #CCFBF1;   /* Soft teal tint — hover states, badges */
-  --cream:      #F8F7F4;   /* Warm off-white — page background */
-  --cream-dark: #F1F0ED;   /* Slightly darker — card/panel backgrounds */
+  --teal:       #5EEAD4;   /* Teal accent — highlights, CTAs */
+  --teal-light: #0D2D4A;   /* Dark teal tint — hover states */
+  --cream:      #0F2440;   /* Deep navy — page background */
+  --cream-dark: #162d4a;   /* Mid navy — card/panel backgrounds */
 
-  /* ── Semantic tokens (light theme) ── */
-  --background:            oklch(0.978 0.004 80);   /* #F8F7F4 warm off-white */
-  --foreground:            oklch(0.18 0.03 250);    /* #1A1A2E near-black */
-  --card:                  oklch(0.965 0.005 80);   /* #F1F0ED soft card bg */
-  --card-foreground:       oklch(0.18 0.03 250);
-  --popover:               oklch(0.99 0.002 80);
-  --popover-foreground:    oklch(0.18 0.03 250);
-  --primary:               oklch(0.28 0.08 250);    /* Navy #1E3A5F */
-  --primary-foreground:    oklch(0.99 0 0);
-  --secondary:             oklch(0.55 0.12 185);    /* Teal #0D9488 */
-  --secondary-foreground:  oklch(0.99 0 0);
-  --muted:                 oklch(0.94 0.005 80);
-  --muted-foreground:      oklch(0.50 0.02 240);    /* #64748B medium gray */
-  --accent:                oklch(0.94 0.03 185);    /* Soft teal tint */
-  --accent-foreground:     oklch(0.28 0.08 250);
+  /* ── Semantic tokens (dark navy theme) ── */
+  --background:            oklch(0.13 0.04 240);    /* #0F2440 deep navy */
+  --foreground:            oklch(0.97 0.005 220);   /* near-white */
+  --card:                  oklch(0.17 0.035 240);   /* #162d4a mid navy card */
+  --card-foreground:       oklch(0.97 0.005 220);
+  --popover:               oklch(0.17 0.035 240);
+  --popover-foreground:    oklch(0.97 0.005 220);
+  --primary:               oklch(0.85 0.12 175);    /* #5EEAD4 teal */
+  --primary-foreground:    oklch(0.13 0.04 240);    /* dark navy text on teal */
+  --secondary:             oklch(0.22 0.04 240);    /* #1E3A5F mid navy */
+  --secondary-foreground:  oklch(0.97 0.005 220);
+  --muted:                 oklch(0.20 0.03 240);
+  --muted-foreground:      oklch(0.65 0.015 230);   /* white/60 */
+  --accent:                oklch(0.22 0.04 240);
+  --accent-foreground:     oklch(0.97 0.005 220);
   --destructive:           oklch(0.62 0.22 25);
   --destructive-foreground: oklch(0.99 0 0);
-  --border:                oklch(0.88 0.006 80);    /* #E2E0DB warm gray border */
-  --input:                 oklch(0.88 0.006 80);
-  --ring:                  oklch(0.55 0.12 185);
+  --border:                oklch(1 0 0 / 10%);      /* white/10 */
+  --input:                 oklch(1 0 0 / 12%);      /* white/12 */
+  --ring:                  oklch(0.85 0.12 175);    /* teal ring */
 
   /* ── Calendar app business colors (preserved) ── */
   --chiro-color:    #10B981;
@@ -79,7 +79,7 @@
   --quarterly-color: #F43F5E;
 }
 
-/* Dark theme — used by the calendar app pages */
+/* Dark theme — matches :root dark navy, kept for explicit .dark class usage */
 .dark {
   --background:            oklch(0.13 0.025 240);
   --foreground:            oklch(0.93 0.01 220);
@@ -164,14 +164,14 @@
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #F1F0ED;
+  background: #0F2440;
 }
 ::-webkit-scrollbar-thumb {
-  background: #CBD5E1;
+  background: rgba(255,255,255,0.15);
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #94A3B8;
+  background: rgba(255,255,255,0.25);
 }
 
 /* Smooth scroll for anchor links */

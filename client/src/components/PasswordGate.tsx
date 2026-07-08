@@ -35,37 +35,28 @@ export default function PasswordGate({ children }: { children: React.ReactNode }
   const { person, isLoading } = usePerson();
 
   useEffect(() => {
-    // Wait for PersonContext to finish verifying the saved session before redirecting
     if (!isLoading && !person) {
       navigate("/login");
     }
   }, [person, isLoading, navigate]);
 
-  // While verifying session, show a brief loading state
   if (isLoading) {
     return (
-      <div
-        className="min-h-screen flex items-center justify-center"
-        style={{ backgroundColor: "#F8F7F4" }}
-      >
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "#0F2440" }}>
         <div className="text-center">
-          <div className="w-8 h-8 rounded-full border-2 border-[#1E3A5F] border-t-transparent animate-spin mx-auto mb-3" />
-          <p className="text-sm text-[#64748B]">Loading…</p>
+          <div className="w-8 h-8 rounded-full border-2 border-teal-400/30 border-t-teal-400 animate-spin mx-auto mb-3" />
+          <p className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>Loading…</p>
         </div>
       </div>
     );
   }
 
-  // Not logged in — redirect is in progress
   if (!person) {
     return (
-      <div
-        className="min-h-screen flex items-center justify-center"
-        style={{ backgroundColor: "#F8F7F4" }}
-      >
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "#0F2440" }}>
         <div className="text-center">
-          <div className="w-8 h-8 rounded-full border-2 border-[#1E3A5F] border-t-transparent animate-spin mx-auto mb-3" />
-          <p className="text-sm text-[#64748B]">Redirecting to sign in…</p>
+          <div className="w-8 h-8 rounded-full border-2 border-teal-400/30 border-t-teal-400 animate-spin mx-auto mb-3" />
+          <p className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>Redirecting to sign in…</p>
         </div>
       </div>
     );

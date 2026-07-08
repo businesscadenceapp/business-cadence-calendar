@@ -1,38 +1,26 @@
 /**
  * Command Board — Shared Updates, Issues & Tasks for Matt and Lynn
- * Matt = Blue (#2563EB), Lynn = Rose (#E11D48)
- *
- * Identity is persisted in localStorage so you only pick once per device.
- * Tasks use a two-step completion flow:
- *   1. Doer marks done → moves to "Done — Awaiting Confirmation"
- *   2. Requester confirms → archived (collapsed "Completed" section)
- *
- * All colors are designed for the light theme (#F8F7F4 bg):
- *   - Text always dark (navy or slate-700) on light backgrounds
- *   - Colored accents use saturated foreground colors, not washed-out pastels
+ * Dark navy theme: #0F2440 bg, #5EEAD4 teal accent, white text
  */
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { usePerson } from "@/contexts/PersonContext";
 import { useIdentity } from "@/components/AppShell";
-import { Link } from "wouter";
 
 type Author = string;
 type CardType = "update" | "issue" | "task";
 type Business = "chiropractic" | "crossfit" | "realty" | "general";
 
-// Identity is now managed by AppShell context (useIdentity hook)
-// IDENTITY_KEY kept for backward compatibility with localStorage reads
 const IDENTITY_KEY = "bcc_identity";
 
-// Light-theme author colors — dynamically generated from name to support any person
+// Dark-theme author colors
 const PALETTE = [
-  { bg: "#EFF6FF", border: "#BFDBFE", badgeBg: "#DBEAFE", badgeText: "#1D4ED8", btnBg: "#DBEAFE", btnBorder: "#93C5FD", btnText: "#1D4ED8", dot: "#2563EB" },
-  { bg: "#FFF1F2", border: "#FECDD3", badgeBg: "#FFE4E6", badgeText: "#BE123C", btnBg: "#FFE4E6", btnBorder: "#FDA4AF", btnText: "#BE123C", dot: "#E11D48" },
-  { bg: "#F0FDF4", border: "#86EFAC", badgeBg: "#D1FAE5", badgeText: "#065F46", btnBg: "#D1FAE5", btnBorder: "#6EE7B7", btnText: "#065F46", dot: "#059669" },
-  { bg: "#FFFBEB", border: "#FCD34D", badgeBg: "#FEF3C7", badgeText: "#92400E", btnBg: "#FEF3C7", btnBorder: "#FCD34D", btnText: "#92400E", dot: "#D97706" },
-  { bg: "#F5F3FF", border: "#C4B5FD", badgeBg: "#EDE9FE", badgeText: "#5B21B6", btnBg: "#EDE9FE", btnBorder: "#C4B5FD", btnText: "#5B21B6", dot: "#7C3AED" },
+  { bg: "rgba(37,99,235,0.12)", border: "rgba(37,99,235,0.35)", badgeBg: "rgba(37,99,235,0.2)", badgeText: "#93C5FD", btnBg: "rgba(37,99,235,0.2)", btnBorder: "rgba(37,99,235,0.4)", btnText: "#93C5FD", dot: "#3B82F6" },
+  { bg: "rgba(225,29,72,0.12)", border: "rgba(225,29,72,0.35)", badgeBg: "rgba(225,29,72,0.2)", badgeText: "#FDA4AF", btnBg: "rgba(225,29,72,0.2)", btnBorder: "rgba(225,29,72,0.4)", btnText: "#FDA4AF", dot: "#E11D48" },
+  { bg: "rgba(5,150,105,0.12)", border: "rgba(5,150,105,0.35)", badgeBg: "rgba(5,150,105,0.2)", badgeText: "#6EE7B7", btnBg: "rgba(5,150,105,0.2)", btnBorder: "rgba(5,150,105,0.4)", btnText: "#6EE7B7", dot: "#059669" },
+  { bg: "rgba(217,119,6,0.12)", border: "rgba(217,119,6,0.35)", badgeBg: "rgba(217,119,6,0.2)", badgeText: "#FCD34D", btnBg: "rgba(217,119,6,0.2)", btnBorder: "rgba(217,119,6,0.4)", btnText: "#FCD34D", dot: "#D97706" },
+  { bg: "rgba(124,58,237,0.12)", border: "rgba(124,58,237,0.35)", badgeBg: "rgba(124,58,237,0.2)", badgeText: "#C4B5FD", btnBg: "rgba(124,58,237,0.2)", btnBorder: "rgba(124,58,237,0.4)", btnText: "#C4B5FD", dot: "#7C3AED" },
 ];
 
 function getAuthorColors(name: string) {
@@ -42,16 +30,15 @@ function getAuthorColors(name: string) {
   return PALETTE[Math.abs(hash) % PALETTE.length];
 }
 
-// AUTHOR_COLORS kept for backward compat — delegates to getAuthorColors
 const AUTHOR_COLORS: Record<string, typeof PALETTE[0]> = new Proxy({} as Record<string, typeof PALETTE[0]>, {
   get: (_t, prop: string) => getAuthorColors(prop),
 });
 
 const BUSINESS_LABELS: Record<Business, { label: string; icon: string; bg: string; text: string; border: string }> = {
-  chiropractic: { label: "Chiropractic", icon: "🦴", bg: "#D1FAE5", text: "#065F46", border: "#6EE7B7" },
-  crossfit:     { label: "CrossFit",     icon: "💪", bg: "#FEF3C7", text: "#92400E", border: "#FCD34D" },
-  realty:       { label: "Realty",       icon: "🏠", bg: "#EDE9FE", text: "#5B21B6", border: "#C4B5FD" },
-  general:      { label: "General",      icon: "📋", bg: "#F1F5F9", text: "#475569", border: "#CBD5E1" },
+  chiropractic: { label: "Chiropractic", icon: "🦴", bg: "rgba(16,185,129,0.15)", text: "#6EE7B7", border: "rgba(16,185,129,0.3)" },
+  crossfit:     { label: "CrossFit",     icon: "💪", bg: "rgba(245,158,11,0.15)", text: "#FCD34D", border: "rgba(245,158,11,0.3)" },
+  realty:       { label: "Realty",       icon: "🏠", bg: "rgba(124,58,237,0.15)", text: "#C4B5FD", border: "rgba(124,58,237,0.3)" },
+  general:      { label: "General",      icon: "📋", bg: "rgba(255,255,255,0.08)", text: "rgba(255,255,255,0.6)", border: "rgba(255,255,255,0.15)" },
 };
 
 function timeAgo(date: Date): string {
@@ -72,7 +59,7 @@ type Card = {
   business: Business;
   content: string;
   assignedTo: Author | null;
-  dueAt: number | null; // ms since epoch
+  dueAt: number | null;
   completedAt: Date | null;
   completedBy: Author | null;
   confirmedAt: Date | null;
@@ -85,8 +72,8 @@ type Card = {
 
 // ─── Task Card ────────────────────────────────────────────────────────────────
 
-const SWIPE_THRESHOLD = 80; // px needed to trigger action
-const SWIPE_MAX = 120;      // max visual travel
+const SWIPE_THRESHOLD = 80;
+const SWIPE_MAX = 120;
 
 function TaskCard({ card, currentUser, onMarkDone, onConfirmDone, onDelete }: {
   card: Card;
@@ -108,7 +95,6 @@ function TaskCard({ card, currentUser, onMarkDone, onConfirmDone, onDelete }: {
     ? "done_pending"
     : "open";
 
-  // Due date helpers
   const now = Date.now();
   const isOverdue = card.dueAt && !isDone && card.dueAt < now;
   const isDueSoon = card.dueAt && !isDone && !isOverdue && card.dueAt - now < 3 * 24 * 60 * 60 * 1000;
@@ -117,21 +103,19 @@ function TaskCard({ card, currentUser, onMarkDone, onConfirmDone, onDelete }: {
     : null;
 
   const stateStyles = {
-    open:         { bg: "#EFF6FF", border: "#BFDBFE" },
-    done_pending: { bg: "#FFFBEB", border: "#FCD34D" },
-    confirmed:    { bg: "#F0FDF4", border: "#86EFAC" },
+    open:         { bg: "rgba(255,255,255,0.05)", border: "rgba(124,58,237,0.3)" },
+    done_pending: { bg: "rgba(217,119,6,0.08)", border: "rgba(217,119,6,0.3)" },
+    confirmed:    { bg: "rgba(5,150,105,0.08)", border: "rgba(5,150,105,0.3)" },
   };
   const style = stateStyles[taskState];
 
-  // ── Swipe gesture state ──
   const touchStartX = useRef<number | null>(null);
   const touchStartY = useRef<number | null>(null);
   const [swipeDx, setSwipeDx] = useState(0);
   const [swipeTriggered, setSwipeTriggered] = useState(false);
 
-  // Determine which swipe actions are available
-  const canSwipeRight = taskState === "open" && isDoer;          // → Mark Done
-  const canSwipeLeft  = taskState === "done_pending" && isRequester; // ← Confirm Done
+  const canSwipeRight = taskState === "open" && isDoer;
+  const canSwipeLeft  = taskState === "done_pending" && isRequester;
   const hasSwipe = canSwipeRight || canSwipeLeft;
 
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
@@ -145,9 +129,7 @@ function TaskCard({ card, currentUser, onMarkDone, onConfirmDone, onDelete }: {
     if (touchStartX.current === null || touchStartY.current === null) return;
     const dx = e.touches[0].clientX - touchStartX.current;
     const dy = e.touches[0].clientY - touchStartY.current;
-    // Ignore if primarily vertical scroll
     if (Math.abs(dy) > Math.abs(dx) * 1.5) return;
-    // Only allow the relevant direction
     if (canSwipeRight && dx > 0) {
       e.preventDefault();
       setSwipeDx(Math.min(dx, SWIPE_MAX));
@@ -184,12 +166,11 @@ function TaskCard({ card, currentUser, onMarkDone, onConfirmDone, onDelete }: {
 
   return (
     <div className="relative rounded-2xl overflow-hidden" style={{ animation: "cardSlideIn 0.22s cubic-bezier(0.23,1,0.32,1) both" }}>
-      {/* Swipe hint backgrounds */}
       {canSwipeRight && (
         <div
           className="absolute inset-0 flex items-center px-5 rounded-2xl"
           style={{
-            backgroundColor: swipeReady ? "#16A34A" : "#DCFCE7",
+            backgroundColor: swipeReady ? "#059669" : "rgba(5,150,105,0.3)",
             opacity: Math.min(swipeProgress, 1),
             transition: swipeDx === 0 ? "opacity 0.2s, background-color 0.2s" : "none",
           }}
@@ -201,7 +182,7 @@ function TaskCard({ card, currentUser, onMarkDone, onConfirmDone, onDelete }: {
         <div
           className="absolute inset-0 flex items-center justify-end px-5 rounded-2xl"
           style={{
-            backgroundColor: swipeReady ? "#16A34A" : "#DCFCE7",
+            backgroundColor: swipeReady ? "#059669" : "rgba(5,150,105,0.3)",
             opacity: Math.min(swipeProgress, 1),
             transition: swipeDx === 0 ? "opacity 0.2s, background-color 0.2s" : "none",
           }}
@@ -210,16 +191,14 @@ function TaskCard({ card, currentUser, onMarkDone, onConfirmDone, onDelete }: {
         </div>
       )}
 
-      {/* Card content — slides with swipe */}
       <div
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
         className="flex flex-col gap-0"
         style={{
-          backgroundColor: "#FFFFFF",
+          backgroundColor: style.bg,
           border: `1.5px solid ${style.border}`,
-          boxShadow: taskState === "open" ? "0 2px 12px rgba(30,58,95,0.06)" : "none",
           borderRadius: "1rem",
           transform: `translateX(${swipeTriggered ? (swipeDx > 0 ? 120 : -120) : swipeDx}px)`,
           transition: swipeDx === 0 || swipeTriggered ? "transform 0.25s cubic-bezier(0.23,1,0.32,1)" : "none",
@@ -230,10 +209,9 @@ function TaskCard({ card, currentUser, onMarkDone, onConfirmDone, onDelete }: {
         }}
       >
         {/* Top accent bar */}
-        <div className="w-full h-1 flex-shrink-0" style={{ backgroundColor: taskState === "confirmed" ? "#86EFAC" : taskState === "done_pending" ? "#FCD34D" : "#7C3AED" }} />
+        <div className="w-full h-1 flex-shrink-0" style={{ backgroundColor: taskState === "confirmed" ? "#059669" : taskState === "done_pending" ? "#D97706" : "#7C3AED" }} />
 
         <div className="p-4 flex flex-col gap-3">
-          {/* Header row */}
           <div className="flex items-start gap-3">
             <div
               className="w-9 h-9 rounded-full flex items-center justify-center text-[13px] font-bold flex-shrink-0 mt-0.5"
@@ -247,15 +225,15 @@ function TaskCard({ card, currentUser, onMarkDone, onConfirmDone, onDelete }: {
                 <span className="text-[13px] font-bold" style={{ color: authorColors.badgeText, fontFamily: "'Space Grotesk', sans-serif" }}>
                   {card.author}
                 </span>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide" style={{ backgroundColor: "#EDE9FE", color: "#5B21B6", fontFamily: "'Space Grotesk', sans-serif" }}>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide" style={{ backgroundColor: "rgba(124,58,237,0.2)", color: "#C4B5FD", fontFamily: "'Space Grotesk', sans-serif" }}>
                   Task
                 </span>
                 {card.assignedTo && (
-                  <span className="text-[11px] text-slate-500 flex items-center gap-1" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+                  <span className="text-[11px] flex items-center gap-1" style={{ color: "rgba(255,255,255,0.5)", fontFamily: "'Space Grotesk', sans-serif" }}>
                     → <span className="font-semibold" style={{ color: AUTHOR_COLORS[card.assignedTo].badgeText }}>{card.assignedTo}</span>
                   </span>
                 )}
-                <span className="text-[10px] text-slate-400 ml-auto flex-shrink-0" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                <span className="text-[10px] ml-auto flex-shrink-0" style={{ color: "rgba(255,255,255,0.35)", fontFamily: "'JetBrains Mono', monospace" }}>
                   {timeAgo(card.createdAt)}
                 </span>
               </div>
@@ -270,9 +248,9 @@ function TaskCard({ card, currentUser, onMarkDone, onConfirmDone, onDelete }: {
                   <span
                     className="text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1"
                     style={{
-                      backgroundColor: isOverdue ? "#FEE2E2" : isDueSoon ? "#FEF3C7" : "#F1F5F9",
-                      color: isOverdue ? "#B91C1C" : isDueSoon ? "#92400E" : "#475569",
-                      border: `1px solid ${isOverdue ? "#FCA5A5" : isDueSoon ? "#FCD34D" : "#CBD5E1"}`,
+                      backgroundColor: isOverdue ? "rgba(185,28,28,0.2)" : isDueSoon ? "rgba(217,119,6,0.2)" : "rgba(255,255,255,0.08)",
+                      color: isOverdue ? "#FCA5A5" : isDueSoon ? "#FCD34D" : "rgba(255,255,255,0.5)",
+                      border: `1px solid ${isOverdue ? "rgba(185,28,28,0.4)" : isDueSoon ? "rgba(217,119,6,0.4)" : "rgba(255,255,255,0.15)"}`,
                       fontFamily: "'Space Grotesk', sans-serif",
                     }}
                   >
@@ -280,44 +258,36 @@ function TaskCard({ card, currentUser, onMarkDone, onConfirmDone, onDelete }: {
                   </span>
                 )}
               </div>
-              <p className="text-[14px] text-[#1E3A5F] leading-relaxed font-medium">{card.content}</p>
+              <p className="text-[14px] text-white leading-relaxed font-medium">{card.content}</p>
             </div>
           </div>
 
           {isDone && (
-            <p className="text-[11px] text-slate-500 italic pl-12">
+            <p className="text-[11px] italic pl-12" style={{ color: "rgba(255,255,255,0.4)" }}>
               Marked done by{" "}
-              <span style={{ color: card.completedBy ? AUTHOR_COLORS[card.completedBy].badgeText : "#475569" }}>{card.completedBy}</span>
+              <span style={{ color: card.completedBy ? AUTHOR_COLORS[card.completedBy].badgeText : "rgba(255,255,255,0.5)" }}>{card.completedBy}</span>
               {" "}· {timeAgo(card.completedAt!)}
             </p>
           )}
 
-          {/* Action row */}
           <div className="flex items-center gap-2 flex-wrap pl-12">
             {taskState === "done_pending" && (
               <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold"
-                style={{ backgroundColor: "#FEF3C7", color: "#92400E", border: "1px solid #FCD34D", fontFamily: "'Space Grotesk', sans-serif" }}>
+                style={{ backgroundColor: "rgba(217,119,6,0.2)", color: "#FCD34D", border: "1px solid rgba(217,119,6,0.35)", fontFamily: "'Space Grotesk', sans-serif" }}>
                 ⏳ Awaiting Confirmation
               </span>
             )}
             {taskState === "confirmed" && (
               <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold"
-                style={{ backgroundColor: "#DCFCE7", color: "#166534", border: "1px solid #86EFAC", fontFamily: "'Space Grotesk', sans-serif" }}>
+                style={{ backgroundColor: "rgba(5,150,105,0.2)", color: "#6EE7B7", border: "1px solid rgba(5,150,105,0.35)", fontFamily: "'Space Grotesk', sans-serif" }}>
                 ✓ Done
               </span>
             )}
             {taskState === "open" && !isDoer && currentUser && (
-              <span className="text-[11px] text-slate-400 italic">Waiting for {card.assignedTo ?? "assignee"}</span>
+              <span className="text-[11px] italic" style={{ color: "rgba(255,255,255,0.35)" }}>Waiting for {card.assignedTo ?? "assignee"}</span>
             )}
             {taskState === "done_pending" && !isRequester && currentUser && (
-              <span className="text-[11px] text-slate-400 italic">Waiting for {card.author} to confirm</span>
-            )}
-
-            {/* Swipe hint label on mobile */}
-            {hasSwipe && (
-              <span className="text-[10px] text-slate-300 italic hidden sm:hidden" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-                {canSwipeRight ? "← swipe to mark done →" : "← swipe to confirm →"}
-              </span>
+              <span className="text-[11px] italic" style={{ color: "rgba(255,255,255,0.35)" }}>Waiting for {card.author} to confirm</span>
             )}
 
             <div className="ml-auto flex items-center gap-2">
@@ -325,7 +295,7 @@ function TaskCard({ card, currentUser, onMarkDone, onConfirmDone, onDelete }: {
                 <button
                   onClick={() => onMarkDone(card.id)}
                   className="text-[11px] px-3 py-1.5 rounded-lg font-semibold transition-all hover:opacity-90 flex items-center gap-1.5 active:scale-[0.97]"
-                  style={{ backgroundColor: "#DCFCE7", border: "1.5px solid #86EFAC", color: "#166534", fontFamily: "'Space Grotesk', sans-serif" }}
+                  style={{ backgroundColor: "rgba(5,150,105,0.2)", border: "1.5px solid rgba(5,150,105,0.4)", color: "#6EE7B7", fontFamily: "'Space Grotesk', sans-serif" }}
                 >
                   ☑ Mark Done
                 </button>
@@ -334,7 +304,7 @@ function TaskCard({ card, currentUser, onMarkDone, onConfirmDone, onDelete }: {
                 <button
                   onClick={() => onConfirmDone(card.id)}
                   className="text-[11px] px-3 py-1.5 rounded-lg font-bold transition-all hover:opacity-90 flex items-center gap-1.5 active:scale-[0.97]"
-                  style={{ backgroundColor: "#DCFCE7", border: "1.5px solid #4ADE80", color: "#166534", fontFamily: "'Space Grotesk', sans-serif" }}
+                  style={{ backgroundColor: "rgba(5,150,105,0.25)", border: "1.5px solid rgba(5,150,105,0.5)", color: "#6EE7B7", fontFamily: "'Space Grotesk', sans-serif" }}
                 >
                   ✓ Confirm Done
                 </button>
@@ -342,8 +312,10 @@ function TaskCard({ card, currentUser, onMarkDone, onConfirmDone, onDelete }: {
               {card.author === currentUser && (
                 <button
                   onClick={() => onDelete(card.id)}
-                  className="text-[11px] px-2 py-1.5 rounded-lg transition-all hover:text-red-400"
-                  style={{ color: "#CBD5E1", fontFamily: "'Space Grotesk', sans-serif" }}
+                  className="text-[11px] px-2 py-1.5 rounded-lg transition-all"
+                  style={{ color: "rgba(255,255,255,0.2)", fontFamily: "'Space Grotesk', sans-serif" }}
+                  onMouseEnter={e => (e.currentTarget.style.color = "#F87171")}
+                  onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.2)")}
                 >
                   ✕
                 </button>
@@ -369,30 +341,25 @@ function BoardCard({ card, currentUser, onSeen, onArchive, onDelete }: {
   const biz = BUSINESS_LABELS[card.business];
   const isOwnCard = card.author === currentUser;
   const alreadySeen = !!card.seenAt;
-  const isUpdate = card.type === "update";
 
   return (
     <div
       className="rounded-2xl flex flex-col gap-0 transition-all duration-200 overflow-hidden"
       style={{
-        backgroundColor: "#FFFFFF",
-        border: `1.5px solid ${alreadySeen ? "#E2E8F0" : colors.border}`,
-        boxShadow: alreadySeen ? "none" : "0 2px 12px rgba(30,58,95,0.06)",
-        opacity: alreadySeen ? 0.7 : 1,
-        // Slide-in animation via CSS
+        backgroundColor: alreadySeen ? "rgba(255,255,255,0.03)" : "rgba(255,255,255,0.06)",
+        border: `1.5px solid ${alreadySeen ? "rgba(255,255,255,0.08)" : colors.border}`,
+        opacity: alreadySeen ? 0.6 : 1,
         animation: "cardSlideIn 0.22s cubic-bezier(0.23,1,0.32,1) both",
       }}
     >
       {/* Colored left accent bar */}
       <div
         className="w-full h-1 flex-shrink-0"
-        style={{ backgroundColor: alreadySeen ? "#E2E8F0" : colors.dot }}
+        style={{ backgroundColor: alreadySeen ? "rgba(255,255,255,0.1)" : colors.dot }}
       />
 
       <div className="p-4 flex flex-col gap-3">
-        {/* Header row */}
         <div className="flex items-start gap-3">
-          {/* Author avatar */}
           <div
             className="w-9 h-9 rounded-full flex items-center justify-center text-[13px] font-bold flex-shrink-0 mt-0.5"
             style={{ backgroundColor: colors.badgeBg, color: colors.badgeText }}
@@ -411,25 +378,23 @@ function BoardCard({ card, currentUser, onSeen, onArchive, onDelete }: {
               >
                 {biz.icon} {biz.label}
               </span>
-              <span className="text-[10px] text-slate-400 ml-auto flex-shrink-0" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+              <span className="text-[10px] ml-auto flex-shrink-0" style={{ color: "rgba(255,255,255,0.35)", fontFamily: "'JetBrains Mono', monospace" }}>
                 {timeAgo(card.createdAt)}
               </span>
             </div>
 
-            {/* Content */}
-            <p className="text-[14px] text-[#1E3A5F] leading-relaxed font-medium">{card.content}</p>
+            <p className="text-[14px] text-white leading-relaxed font-medium">{card.content}</p>
           </div>
         </div>
 
-        {/* Status + action row */}
         <div className="flex items-center gap-2 flex-wrap pl-12">
           {alreadySeen && (
-            <span className="text-[10px] text-slate-400 flex items-center gap-1">
-              <span style={{ color: "#16A34A" }}>✓</span> Seen by {card.seenBy}
+            <span className="text-[10px] flex items-center gap-1" style={{ color: "rgba(255,255,255,0.35)" }}>
+              <span style={{ color: "#6EE7B7" }}>✓</span> Seen by {card.seenBy}
             </span>
           )}
           {!alreadySeen && isOwnCard && (
-            <span className="text-[10px] text-slate-400 italic">
+            <span className="text-[10px] italic" style={{ color: "rgba(255,255,255,0.35)" }}>
               Awaiting acknowledgement
             </span>
           )}
@@ -440,9 +405,9 @@ function BoardCard({ card, currentUser, onSeen, onArchive, onDelete }: {
                 onClick={() => onSeen(card.id)}
                 className="text-[11px] px-3 py-1.5 rounded-lg font-semibold transition-all hover:opacity-90 flex items-center gap-1.5 active:scale-[0.97]"
                 style={{
-                  backgroundColor: "#DCFCE7",
-                  border: "1.5px solid #86EFAC",
-                  color: "#166534",
+                  backgroundColor: "rgba(5,150,105,0.2)",
+                  border: "1.5px solid rgba(5,150,105,0.4)",
+                  color: "#6EE7B7",
                   fontFamily: "'Space Grotesk', sans-serif",
                 }}
               >
@@ -453,9 +418,9 @@ function BoardCard({ card, currentUser, onSeen, onArchive, onDelete }: {
               onClick={() => onArchive(card.id)}
               className="text-[11px] px-2.5 py-1.5 rounded-lg transition-all hover:opacity-80"
               style={{
-                backgroundColor: "#F8FAFC",
-                border: "1px solid #E2E8F0",
-                color: "#94A3B8",
+                backgroundColor: "rgba(255,255,255,0.06)",
+                border: "1px solid rgba(255,255,255,0.12)",
+                color: "rgba(255,255,255,0.4)",
                 fontFamily: "'Space Grotesk', sans-serif",
               }}
             >
@@ -464,8 +429,10 @@ function BoardCard({ card, currentUser, onSeen, onArchive, onDelete }: {
             {isOwnCard && (
               <button
                 onClick={() => onDelete(card.id)}
-                className="text-[11px] px-2 py-1.5 rounded-lg transition-all hover:text-red-400"
-                style={{ color: "#CBD5E1", fontFamily: "'Space Grotesk', sans-serif" }}
+                className="text-[11px] px-2 py-1.5 rounded-lg transition-all"
+                style={{ color: "rgba(255,255,255,0.2)", fontFamily: "'Space Grotesk', sans-serif" }}
+                onMouseEnter={e => (e.currentTarget.style.color = "#F87171")}
+                onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.2)")}
               >
                 ✕
               </button>
@@ -492,11 +459,11 @@ function AddCardForm({ currentUser, onAdded, allowedBusinesses, defaultBusiness,
   const [business, setBusiness] = useState<Business>(defaultBusiness);
   const [content, setContent] = useState("");
   const [assignedTo, setAssignedTo] = useState<string | null>(null);
-  const [dueDate, setDueDate] = useState(""); // YYYY-MM-DD string from date input
-  const [updateDate, setUpdateDate] = useState(""); // YYYY-MM-DD — date this update covers
+  const [dueDate, setDueDate] = useState("");
+  const [updateDate, setUpdateDate] = useState("");
   const [meetingType, setMeetingType] = useState<"daily_huddle" | "weekly_meeting" | "quarterly_review" | null>(null);
-  const [scheduledDate, setScheduledDate] = useState(""); // YYYY-MM-DD — date of the meeting occurrence
-  const [notifyPersonIds, setNotifyPersonIds] = useState<string[]>([]); // explicit notification recipients
+  const [scheduledDate, setScheduledDate] = useState("");
+  const [notifyPersonIds, setNotifyPersonIds] = useState<string[]>([]);
 
   const createCard = trpc.board.create.useMutation({
     onSuccess: () => {
@@ -536,24 +503,27 @@ function AddCardForm({ currentUser, onAdded, allowedBusinesses, defaultBusiness,
     });
   };
 
-  // 'other' is used for the awaiting message
-  const other = currentUser ?? "the other owner";
+  const inputStyle = {
+    backgroundColor: "rgba(255,255,255,0.06)",
+    border: "1.5px solid rgba(255,255,255,0.12)",
+    color: "white",
+    fontFamily: "'Inter', sans-serif",
+  };
 
-  // Type button styles
   const typeStyles: Record<CardType, { activeBg: string; activeBorder: string; activeText: string }> = {
-    update: { activeBg: "#D1FAE5", activeBorder: "#6EE7B7", activeText: "#065F46" },
-    issue:  { activeBg: "#FEF3C7", activeBorder: "#FCD34D", activeText: "#92400E" },
-    task:   { activeBg: "#EDE9FE", activeBorder: "#C4B5FD", activeText: "#5B21B6" },
+    update: { activeBg: "rgba(5,150,105,0.15)", activeBorder: "rgba(5,150,105,0.4)", activeText: "#6EE7B7" },
+    issue:  { activeBg: "rgba(217,119,6,0.15)", activeBorder: "rgba(217,119,6,0.4)", activeText: "#FCD34D" },
+    task:   { activeBg: "rgba(124,58,237,0.15)", activeBorder: "rgba(124,58,237,0.4)", activeText: "#C4B5FD" },
   };
 
   return (
     <div
       className="rounded-xl p-4 flex flex-col gap-4"
-      style={{ backgroundColor: "#FFFFFF", border: "1.5px solid #E2E8F0" }}
+      style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1.5px solid rgba(255,255,255,0.1)" }}
     >
       {/* Type selector */}
       <div className="flex flex-col gap-1.5">
-        <p className="text-[10px] text-slate-400 uppercase tracking-wider" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>What kind of post?</p>
+        <p className="text-[10px] uppercase tracking-wider" style={{ color: "rgba(255,255,255,0.4)", fontFamily: "'Space Grotesk', sans-serif" }}>What kind of post?</p>
         <div className="flex flex-col gap-1.5">
           {(["update", "issue", "task"] as CardType[]).map(t => {
             const s = typeStyles[t];
@@ -569,9 +539,9 @@ function AddCardForm({ currentUser, onAdded, allowedBusinesses, defaultBusiness,
                 onClick={() => setType(t)}
                 className="w-full py-2 rounded-lg text-[11px] font-semibold transition-all text-left px-3"
                 style={{
-                  backgroundColor: isActive ? s.activeBg : "#F8FAFC",
-                  border: `1.5px solid ${isActive ? s.activeBorder : "#E2E8F0"}`,
-                  color: isActive ? s.activeText : "#64748B",
+                  backgroundColor: isActive ? s.activeBg : "rgba(255,255,255,0.04)",
+                  border: `1.5px solid ${isActive ? s.activeBorder : "rgba(255,255,255,0.1)"}`,
+                  color: isActive ? s.activeText : "rgba(255,255,255,0.5)",
                   fontFamily: "'Space Grotesk', sans-serif",
                 }}
               >
@@ -585,7 +555,7 @@ function AddCardForm({ currentUser, onAdded, allowedBusinesses, defaultBusiness,
       {/* Assign to (only for tasks) */}
       {type === "task" && (
         <div className="flex flex-col gap-1.5">
-          <p className="text-[10px] text-slate-500 uppercase tracking-wider font-medium" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Assign to:</p>
+          <p className="text-[10px] uppercase tracking-wider font-medium" style={{ color: "rgba(255,255,255,0.4)", fontFamily: "'Space Grotesk', sans-serif" }}>Assign to:</p>
           <div className="flex gap-2">
             {(assignablePersons && assignablePersons.length > 0 ? assignablePersons.map(p => p.name) : [] as string[]).map(a => {
               const c = getAuthorColors(a);
@@ -597,9 +567,9 @@ function AddCardForm({ currentUser, onAdded, allowedBusinesses, defaultBusiness,
                   onClick={() => setAssignedTo(a)}
                   className="flex-1 py-2 rounded-lg text-[12px] font-bold transition-all"
                   style={{
-                    backgroundColor: isActive ? c.btnBg : "#F8FAFC",
-                    border: `2px solid ${isActive ? c.btnBorder : "#E2E8F0"}`,
-                    color: isActive ? c.btnText : "#475569",
+                    backgroundColor: isActive ? c.btnBg : "rgba(255,255,255,0.04)",
+                    border: `2px solid ${isActive ? c.btnBorder : "rgba(255,255,255,0.1)"}`,
+                    color: isActive ? c.btnText : "rgba(255,255,255,0.5)",
                     fontFamily: "'Space Grotesk', sans-serif",
                   }}
                 >
@@ -611,22 +581,22 @@ function AddCardForm({ currentUser, onAdded, allowedBusinesses, defaultBusiness,
         </div>
       )}
 
-      {/* Business — only show businesses this account can access */}
+      {/* Business selector */}
       {allowedBusinesses.length > 1 && (
         <div className="flex flex-col gap-1.5">
-          <p className="text-[10px] text-slate-400 uppercase tracking-wider" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Which business?</p>
+          <p className="text-[10px] uppercase tracking-wider" style={{ color: "rgba(255,255,255,0.4)", fontFamily: "'Space Grotesk', sans-serif" }}>Which business?</p>
           <div className="flex gap-1.5 flex-wrap">
             {allowedBusinesses.map(key => {
-              const biz = (bizLabels ?? BUSINESS_LABELS)[key] ?? { label: key, icon: "🏢", bg: "#F1F5F9", text: "#475569", border: "#CBD5E1" };
+              const biz = (bizLabels ?? BUSINESS_LABELS)[key] ?? { label: key, icon: "🏢", bg: "rgba(255,255,255,0.08)", text: "rgba(255,255,255,0.6)", border: "rgba(255,255,255,0.15)" };
               return (
                 <button
                   key={key}
                   onClick={() => setBusiness(key)}
                   className="px-3 py-1.5 rounded-lg text-[11px] font-medium transition-all flex items-center gap-1"
                   style={{
-                    backgroundColor: business === key ? biz.bg : "#F8FAFC",
-                    border: `1.5px solid ${business === key ? biz.border : "#E2E8F0"}`,
-                    color: business === key ? biz.text : "#64748B",
+                    backgroundColor: business === key ? biz.bg : "rgba(255,255,255,0.04)",
+                    border: `1.5px solid ${business === key ? biz.border : "rgba(255,255,255,0.1)"}`,
+                    color: business === key ? biz.text : "rgba(255,255,255,0.5)",
                     fontFamily: "'Space Grotesk', sans-serif",
                   }}
                 >
@@ -638,31 +608,27 @@ function AddCardForm({ currentUser, onAdded, allowedBusinesses, defaultBusiness,
         </div>
       )}
 
-      {/* Update date — optional date this update covers */}
+      {/* Update date */}
       {type === "update" && (
         <div className="flex flex-col gap-1.5">
-          <p className="text-[10px] text-slate-500 uppercase tracking-wider font-medium" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Date <span className="normal-case text-slate-400">(optional — which date does this cover?)</span></p>
+          <p className="text-[10px] uppercase tracking-wider font-medium" style={{ color: "rgba(255,255,255,0.4)", fontFamily: "'Space Grotesk', sans-serif" }}>Date <span className="normal-case" style={{ color: "rgba(255,255,255,0.3)" }}>(optional)</span></p>
           <input
             type="date"
             value={updateDate}
             onChange={e => setUpdateDate(e.target.value)}
-            className="w-full rounded-lg px-3 py-2 text-[12px] text-[#1E3A5F] focus:outline-none transition-colors"
-            style={{
-              backgroundColor: "#F8FAFC",
-              border: "1.5px solid #CBD5E1",
-              fontFamily: "'Inter', sans-serif",
-            }}
-            onFocus={e => (e.target.style.borderColor = "#065F46")}
-            onBlur={e => (e.target.style.borderColor = "#CBD5E1")}
+            className="w-full rounded-lg px-3 py-2 text-[12px] focus:outline-none transition-colors"
+            style={inputStyle}
+            onFocus={e => (e.target.style.borderColor = "#5EEAD4")}
+            onBlur={e => (e.target.style.borderColor = "rgba(255,255,255,0.12)")}
           />
         </div>
       )}
 
-      {/* Issue — meeting picker (required) + scheduled date */}
+      {/* Issue — meeting picker + date */}
       {type === "issue" && (
         <>
           <div className="flex flex-col gap-1.5">
-            <p className="text-[10px] text-slate-500 uppercase tracking-wider font-medium" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Discuss in: <span className="normal-case text-red-400">*</span></p>
+            <p className="text-[10px] uppercase tracking-wider font-medium" style={{ color: "rgba(255,255,255,0.4)", fontFamily: "'Space Grotesk', sans-serif" }}>Discuss in: <span className="normal-case text-red-400">*</span></p>
             <div className="flex flex-col gap-1.5">
               {([
                 { key: "daily_huddle",     label: "🌅 Daily Huddle",      desc: "Needs to be handled today" },
@@ -674,53 +640,45 @@ function AddCardForm({ currentUser, onAdded, allowedBusinesses, defaultBusiness,
                   onClick={() => setMeetingType(m.key)}
                   className="w-full py-2 px-3 rounded-lg text-left transition-all"
                   style={{
-                    backgroundColor: meetingType === m.key ? "#FEF3C7" : "#F8FAFC",
-                    border: `1.5px solid ${meetingType === m.key ? "#FCD34D" : "#E2E8F0"}`,
+                    backgroundColor: meetingType === m.key ? "rgba(217,119,6,0.15)" : "rgba(255,255,255,0.04)",
+                    border: `1.5px solid ${meetingType === m.key ? "rgba(217,119,6,0.4)" : "rgba(255,255,255,0.1)"}`,
                     fontFamily: "'Space Grotesk', sans-serif",
                   }}
                 >
-                  <span className="text-[12px] font-semibold" style={{ color: meetingType === m.key ? "#92400E" : "#475569" }}>{m.label}</span>
-                  <span className="text-[10px] text-slate-400 ml-2">{m.desc}</span>
+                  <span className="text-[12px] font-semibold" style={{ color: meetingType === m.key ? "#FCD34D" : "rgba(255,255,255,0.6)" }}>{m.label}</span>
+                  <span className="text-[10px] ml-2" style={{ color: "rgba(255,255,255,0.35)" }}>{m.desc}</span>
                 </button>
               ))}
             </div>
           </div>
           <div className="flex flex-col gap-1.5">
-            <p className="text-[10px] text-slate-500 uppercase tracking-wider font-medium" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Meeting date <span className="normal-case text-slate-400">(optional)</span></p>
+            <p className="text-[10px] uppercase tracking-wider font-medium" style={{ color: "rgba(255,255,255,0.4)", fontFamily: "'Space Grotesk', sans-serif" }}>Meeting date <span className="normal-case" style={{ color: "rgba(255,255,255,0.3)" }}>(optional)</span></p>
             <input
               type="date"
               value={scheduledDate}
               onChange={e => setScheduledDate(e.target.value)}
-              className="w-full rounded-lg px-3 py-2 text-[12px] text-[#1E3A5F] focus:outline-none transition-colors"
-              style={{
-                backgroundColor: "#F8FAFC",
-                border: "1.5px solid #CBD5E1",
-                fontFamily: "'Inter', sans-serif",
-              }}
-              onFocus={e => (e.target.style.borderColor = "#D97706")}
-              onBlur={e => (e.target.style.borderColor = "#CBD5E1")}
+              className="w-full rounded-lg px-3 py-2 text-[12px] focus:outline-none transition-colors"
+              style={inputStyle}
+              onFocus={e => (e.target.style.borderColor = "#FCD34D")}
+              onBlur={e => (e.target.style.borderColor = "rgba(255,255,255,0.12)")}
             />
           </div>
         </>
       )}
 
-      {/* Due date — only for tasks */}
+      {/* Due date — tasks only */}
       {type === "task" && (
         <div className="flex flex-col gap-1.5">
-          <p className="text-[10px] text-slate-500 uppercase tracking-wider font-medium" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Due date <span className="normal-case text-slate-400">(optional)</span></p>
+          <p className="text-[10px] uppercase tracking-wider font-medium" style={{ color: "rgba(255,255,255,0.4)", fontFamily: "'Space Grotesk', sans-serif" }}>Due date <span className="normal-case" style={{ color: "rgba(255,255,255,0.3)" }}>(optional)</span></p>
           <input
             type="date"
             value={dueDate}
             onChange={e => setDueDate(e.target.value)}
             min={new Date().toISOString().split("T")[0]}
-            className="w-full rounded-lg px-3 py-2 text-[12px] text-[#1E3A5F] focus:outline-none transition-colors"
-            style={{
-              backgroundColor: "#F8FAFC",
-              border: "1.5px solid #CBD5E1",
-              fontFamily: "'Inter', sans-serif",
-            }}
-            onFocus={e => (e.target.style.borderColor = "#7C3AED")}
-            onBlur={e => (e.target.style.borderColor = "#CBD5E1")}
+            className="w-full rounded-lg px-3 py-2 text-[12px] focus:outline-none transition-colors"
+            style={inputStyle}
+            onFocus={e => (e.target.style.borderColor = "#C4B5FD")}
+            onBlur={e => (e.target.style.borderColor = "rgba(255,255,255,0.12)")}
           />
         </div>
       )}
@@ -739,15 +697,13 @@ function AddCardForm({ currentUser, onAdded, allowedBusinesses, defaultBusiness,
             : "Describe the task…"
         }
         rows={3}
-        className="w-full rounded-lg px-3 py-2.5 text-[13px] text-[#1E3A5F] placeholder-slate-400 resize-none focus:outline-none transition-colors"
+        className="w-full rounded-lg px-3 py-2.5 text-[13px] placeholder-white/30 resize-none focus:outline-none transition-colors"
         style={{
-          backgroundColor: "#F8FAFC",
-          border: "1.5px solid #CBD5E1",
-          fontFamily: "'Inter', sans-serif",
+          ...inputStyle,
           lineHeight: "1.6",
         }}
-        onFocus={e => (e.target.style.borderColor = "#94A3B8")}
-        onBlur={e => (e.target.style.borderColor = "#CBD5E1")}
+        onFocus={e => (e.target.style.borderColor = "rgba(255,255,255,0.25)")}
+        onBlur={e => (e.target.style.borderColor = "rgba(255,255,255,0.12)")}
         onKeyDown={e => {
           if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
             e.preventDefault();
@@ -756,11 +712,11 @@ function AddCardForm({ currentUser, onAdded, allowedBusinesses, defaultBusiness,
         }}
       />
 
-      {/* Notify — recipient picker for Update and Issue */}
+      {/* Notify — recipient picker */}
       {(type === "update" || type === "issue") && assignablePersons && assignablePersons.length > 0 && (
         <div className="flex flex-col gap-1.5">
-          <p className="text-[10px] text-slate-500 uppercase tracking-wider font-medium" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-            Notify <span className="normal-case text-slate-400">(tap names — leave blank to notify owners only)</span>
+          <p className="text-[10px] uppercase tracking-wider font-medium" style={{ color: "rgba(255,255,255,0.4)", fontFamily: "'Space Grotesk', sans-serif" }}>
+            Notify <span className="normal-case" style={{ color: "rgba(255,255,255,0.3)" }}>(leave blank to notify owners only)</span>
           </p>
           <div className="flex flex-wrap gap-1.5">
             {assignablePersons
@@ -778,9 +734,9 @@ function AddCardForm({ currentUser, onAdded, allowedBusinesses, defaultBusiness,
                     }
                     className="px-3 py-1.5 rounded-full text-[12px] font-medium transition-all active:scale-[0.96]"
                     style={{
-                      backgroundColor: selected ? "#1E3A5F" : "#F1F5F9",
-                      color: selected ? "#FFFFFF" : "#475569",
-                      border: selected ? "1.5px solid #1E3A5F" : "1.5px solid #CBD5E1",
+                      backgroundColor: selected ? "rgba(94,234,212,0.2)" : "rgba(255,255,255,0.06)",
+                      color: selected ? "#5EEAD4" : "rgba(255,255,255,0.5)",
+                      border: selected ? "1.5px solid rgba(94,234,212,0.4)" : "1.5px solid rgba(255,255,255,0.12)",
                       fontFamily: "'Space Grotesk', sans-serif",
                     }}
                   >
@@ -791,7 +747,7 @@ function AddCardForm({ currentUser, onAdded, allowedBusinesses, defaultBusiness,
             }
           </div>
           {notifyPersonIds.length === 0 && (
-            <p className="text-[10px] text-slate-400 italic" style={{ fontFamily: "'Inter', sans-serif" }}>
+            <p className="text-[10px] italic" style={{ color: "rgba(255,255,255,0.3)", fontFamily: "'Inter', sans-serif" }}>
               No one selected — owners will be notified by default
             </p>
           )}
@@ -803,13 +759,10 @@ function AddCardForm({ currentUser, onAdded, allowedBusinesses, defaultBusiness,
         disabled={createCard.isPending || !currentUser || !content.trim() || (type === "task" && !assignedTo)}
         className="w-full py-3 rounded-xl text-[13px] font-bold transition-all hover:opacity-90 disabled:opacity-40 active:scale-[0.97]"
         style={{
-          background: currentUser
-            ? `linear-gradient(135deg, ${getAuthorColors(currentUser).btnBg} 0%, ${getAuthorColors(currentUser).btnBorder} 100%)`
-            : "#E2E8F0",
-          border: `none`,
-          color: currentUser ? getAuthorColors(currentUser).btnText : "#94A3B8",
+          backgroundColor: "#5EEAD4",
+          color: "#0F2440",
           fontFamily: "'Space Grotesk', sans-serif",
-          boxShadow: currentUser && !createCard.isPending ? "0 4px 14px rgba(30,58,95,0.18)" : "none",
+          boxShadow: !createCard.isPending ? "0 4px 14px rgba(94,234,212,0.25)" : "none",
           letterSpacing: "0.02em",
         }}
       >
@@ -822,52 +775,43 @@ function AddCardForm({ currentUser, onAdded, allowedBusinesses, defaultBusiness,
 // ─── Main Board Page ──────────────────────────────────────────────────────────
 
 export default function Board() {
-  // Identity is managed by AppShell context — shared across all pages
   const { currentUser } = useIdentity();
   const [filterBusiness, setFilterBusiness] = useState<Business | "all">("all");
   const [showCompleted, setShowCompleted] = useState(false);
 
-  // Read account scope from PersonContext
   const { person } = usePerson();
   const accountId = person?.accountId ?? (() => {
     const stored = localStorage.getItem("bcc_account_id");
     return stored ? parseInt(stored, 10) : undefined;
   })();
 
-  // Load businesses from DB — the source of truth for this account
   const { data: dbBusinesses = [] } = trpc.business.list.useQuery(
     { accountId: accountId ?? 0 },
     { enabled: accountId !== undefined }
   );
 
-  // Load all persons for this account — used to populate the assignee list
   const { data: personsData } = trpc.person.list.useQuery(
     { accountId: accountId ?? 0 },
     { enabled: accountId !== undefined, staleTime: 60_000 }
   );
   const allPersons = useMemo(() => (personsData ?? []).map(p => ({ id: p.id, name: p.name })), [personsData]);
 
-  // Build allowed businesses from DB; fall back to empty while loading
-  // Employees see only their businessScope; owners see all account businesses
   const personScope = person?.businessScope ?? "all";
   const allowedBusinesses = useMemo<Business[]>(() => {
     if (!dbBusinesses.length) return [];
     if (personScope === "all") return dbBusinesses.map(b => b.slug as Business);
-    // Employee: filter to their assigned businesses
     const scopes = personScope.split(",").map(s => s.trim());
     return dbBusinesses.filter(b => scopes.includes(b.slug)).map(b => b.slug as Business);
   }, [dbBusinesses, personScope]);
 
   const defaultBusiness = useMemo<Business>(() => allowedBusinesses[0] ?? "general" as Business, [allowedBusinesses]);
 
-  // Build dynamic BUSINESS_LABELS from DB businesses (merges with hardcoded fallback)
   const dynamicBizLabels = useMemo(() => {
     const labels: Record<string, { label: string; icon: string; bg: string; text: string; border: string }> = { ...BUSINESS_LABELS };
     for (const b of dbBusinesses) {
       if (!labels[b.slug]) {
-        labels[b.slug] = { label: b.name, icon: b.icon, bg: "#F1F5F9", text: "#475569", border: "#CBD5E1" };
+        labels[b.slug] = { label: b.name, icon: b.icon, bg: "rgba(255,255,255,0.08)", text: "rgba(255,255,255,0.6)", border: "rgba(255,255,255,0.15)" };
       } else {
-        // Use DB name for known slugs
         labels[b.slug] = { ...labels[b.slug], label: b.name, icon: b.icon };
       }
     }
@@ -890,8 +834,6 @@ export default function Board() {
     onError: () => toast.error("Failed to confirm task"),
   });
 
-  // Only show cards for businesses this account is allowed to see.
-  // Always include 'general' cards — they are not tied to a specific business.
   const allCards = ((data?.cards ?? []) as Card[]).filter(c =>
     c.business === "general" || allowedBusinesses.includes(c.business)
   );
@@ -906,27 +848,17 @@ export default function Board() {
   const donePendingTasks = filtered.filter(c => c.type === "task" && !c.archivedAt && c.completedAt && !c.confirmedAt);
   const completedTasks = filtered.filter(c => c.type === "task" && c.archivedAt && c.confirmedAt);
 
-  const unseenCount = allCards.filter(c =>
-    !c.seenAt && currentUser && c.author !== currentUser && c.type !== "task"
-  ).length;
-
-  const pendingTaskCount = donePendingTasks.filter(c =>
-    currentUser && c.author === currentUser
-  ).length;
-
-  const totalBadge = unseenCount + pendingTaskCount;
-
   const [formOpen, setFormOpen] = useState(false);
 
   return (
     <div
       className="flex flex-col min-h-full"
-      style={{ backgroundColor: "#F8F7F4", fontFamily: "'Inter', sans-serif" }}
+      style={{ backgroundColor: "#0F2440", fontFamily: "'Inter', sans-serif" }}
     >
       {/* ── Top bar: filter + post button ── */}
       <div
         className="flex-shrink-0 px-4 py-3 flex items-center gap-3 flex-wrap"
-        style={{ backgroundColor: "#FFFFFF", borderBottom: "1px solid #E2E8F0" }}
+        style={{ backgroundColor: "#0A1929", borderBottom: "1px solid rgba(255,255,255,0.08)" }}
       >
         {/* Business filter pills */}
         {allowedBusinesses.length > 1 && (
@@ -935,23 +867,23 @@ export default function Board() {
               onClick={() => setFilterBusiness("all")}
               className="px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all"
               style={{
-                backgroundColor: filterBusiness === "all" ? "#1E3A5F" : "#F1F5F9",
-                color: filterBusiness === "all" ? "#FFFFFF" : "#64748B",
+                backgroundColor: filterBusiness === "all" ? "#5EEAD4" : "rgba(255,255,255,0.06)",
+                color: filterBusiness === "all" ? "#0F2440" : "rgba(255,255,255,0.5)",
                 fontFamily: "'Space Grotesk', sans-serif",
               }}
             >
               All
             </button>
             {allowedBusinesses.map(key => {
-              const biz = dynamicBizLabels[key] ?? { label: key, icon: "🏢", bg: "#F1F5F9", text: "#475569", border: "#CBD5E1" };
+              const biz = dynamicBizLabels[key] ?? { label: key, icon: "🏢", bg: "rgba(255,255,255,0.08)", text: "rgba(255,255,255,0.6)", border: "rgba(255,255,255,0.15)" };
               return (
                 <button
                   key={key}
                   onClick={() => setFilterBusiness(key)}
                   className="px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all"
                   style={{
-                    backgroundColor: filterBusiness === key ? biz.bg : "#F1F5F9",
-                    color: filterBusiness === key ? biz.text : "#64748B",
+                    backgroundColor: filterBusiness === key ? biz.bg : "rgba(255,255,255,0.06)",
+                    color: filterBusiness === key ? biz.text : "rgba(255,255,255,0.5)",
                     border: filterBusiness === key ? `1.5px solid ${biz.border}` : "1.5px solid transparent",
                     fontFamily: "'Space Grotesk', sans-serif",
                   }}
@@ -967,10 +899,10 @@ export default function Board() {
             onClick={() => setFormOpen(o => !o)}
             className="px-4 py-2 rounded-xl text-[12px] font-bold transition-all active:scale-[0.97]"
             style={{
-              backgroundColor: formOpen ? "#F1F5F9" : "#1E3A5F",
-              color: formOpen ? "#64748B" : "#FFFFFF",
+              backgroundColor: formOpen ? "rgba(255,255,255,0.08)" : "#5EEAD4",
+              color: formOpen ? "rgba(255,255,255,0.5)" : "#0F2440",
               fontFamily: "'Space Grotesk', sans-serif",
-              boxShadow: formOpen ? "none" : "0 2px 8px rgba(30,58,95,0.18)",
+              boxShadow: formOpen ? "none" : "0 2px 8px rgba(94,234,212,0.25)",
             }}
           >
             {formOpen ? "✕ Close" : "+ Post to Board"}
@@ -982,7 +914,7 @@ export default function Board() {
       {formOpen && (
         <div
           className="flex-shrink-0 px-4 py-4"
-          style={{ backgroundColor: "#FAFAF9", borderBottom: "1px solid #E2E8F0" }}
+          style={{ backgroundColor: "#0D2035", borderBottom: "1px solid rgba(255,255,255,0.08)" }}
         >
           <div className="max-w-xl">
             <AddCardForm
@@ -1000,175 +932,177 @@ export default function Board() {
 
       {/* Main board */}
       <main className="flex-1 p-3 md:p-5 flex flex-col gap-6 md:gap-8">
-          {isLoading ? (
-            <div className="flex items-center justify-center h-40">
-              <span className="text-slate-400 text-sm animate-pulse">Loading board…</span>
-            </div>
-          ) : (
-            <>
-              {/* ── Tasks section ── */}
-              <section className="flex flex-col gap-3">
-                <div className="flex items-center gap-3 pb-3 min-w-0" style={{ borderBottom: "2px solid #7C3AED" }}>
-                  <div className="w-7 h-7 rounded-lg flex items-center justify-center text-sm flex-shrink-0" style={{ backgroundColor: "#EDE9FE" }}>☑</div>
-                  <div className="min-w-0 flex-1">
-                    <h2 className="text-sm font-bold text-[#1E3A5F] leading-tight" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Tasks</h2>
-                    <p className="text-[10px] text-slate-400">Assigned to-dos between owners</p>
+        {isLoading ? (
+          <div className="flex items-center justify-center h-40">
+            <span className="text-sm animate-pulse" style={{ color: "rgba(255,255,255,0.4)" }}>Loading board…</span>
+          </div>
+        ) : (
+          <>
+            {/* ── Tasks section ── */}
+            <section className="flex flex-col gap-3">
+              <div className="flex items-center gap-3 pb-3 min-w-0" style={{ borderBottom: "2px solid rgba(124,58,237,0.5)" }}>
+                <div className="w-7 h-7 rounded-lg flex items-center justify-center text-sm flex-shrink-0" style={{ backgroundColor: "rgba(124,58,237,0.2)" }}>☑</div>
+                <div className="min-w-0 flex-1">
+                  <h2 className="text-sm font-bold text-white leading-tight" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Tasks</h2>
+                  <p className="text-[10px]" style={{ color: "rgba(255,255,255,0.4)" }}>Assigned to-dos between owners</p>
+                </div>
+                {openTasks.length > 0 && (
+                  <span className="ml-auto text-[11px] font-bold px-2.5 py-1 rounded-full" style={{ backgroundColor: "rgba(124,58,237,0.3)", color: "#C4B5FD", fontFamily: "'Space Grotesk', sans-serif" }}>
+                    {openTasks.length}
+                  </span>
+                )}
+              </div>
+
+              {openTasks.length === 0 && donePendingTasks.length === 0 ? (
+                <div className="rounded-2xl p-8 text-center flex flex-col items-center gap-3" style={{ backgroundColor: "rgba(255,255,255,0.03)", border: "1.5px dashed rgba(124,58,237,0.3)" }}>
+                  <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl" style={{ backgroundColor: "rgba(124,58,237,0.15)" }}>☑</div>
+                  <div>
+                    <p className="text-[13px] font-semibold text-white">All clear on tasks</p>
+                    <p className="text-[11px] mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>Tap "+ Post to Board" above and choose Task to assign one.</p>
                   </div>
-                  {openTasks.length > 0 && (
-                    <span className="ml-auto text-[11px] font-bold px-2.5 py-1 rounded-full" style={{ backgroundColor: "#7C3AED", color: "#FFFFFF", fontFamily: "'Space Grotesk', sans-serif" }}>
-                      {openTasks.length}
+                </div>
+              ) : (
+                <>
+                  {openTasks.map(card => (
+                    <TaskCard
+                      key={card.id}
+                      card={card}
+                      currentUser={currentUser}
+                      onMarkDone={id => currentUser && markDone.mutate({ id, completedBy: currentUser, ...(accountId ? { accountId } : {}) })}
+                      onConfirmDone={id => currentUser && confirmDone.mutate({ id, confirmedBy: currentUser, ...(accountId ? { accountId } : {}) })}
+                      onDelete={id => deleteCard.mutate({ id })}
+                    />
+                  ))}
+                </>
+              )}
+
+              {/* Done — Awaiting Confirmation subsection */}
+              {donePendingTasks.length > 0 && (
+                <div className="mt-2 flex flex-col gap-2">
+                  <p className="text-[10px] font-bold uppercase tracking-widest px-1"
+                    style={{ color: "#FCD34D", fontFamily: "'Space Grotesk', sans-serif" }}>
+                    ⏳ Done — Awaiting Your Confirmation ({donePendingTasks.length})
+                  </p>
+                  {donePendingTasks.map(card => (
+                    <TaskCard
+                      key={card.id}
+                      card={card}
+                      currentUser={currentUser}
+                      onMarkDone={id => currentUser && markDone.mutate({ id, completedBy: currentUser, ...(accountId ? { accountId } : {}) })}
+                      onConfirmDone={id => currentUser && confirmDone.mutate({ id, confirmedBy: currentUser, ...(accountId ? { accountId } : {}) })}
+                      onDelete={id => deleteCard.mutate({ id })}
+                    />
+                  ))}
+                </div>
+              )}
+
+              {/* Completed archive (collapsible) */}
+              {completedTasks.length > 0 && (
+                <div className="mt-2">
+                  <button
+                    onClick={() => setShowCompleted(v => !v)}
+                    className="text-[11px] transition-colors flex items-center gap-1.5 px-1"
+                    style={{ color: "rgba(255,255,255,0.35)", fontFamily: "'Space Grotesk', sans-serif" }}
+                    onMouseEnter={e => (e.currentTarget.style.color = "rgba(255,255,255,0.6)")}
+                    onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.35)")}
+                  >
+                    {showCompleted ? "▾" : "▸"} Completed this period ({completedTasks.length})
+                  </button>
+                  {showCompleted && (
+                    <div className="mt-2 flex flex-col gap-2 opacity-60">
+                      {completedTasks.map(card => (
+                        <TaskCard
+                          key={card.id}
+                          card={card}
+                          currentUser={currentUser}
+                          onMarkDone={() => {}}
+                          onConfirmDone={() => {}}
+                          onDelete={id => deleteCard.mutate({ id })}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </section>
+
+            {/* ── Updates + Issues columns ── */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Updates */}
+              <div className="flex flex-col gap-3">
+                <div className="flex items-center gap-3 pb-3 min-w-0" style={{ borderBottom: "2px solid rgba(37,99,235,0.5)" }}>
+                  <div className="w-7 h-7 rounded-lg flex items-center justify-center text-sm flex-shrink-0" style={{ backgroundColor: "rgba(37,99,235,0.2)" }}>✅</div>
+                  <div className="min-w-0 flex-1">
+                    <h2 className="text-sm font-bold text-white leading-tight" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Updates</h2>
+                    <p className="text-[10px]" style={{ color: "rgba(255,255,255,0.4)" }}>What I did since last meeting</p>
+                  </div>
+                  {updates.length > 0 && (
+                    <span className="ml-auto text-[11px] font-bold px-2.5 py-1 rounded-full" style={{ backgroundColor: "rgba(37,99,235,0.3)", color: "#93C5FD", fontFamily: "'Space Grotesk', sans-serif" }}>
+                      {updates.length}
                     </span>
                   )}
                 </div>
-
-                {openTasks.length === 0 && donePendingTasks.length === 0 ? (
-                  <div className="rounded-2xl p-8 text-center flex flex-col items-center gap-3" style={{ backgroundColor: "#FAFAF9", border: "1.5px dashed #C4B5FD" }}>
-                    <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl" style={{ backgroundColor: "#EDE9FE" }}>☑</div>
+                {updates.length === 0 ? (
+                  <div className="rounded-2xl p-8 text-center flex flex-col items-center gap-3" style={{ backgroundColor: "rgba(255,255,255,0.03)", border: "1.5px dashed rgba(37,99,235,0.3)" }}>
+                    <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl" style={{ backgroundColor: "rgba(37,99,235,0.15)" }}>✅</div>
                     <div>
-                      <p className="text-[13px] font-semibold text-[#1E3A5F]">All clear on tasks</p>
-                      <p className="text-[11px] text-slate-400 mt-0.5">Tap "+ Post to Board" above and choose Task to assign one.</p>
+                      <p className="text-[13px] font-semibold text-white">No updates yet</p>
+                      <p className="text-[11px] mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>Share what you've been working on.</p>
                     </div>
                   </div>
                 ) : (
-                  <>
-                    {openTasks.map(card => (
-                      <TaskCard
-                        key={card.id}
-                        card={card}
-                        currentUser={currentUser}
-                        onMarkDone={id => currentUser && markDone.mutate({ id, completedBy: currentUser, ...(accountId ? { accountId } : {}) })}
-                        onConfirmDone={id => currentUser && confirmDone.mutate({ id, confirmedBy: currentUser, ...(accountId ? { accountId } : {}) })}
-                        onDelete={id => deleteCard.mutate({ id })}
-                      />
-                    ))}
-                  </>
+                  updates.map(card => (
+                    <BoardCard
+                      key={card.id}
+                      card={card}
+                      currentUser={currentUser}
+                      onSeen={id => currentUser && markSeen.mutate({ id, seenBy: currentUser })}
+                      onArchive={id => archive.mutate({ id })}
+                      onDelete={id => deleteCard.mutate({ id })}
+                    />
+                  ))
                 )}
-
-                {/* Done — Awaiting Confirmation subsection */}
-                {donePendingTasks.length > 0 && (
-                  <div className="mt-2 flex flex-col gap-2">
-                    <p className="text-[10px] font-bold uppercase tracking-widest px-1"
-                      style={{ color: "#92400E", fontFamily: "'Space Grotesk', sans-serif" }}>
-                      ⏳ Done — Awaiting Your Confirmation ({donePendingTasks.length})
-                    </p>
-                    {donePendingTasks.map(card => (
-                      <TaskCard
-                        key={card.id}
-                        card={card}
-                        currentUser={currentUser}
-                        onMarkDone={id => currentUser && markDone.mutate({ id, completedBy: currentUser, ...(accountId ? { accountId } : {}) })}
-                        onConfirmDone={id => currentUser && confirmDone.mutate({ id, confirmedBy: currentUser, ...(accountId ? { accountId } : {}) })}
-                        onDelete={id => deleteCard.mutate({ id })}
-                      />
-                    ))}
-                  </div>
-                )}
-
-                {/* Completed archive (collapsible) */}
-                {completedTasks.length > 0 && (
-                  <div className="mt-2">
-                    <button
-                      onClick={() => setShowCompleted(v => !v)}
-                      className="text-[11px] text-slate-400 hover:text-slate-600 transition-colors flex items-center gap-1.5 px-1"
-                      style={{ fontFamily: "'Space Grotesk', sans-serif" }}
-                    >
-                      {showCompleted ? "▾" : "▸"} Completed this period ({completedTasks.length})
-                    </button>
-                    {showCompleted && (
-                      <div className="mt-2 flex flex-col gap-2 opacity-60">
-                        {completedTasks.map(card => (
-                          <TaskCard
-                            key={card.id}
-                            card={card}
-                            currentUser={currentUser}
-                            onMarkDone={() => {}}
-                            onConfirmDone={() => {}}
-                            onDelete={id => deleteCard.mutate({ id })}
-                          />
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </section>
-
-              {/* ── Updates + Issues columns ── */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Updates */}
-                <div className="flex flex-col gap-3">
-                  <div className="flex items-center gap-3 pb-3 min-w-0" style={{ borderBottom: "2px solid #2563EB" }}>
-                    <div className="w-7 h-7 rounded-lg flex items-center justify-center text-sm flex-shrink-0" style={{ backgroundColor: "#DBEAFE" }}>✅</div>
-                    <div className="min-w-0 flex-1">
-                      <h2 className="text-sm font-bold text-[#1E3A5F] leading-tight" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Updates</h2>
-                      <p className="text-[10px] text-slate-400">What I did since last meeting</p>
-                    </div>
-                    {updates.length > 0 && (
-                      <span className="ml-auto text-[11px] font-bold px-2.5 py-1 rounded-full" style={{ backgroundColor: "#2563EB", color: "#FFFFFF", fontFamily: "'Space Grotesk', sans-serif" }}>
-                        {updates.length}
-                      </span>
-                    )}
-                  </div>
-                  {updates.length === 0 ? (
-                    <div className="rounded-2xl p-8 text-center flex flex-col items-center gap-3" style={{ backgroundColor: "#FAFAF9", border: "1.5px dashed #BFDBFE" }}>
-                      <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl" style={{ backgroundColor: "#DBEAFE" }}>✅</div>
-                      <div>
-                        <p className="text-[13px] font-semibold text-[#1E3A5F]">No updates yet</p>
-                        <p className="text-[11px] text-slate-400 mt-0.5">Share what you've been working on.</p>
-                      </div>
-                    </div>
-                  ) : (
-                    updates.map(card => (
-                      <BoardCard
-                        key={card.id}
-                        card={card}
-                        currentUser={currentUser}
-                        onSeen={id => currentUser && markSeen.mutate({ id, seenBy: currentUser })}
-                        onArchive={id => archive.mutate({ id })}
-                        onDelete={id => deleteCard.mutate({ id })}
-                      />
-                    ))
-                  )}
-                </div>
-
-                {/* Issues */}
-                <div className="flex flex-col gap-3">
-                  <div className="flex items-center gap-3 pb-3 min-w-0" style={{ borderBottom: "2px solid #E11D48" }}>
-                    <div className="w-7 h-7 rounded-lg flex items-center justify-center text-sm flex-shrink-0" style={{ backgroundColor: "#FFE4E6" }}>💬</div>
-                    <div className="min-w-0 flex-1">
-                      <h2 className="text-sm font-bold text-[#1E3A5F] leading-tight" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Issues</h2>
-                      <p className="text-[10px] text-slate-400">What we need to discuss</p>
-                    </div>
-                    {issues.length > 0 && (
-                      <span className="ml-auto text-[11px] font-bold px-2.5 py-1 rounded-full" style={{ backgroundColor: "#E11D48", color: "#FFFFFF", fontFamily: "'Space Grotesk', sans-serif" }}>
-                        {issues.length}
-                      </span>
-                    )}
-                  </div>
-                  {issues.length === 0 ? (
-                    <div className="rounded-2xl p-8 text-center flex flex-col items-center gap-3" style={{ backgroundColor: "#FAFAF9", border: "1.5px dashed #FECDD3" }}>
-                      <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl" style={{ backgroundColor: "#FFE4E6" }}>💬</div>
-                      <div>
-                        <p className="text-[13px] font-semibold text-[#1E3A5F]">No issues queued</p>
-                        <p className="text-[11px] text-slate-400 mt-0.5">Queue something to discuss at the next meeting.</p>
-                      </div>
-                    </div>
-                  ) : (
-                    issues.map(card => (
-                      <BoardCard
-                        key={card.id}
-                        card={card}
-                        currentUser={currentUser}
-                        onSeen={id => currentUser && markSeen.mutate({ id, seenBy: currentUser })}
-                        onArchive={id => archive.mutate({ id })}
-                        onDelete={id => deleteCard.mutate({ id })}
-                      />
-                    ))
-                  )}
-                </div>
               </div>
-            </>
-          )}
-        </main>
+
+              {/* Issues */}
+              <div className="flex flex-col gap-3">
+                <div className="flex items-center gap-3 pb-3 min-w-0" style={{ borderBottom: "2px solid rgba(225,29,72,0.5)" }}>
+                  <div className="w-7 h-7 rounded-lg flex items-center justify-center text-sm flex-shrink-0" style={{ backgroundColor: "rgba(225,29,72,0.2)" }}>💬</div>
+                  <div className="min-w-0 flex-1">
+                    <h2 className="text-sm font-bold text-white leading-tight" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Issues</h2>
+                    <p className="text-[10px]" style={{ color: "rgba(255,255,255,0.4)" }}>What we need to discuss</p>
+                  </div>
+                  {issues.length > 0 && (
+                    <span className="ml-auto text-[11px] font-bold px-2.5 py-1 rounded-full" style={{ backgroundColor: "rgba(225,29,72,0.3)", color: "#FDA4AF", fontFamily: "'Space Grotesk', sans-serif" }}>
+                      {issues.length}
+                    </span>
+                  )}
+                </div>
+                {issues.length === 0 ? (
+                  <div className="rounded-2xl p-8 text-center flex flex-col items-center gap-3" style={{ backgroundColor: "rgba(255,255,255,0.03)", border: "1.5px dashed rgba(225,29,72,0.3)" }}>
+                    <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl" style={{ backgroundColor: "rgba(225,29,72,0.15)" }}>💬</div>
+                    <div>
+                      <p className="text-[13px] font-semibold text-white">No issues queued</p>
+                      <p className="text-[11px] mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>Queue something to discuss at the next meeting.</p>
+                    </div>
+                  </div>
+                ) : (
+                  issues.map(card => (
+                    <BoardCard
+                      key={card.id}
+                      card={card}
+                      currentUser={currentUser}
+                      onSeen={id => currentUser && markSeen.mutate({ id, seenBy: currentUser })}
+                      onArchive={id => archive.mutate({ id })}
+                      onDelete={id => deleteCard.mutate({ id })}
+                    />
+                  ))
+                )}
+              </div>
+            </div>
+          </>
+        )}
+      </main>
     </div>
   );
 }

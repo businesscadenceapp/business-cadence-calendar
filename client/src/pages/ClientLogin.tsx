@@ -85,16 +85,16 @@ export default function ClientLogin() {
     loginMutation.mutate({ email: email.trim(), password });
   };
 
-  const inputClass = `w-full rounded-xl px-4 py-3 text-sm text-[#1A1A2E] placeholder-[#94A3B8] focus:outline-none transition-all`;
-  const inputStyle = { backgroundColor: "#F8F7F4", border: "1.5px solid #E2E0DB" };
-
   return (
     <div
       className="min-h-screen flex flex-col"
-      style={{ backgroundColor: "#F8F7F4", fontFamily: "'Inter', sans-serif" }}
+      style={{
+        background: "linear-gradient(160deg, #0F2440 0%, #1E3A5F 60%, #0D2D4A 100%)",
+        fontFamily: "'Inter', sans-serif",
+      }}
     >
       {/* Nav */}
-      <nav className="w-full border-b border-[#E2E0DB] bg-[#F8F7F4]/95 backdrop-blur-sm">
+      <nav className="w-full" style={{ borderBottom: "1px solid rgba(255,255,255,0.08)", backgroundColor: "rgba(15,36,64,0.95)" }}>
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-20">
             <a href="/">
@@ -102,10 +102,17 @@ export default function ClientLogin() {
                 src="/manus-storage/businesscadence-logo-final-clean_3f67cebb.webp"
                 alt="BusinessCadence"
                 height={80}
-                style={{ height: 80, width: "auto", filter: "drop-shadow(0 2px 0px rgba(30,58,95,0.30)) drop-shadow(0 5px 10px rgba(30,58,95,0.18)) saturate(1.4) brightness(0.92)" }}
+                style={{
+                  height: 80,
+                  width: "auto",
+                  filter: "drop-shadow(0 2px 0px rgba(255,255,255,0.15)) drop-shadow(0 5px 10px rgba(0,0,0,0.40)) saturate(1.2) brightness(1.05)",
+                }}
               />
             </a>
-            <a href="/" className="text-sm text-[#64748B] hover:text-[#1E3A5F] transition-colors">
+            <a href="/" className="text-sm transition-colors" style={{ color: "rgba(255,255,255,0.5)" }}
+              onMouseEnter={e => (e.currentTarget.style.color = "white")}
+              onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.5)")}
+            >
               ← Back to homepage
             </a>
           </div>
@@ -120,9 +127,10 @@ export default function ClientLogin() {
           <div
             className="rounded-2xl p-8"
             style={{
-              backgroundColor: "#FFFFFF",
-              border: "1px solid #E2E0DB",
-              boxShadow: "0 20px 60px rgba(30,58,95,0.10), 0 4px 16px rgba(30,58,95,0.06)",
+              backgroundColor: "rgba(255,255,255,0.05)",
+              border: "1px solid rgba(255,255,255,0.12)",
+              boxShadow: "0 24px 64px rgba(0,0,0,0.4), 0 4px 16px rgba(0,0,0,0.2)",
+              backdropFilter: "blur(16px)",
             }}
           >
             {/* Header */}
@@ -131,19 +139,19 @@ export default function ClientLogin() {
                 <BrandIcon size={88} />
               </div>
               <h2
-                className="text-xl font-bold text-[#1E3A5F]"
+                className="text-xl font-bold text-white"
                 style={{ fontFamily: "'Space Grotesk', sans-serif" }}
               >
                 Sign In
               </h2>
-              <p className="text-[#64748B] text-xs mt-1">
+              <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.5)" }}>
                 Sign in with your BusinessCadence account
               </p>
             </div>
 
             <form onSubmit={handleLogin} className="flex flex-col gap-4">
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold text-[#1E3A5F]" htmlFor="email">Email</label>
+                <label className="text-xs font-semibold text-white/70" htmlFor="email">Email</label>
                 <input
                   ref={emailRef}
                   id="email"
@@ -152,14 +160,17 @@ export default function ClientLogin() {
                   onChange={e => setEmail(e.target.value)}
                   placeholder="your@email.com"
                   autoComplete="email"
-                  className={inputClass}
-                  style={inputStyle}
-                  onFocus={e => (e.target.style.borderColor = "#0D9488")}
-                  onBlur={e => (e.target.style.borderColor = "#E2E0DB")}
+                  className="w-full rounded-xl px-4 py-3 text-sm text-white placeholder-white/30 focus:outline-none transition-all"
+                  style={{
+                    backgroundColor: "rgba(255,255,255,0.08)",
+                    border: "1.5px solid rgba(255,255,255,0.15)",
+                  }}
+                  onFocus={e => (e.target.style.borderColor = "#5EEAD4")}
+                  onBlur={e => (e.target.style.borderColor = "rgba(255,255,255,0.15)")}
                 />
               </div>
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold text-[#1E3A5F]" htmlFor="password">Password</label>
+                <label className="text-xs font-semibold text-white/70" htmlFor="password">Password</label>
                 <input
                   id="password"
                   type="password"
@@ -167,17 +178,24 @@ export default function ClientLogin() {
                   onChange={e => setPassword(e.target.value)}
                   placeholder="Your password"
                   autoComplete="current-password"
-                  className={`${inputClass} ${shake ? "animate-[shake_0.5s_ease-in-out]" : ""}`}
-                  style={inputStyle}
-                  onFocus={e => (e.target.style.borderColor = "#0D9488")}
-                  onBlur={e => (e.target.style.borderColor = "#E2E0DB")}
+                  className={`w-full rounded-xl px-4 py-3 text-sm text-white placeholder-white/30 focus:outline-none transition-all ${shake ? "animate-[shake_0.5s_ease-in-out]" : ""}`}
+                  style={{
+                    backgroundColor: "rgba(255,255,255,0.08)",
+                    border: "1.5px solid rgba(255,255,255,0.15)",
+                  }}
+                  onFocus={e => (e.target.style.borderColor = "#5EEAD4")}
+                  onBlur={e => (e.target.style.borderColor = "rgba(255,255,255,0.15)")}
                 />
               </div>
               <button
                 type="submit"
                 disabled={isLoading || !email.trim() || !password.trim()}
-                className="w-full py-3.5 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-40 mt-1"
-                style={{ backgroundColor: "#1E3A5F", boxShadow: "0 4px 16px rgba(30,58,95,0.25)" }}
+                className="w-full py-3.5 rounded-xl text-sm font-bold transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-40 mt-1"
+                style={{
+                  backgroundColor: "#5EEAD4",
+                  color: "#0F2440",
+                  boxShadow: "0 4px 16px rgba(94,234,212,0.25)",
+                }}
               >
                 {isLoading ? "Signing in…" : "Sign In →"}
               </button>
@@ -185,23 +203,27 @@ export default function ClientLogin() {
               {/* Waitlist CTA for non-members */}
               <div
                 className="mt-2 rounded-xl p-4 text-center"
-                style={{ backgroundColor: "#F0FDF4", border: "1px solid #BBF7D0" }}
+                style={{
+                  backgroundColor: "rgba(94,234,212,0.08)",
+                  border: "1px solid rgba(94,234,212,0.2)",
+                }}
               >
-                <p className="text-xs text-[#166534] font-medium mb-1">Not a member yet?</p>
+                <p className="text-xs font-medium mb-1" style={{ color: "#5EEAD4" }}>Not a member yet?</p>
                 <a
                   href="/#waitlist"
-                  className="text-xs font-bold text-[#0D9488] hover:underline"
+                  className="text-xs font-bold hover:underline"
+                  style={{ color: "#5EEAD4" }}
                 >
                   Join the waitlist →
                 </a>
-                <p className="text-[10px] text-[#64748B] mt-1">
+                <p className="text-[10px] mt-1" style={{ color: "rgba(255,255,255,0.4)" }}>
                   Access is by invitation only during our beta.
                 </p>
               </div>
             </form>
           </div>
 
-          <p className="text-center text-xs text-[#94A3B8] mt-6">
+          <p className="text-center text-xs mt-6" style={{ color: "rgba(255,255,255,0.3)" }}>
             Private access — BusinessCadence clients only
           </p>
         </div>

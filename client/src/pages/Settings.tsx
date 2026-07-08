@@ -1,6 +1,6 @@
 /**
  * Settings page — Customize agenda items per business per meeting type.
- * Password re-entry is required before any changes are saved.
+ * Dark navy theme: #0F2440 bg, #5EEAD4 teal accent, white text
  */
 
 import { useState, useEffect, useMemo } from "react";
@@ -13,7 +13,6 @@ import { usePerson } from "@/contexts/PersonContext";
 import { personScopeToBusinessSelection } from "@/lib/businessScope";
 import type { MeetingType, BusinessKey } from "@/lib/calendarData";
 
-// Map calendarData BusinessKey to the DB business enum
 const BIZ_MAP: Record<BusinessKey, "chiropractic" | "crossfit" | "realty"> = {
   chiro: "chiropractic",
   crossfit: "crossfit",
@@ -25,7 +24,7 @@ const BIZ_MAP_REVERSE: Record<"chiropractic" | "crossfit" | "realty", BusinessKe
   realty: "realty",
 };
 
-type DbBusiness = string; // now dynamic from DB
+type DbBusiness = string;
 type DbMeetingType = "daily" | "weekly" | "monthly" | "quarterly";
 
 interface AgendaItem {
@@ -34,16 +33,11 @@ interface AgendaItem {
   sortOrder: number;
 }
 
-// Build default items from calendarData for a given business + meeting type
 function getDefaultItems(biz: BusinessKey, mt: MeetingType): AgendaItem[] {
   const meeting = MEETING_TYPES[mt];
   const block = meeting.timeBlocks.find((b) => b.business === biz);
   if (!block) return [];
-  return block.items.map((label, i) => ({
-    key: `${biz}-${mt}-default-${i}`,
-    label,
-    sortOrder: i,
-  }));
+  return block.items.map((label, i) => ({ key: `${biz}-${mt}-default-${i}`, label, sortOrder: i }));
 }
 
 const BUSINESSES_LIST: { key: DbBusiness; bizKey: BusinessKey; label: string; color: string; icon: string }[] = [
@@ -59,17 +53,17 @@ const MEETING_LIST: { key: DbMeetingType; label: string; color: string }[] = [
   { key: "quarterly", label: "Quarterly Offsite", color: "#F43F5E" },
 ];
 
-// ─── Password Confirm Modal ───────────────────────────────────────────────────
-const AUTHOR_PALETTE = [
-  "#2563EB", "#E11D48", "#059669", "#D97706", "#7C3AED",
-];
+// Shared dark input styles
+const darkInput = {
+  backgroundColor: "rgba(255,255,255,0.06)",
+  border: "1.5px solid rgba(255,255,255,0.12)",
+  color: "white",
+};
 
-function PasswordModal({
-  onConfirm,
-  onCancel,
-  isPending,
-  ownerNames,
-}: {
+const AUTHOR_PALETTE = ["#2563EB", "#E11D48", "#059669", "#D97706", "#7C3AED"];
+
+// ─── Password Confirm Modal ───────────────────────────────────────────────────
+function PasswordModal({ onConfirm, onCancel, isPending, ownerNames }: {
   onConfirm: (password: string, author: string) => void;
   onCancel: () => void;
   isPending: boolean;
@@ -77,23 +71,21 @@ function PasswordModal({
 }) {
   const [pw, setPw] = useState("");
   const [author, setAuthor] = useState<string>(ownerNames[0] ?? "");
-  const [shake, setShake] = useState(false);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ backgroundColor: "rgba(0,0,0,0.45)" }}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ backgroundColor: "rgba(0,0,0,0.6)" }}>
       <div
         className="w-full max-w-sm mx-4 rounded-2xl p-6"
-        style={{ backgroundColor: "#FFFFFF", border: "1px solid #E2E0DB" }}
+        style={{ backgroundColor: "#0D2035", border: "1px solid rgba(255,255,255,0.12)", boxShadow: "0 24px 64px rgba(0,0,0,0.5)" }}
       >
-        <h3 className="text-[#1E3A5F] font-bold text-[15px] mb-1" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+        <h3 className="font-bold text-[15px] mb-1 text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
           Confirm Changes
         </h3>
-        <p className="text-[#64748B] text-[12px] mb-5" style={{ fontFamily: "'Inter', sans-serif" }}>
+        <p className="text-[12px] mb-5" style={{ color: "rgba(255,255,255,0.5)", fontFamily: "'Inter', sans-serif" }}>
           Re-enter the site password to save agenda changes. This protects against accidental edits.
         </p>
 
-        {/* Who is saving */}
-        <p className="text-[#94A3B8] text-[11px] mb-2 uppercase tracking-wider" style={{ fontFamily: "'Inter', sans-serif" }}>
+        <p className="text-[11px] mb-2 uppercase tracking-wider" style={{ color: "rgba(255,255,255,0.3)", fontFamily: "'Inter', sans-serif" }}>
           Saved by
         </p>
         <div className="flex gap-2 mb-4">
@@ -104,9 +96,9 @@ function PasswordModal({
               className="flex-1 py-2 rounded-xl text-[13px] font-bold transition-all"
               style={{
                 fontFamily: "'Space Grotesk', sans-serif",
-                backgroundColor: author === name ? AUTHOR_PALETTE[idx % AUTHOR_PALETTE.length] : "#F1F0ED",
-                color: author === name ? "white" : "#64748B",
-                border: "1px solid #E2E0DB",
+                backgroundColor: author === name ? AUTHOR_PALETTE[idx % AUTHOR_PALETTE.length] : "rgba(255,255,255,0.06)",
+                color: author === name ? "white" : "rgba(255,255,255,0.5)",
+                border: "1px solid rgba(255,255,255,0.12)",
               }}
             >
               {name}
@@ -121,19 +113,15 @@ function PasswordModal({
           placeholder="Site password"
           autoFocus
           onKeyDown={(e) => { if (e.key === "Enter" && pw.trim()) onConfirm(pw.trim(), author); }}
-          className={`w-full rounded-xl px-4 py-3 text-[14px] text-[#1E3A5F] placeholder-[#94A3B8] focus:outline-none mb-3 ${shake ? "animate-[shake_0.5s_ease-in-out]" : ""}`}
-          style={{
-            backgroundColor: "#F8F7F4",
-            border: "1px solid #E2E0DB",
-            fontFamily: "'Inter', sans-serif",
-          }}
+          className="w-full rounded-xl px-4 py-3 text-[14px] placeholder-white/30 focus:outline-none mb-3"
+          style={darkInput}
         />
 
         <div className="flex gap-2">
           <button
             onClick={onCancel}
-            className="flex-1 py-2.5 rounded-xl text-[13px] text-[#64748B] transition-all hover:text-[#374151]"
-            style={{ backgroundColor: "#F1F0ED", fontFamily: "'Space Grotesk', sans-serif" }}
+            className="flex-1 py-2.5 rounded-xl text-[13px] transition-all"
+            style={{ backgroundColor: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.5)", fontFamily: "'Space Grotesk', sans-serif" }}
           >
             Cancel
           </button>
@@ -141,37 +129,18 @@ function PasswordModal({
             onClick={() => { if (pw.trim()) onConfirm(pw.trim(), author); }}
             disabled={isPending || !pw.trim()}
             className="flex-1 py-2.5 rounded-xl text-[13px] font-bold text-white transition-all hover:opacity-90 disabled:opacity-40"
-            style={{
-              background: "linear-gradient(135deg, #1E3A5F 0%, #0D9488 100%)",
-              fontFamily: "'Space Grotesk', sans-serif",
-            }}
+            style={{ background: "linear-gradient(135deg, #1E3A5F 0%, #0D9488 100%)", fontFamily: "'Space Grotesk', sans-serif" }}
           >
             {isPending ? "Saving…" : "Save Changes →"}
           </button>
         </div>
       </div>
-      <style>{`
-        @keyframes shake {
-          0%, 100% { transform: translateX(0); }
-          15% { transform: translateX(-6px); }
-          30% { transform: translateX(6px); }
-          45% { transform: translateX(-4px); }
-          60% { transform: translateX(4px); }
-          75% { transform: translateX(-2px); }
-          90% { transform: translateX(2px); }
-        }
-      `}</style>
     </div>
   );
 }
 
-// ─── Agenda Editor for one business + meeting type ───────────────────────────
-function AgendaEditor({
-  biz,
-  mt,
-  savedItems,
-  onSaveRequest,
-}: {
+// ─── Agenda Editor ────────────────────────────────────────────────────────────
+function AgendaEditor({ biz, mt, savedItems, onSaveRequest }: {
   biz: DbBusiness;
   mt: DbMeetingType;
   savedItems: AgendaItem[] | null;
@@ -182,7 +151,6 @@ function AgendaEditor({
   const [items, setItems] = useState<AgendaItem[]>(savedItems ?? defaultItems);
   const [dirty, setDirty] = useState(false);
 
-  // Reset when saved items change from outside
   useEffect(() => {
     setItems(savedItems ?? defaultItems);
     setDirty(false);
@@ -223,13 +191,14 @@ function AgendaEditor({
       <div className="flex flex-col gap-1.5 mb-3">
         {items.map((item, idx) => (
           <div key={item.key} className="flex items-center gap-2">
-            {/* Move up/down */}
             <div className="flex flex-col gap-0.5">
               <button
                 onClick={() => moveItem(idx, -1)}
                 disabled={idx === 0}
-                className="w-5 h-4 rounded flex items-center justify-center text-[#94A3B8] hover:text-[#1E3A5F] disabled:opacity-20 transition-colors"
-                style={{ backgroundColor: "#F1F0ED" }}
+                className="w-5 h-4 rounded flex items-center justify-center disabled:opacity-20 transition-colors"
+                style={{ backgroundColor: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.5)" }}
+                onMouseEnter={e => (e.currentTarget.style.color = "white")}
+                onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.5)")}
                 title="Move up"
               >
                 <svg width="8" height="8" viewBox="0 0 8 8" fill="none"><path d="M4 1L7 6H1L4 1Z" fill="currentColor"/></svg>
@@ -237,35 +206,33 @@ function AgendaEditor({
               <button
                 onClick={() => moveItem(idx, 1)}
                 disabled={idx === items.length - 1}
-                className="w-5 h-4 rounded flex items-center justify-center text-[#94A3B8] hover:text-[#1E3A5F] disabled:opacity-20 transition-colors"
-                style={{ backgroundColor: "#F1F0ED" }}
+                className="w-5 h-4 rounded flex items-center justify-center disabled:opacity-20 transition-colors"
+                style={{ backgroundColor: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.5)" }}
+                onMouseEnter={e => (e.currentTarget.style.color = "white")}
+                onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.5)")}
                 title="Move down"
               >
                 <svg width="8" height="8" viewBox="0 0 8 8" fill="none"><path d="M4 7L7 2H1L4 7Z" fill="currentColor"/></svg>
               </button>
             </div>
 
-            {/* Label input */}
             <input
               type="text"
               value={item.label}
               onChange={(e) => updateLabel(idx, e.target.value)}
               placeholder="Agenda item…"
-              className="flex-1 rounded-lg px-3 py-2 text-[13px] text-[#1E3A5F] placeholder-[#94A3B8] focus:outline-none transition-all"
-              style={{
-                backgroundColor: "#F8F7F4",
-                border: "1px solid #E2E0DB",
-                fontFamily: "'Inter', sans-serif",
-              }}
-              onFocus={(e) => (e.target.style.borderColor = "#0D9488")}
-              onBlur={(e) => (e.target.style.borderColor = "#E2E0DB")}
+              className="flex-1 rounded-lg px-3 py-2 text-[13px] placeholder-white/30 focus:outline-none transition-all"
+              style={darkInput}
+              onFocus={(e) => (e.target.style.borderColor = "#5EEAD4")}
+              onBlur={(e) => (e.target.style.borderColor = "rgba(255,255,255,0.12)")}
             />
 
-            {/* Remove */}
             <button
               onClick={() => removeItem(idx)}
-              className="w-7 h-7 rounded-lg flex items-center justify-center text-[#94A3B8] hover:text-red-500 transition-colors"
-              style={{ backgroundColor: "#F1F0ED" }}
+              className="w-7 h-7 rounded-lg flex items-center justify-center transition-colors"
+              style={{ backgroundColor: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.4)" }}
+              onMouseEnter={e => (e.currentTarget.style.color = "#FDA4AF")}
+              onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.4)")}
               title="Remove item"
             >
               <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
@@ -276,21 +243,23 @@ function AgendaEditor({
         ))}
       </div>
 
-      {/* Add item */}
       <button
         onClick={addItem}
-        className="w-full py-2 rounded-lg text-[12px] text-[#64748B] hover:text-[#1E3A5F] transition-colors mb-3"
-        style={{ backgroundColor: "#F8F7F4", border: "1px dashed #CBD5E1", fontFamily: "'Inter', sans-serif" }}
+        className="w-full py-2 rounded-lg text-[12px] transition-colors mb-3"
+        style={{ backgroundColor: "rgba(255,255,255,0.03)", border: "1px dashed rgba(255,255,255,0.15)", color: "rgba(255,255,255,0.4)", fontFamily: "'Inter', sans-serif" }}
+        onMouseEnter={e => (e.currentTarget.style.color = "rgba(255,255,255,0.7)")}
+        onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.4)")}
       >
         + Add agenda item
       </button>
 
-      {/* Actions */}
       <div className="flex gap-2">
         <button
           onClick={resetToDefault}
-          className="px-3 py-1.5 rounded-lg text-[11px] text-[#64748B] hover:text-[#374151] transition-colors"
-          style={{ backgroundColor: "#F1F0ED", fontFamily: "'Inter', sans-serif" }}
+          className="px-3 py-1.5 rounded-lg text-[11px] transition-colors"
+          style={{ backgroundColor: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.5)", fontFamily: "'Inter', sans-serif" }}
+          onMouseEnter={e => (e.currentTarget.style.color = "rgba(255,255,255,0.8)")}
+          onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.5)")}
         >
           Reset to defaults
         </button>
@@ -300,7 +269,7 @@ function AgendaEditor({
           disabled={!dirty}
           className="px-4 py-1.5 rounded-lg text-[12px] font-bold text-white transition-all hover:opacity-90 disabled:opacity-30"
           style={{
-            background: dirty ? "linear-gradient(135deg, #1E3A5F 0%, #0D9488 100%)" : "#E2E0DB",
+            background: dirty ? "linear-gradient(135deg, #1E3A5F 0%, #0D9488 100%)" : "rgba(255,255,255,0.08)",
             fontFamily: "'Space Grotesk', sans-serif",
           }}
         >
@@ -314,16 +283,15 @@ function AgendaEditor({
 // ─── Main Settings Page ───────────────────────────────────────────────────────
 export default function Settings() {
   const { person } = usePerson();
-    const accountId = person?.accountId ?? (() => {
+  const accountId = person?.accountId ?? (() => {
     const stored = localStorage.getItem("bcc_account_id");
     return stored ? parseInt(stored, 10) : undefined;
   })();
-  // Load businesses from DB — the source of truth for this account
+
   const { data: dbBusinesses = [] } = trpc.business.list.useQuery(
     { accountId: accountId ?? 0 },
     { enabled: accountId !== undefined }
   );
-  // Load persons for dynamic owner picker in PasswordModal
   const { data: personsData = [] } = trpc.person.list.useQuery(
     { accountId: accountId ?? 0 },
     { enabled: accountId !== undefined }
@@ -333,7 +301,6 @@ export default function Settings() {
     [personsData]
   );
 
-  // Map DB businesses to the shape Settings expects
   const visibleBusinesses = dbBusinesses.map(b => ({
     key: b.slug as DbBusiness,
     bizKey: b.slug as BusinessKey,
@@ -343,12 +310,12 @@ export default function Settings() {
   }));
 
   const [selectedBiz, setSelectedBiz] = useState<DbBusiness>("");
-  // Sync selectedBiz to the first available business once DB data loads
   useEffect(() => {
     if (!selectedBiz && visibleBusinesses.length > 0) {
       setSelectedBiz(visibleBusinesses[0].key);
     }
   }, [visibleBusinesses, selectedBiz]);
+
   const effectiveSelectedBiz = (selectedBiz && visibleBusinesses.some(b => b.key === selectedBiz))
     ? selectedBiz
     : (visibleBusinesses[0]?.key ?? "chiropractic" as DbBusiness);
@@ -358,14 +325,8 @@ export default function Settings() {
   const { data: allTemplates, refetch } = trpc.agendaTemplate.getAll.useQuery();
 
   const saveTemplate = trpc.agendaTemplate.save.useMutation({
-    onSuccess: () => {
-      toast.success("Agenda updated successfully.");
-      setPendingSave(null);
-      refetch();
-    },
-    onError: (err) => {
-      toast.error(err.message ?? "Incorrect password or save failed.");
-    },
+    onSuccess: () => { toast.success("Agenda updated successfully."); setPendingSave(null); refetch(); },
+    onError: (err) => { toast.error(err.message ?? "Incorrect password or save failed."); },
   });
 
   const getSavedItems = (biz: DbBusiness, mt: DbMeetingType): AgendaItem[] | null => {
@@ -374,9 +335,7 @@ export default function Settings() {
     return found ? found.items : null;
   };
 
-  const handleSaveRequest = (items: AgendaItem[]) => {
-    setPendingSave({ items });
-  };
+  const handleSaveRequest = (items: AgendaItem[]) => { setPendingSave({ items }); };
 
   const handlePasswordConfirm = (password: string, updatedBy: string) => {
     if (!pendingSave) return;
@@ -389,31 +348,22 @@ export default function Settings() {
     });
   };
 
-  // Derive selectedBizInfo from the DB-driven visibleBusinesses list (not the hardcoded BUSINESSES_LIST)
   const selectedBizInfo = visibleBusinesses.find((b) => b.key === effectiveSelectedBiz)
     ?? visibleBusinesses[0]
     ?? { key: "", bizKey: "", label: "Business", color: "#E2E0DB", icon: "🏢" };
-  const selectedMtInfo = MEETING_LIST.find((m) => m.key === selectedMt)
-    ?? MEETING_LIST[0];
+  const selectedMtInfo = MEETING_LIST.find((m) => m.key === selectedMt) ?? MEETING_LIST[0];
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: "#F8F7F4", fontFamily: "'Inter', sans-serif" }}>
-      {/* Background grid */}
-      <div
-        className="fixed inset-0 pointer-events-none"
-        style={{
-          backgroundImage: "linear-gradient(rgba(30,58,95,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(30,58,95,0.04) 1px, transparent 1px)",
-          backgroundSize: "32px 32px",
-        }}
-      />
-
+    <div className="min-h-screen" style={{ backgroundColor: "#0F2440", fontFamily: "'Inter', sans-serif" }}>
       <div className="relative z-10 max-w-4xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="flex items-center gap-4 mb-8">
           <Link
             href="/app"
-            className="flex items-center gap-2 text-[12px] text-[#64748B] hover:text-[#1E3A5F] transition-colors"
-            style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+            className="flex items-center gap-2 text-[12px] transition-colors"
+            style={{ color: "rgba(255,255,255,0.4)", fontFamily: "'Space Grotesk', sans-serif" }}
+            onMouseEnter={e => (e.currentTarget.style.color = "rgba(255,255,255,0.8)")}
+            onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.4)")}
           >
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
               <path d="M9 2L4 7L9 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -422,53 +372,47 @@ export default function Settings() {
           </Link>
           <div className="flex-1" />
           <div>
-            <h1 className="text-[#1E3A5F] font-bold text-[18px]" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+            <h1 className="font-bold text-[18px] text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
               Settings
             </h1>
-            <p className="text-[#64748B] text-[11px]">Customize agenda items per meeting type</p>
+            <p className="text-[11px]" style={{ color: "rgba(255,255,255,0.4)" }}>Customize agenda items per meeting type</p>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-6">
-          {/* Left: Business selector */}
+          {/* Left: Business + Meeting selector */}
           <div className="flex flex-col gap-3">
-            <p className="text-[#94A3B8] text-[10px] uppercase tracking-widest mb-1">Business</p>
+            <p className="text-[10px] uppercase tracking-widest mb-1" style={{ color: "rgba(255,255,255,0.3)", fontFamily: "'Space Grotesk', sans-serif" }}>Business</p>
             {visibleBusinesses.map((biz) => (
               <button
                 key={biz.key}
                 onClick={() => setSelectedBiz(biz.key)}
                 className="flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all"
                 style={{
-                  backgroundColor: effectiveSelectedBiz === biz.key ? "#FFFFFF" : "#F8F7F4",
-                  border: effectiveSelectedBiz === biz.key ? `1px solid ${biz.color}` : "1px solid #E2E0DB",
+                  backgroundColor: effectiveSelectedBiz === biz.key ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.03)",
+                  border: effectiveSelectedBiz === biz.key ? `1px solid ${biz.color}` : "1px solid rgba(255,255,255,0.1)",
                 }}
               >
                 <span className="text-lg">{biz.icon}</span>
-                <span
-                  className="text-[12px] font-semibold"
-                  style={{                   color: effectiveSelectedBiz === biz.key ? "#1E3A5F" : "#64748B", fontFamily: "'Space Grotesk', sans-serif" }}
-                >
+                <span className="text-[12px] font-semibold" style={{ color: effectiveSelectedBiz === biz.key ? "white" : "rgba(255,255,255,0.5)", fontFamily: "'Space Grotesk', sans-serif" }}>
                   {biz.label}
                 </span>
               </button>
             ))}
 
-            <p className="text-[#94A3B8] text-[10px] uppercase tracking-widest mt-4 mb-1">Meeting Type</p>
+            <p className="text-[10px] uppercase tracking-widest mt-4 mb-1" style={{ color: "rgba(255,255,255,0.3)", fontFamily: "'Space Grotesk', sans-serif" }}>Meeting Type</p>
             {MEETING_LIST.map((mt) => (
               <button
                 key={mt.key}
                 onClick={() => setSelectedMt(mt.key)}
                 className="flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all"
                 style={{
-                  backgroundColor: selectedMt === mt.key ? "#FFFFFF" : "#F8F7F4",
-                  border: selectedMt === mt.key ? `1px solid ${mt.color}` : "1px solid #E2E0DB",
+                  backgroundColor: selectedMt === mt.key ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.03)",
+                  border: selectedMt === mt.key ? `1px solid ${mt.color}` : "1px solid rgba(255,255,255,0.1)",
                 }}
               >
                 <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: mt.color }} />
-                <span
-                  className="text-[12px] font-semibold"
-                  style={{                   color: selectedMt === mt.key ? "#1E3A5F" : "#64748B", fontFamily: "'Space Grotesk', sans-serif" }}
-                >
+                <span className="text-[12px] font-semibold" style={{ color: selectedMt === mt.key ? "white" : "rgba(255,255,255,0.5)", fontFamily: "'Space Grotesk', sans-serif" }}>
                   {mt.label}
                 </span>
               </button>
@@ -476,33 +420,26 @@ export default function Settings() {
           </div>
 
           {/* Right: Editor */}
-          <div
-            className="rounded-2xl p-6"
-            style={{ backgroundColor: "#FFFFFF", border: "1px solid #E2E0DB" }}
-          >
-            {/* Editor header */}
+          <div className="rounded-2xl p-6" style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)" }}>
             <div className="flex items-center gap-3 mb-5">
               <span className="text-xl">{selectedBizInfo.icon}</span>
               <div>
-                <h2 className="text-[#1E3A5F] font-bold text-[14px]" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+                <h2 className="font-bold text-[14px] text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
                   {selectedBizInfo.label}
                 </h2>
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 rounded-full" style={{ backgroundColor: selectedMtInfo.color }} />
-                  <span className="text-[#64748B] text-[11px]">{selectedMtInfo.label}</span>
+                  <span className="text-[11px]" style={{ color: "rgba(255,255,255,0.4)" }}>{selectedMtInfo.label}</span>
                 </div>
               </div>
               {getSavedItems(effectiveSelectedBiz, selectedMt) && (
-                <span
-                  className="ml-auto text-[10px] px-2 py-0.5 rounded-full"
-                  style={{ backgroundColor: "rgba(13,148,136,0.10)", color: "#0D9488" }}
-                >
+                <span className="ml-auto text-[10px] px-2 py-0.5 rounded-full" style={{ backgroundColor: "rgba(13,148,136,0.2)", color: "#5EEAD4" }}>
                   Custom
                 </span>
               )}
             </div>
 
-            <p className="text-[#64748B] text-[11px] mb-4" style={{ fontFamily: "'Inter', sans-serif" }}>
+            <p className="text-[11px] mb-4" style={{ color: "rgba(255,255,255,0.4)", fontFamily: "'Inter', sans-serif" }}>
               Edit, reorder, add, or remove agenda items. Changes apply to all future meetings of this type.
               Past meeting logs are preserved with their original items.
             </p>
@@ -518,17 +455,14 @@ export default function Settings() {
         </div>
       </div>
 
-      {/* Employee Management — owners only */}
       {(person?.role === "owner" || person?.role === "coowner") && (
         <EmployeeInvitePanel accountId={accountId ?? 0} />
       )}
 
-      {/* Weekly Report Questions — owners only */}
       {(person?.role === "owner" || person?.role === "coowner") && (
         <ReportQuestionsPanel accountId={accountId ?? 0} businesses={visibleBusinesses} />
       )}
 
-      {/* Password confirmation modal */}
       {pendingSave && (
         <PasswordModal
           onConfirm={handlePasswordConfirm}
@@ -542,7 +476,6 @@ export default function Settings() {
 }
 
 // ─── Employee Invite Panel ────────────────────────────────────────────────────
-
 function EmployeeInvitePanel({ accountId }: { accountId: number }) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -574,10 +507,7 @@ function EmployeeInvitePanel({ accountId }: { accountId: number }) {
         toast.error("Could not create invite. Check that the email isn't already registered.");
       }
     },
-    onError: () => {
-      setSending(false);
-      toast.error("Failed to send invite. Please try again.");
-    },
+    onError: () => { setSending(false); toast.error("Failed to send invite. Please try again."); },
   });
 
   const handleInvite = (e: React.FormEvent) => {
@@ -585,48 +515,29 @@ function EmployeeInvitePanel({ accountId }: { accountId: number }) {
     if (!name.trim() || !email.trim()) return;
     setSending(true);
     setInviteLink(null);
-    inviteMutation.mutate({
-      accountId,
-      name: name.trim(),
-      email: email.trim(),
-      role,
-      businessScope: role === "coowner" ? "all" : scope,
-      origin: window.location.origin,
-    });
+    inviteMutation.mutate({ accountId, name: name.trim(), email: email.trim(), role, businessScope: role === "coowner" ? "all" : scope, origin: window.location.origin });
   };
 
   const members: PersonRow[] = Array.isArray(membersData) ? membersData : [];
-
-  const roleLabel = (r: string) =>
-    r === "owner" ? "Owner" : r === "coowner" ? "Co-owner" : "Employee";
-
-  const inputClass = "w-full rounded-xl px-4 py-2.5 text-sm text-[#1A1A2E] placeholder-[#94A3B8] focus:outline-none transition-all";
-  const inputStyle = { backgroundColor: "#F8F7F4", border: "1.5px solid #E2E0DB" };
+  const roleLabel = (r: string) => r === "owner" ? "Owner" : r === "coowner" ? "Co-owner" : "Employee";
 
   return (
-    <div className="mt-8">
-      <div
-        className="rounded-2xl p-6"
-        style={{ backgroundColor: "#FFFFFF", border: "1px solid #E2E0DB" }}
-      >
-        <h2 className="text-[#1E3A5F] font-bold text-[16px] mb-1" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+    <div className="max-w-4xl mx-auto px-4 pb-8">
+      <div className="rounded-2xl p-6" style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)" }}>
+        <h2 className="font-bold text-[16px] mb-1 text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
           👥 Team Members
         </h2>
-        <p className="text-[#64748B] text-[12px] mb-6">
+        <p className="text-[12px] mb-6" style={{ color: "rgba(255,255,255,0.4)" }}>
           Add employees and send them an invite link to create their account.
         </p>
 
-        {/* Current members */}
         {members.length > 0 && (
           <div className="mb-6">
-            <p className="text-[10px] uppercase tracking-widest text-[#94A3B8] mb-3">Current Members</p>
+            <p className="text-[10px] uppercase tracking-widest mb-3" style={{ color: "rgba(255,255,255,0.3)" }}>Current Members</p>
             <div className="flex flex-col gap-2">
               {members.map(m => (
-                <div
-                  key={m.id}
-                  className="flex items-center gap-3 px-4 py-2.5 rounded-xl"
-                  style={{ backgroundColor: "#F8F7F4", border: "1px solid #E2E0DB" }}
-                >
+                <div key={m.id} className="flex items-center gap-3 px-4 py-2.5 rounded-xl"
+                  style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
                   <div
                     className="w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold text-white flex-shrink-0"
                     style={{ backgroundColor: m.role === "owner" ? "#2563EB" : m.role === "coowner" ? "#E11D48" : "#059669" }}
@@ -634,21 +545,19 @@ function EmployeeInvitePanel({ accountId }: { accountId: number }) {
                     {m.name.charAt(0).toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-[13px] font-semibold text-[#1E3A5F] truncate" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>{m.name}</p>
-                    <p className="text-[11px] text-[#64748B] truncate">{m.email}</p>
+                    <p className="text-[13px] font-semibold text-white truncate" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>{m.name}</p>
+                    <p className="text-[11px] truncate" style={{ color: "rgba(255,255,255,0.4)" }}>{m.email}</p>
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0">
-                    <span
-                      className="text-[10px] px-2 py-0.5 rounded-full font-semibold"
+                    <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold"
                       style={{
-                        backgroundColor: m.role === "owner" ? "#DBEAFE" : m.role === "coowner" ? "#FFE4E6" : "#D1FAE5",
-                        color: m.role === "owner" ? "#1D4ED8" : m.role === "coowner" ? "#BE123C" : "#065F46",
-                      }}
-                    >
+                        backgroundColor: m.role === "owner" ? "rgba(37,99,235,0.2)" : m.role === "coowner" ? "rgba(225,29,72,0.2)" : "rgba(5,150,105,0.2)",
+                        color: m.role === "owner" ? "#93C5FD" : m.role === "coowner" ? "#FDA4AF" : "#6EE7B7",
+                      }}>
                       {roleLabel(m.role)}
                     </span>
                     {!m.inviteAccepted && (
-                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 font-semibold">
+                      <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold" style={{ backgroundColor: "rgba(217,119,6,0.2)", color: "#FCD34D" }}>
                         Pending
                       </span>
                     )}
@@ -659,94 +568,65 @@ function EmployeeInvitePanel({ accountId }: { accountId: number }) {
           </div>
         )}
 
-        {/* Invite form */}
-        <p className="text-[10px] uppercase tracking-widest text-[#94A3B8] mb-3">Invite New Team Member</p>
+        <p className="text-[10px] uppercase tracking-widest mb-3" style={{ color: "rgba(255,255,255,0.3)" }}>Invite New Team Member</p>
         <form onSubmit={handleInvite} className="flex flex-col gap-3">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="flex flex-col gap-1.5">
-              <label className="text-[11px] font-semibold text-[#1E3A5F]">Name</label>
-              <input
-                type="text"
-                value={name}
-                onChange={e => setName(e.target.value)}
-                placeholder="e.g. Colleen"
-                className={inputClass}
-                style={inputStyle}
-                onFocus={e => (e.target.style.borderColor = "#0D9488")}
-                onBlur={e => (e.target.style.borderColor = "#E2E0DB")}
-              />
+              <label className="text-[11px] font-semibold text-white/70">Name</label>
+              <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Colleen"
+                className="w-full rounded-xl px-4 py-2.5 text-sm placeholder-white/30 focus:outline-none transition-all"
+                style={darkInput}
+                onFocus={e => (e.target.style.borderColor = "#5EEAD4")}
+                onBlur={e => (e.target.style.borderColor = "rgba(255,255,255,0.12)")} />
             </div>
             <div className="flex flex-col gap-1.5">
-              <label className="text-[11px] font-semibold text-[#1E3A5F]">Email</label>
-              <input
-                type="email"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                placeholder="employee@email.com"
-                className={inputClass}
-                style={inputStyle}
-                onFocus={e => (e.target.style.borderColor = "#0D9488")}
-                onBlur={e => (e.target.style.borderColor = "#E2E0DB")}
-              />
+              <label className="text-[11px] font-semibold text-white/70">Email</label>
+              <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="employee@email.com"
+                className="w-full rounded-xl px-4 py-2.5 text-sm placeholder-white/30 focus:outline-none transition-all"
+                style={darkInput}
+                onFocus={e => (e.target.style.borderColor = "#5EEAD4")}
+                onBlur={e => (e.target.style.borderColor = "rgba(255,255,255,0.12)")} />
             </div>
           </div>
           <div className="flex flex-col gap-1.5">
-            <label className="text-[11px] font-semibold text-[#1E3A5F]">Role</label>
-            <select
-              value={role}
-              onChange={e => setRole(e.target.value as "employee" | "coowner")}
-              className={inputClass}
-              style={{ ...inputStyle, cursor: "pointer" }}
-            >
+            <label className="text-[11px] font-semibold text-white/70">Role</label>
+            <select value={role} onChange={e => setRole(e.target.value as "employee" | "coowner")}
+              className="w-full rounded-xl px-4 py-2.5 text-sm focus:outline-none cursor-pointer"
+              style={darkInput}>
               <option value="employee">Employee (Board + KPIs only)</option>
               <option value="coowner">Co-owner (full access)</option>
             </select>
           </div>
           {role === "employee" && (
             <div className="flex flex-col gap-1.5">
-              <label className="text-[11px] font-semibold text-[#1E3A5F]">Business Access</label>
-              <select
-                value={scope}
-                onChange={e => setScope(e.target.value)}
-                className={inputClass}
-                style={{ ...inputStyle, cursor: "pointer" }}
-              >
-                {bizList.map(b => (
-                  <option key={b.slug} value={b.slug}>{b.name} only</option>
-                ))}
+              <label className="text-[11px] font-semibold text-white/70">Business Access</label>
+              <select value={scope} onChange={e => setScope(e.target.value)}
+                className="w-full rounded-xl px-4 py-2.5 text-sm focus:outline-none cursor-pointer"
+                style={darkInput}>
+                {bizList.map(b => <option key={b.slug} value={b.slug}>{b.name} only</option>)}
                 {bizList.length > 1 && <option value="all">All businesses</option>}
               </select>
             </div>
           )}
-          <button
-            type="submit"
-            disabled={sending || !name.trim() || !email.trim()}
+          <button type="submit" disabled={sending || !name.trim() || !email.trim()}
             className="w-full py-3 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-40"
-            style={{ backgroundColor: "#1E3A5F", boxShadow: "0 4px 16px rgba(30,58,95,0.20)" }}
-          >
+            style={{ backgroundColor: "#1E3A5F", boxShadow: "0 4px 16px rgba(30,58,95,0.3)" }}>
             {sending ? "Creating invite…" : "Send Invite Link →"}
           </button>
         </form>
 
-        {/* Invite link display */}
         {inviteLink && (
-          <div
-            className="mt-4 p-4 rounded-xl"
-            style={{ backgroundColor: "#F0FDF4", border: "1px solid #86EFAC" }}
-          >
-            <p className="text-[12px] font-semibold text-[#065F46] mb-2">✓ Invite link created!</p>
-            <p className="text-[11px] text-[#64748B] mb-2">Copy and send this link to your employee:</p>
+          <div className="mt-4 p-4 rounded-xl" style={{ backgroundColor: "rgba(5,150,105,0.1)", border: "1px solid rgba(5,150,105,0.3)" }}>
+            <p className="text-[12px] font-semibold mb-2" style={{ color: "#6EE7B7" }}>✓ Invite link created!</p>
+            <p className="text-[11px] mb-2" style={{ color: "rgba(255,255,255,0.4)" }}>Copy and send this link to your employee:</p>
             <div className="flex items-center gap-2">
-              <input
-                readOnly
-                value={inviteLink}
-                className="flex-1 text-[11px] px-3 py-2 rounded-lg bg-white border border-[#86EFAC] text-[#1E3A5F] font-mono"
-              />
+              <input readOnly value={inviteLink}
+                className="flex-1 text-[11px] px-3 py-2 rounded-lg font-mono focus:outline-none"
+                style={{ backgroundColor: "rgba(255,255,255,0.06)", border: "1px solid rgba(5,150,105,0.3)", color: "rgba(255,255,255,0.7)" }} />
               <button
                 onClick={() => { navigator.clipboard.writeText(inviteLink); toast.success("Copied!"); }}
                 className="px-3 py-2 rounded-lg text-[11px] font-bold text-white flex-shrink-0"
-                style={{ backgroundColor: "#059669" }}
-              >
+                style={{ backgroundColor: "#059669" }}>
                 Copy
               </button>
             </div>
@@ -758,31 +638,14 @@ function EmployeeInvitePanel({ accountId }: { accountId: number }) {
 }
 
 // ─── Report Questions Panel ───────────────────────────────────────────────────
+interface BizOption { key: string; label: string; icon: string; color: string; }
 
-interface BizOption {
-  key: string;
-  label: string;
-  icon: string;
-  color: string;
-}
-
-function ReportQuestionsPanel({
-  accountId,
-  businesses,
-}: {
-  accountId: number;
-  businesses: BizOption[];
-}) {
-  const [selectedBizId, setSelectedBizId] = useState<number>(0); // 0 = all businesses
+function ReportQuestionsPanel({ accountId, businesses }: { accountId: number; businesses: BizOption[] }) {
+  const [selectedBizId, setSelectedBizId] = useState<number>(0);
   const [newQuestion, setNewQuestion] = useState("");
 
-  // Load DB businesses to get their IDs (the panel receives slugs/labels but we need IDs)
-  const { data: dbBizList = [] } = trpc.business.list.useQuery(
-    { accountId },
-    { enabled: accountId !== undefined }
-  );
+  const { data: dbBizList = [] } = trpc.business.list.useQuery({ accountId }, { enabled: accountId !== undefined });
 
-  // Build display options: "All Businesses" + each DB business
   const bizOptions: { id: number; label: string; icon: string }[] = [
     { id: 0, label: "All Businesses", icon: "🌐" },
     ...dbBizList.map(b => ({ id: b.id, label: b.name, icon: b.icon || "🏢" })),
@@ -794,95 +657,80 @@ function ReportQuestionsPanel({
   );
 
   const createQuestion = trpc.report.createQuestion.useMutation({
-    onSuccess: () => {
-      setNewQuestion("");
-      toast.success("Question added!");
-      questionsQuery.refetch();
-    },
+    onSuccess: () => { setNewQuestion(""); toast.success("Question added!"); questionsQuery.refetch(); },
     onError: () => toast.error("Failed to add question."),
   });
 
   const deleteQuestion = trpc.report.deleteQuestion.useMutation({
-    onSuccess: () => {
-      toast.success("Question removed.");
-      questionsQuery.refetch();
-    },
+    onSuccess: () => { toast.success("Question removed."); questionsQuery.refetch(); },
     onError: () => toast.error("Failed to remove question."),
   });
 
   const questions = questionsQuery.data ?? [];
 
+  function handleAddQuestion() {
+    if (!newQuestion.trim()) return;
+    createQuestion.mutate({ accountId, businessId: selectedBizId, question: newQuestion.trim(), sortOrder: questions.length });
+  }
+
   return (
-    <div
-      className="relative z-10 max-w-4xl mx-auto px-4 py-8"
-    >
-      <div
-        className="rounded-2xl p-6"
-        style={{ backgroundColor: "#FFFFFF", border: "1px solid #E2E0DB" }}
-      >
-        {/* Header */}
+    <div className="max-w-4xl mx-auto px-4 pb-8">
+      <div className="rounded-2xl p-6" style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)" }}>
         <div className="flex items-center gap-3 mb-5">
           <span className="text-xl">📝</span>
           <div>
-            <h2 className="text-[#1E3A5F] font-bold text-[14px]" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+            <h2 className="font-bold text-[14px] text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
               Weekly Report Questions
             </h2>
-            <p className="text-[#64748B] text-[11px]">
+            <p className="text-[11px]" style={{ color: "rgba(255,255,255,0.4)" }}>
               Configure the questions employees answer in their weekly check-in.
             </p>
           </div>
         </div>
 
-        {/* Business filter tabs */}
         <div className="flex gap-2 flex-wrap mb-5">
           {bizOptions.map(b => (
-            <button
-              key={b.id}
-              onClick={() => setSelectedBizId(b.id)}
+            <button key={b.id} onClick={() => setSelectedBizId(b.id)}
               className="px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all flex items-center gap-1.5"
               style={{
-                backgroundColor: selectedBizId === b.id ? "#1E3A5F" : "#F8F7F4",
-                color: selectedBizId === b.id ? "white" : "#475569",
-                border: `1.5px solid ${selectedBizId === b.id ? "#1E3A5F" : "#E2E0DB"}`,
+                backgroundColor: selectedBizId === b.id ? "#1E3A5F" : "rgba(255,255,255,0.05)",
+                color: selectedBizId === b.id ? "white" : "rgba(255,255,255,0.5)",
+                border: `1.5px solid ${selectedBizId === b.id ? "#5EEAD4" : "rgba(255,255,255,0.1)"}`,
                 fontFamily: "'Space Grotesk', sans-serif",
-              }}
-            >
+              }}>
               {b.icon} {b.label}
             </button>
           ))}
         </div>
 
-        {/* Question list */}
         {questionsQuery.isLoading ? (
-          <p className="text-[12px] text-slate-400 italic py-4">Loading questions…</p>
+          <p className="text-[12px] italic py-4" style={{ color: "rgba(255,255,255,0.3)" }}>Loading questions…</p>
         ) : questions.length === 0 ? (
-          <div
-            className="rounded-xl p-6 text-center mb-4"
-            style={{ backgroundColor: "#F8F7F4", border: "1.5px dashed #E2E0DB" }}
-          >
-            <p className="text-[12px] text-slate-400">
+          <div className="rounded-xl p-6 text-center mb-4" style={{ backgroundColor: "rgba(255,255,255,0.03)", border: "1.5px dashed rgba(255,255,255,0.1)" }}>
+            <p className="text-[12px]" style={{ color: "rgba(255,255,255,0.3)" }}>
               No questions configured yet for {selectedBizId === 0 ? "all businesses" : bizOptions.find(b => b.id === selectedBizId)?.label ?? "this business"}.
             </p>
           </div>
         ) : (
           <div className="flex flex-col gap-2 mb-4">
             {questions.map((q, idx) => (
-              <div
-                key={q.id}
-                className="flex items-center gap-3 px-4 py-3 rounded-xl group"
-                style={{ backgroundColor: "#F8F7F4", border: "1px solid #E2E0DB" }}
-              >
-                <span className="text-[12px] text-slate-400 font-bold w-5 flex-shrink-0">{idx + 1}.</span>
-                <p className="flex-1 text-[13px] text-[#1E3A5F]" style={{ fontFamily: "'Inter', sans-serif" }}>
-                  {q.question}
-                </p>
+              <div key={q.id} className="flex items-center gap-3 px-4 py-3 rounded-xl group"
+                style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
+                <span className="text-[12px] font-bold w-5 flex-shrink-0" style={{ color: "rgba(255,255,255,0.3)" }}>{idx + 1}.</span>
+                <p className="flex-1 text-[13px] text-white" style={{ fontFamily: "'Inter', sans-serif" }}>{q.question}</p>
                 <span className="text-[10px] px-2 py-0.5 rounded-full flex-shrink-0"
-                  style={{ backgroundColor: q.businessId === 0 ? "#EDE9FE" : "#DBEAFE", color: q.businessId === 0 ? "#5B21B6" : "#1D4ED8" }}>
+                  style={{
+                    backgroundColor: q.businessId === 0 ? "rgba(124,58,237,0.2)" : "rgba(37,99,235,0.2)",
+                    color: q.businessId === 0 ? "#C4B5FD" : "#93C5FD",
+                  }}>
                   {q.businessId === 0 ? "All" : bizOptions.find(b => b.id === q.businessId)?.label ?? "Business"}
                 </span>
                 <button
                   onClick={() => deleteQuestion.mutate({ id: q.id })}
-                  className="w-6 h-6 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-50 text-red-400"
+                  className="w-6 h-6 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                  style={{ color: "#FDA4AF" }}
+                  onMouseEnter={e => (e.currentTarget.style.backgroundColor = "rgba(239,68,68,0.1)")}
+                  onMouseLeave={e => (e.currentTarget.style.backgroundColor = "transparent")}
                   title="Remove question"
                 >
                   <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
@@ -894,7 +742,6 @@ function ReportQuestionsPanel({
           </div>
         )}
 
-        {/* Add question form */}
         <div className="flex gap-2">
           <input
             type="text"
@@ -902,34 +749,23 @@ function ReportQuestionsPanel({
             onChange={e => setNewQuestion(e.target.value)}
             onKeyDown={e => { if (e.key === "Enter" && newQuestion.trim()) handleAddQuestion(); }}
             placeholder="e.g. What was your biggest win this week?"
-            className="flex-1 rounded-xl px-4 py-2.5 text-[13px] text-[#1A1A2E] placeholder-[#94A3B8] focus:outline-none transition-all"
-            style={{ backgroundColor: "#F8F7F4", border: "1.5px solid #E2E0DB" }}
-            onFocus={e => (e.target.style.borderColor = "#7C3AED")}
-            onBlur={e => (e.target.style.borderColor = "#E2E0DB")}
+            className="flex-1 rounded-xl px-4 py-2.5 text-[13px] placeholder-white/30 focus:outline-none transition-all"
+            style={darkInput}
+            onFocus={e => (e.target.style.borderColor = "#C4B5FD")}
+            onBlur={e => (e.target.style.borderColor = "rgba(255,255,255,0.12)")}
           />
           <button
             onClick={handleAddQuestion}
             disabled={!newQuestion.trim() || createQuestion.isPending}
             className="px-4 py-2.5 rounded-xl text-[12px] font-bold text-white transition-all hover:opacity-90 active:scale-[0.97] disabled:opacity-40"
-            style={{ backgroundColor: "#7C3AED", fontFamily: "'Space Grotesk', sans-serif" }}
-          >
+            style={{ backgroundColor: "#7C3AED", fontFamily: "'Space Grotesk', sans-serif" }}>
             {createQuestion.isPending ? "…" : "+ Add"}
           </button>
         </div>
-        <p className="text-[10px] text-slate-400 mt-2">
+        <p className="text-[10px] mt-2" style={{ color: "rgba(255,255,255,0.3)" }}>
           Questions tagged "All" appear for every business. Select a specific business tab to add questions for that business only.
         </p>
       </div>
     </div>
   );
-
-  function handleAddQuestion() {
-    if (!newQuestion.trim()) return;
-    createQuestion.mutate({
-      accountId,
-      businessId: selectedBizId,
-      question: newQuestion.trim(),
-      sortOrder: questions.length,
-    });
-  }
 }

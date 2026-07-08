@@ -35,19 +35,19 @@ interface NavItem {
 }
 
 const OWNER_NAV: NavItem[] = [
-  { path: "/app/board",    label: "Board",    icon: "📋", activeColor: "#2563EB" },
-  { path: "/app/goals",    label: "Goals",    icon: "🎯", activeColor: "#7C3AED" },
-  { path: "/app/kpi",      label: "KPIs",     icon: "📈", activeColor: "#059669" },
-  { path: "/app/reports",  label: "Reports",  icon: "📊", activeColor: "#0D9488" },
-  { path: "/app/calendar", label: "Calendar", icon: "📅", activeColor: "#0EA5E9" },
-  { path: "/app/settings", label: "Settings", icon: "⚙️", activeColor: "#64748B" },
-  { path: "/app/admin",    label: "Admin",    icon: "🔑", activeColor: "#DC2626" },
+  { path: "/app/board",    label: "Board",    icon: "📋", activeColor: "#5EEAD4" },
+  { path: "/app/goals",    label: "Goals",    icon: "🎯", activeColor: "#5EEAD4" },
+  { path: "/app/kpi",      label: "KPIs",     icon: "📈", activeColor: "#5EEAD4" },
+  { path: "/app/reports",  label: "Reports",  icon: "📊", activeColor: "#5EEAD4" },
+  { path: "/app/calendar", label: "Calendar", icon: "📅", activeColor: "#5EEAD4" },
+  { path: "/app/settings", label: "Settings", icon: "⚙️", activeColor: "#5EEAD4" },
+  { path: "/app/admin",    label: "Admin",    icon: "🔑", activeColor: "#F87171" },
 ];
 
 const EMPLOYEE_NAV: NavItem[] = [
-  { path: "/app/board",    label: "Board",    icon: "📋", activeColor: "#2563EB" },
-  { path: "/app/kpi",      label: "KPIs",     icon: "📈", activeColor: "#059669" },
-  { path: "/app/checkin",  label: "Check-in", icon: "✅", activeColor: "#7C3AED" },
+  { path: "/app/board",    label: "Board",    icon: "📋", activeColor: "#5EEAD4" },
+  { path: "/app/kpi",      label: "KPIs",     icon: "📈", activeColor: "#5EEAD4" },
+  { path: "/app/checkin",  label: "Check-in", icon: "✅", activeColor: "#5EEAD4" },
 ];
 
 // Mobile bottom bar: show first 4 items + "More" for the rest
@@ -122,16 +122,20 @@ function MoreSheet({
       {/* Sheet */}
       <div
         className="fixed bottom-0 left-0 right-0 z-50 rounded-t-2xl overflow-hidden"
-        style={{ backgroundColor: "#FFFFFF", paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
+        style={{
+          backgroundColor: "#162d4a",
+          borderTop: "1px solid rgba(255,255,255,0.1)",
+          paddingBottom: "env(safe-area-inset-bottom, 0px)",
+        }}
       >
         {/* Handle */}
         <div className="flex justify-center pt-3 pb-1">
-          <div className="w-10 h-1 rounded-full bg-slate-200" />
+          <div className="w-10 h-1 rounded-full" style={{ backgroundColor: "rgba(255,255,255,0.2)" }} />
         </div>
 
         {/* Person row */}
         {person && (
-          <div className="px-5 py-3 flex items-center gap-3" style={{ borderBottom: "1px solid #F1F0ED" }}>
+          <div className="px-5 py-3 flex items-center gap-3" style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
             <div
               className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-white flex-shrink-0"
               style={{ backgroundColor: nameToColor(person.name).dot }}
@@ -139,10 +143,10 @@ function MoreSheet({
               {person.name.charAt(0).toUpperCase()}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-bold text-[#1E3A5F] truncate" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+              <p className="text-sm font-bold text-white truncate" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
                 {person.name}
               </p>
-              <p className="text-xs text-slate-400">{roleLabel}</p>
+              <p className="text-xs" style={{ color: "rgba(255,255,255,0.45)" }}>{roleLabel}</p>
             </div>
             <NotificationBell accountId={person.accountId} personId={person.id} />
           </div>
@@ -159,15 +163,15 @@ function MoreSheet({
                 onClick={onClose}
                 className="flex items-center gap-4 px-4 py-3 rounded-xl text-sm font-semibold transition-all"
                 style={{
-                  backgroundColor: isActive ? `${item.activeColor}15` : "transparent",
-                  color: isActive ? item.activeColor : "#1E3A5F",
+                  backgroundColor: isActive ? "rgba(94,234,212,0.12)" : "transparent",
+                  color: isActive ? "#5EEAD4" : "rgba(255,255,255,0.7)",
                   fontFamily: "'Space Grotesk', sans-serif",
                 }}
               >
                 <span className="text-xl w-7 text-center">{item.icon}</span>
                 {item.label}
                 {isActive && (
-                  <div className="ml-auto w-2 h-2 rounded-full" style={{ backgroundColor: item.activeColor }} />
+                  <div className="ml-auto w-2 h-2 rounded-full" style={{ backgroundColor: "#5EEAD4" }} />
                 )}
               </Link>
             );
@@ -179,8 +183,13 @@ function MoreSheet({
           <div className="px-4 pb-4">
             <button
               onClick={onSignOut}
-              className="w-full py-3 rounded-xl text-sm font-semibold text-red-500 transition-all active:scale-[0.98]"
-              style={{ backgroundColor: "#FEF2F2", border: "1px solid #FECACA", fontFamily: "'Space Grotesk', sans-serif" }}
+              className="w-full py-3 rounded-xl text-sm font-semibold transition-all active:scale-[0.98]"
+              style={{
+                backgroundColor: "rgba(248,113,113,0.1)",
+                border: "1px solid rgba(248,113,113,0.25)",
+                color: "#F87171",
+                fontFamily: "'Space Grotesk', sans-serif",
+              }}
             >
               Sign out
             </button>
@@ -235,24 +244,28 @@ export default function AppShell({ children }: AppShellProps) {
     <IdentityContext.Provider value={{ currentUser: person?.name ?? null }}>
       <div
         className="flex h-screen overflow-hidden"
-        style={{ backgroundColor: "#F8F7F4", fontFamily: "'Inter', sans-serif" }}
+        style={{ backgroundColor: "#0F2440", fontFamily: "'Inter', sans-serif" }}
       >
         {/* ── Desktop Sidebar ── */}
         <aside
           className="hidden md:flex flex-col flex-shrink-0 h-full"
-          style={{ width: "220px", backgroundColor: "#FFFFFF", borderRight: "1px solid #E2E8F0" }}
+          style={{
+            width: "220px",
+            backgroundColor: "#0A1929",
+            borderRight: "1px solid rgba(255,255,255,0.08)",
+          }}
         >
           {/* Brand */}
           <div
             className="flex items-center gap-3 px-5 py-4 flex-shrink-0"
-            style={{ borderBottom: "1px solid #F1F0ED" }}
+            style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}
           >
             <BrandIcon size={36} className="flex-shrink-0" />
             <div>
-              <p className="text-[13px] font-bold text-[#1E3A5F] leading-tight" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+              <p className="text-[13px] font-bold text-white leading-tight" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
                 BusinessCadence
               </p>
-              <p className="text-[10px] text-slate-400">Co-owner OS</p>
+              <p className="text-[10px]" style={{ color: "rgba(255,255,255,0.35)" }}>Co-owner OS</p>
             </div>
           </div>
 
@@ -266,8 +279,8 @@ export default function AppShell({ children }: AppShellProps) {
                   href={item.path}
                   className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-semibold transition-all duration-150"
                   style={{
-                    backgroundColor: isActive ? `${item.activeColor}15` : "transparent",
-                    color: isActive ? item.activeColor : "#64748B",
+                    backgroundColor: isActive ? "rgba(94,234,212,0.12)" : "transparent",
+                    color: isActive ? "#5EEAD4" : "rgba(255,255,255,0.55)",
                     fontFamily: "'Space Grotesk', sans-serif",
                   }}
                 >
@@ -276,7 +289,7 @@ export default function AppShell({ children }: AppShellProps) {
                   {isActive && (
                     <div
                       className="ml-auto w-1.5 h-1.5 rounded-full flex-shrink-0"
-                      style={{ backgroundColor: item.activeColor }}
+                      style={{ backgroundColor: "#5EEAD4" }}
                     />
                   )}
                 </Link>
@@ -287,7 +300,7 @@ export default function AppShell({ children }: AppShellProps) {
           {/* Logged-in person + sign out */}
           <div
             className="px-4 py-4 flex-shrink-0"
-            style={{ borderTop: "1px solid #F1F0ED" }}
+            style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }}
           >
             {person ? (
               <div className="flex items-center gap-2.5">
@@ -298,15 +311,18 @@ export default function AppShell({ children }: AppShellProps) {
                   {person.name.charAt(0).toUpperCase()}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-[12px] font-bold text-[#1E3A5F] truncate" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+                  <p className="text-[12px] font-bold text-white truncate" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
                     {person.name}
                   </p>
-                  <p className="text-[10px] text-slate-400 truncate">{roleLabel}</p>
+                  <p className="text-[10px] truncate" style={{ color: "rgba(255,255,255,0.35)" }}>{roleLabel}</p>
                 </div>
                 <NotificationBell accountId={person?.accountId} personId={person?.id} />
                 <button
                   onClick={handleSignOut}
-                  className="flex-shrink-0 text-[10px] text-slate-400 hover:text-red-500 transition-colors px-1.5 py-1 rounded hover:bg-red-50"
+                  className="flex-shrink-0 text-[10px] transition-colors px-1.5 py-1 rounded"
+                  style={{ color: "rgba(255,255,255,0.35)" }}
+                  onMouseEnter={e => (e.currentTarget.style.color = "#F87171")}
+                  onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.35)")}
                   title="Sign out"
                 >
                   Sign out
@@ -315,7 +331,8 @@ export default function AppShell({ children }: AppShellProps) {
             ) : (
               <button
                 onClick={() => navigate("/login")}
-                className="w-full text-[11px] font-semibold text-[#2563EB] hover:underline text-center"
+                className="w-full text-[11px] font-semibold text-center"
+                style={{ color: "#5EEAD4" }}
               >
                 Sign in
               </button>
@@ -329,15 +346,15 @@ export default function AppShell({ children }: AppShellProps) {
           <header
             className="md:hidden flex items-center justify-between px-4 flex-shrink-0"
             style={{
-              backgroundColor: "#FFFFFF",
-              borderBottom: "1px solid #E2E8F0",
+              backgroundColor: "#0A1929",
+              borderBottom: "1px solid rgba(255,255,255,0.08)",
               height: "52px",
               paddingTop: "env(safe-area-inset-top, 0px)",
             }}
           >
             <div className="flex items-center gap-2.5">
               <BrandIcon size={28} />
-              <p className="text-sm font-bold text-[#1E3A5F]" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+              <p className="text-sm font-bold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
                 BusinessCadence
               </p>
             </div>
@@ -363,8 +380,8 @@ export default function AppShell({ children }: AppShellProps) {
           <nav
             className="md:hidden flex-shrink-0 flex items-stretch"
             style={{
-              backgroundColor: "#FFFFFF",
-              borderTop: "1px solid #E2E8F0",
+              backgroundColor: "#0A1929",
+              borderTop: "1px solid rgba(255,255,255,0.08)",
               height: "calc(56px + env(safe-area-inset-bottom, 0px))",
               paddingBottom: "env(safe-area-inset-bottom, 0px)",
               position: "fixed",
@@ -381,7 +398,7 @@ export default function AppShell({ children }: AppShellProps) {
                   key={item.path}
                   href={item.path}
                   className="relative flex-1 flex flex-col items-center justify-center gap-0.5 transition-all duration-150 active:scale-95"
-                  style={{ color: isActive ? item.activeColor : "#94A3B8" }}
+                  style={{ color: isActive ? "#5EEAD4" : "rgba(255,255,255,0.35)" }}
                 >
                   <span className="text-[20px] leading-none">{item.icon}</span>
                   <span
@@ -393,7 +410,7 @@ export default function AppShell({ children }: AppShellProps) {
                   {isActive && (
                     <div
                       className="absolute top-0 w-8 h-0.5 rounded-full"
-                      style={{ backgroundColor: item.activeColor }}
+                      style={{ backgroundColor: "#5EEAD4" }}
                     />
                   )}
                 </Link>
@@ -405,7 +422,7 @@ export default function AppShell({ children }: AppShellProps) {
               <button
                 onClick={() => setMoreOpen(true)}
                 className="relative flex-1 flex flex-col items-center justify-center gap-0.5 transition-all duration-150 active:scale-95"
-                style={{ color: moreIsActive ? "#64748B" : "#94A3B8" }}
+                style={{ color: moreIsActive ? "#5EEAD4" : "rgba(255,255,255,0.35)" }}
               >
                 <span className="text-[20px] leading-none">☰</span>
                 <span
@@ -415,7 +432,7 @@ export default function AppShell({ children }: AppShellProps) {
                   More
                 </span>
                 {moreIsActive && (
-                  <div className="absolute top-0 w-8 h-0.5 rounded-full bg-slate-400" />
+                  <div className="absolute top-0 w-8 h-0.5 rounded-full" style={{ backgroundColor: "#5EEAD4" }} />
                 )}
               </button>
             )}
