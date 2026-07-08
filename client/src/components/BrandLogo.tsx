@@ -62,7 +62,9 @@ function drawNote(tx: number, ty: number, sz: number) {
 // ---------------------------------------------------------------------------
 export function BrandIcon({ size = 48, className = "", variant = "purple" }: { size?: number; className?: string; variant?: "purple" | "teal" }) {
   const bg = variant === "teal" ? "rgba(94,234,212,0.18)" : "#EDE9FE";
-  const filter = variant === "teal" ? "brightness(0) saturate(100%) invert(86%) sepia(42%) saturate(400%) hue-rotate(120deg) brightness(105%)" : undefined;
+  const src = variant === "teal"
+    ? "/manus-storage/businesscadence-note-teal_5fad453b.png"
+    : "/manus-storage/businesscadence-note-clean2_36202558.png";
   return (
     <div
       style={{
@@ -81,9 +83,9 @@ export function BrandIcon({ size = 48, className = "", variant = "purple" }: { s
       aria-label="BusinessCadence"
     >
       <img
-        src="/manus-storage/businesscadence-note-clean2_36202558.png"
+        src={src}
         alt="BusinessCadence"
-        style={{ width: '65%', height: '65%', objectFit: 'contain', filter }}
+        style={{ width: '65%', height: '65%', objectFit: 'contain' }}
       />
     </div>
   );

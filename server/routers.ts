@@ -759,6 +759,79 @@ Be concise and specific. If a field has nothing, use an empty array.`,
         await deleteBoardCard(input.id);
         return { success: true };
       }),
+
+    /** List all comments for a board card. */
+    listComments: publicProcedure
+      .input(z.object({ cardId: z.number() }))
+      .query(async ({ input }) => {
+        const { getDb } = await import('./db');
+        const { boardComments } = await import('../drizzle/schema');
+        const { eq, asc } = await import('drizzle-orm');
+        const db = await getDb();
+        if (!db) return { comments: [] };
+        const comments = await db
+          .select()
+          .from(boardComments)
+          .where(eq(boardComments.cardId, input.cardId))
+          .orderBy(asc(boardComments.createdAt));
+        return { comments };
+      }),
+
+    /** Add a comment to a board card. */
+    addComment: publicProcedure
+      .input(z.object({
+        cardId: z.number(),
+        authorName: z.string().min(1).max(128),
+        authorPersonId: z.string().optional(),
+        content: z.string().min(1).max(2000),
+        accountId: z.number().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { getDb } = await import('./db');
+        const { boardComments, boardCards } = await import('../drizzle/schema');
+        const { eq } = await import('drizzle-orm');
+        const db = await getDb();
+        if (!db) throw new Error('DB unavailable');
+        const [comment] = await db.insert(boardComments).values({
+          cardId: input.cardId,
+          authorName: input.authorName,
+          authorPersonId: input.authorPersonId,
+          content: input.content,
+        }).$returningId();
+        // Notify the card author if they're not the commenter
+        if (input.accountId) {
+          const cards = await getBoardCards(false);
+          const card = cards.find(c => c.id === input.cardId);
+          if (card && card.author !== input.authorName) {
+            const allPersons = await getPersonsByAccount(input.accountId);
+            const cardAuthor = allPersons.find(p => p.name === card.author);
+            if (cardAuthor) {
+              await createNotification({
+                accountId: input.accountId,
+                recipientPersonId: cardAuthor.id,
+                type: "new_update",
+                title: `New comment from ${input.authorName}`,
+                body: `On "${card.content.slice(0, 80)}": ${input.content.slice(0, 120)}`,
+                linkTo: "/app/board",
+              });
+            }
+          }
+        }
+        return { success: true, id: comment.id };
+      }),
+
+    /** Delete a comment (author only). */
+    deleteComment: publicProcedure
+      .input(z.object({ commentId: z.number() }))
+      .mutation(async ({ input }) => {
+        const { getDb } = await import('./db');
+        const { boardComments } = await import('../drizzle/schema');
+        const { eq } = await import('drizzle-orm');
+        const db = await getDb();
+        if (!db) throw new Error('DB unavailable');
+        await db.delete(boardComments).where(eq(boardComments.id, input.commentId));
+        return { success: true };
+      }),
   }),
   weeklyReport: router({
     /** Get all employees with their metrics for the current account. */

@@ -475,3 +475,23 @@ export const notifications = mysqlTable("notifications", {
 });
 export type Notification = typeof notifications.$inferSelect;
 export type InsertNotification = typeof notifications.$inferInsert;
+
+/**
+ * Board card comments — threaded comments on Tasks, Issues, and Updates.
+ * cardId: references board_cards.id
+ * authorName: display name of the commenter (e.g. "Lynn", "Matt")
+ * authorPersonId: persons.id of the commenter (nullable for legacy)
+ * content: the comment text
+ */
+export const boardComments = mysqlTable("board_comments", {
+  id: int("id").autoincrement().primaryKey(),
+  cardId: int("cardId").notNull(),             // references board_cards.id
+  authorName: varchar("authorName", { length: 128 }).notNull(),
+  authorPersonId: varchar("authorPersonId", { length: 64 }), // references persons.id
+  content: text("content").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type BoardComment = typeof boardComments.$inferSelect;
+export type InsertBoardComment = typeof boardComments.$inferInsert;

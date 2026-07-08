@@ -70,14 +70,169 @@ type Card = {
   createdAt: Date;
 };
 
+// ─── Card Comments ──────────────────────────────────────────────────────────────
+
+type Comment = {
+  id: number;
+  cardId: number;
+  authorName: string;
+  authorPersonId: string | null;
+  content: string;
+  createdAt: Date;
+};
+
+function CardComments({ cardId, currentUser, accountId }: {
+  cardId: number;
+  currentUser: Author | null;
+  accountId?: number;
+}) {
+  const [open, setOpen] = useState(false);
+  const [text, setText] = useState("");
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const { data, refetch } = trpc.board.listComments.useQuery(
+    { cardId },
+    { enabled: open, staleTime: 10_000 }
+  );
+  const comments: Comment[] = (data?.comments ?? []) as Comment[];
+
+  const addComment = trpc.board.addComment.useMutation({
+    onSuccess: () => {
+      setText("");
+      refetch();
+    },
+    onError: () => toast.error("Failed to post comment"),
+  });
+
+  const deleteComment = trpc.board.deleteComment.useMutation({
+    onSuccess: () => refetch(),
+  });
+
+  const handleSubmit = () => {
+    if (!currentUser) { toast.error("Select who you are first"); return; }
+    if (!text.trim()) return;
+    addComment.mutate({
+      cardId,
+      authorName: currentUser,
+      content: text.trim(),
+      ...(accountId ? { accountId } : {}),
+    });
+  };
+
+  return (
+    <div className="mt-1">
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="flex items-center gap-1.5 text-[11px] px-2 py-1 rounded-lg transition-all"
+        style={{
+          color: open ? "#5EEAD4" : "rgba(255,255,255,0.35)",
+          backgroundColor: open ? "rgba(94,234,212,0.08)" : "transparent",
+          fontFamily: "'Space Grotesk', sans-serif",
+        }}
+      >
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+        </svg>
+        {comments.length > 0 ? `${comments.length} comment${comments.length !== 1 ? "s" : ""}` : "Comment"}
+      </button>
+
+      {open && (
+        <div
+          className="mt-2 flex flex-col gap-2 rounded-xl p-3"
+          style={{ backgroundColor: "rgba(0,0,0,0.2)", border: "1px solid rgba(94,234,212,0.12)" }}
+        >
+          {/* Existing comments */}
+          {comments.length > 0 && (
+            <div className="flex flex-col gap-2">
+              {comments.map(c => (
+                <div key={c.id} className="flex items-start gap-2">
+                  <div
+                    className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0 mt-0.5"
+                    style={{ backgroundColor: getAuthorColors(c.authorName).badgeBg, color: getAuthorColors(c.authorName).badgeText }}
+                  >
+                    {c.authorName[0]}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="text-[11px] font-bold" style={{ color: getAuthorColors(c.authorName).badgeText, fontFamily: "'Space Grotesk', sans-serif" }}>
+                        {c.authorName}
+                      </span>
+                      <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.3)", fontFamily: "'JetBrains Mono', monospace" }}>
+                        {timeAgo(c.createdAt)}
+                      </span>
+                      {c.authorName === currentUser && (
+                        <button
+                          onClick={() => deleteComment.mutate({ commentId: c.id })}
+                          className="ml-auto text-[10px] transition-colors"
+                          style={{ color: "rgba(255,255,255,0.2)" }}
+                          onMouseEnter={e => (e.currentTarget.style.color = "#F87171")}
+                          onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.2)")}
+                        >
+                          ✕
+                        </button>
+                      )}
+                    </div>
+                    <p className="text-[12px] mt-0.5 leading-relaxed" style={{ color: "rgba(255,255,255,0.8)" }}>{c.content}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* New comment input */}
+          <div className="flex gap-2 items-end">
+            <textarea
+              ref={textareaRef}
+              value={text}
+              onChange={e => setText(e.target.value)}
+              onKeyDown={e => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSubmit();
+                }
+              }}
+              placeholder={currentUser ? `Add a comment as ${currentUser}…` : "Select who you are first"}
+              rows={2}
+              className="flex-1 rounded-lg px-3 py-2 text-[12px] placeholder-white/30 resize-none focus:outline-none transition-colors"
+              style={{
+                backgroundColor: "rgba(255,255,255,0.06)",
+                border: "1.5px solid rgba(255,255,255,0.12)",
+                color: "white",
+                fontFamily: "'Inter', sans-serif",
+              }}
+              onFocus={e => (e.target.style.borderColor = "#5EEAD4")}
+              onBlur={e => (e.target.style.borderColor = "rgba(255,255,255,0.12)")}
+            />
+            <button
+              onClick={handleSubmit}
+              disabled={!text.trim() || addComment.isPending}
+              className="px-3 py-2 rounded-lg text-[11px] font-bold transition-all active:scale-[0.97] flex-shrink-0"
+              style={{
+                backgroundColor: text.trim() ? "rgba(94,234,212,0.2)" : "rgba(255,255,255,0.05)",
+                border: `1.5px solid ${text.trim() ? "rgba(94,234,212,0.4)" : "rgba(255,255,255,0.1)"}`,
+                color: text.trim() ? "#5EEAD4" : "rgba(255,255,255,0.3)",
+                fontFamily: "'Space Grotesk', sans-serif",
+              }}
+            >
+              {addComment.isPending ? "…" : "Post"}
+            </button>
+          </div>
+          <p className="text-[10px]" style={{ color: "rgba(255,255,255,0.25)" }}>Enter to post · Shift+Enter for new line</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Task Card ────────────────────────────────────────────────────────────────
 
 const SWIPE_THRESHOLD = 80;
 const SWIPE_MAX = 120;
 
-function TaskCard({ card, currentUser, onMarkDone, onConfirmDone, onDelete }: {
+function TaskCard({ card, currentUser, accountId, onMarkDone, onConfirmDone, onDelete }: {
   card: Card;
   currentUser: Author | null;
+  accountId?: number;
   onMarkDone: (id: number) => void;
   onConfirmDone: (id: number) => void;
   onDelete: (id: number) => void;
@@ -322,6 +477,7 @@ function TaskCard({ card, currentUser, onMarkDone, onConfirmDone, onDelete }: {
               )}
             </div>
           </div>
+          <CardComments cardId={card.id} currentUser={currentUser} accountId={accountId} />
         </div>
       </div>
     </div>
@@ -330,9 +486,10 @@ function TaskCard({ card, currentUser, onMarkDone, onConfirmDone, onDelete }: {
 
 // ─── Update / Issue Card ──────────────────────────────────────────────────────
 
-function BoardCard({ card, currentUser, onSeen, onArchive, onDelete }: {
+function BoardCard({ card, currentUser, accountId, onSeen, onArchive, onDelete }: {
   card: Card;
   currentUser: Author | null;
+  accountId?: number;
   onSeen: (id: number) => void;
   onArchive: (id: number) => void;
   onDelete: (id: number) => void;
@@ -438,6 +595,7 @@ function BoardCard({ card, currentUser, onSeen, onArchive, onDelete }: {
               </button>
             )}
           </div>
+          <CardComments cardId={card.id} currentUser={currentUser} accountId={accountId} />
         </div>
       </div>
     </div>
@@ -968,6 +1126,7 @@ export default function Board() {
                       key={card.id}
                       card={card}
                       currentUser={currentUser}
+                      accountId={accountId}
                       onMarkDone={id => currentUser && markDone.mutate({ id, completedBy: currentUser, ...(accountId ? { accountId } : {}) })}
                       onConfirmDone={id => currentUser && confirmDone.mutate({ id, confirmedBy: currentUser, ...(accountId ? { accountId } : {}) })}
                       onDelete={id => deleteCard.mutate({ id })}
@@ -988,6 +1147,7 @@ export default function Board() {
                       key={card.id}
                       card={card}
                       currentUser={currentUser}
+                      accountId={accountId}
                       onMarkDone={id => currentUser && markDone.mutate({ id, completedBy: currentUser, ...(accountId ? { accountId } : {}) })}
                       onConfirmDone={id => currentUser && confirmDone.mutate({ id, confirmedBy: currentUser, ...(accountId ? { accountId } : {}) })}
                       onDelete={id => deleteCard.mutate({ id })}
@@ -1015,6 +1175,7 @@ export default function Board() {
                           key={card.id}
                           card={card}
                           currentUser={currentUser}
+                          accountId={accountId}
                           onMarkDone={() => {}}
                           onConfirmDone={() => {}}
                           onDelete={id => deleteCard.mutate({ id })}
@@ -1056,6 +1217,7 @@ export default function Board() {
                       key={card.id}
                       card={card}
                       currentUser={currentUser}
+                      accountId={accountId}
                       onSeen={id => currentUser && markSeen.mutate({ id, seenBy: currentUser })}
                       onArchive={id => archive.mutate({ id })}
                       onDelete={id => deleteCard.mutate({ id })}
@@ -1092,6 +1254,7 @@ export default function Board() {
                       key={card.id}
                       card={card}
                       currentUser={currentUser}
+                      accountId={accountId}
                       onSeen={id => currentUser && markSeen.mutate({ id, seenBy: currentUser })}
                       onArchive={id => archive.mutate({ id })}
                       onDelete={id => deleteCard.mutate({ id })}
