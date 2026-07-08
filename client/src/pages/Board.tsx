@@ -11,7 +11,7 @@
  *   - Text always dark (navy or slate-700) on light backgrounds
  *   - Colored accents use saturated foreground colors, not washed-out pastels
  */
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { usePerson } from "@/contexts/PersonContext";
@@ -85,6 +85,9 @@ type Card = {
 
 // ─── Task Card ────────────────────────────────────────────────────────────────
 
+const SWIPE_THRESHOLD = 80; // px needed to trigger action
+const SWIPE_MAX = 120;      // max visual travel
+
 function TaskCard({ card, currentUser, onMarkDone, onConfirmDone, onDelete }: {
   card: Card;
   currentUser: Author | null;
@@ -108,150 +111,244 @@ function TaskCard({ card, currentUser, onMarkDone, onConfirmDone, onDelete }: {
   // Due date helpers
   const now = Date.now();
   const isOverdue = card.dueAt && !isDone && card.dueAt < now;
-  const isDueSoon = card.dueAt && !isDone && !isOverdue && card.dueAt - now < 3 * 24 * 60 * 60 * 1000; // within 3 days
+  const isDueSoon = card.dueAt && !isDone && !isOverdue && card.dueAt - now < 3 * 24 * 60 * 60 * 1000;
   const dueLabel = card.dueAt
     ? new Date(card.dueAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })
     : null;
 
-  // State-based card styling (light backgrounds with dark text)
   const stateStyles = {
     open:         { bg: "#EFF6FF", border: "#BFDBFE" },
     done_pending: { bg: "#FFFBEB", border: "#FCD34D" },
     confirmed:    { bg: "#F0FDF4", border: "#86EFAC" },
   };
-
   const style = stateStyles[taskState];
 
+  // ── Swipe gesture state ──
+  const touchStartX = useRef<number | null>(null);
+  const touchStartY = useRef<number | null>(null);
+  const [swipeDx, setSwipeDx] = useState(0);
+  const [swipeTriggered, setSwipeTriggered] = useState(false);
+
+  // Determine which swipe actions are available
+  const canSwipeRight = taskState === "open" && isDoer;          // → Mark Done
+  const canSwipeLeft  = taskState === "done_pending" && isRequester; // ← Confirm Done
+  const hasSwipe = canSwipeRight || canSwipeLeft;
+
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    if (!hasSwipe) return;
+    touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
+    setSwipeTriggered(false);
+  }, [hasSwipe]);
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    if (touchStartX.current === null || touchStartY.current === null) return;
+    const dx = e.touches[0].clientX - touchStartX.current;
+    const dy = e.touches[0].clientY - touchStartY.current;
+    // Ignore if primarily vertical scroll
+    if (Math.abs(dy) > Math.abs(dx) * 1.5) return;
+    // Only allow the relevant direction
+    if (canSwipeRight && dx > 0) {
+      e.preventDefault();
+      setSwipeDx(Math.min(dx, SWIPE_MAX));
+    } else if (canSwipeLeft && dx < 0) {
+      e.preventDefault();
+      setSwipeDx(Math.max(dx, -SWIPE_MAX));
+    }
+  }, [canSwipeRight, canSwipeLeft]);
+
+  const handleTouchEnd = useCallback(() => {
+    if (swipeDx >= SWIPE_THRESHOLD && canSwipeRight) {
+      setSwipeTriggered(true);
+      setTimeout(() => {
+        onMarkDone(card.id);
+        setSwipeDx(0);
+        setSwipeTriggered(false);
+      }, 200);
+    } else if (swipeDx <= -SWIPE_THRESHOLD && canSwipeLeft) {
+      setSwipeTriggered(true);
+      setTimeout(() => {
+        onConfirmDone(card.id);
+        setSwipeDx(0);
+        setSwipeTriggered(false);
+      }, 200);
+    } else {
+      setSwipeDx(0);
+    }
+    touchStartX.current = null;
+    touchStartY.current = null;
+  }, [swipeDx, canSwipeRight, canSwipeLeft, card.id, onMarkDone, onConfirmDone]);
+
+  const swipeProgress = Math.abs(swipeDx) / SWIPE_THRESHOLD;
+  const swipeReady = Math.abs(swipeDx) >= SWIPE_THRESHOLD;
+
   return (
-    <div
-      className="rounded-2xl flex flex-col gap-0 transition-all duration-200"
-      style={{
-        backgroundColor: "#FFFFFF",
-        border: `1.5px solid ${style.border}`,
-        boxShadow: taskState === "open" ? "0 2px 12px rgba(30,58,95,0.06)" : "none",
-        animation: "cardSlideIn 0.22s cubic-bezier(0.23,1,0.32,1) both",
-        overflow: "hidden",
-      }}
-    >
-      {/* Top accent bar: purple for tasks */}
-      <div className="w-full h-1 flex-shrink-0" style={{ backgroundColor: taskState === "confirmed" ? "#86EFAC" : taskState === "done_pending" ? "#FCD34D" : "#7C3AED" }} />
-
-      <div className="p-4 flex flex-col gap-3">
-        {/* Header row */}
-        <div className="flex items-start gap-3">
-          {/* Author avatar */}
-          <div
-            className="w-9 h-9 rounded-full flex items-center justify-center text-[13px] font-bold flex-shrink-0 mt-0.5"
-            style={{ backgroundColor: authorColors.badgeBg, color: authorColors.badgeText }}
-          >
-            {card.author[0]}
-          </div>
-
-          <div className="flex-1 min-w-0">
-            {/* Top line: author + task badge + arrow + assignee + timestamp */}
-            <div className="flex items-center gap-2 flex-wrap mb-1">
-              <span className="text-[13px] font-bold" style={{ color: authorColors.badgeText, fontFamily: "'Space Grotesk', sans-serif" }}>
-                {card.author}
-              </span>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide" style={{ backgroundColor: "#EDE9FE", color: "#5B21B6", fontFamily: "'Space Grotesk', sans-serif" }}>
-                Task
-              </span>
-              {card.assignedTo && (
-                <span className="text-[11px] text-slate-500 flex items-center gap-1" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-                  → <span className="font-semibold" style={{ color: AUTHOR_COLORS[card.assignedTo].badgeText }}>{card.assignedTo}</span>
-                </span>
-              )}
-              <span className="text-[10px] text-slate-400 ml-auto flex-shrink-0" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-                {timeAgo(card.createdAt)}
-              </span>
-            </div>
-            {/* Second line: business badge + due date */}
-            <div className="flex items-center gap-1.5 flex-wrap mb-1">
-              <span
-                className="text-[10px] font-medium px-2 py-0.5 rounded-full flex items-center gap-1"
-                style={{ backgroundColor: biz.bg, color: biz.text, border: `1px solid ${biz.border}`, fontFamily: "'Space Grotesk', sans-serif" }}
-              >
-                {biz.icon} {biz.label}
-              </span>
-              {dueLabel && (
-                <span
-                  className="text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1"
-                  style={{
-                    backgroundColor: isOverdue ? "#FEE2E2" : isDueSoon ? "#FEF3C7" : "#F1F5F9",
-                    color: isOverdue ? "#B91C1C" : isDueSoon ? "#92400E" : "#475569",
-                    border: `1px solid ${isOverdue ? "#FCA5A5" : isDueSoon ? "#FCD34D" : "#CBD5E1"}`,
-                    fontFamily: "'Space Grotesk', sans-serif",
-                  }}
-                >
-                  {isOverdue ? "⚠️" : "📅"} {isOverdue ? "Overdue" : "Due"} {dueLabel}
-                </span>
-              )}
-            </div>
-
-            {/* Content */}
-            <p className="text-[14px] text-[#1E3A5F] leading-relaxed font-medium">{card.content}</p>
-          </div>
+    <div className="relative rounded-2xl overflow-hidden" style={{ animation: "cardSlideIn 0.22s cubic-bezier(0.23,1,0.32,1) both" }}>
+      {/* Swipe hint backgrounds */}
+      {canSwipeRight && (
+        <div
+          className="absolute inset-0 flex items-center px-5 rounded-2xl"
+          style={{
+            backgroundColor: swipeReady ? "#16A34A" : "#DCFCE7",
+            opacity: Math.min(swipeProgress, 1),
+            transition: swipeDx === 0 ? "opacity 0.2s, background-color 0.2s" : "none",
+          }}
+        >
+          <span className="text-white text-lg font-bold" style={{ opacity: swipeProgress > 0.3 ? 1 : 0, transition: "opacity 0.15s" }}>☑ Done</span>
         </div>
+      )}
+      {canSwipeLeft && (
+        <div
+          className="absolute inset-0 flex items-center justify-end px-5 rounded-2xl"
+          style={{
+            backgroundColor: swipeReady ? "#16A34A" : "#DCFCE7",
+            opacity: Math.min(swipeProgress, 1),
+            transition: swipeDx === 0 ? "opacity 0.2s, background-color 0.2s" : "none",
+          }}
+        >
+          <span className="text-white text-lg font-bold" style={{ opacity: swipeProgress > 0.3 ? 1 : 0, transition: "opacity 0.15s" }}>✓ Confirm</span>
+        </div>
+      )}
 
-        {/* State badge + completion trail */}
-        {isDone && (
-          <p className="text-[11px] text-slate-500 italic pl-12">
-            Marked done by{" "}
-            <span style={{ color: card.completedBy ? AUTHOR_COLORS[card.completedBy].badgeText : "#475569" }}>{card.completedBy}</span>
-            {" "}· {timeAgo(card.completedAt!)}
-          </p>
-        )}
+      {/* Card content — slides with swipe */}
+      <div
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        className="flex flex-col gap-0"
+        style={{
+          backgroundColor: "#FFFFFF",
+          border: `1.5px solid ${style.border}`,
+          boxShadow: taskState === "open" ? "0 2px 12px rgba(30,58,95,0.06)" : "none",
+          borderRadius: "1rem",
+          transform: `translateX(${swipeTriggered ? (swipeDx > 0 ? 120 : -120) : swipeDx}px)`,
+          transition: swipeDx === 0 || swipeTriggered ? "transform 0.25s cubic-bezier(0.23,1,0.32,1)" : "none",
+          willChange: "transform",
+          touchAction: hasSwipe ? "pan-y" : "auto",
+          position: "relative",
+          zIndex: 1,
+        }}
+      >
+        {/* Top accent bar */}
+        <div className="w-full h-1 flex-shrink-0" style={{ backgroundColor: taskState === "confirmed" ? "#86EFAC" : taskState === "done_pending" ? "#FCD34D" : "#7C3AED" }} />
 
-        {/* Action row */}
-        <div className="flex items-center gap-2 flex-wrap pl-12">
-          {/* State badges */}
-          {taskState === "done_pending" && (
-            <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold"
-              style={{ backgroundColor: "#FEF3C7", color: "#92400E", border: "1px solid #FCD34D", fontFamily: "'Space Grotesk', sans-serif" }}>
-              ⏳ Awaiting Confirmation
-            </span>
-          )}
-          {taskState === "confirmed" && (
-            <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold"
-              style={{ backgroundColor: "#DCFCE7", color: "#166534", border: "1px solid #86EFAC", fontFamily: "'Space Grotesk', sans-serif" }}>
-              ✓ Done
-            </span>
-          )}
-          {taskState === "open" && !isDoer && currentUser && (
-            <span className="text-[11px] text-slate-400 italic">Waiting for {card.assignedTo ?? "assignee"}</span>
-          )}
-          {taskState === "done_pending" && !isRequester && currentUser && (
-            <span className="text-[11px] text-slate-400 italic">Waiting for {card.author} to confirm</span>
+        <div className="p-4 flex flex-col gap-3">
+          {/* Header row */}
+          <div className="flex items-start gap-3">
+            <div
+              className="w-9 h-9 rounded-full flex items-center justify-center text-[13px] font-bold flex-shrink-0 mt-0.5"
+              style={{ backgroundColor: authorColors.badgeBg, color: authorColors.badgeText }}
+            >
+              {card.author[0]}
+            </div>
+
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap mb-1">
+                <span className="text-[13px] font-bold" style={{ color: authorColors.badgeText, fontFamily: "'Space Grotesk', sans-serif" }}>
+                  {card.author}
+                </span>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide" style={{ backgroundColor: "#EDE9FE", color: "#5B21B6", fontFamily: "'Space Grotesk', sans-serif" }}>
+                  Task
+                </span>
+                {card.assignedTo && (
+                  <span className="text-[11px] text-slate-500 flex items-center gap-1" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+                    → <span className="font-semibold" style={{ color: AUTHOR_COLORS[card.assignedTo].badgeText }}>{card.assignedTo}</span>
+                  </span>
+                )}
+                <span className="text-[10px] text-slate-400 ml-auto flex-shrink-0" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                  {timeAgo(card.createdAt)}
+                </span>
+              </div>
+              <div className="flex items-center gap-1.5 flex-wrap mb-1">
+                <span
+                  className="text-[10px] font-medium px-2 py-0.5 rounded-full flex items-center gap-1"
+                  style={{ backgroundColor: biz.bg, color: biz.text, border: `1px solid ${biz.border}`, fontFamily: "'Space Grotesk', sans-serif" }}
+                >
+                  {biz.icon} {biz.label}
+                </span>
+                {dueLabel && (
+                  <span
+                    className="text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1"
+                    style={{
+                      backgroundColor: isOverdue ? "#FEE2E2" : isDueSoon ? "#FEF3C7" : "#F1F5F9",
+                      color: isOverdue ? "#B91C1C" : isDueSoon ? "#92400E" : "#475569",
+                      border: `1px solid ${isOverdue ? "#FCA5A5" : isDueSoon ? "#FCD34D" : "#CBD5E1"}`,
+                      fontFamily: "'Space Grotesk', sans-serif",
+                    }}
+                  >
+                    {isOverdue ? "⚠️" : "📅"} {isOverdue ? "Overdue" : "Due"} {dueLabel}
+                  </span>
+                )}
+              </div>
+              <p className="text-[14px] text-[#1E3A5F] leading-relaxed font-medium">{card.content}</p>
+            </div>
+          </div>
+
+          {isDone && (
+            <p className="text-[11px] text-slate-500 italic pl-12">
+              Marked done by{" "}
+              <span style={{ color: card.completedBy ? AUTHOR_COLORS[card.completedBy].badgeText : "#475569" }}>{card.completedBy}</span>
+              {" "}· {timeAgo(card.completedAt!)}
+            </p>
           )}
 
-          <div className="ml-auto flex items-center gap-2">
-            {taskState === "open" && isDoer && (
-              <button
-                onClick={() => onMarkDone(card.id)}
-                className="text-[11px] px-3 py-1.5 rounded-lg font-semibold transition-all hover:opacity-90 flex items-center gap-1.5 active:scale-[0.97]"
-                style={{ backgroundColor: "#DCFCE7", border: "1.5px solid #86EFAC", color: "#166534", fontFamily: "'Space Grotesk', sans-serif" }}
-              >
-                ☑ Mark Done
-              </button>
+          {/* Action row */}
+          <div className="flex items-center gap-2 flex-wrap pl-12">
+            {taskState === "done_pending" && (
+              <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold"
+                style={{ backgroundColor: "#FEF3C7", color: "#92400E", border: "1px solid #FCD34D", fontFamily: "'Space Grotesk', sans-serif" }}>
+                ⏳ Awaiting Confirmation
+              </span>
             )}
-            {taskState === "done_pending" && isRequester && (
-              <button
-                onClick={() => onConfirmDone(card.id)}
-                className="text-[11px] px-3 py-1.5 rounded-lg font-bold transition-all hover:opacity-90 flex items-center gap-1.5 active:scale-[0.97]"
-                style={{ backgroundColor: "#DCFCE7", border: "1.5px solid #4ADE80", color: "#166534", fontFamily: "'Space Grotesk', sans-serif" }}
-              >
-                ✓ Confirm Done
-              </button>
+            {taskState === "confirmed" && (
+              <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold"
+                style={{ backgroundColor: "#DCFCE7", color: "#166534", border: "1px solid #86EFAC", fontFamily: "'Space Grotesk', sans-serif" }}>
+                ✓ Done
+              </span>
             )}
-            {card.author === currentUser && (
-              <button
-                onClick={() => onDelete(card.id)}
-                className="text-[11px] px-2 py-1.5 rounded-lg transition-all hover:text-red-400"
-                style={{ color: "#CBD5E1", fontFamily: "'Space Grotesk', sans-serif" }}
-              >
-                ✕
-              </button>
+            {taskState === "open" && !isDoer && currentUser && (
+              <span className="text-[11px] text-slate-400 italic">Waiting for {card.assignedTo ?? "assignee"}</span>
             )}
+            {taskState === "done_pending" && !isRequester && currentUser && (
+              <span className="text-[11px] text-slate-400 italic">Waiting for {card.author} to confirm</span>
+            )}
+
+            {/* Swipe hint label on mobile */}
+            {hasSwipe && (
+              <span className="text-[10px] text-slate-300 italic hidden sm:hidden" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+                {canSwipeRight ? "← swipe to mark done →" : "← swipe to confirm →"}
+              </span>
+            )}
+
+            <div className="ml-auto flex items-center gap-2">
+              {taskState === "open" && isDoer && (
+                <button
+                  onClick={() => onMarkDone(card.id)}
+                  className="text-[11px] px-3 py-1.5 rounded-lg font-semibold transition-all hover:opacity-90 flex items-center gap-1.5 active:scale-[0.97]"
+                  style={{ backgroundColor: "#DCFCE7", border: "1.5px solid #86EFAC", color: "#166534", fontFamily: "'Space Grotesk', sans-serif" }}
+                >
+                  ☑ Mark Done
+                </button>
+              )}
+              {taskState === "done_pending" && isRequester && (
+                <button
+                  onClick={() => onConfirmDone(card.id)}
+                  className="text-[11px] px-3 py-1.5 rounded-lg font-bold transition-all hover:opacity-90 flex items-center gap-1.5 active:scale-[0.97]"
+                  style={{ backgroundColor: "#DCFCE7", border: "1.5px solid #4ADE80", color: "#166534", fontFamily: "'Space Grotesk', sans-serif" }}
+                >
+                  ✓ Confirm Done
+                </button>
+              )}
+              {card.author === currentUser && (
+                <button
+                  onClick={() => onDelete(card.id)}
+                  className="text-[11px] px-2 py-1.5 rounded-lg transition-all hover:text-red-400"
+                  style={{ color: "#CBD5E1", fontFamily: "'Space Grotesk', sans-serif" }}
+                >
+                  ✕
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>
