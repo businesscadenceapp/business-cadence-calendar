@@ -124,12 +124,13 @@ function TaskCard({ card, currentUser, onMarkDone, onConfirmDone, onDelete }: {
 
   return (
     <div
-      className="rounded-2xl flex flex-col gap-0 transition-all duration-200 overflow-hidden"
+      className="rounded-2xl flex flex-col gap-0 transition-all duration-200"
       style={{
         backgroundColor: "#FFFFFF",
         border: `1.5px solid ${style.border}`,
         boxShadow: taskState === "open" ? "0 2px 12px rgba(30,58,95,0.06)" : "none",
         animation: "cardSlideIn 0.22s cubic-bezier(0.23,1,0.32,1) both",
+        overflow: "hidden",
       }}
     >
       {/* Top accent bar: purple for tasks */}
@@ -822,7 +823,7 @@ export default function Board() {
 
   return (
     <div
-      className="h-full flex flex-col"
+      className="flex flex-col min-h-full"
       style={{ backgroundColor: "#F8F7F4", fontFamily: "'Inter', sans-serif" }}
     >
       {/* ── Top bar: filter + post button ── */}
@@ -901,7 +902,7 @@ export default function Board() {
       )}
 
       {/* Main board */}
-      <main className="flex-1 overflow-y-auto p-3 md:p-5 flex flex-col gap-6 md:gap-8">
+      <main className="flex-1 p-3 md:p-5 flex flex-col gap-6 md:gap-8">
           {isLoading ? (
             <div className="flex items-center justify-center h-40">
               <span className="text-slate-400 text-sm animate-pulse">Loading board…</span>
