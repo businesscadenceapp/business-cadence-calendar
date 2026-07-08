@@ -60,18 +60,21 @@ function drawNote(tx: number, ty: number, sz: number) {
 // BrandIcon — circular icon only, no text
 // Uses the actual logo note PNG for pixel-perfect rendering.
 // ---------------------------------------------------------------------------
-export function BrandIcon({ size = 48, className = "" }: { size?: number; className?: string }) {
+export function BrandIcon({ size = 48, className = "", variant = "purple" }: { size?: number; className?: string; variant?: "purple" | "teal" }) {
+  const bg = variant === "teal" ? "rgba(94,234,212,0.18)" : "#EDE9FE";
+  const filter = variant === "teal" ? "brightness(0) saturate(100%) invert(86%) sepia(42%) saturate(400%) hue-rotate(120deg) brightness(105%)" : undefined;
   return (
     <div
       style={{
         width: size,
         height: size,
         borderRadius: '50%',
-        background: '#EDE9FE',
+        background: bg,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         flexShrink: 0,
+        boxShadow: variant === "teal" ? "0 0 0 1px rgba(94,234,212,0.3)" : undefined,
       }}
       className={className}
       role="img"
@@ -80,7 +83,7 @@ export function BrandIcon({ size = 48, className = "" }: { size?: number; classN
       <img
         src="/manus-storage/businesscadence-note-clean2_36202558.png"
         alt="BusinessCadence"
-        style={{ width: '65%', height: '65%', objectFit: 'contain' }}
+        style={{ width: '65%', height: '65%', objectFit: 'contain', filter }}
       />
     </div>
   );

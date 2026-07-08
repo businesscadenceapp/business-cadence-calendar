@@ -136,7 +136,7 @@ function WaitlistForm({ variant = "default" }: { variant?: "default" | "hero" | 
   }
 
   return (
-    <form onSubmit={handleSubmit} className={`flex gap-3 ${variant === "hero" ? "flex-col sm:flex-row justify-center max-w-md mx-auto" : "flex-col sm:flex-row max-w-md"}`}>
+    <form onSubmit={handleSubmit} className={`flex gap-3 ${variant === "hero" ? "flex-col sm:flex-row justify-center w-full max-w-md mx-auto" : "flex-col sm:flex-row max-w-md"}`}>
       <input
         type="email"
         value={email}
@@ -190,8 +190,8 @@ function Hero() {
             BusinessCadence gives co-owners, family businesses, and small business teams a structured meeting rhythm — so every conversation happens at the right time, in the right place, with the right agenda.
           </p>
 
-          <div className="animate-fade-up animation-delay-200">
-            <WaitlistForm variant="footer" />
+          <div className="animate-fade-up animation-delay-200 flex justify-center">
+            <WaitlistForm variant="hero" />
           </div>
 
           {data && data.count > 0 && (

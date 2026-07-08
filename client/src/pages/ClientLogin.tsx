@@ -128,25 +128,25 @@ export default function ClientLogin() {
             className="rounded-2xl p-8"
             style={{
               backgroundColor: "rgba(255,255,255,0.05)",
-              border: "1px solid rgba(255,255,255,0.12)",
-              boxShadow: "0 24px 64px rgba(0,0,0,0.4), 0 4px 16px rgba(0,0,0,0.2)",
+              border: "1px solid rgba(94,234,212,0.2)",
+              boxShadow: "0 24px 64px rgba(0,0,0,0.4), 0 4px 16px rgba(0,0,0,0.2), 0 0 0 1px rgba(94,234,212,0.08) inset",
               backdropFilter: "blur(16px)",
             }}
           >
             {/* Header */}
-            <div className="text-center mb-7">
-              <div className="flex justify-center mb-4">
-                <BrandIcon size={88} />
+            <div className="flex items-center gap-4 mb-7">
+              <BrandIcon size={64} variant="teal" />
+              <div>
+                <h2
+                  className="text-xl font-bold text-white"
+                  style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+                >
+                  Sign In
+                </h2>
+                <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.5)" }}>
+                  Sign in with your BusinessCadence account
+                </p>
               </div>
-              <h2
-                className="text-xl font-bold text-white"
-                style={{ fontFamily: "'Space Grotesk', sans-serif" }}
-              >
-                Sign In
-              </h2>
-              <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.5)" }}>
-                Sign in with your BusinessCadence account
-              </p>
             </div>
 
             <form onSubmit={handleLogin} className="flex flex-col gap-4">
