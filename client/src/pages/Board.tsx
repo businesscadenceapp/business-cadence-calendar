@@ -125,8 +125,9 @@ function CardComments({ cardId, currentUser, accountId }: {
         onClick={() => setOpen(o => !o)}
         className="flex items-center gap-1.5 text-[11px] px-2 py-1 rounded-lg transition-all"
         style={{
-          color: open ? "#5EEAD4" : "rgba(255,255,255,0.35)",
-          backgroundColor: open ? "rgba(94,234,212,0.08)" : "transparent",
+          color: "#5EEAD4",
+          backgroundColor: open ? "rgba(94,234,212,0.12)" : "rgba(94,234,212,0.06)",
+          border: `1px solid ${open ? "rgba(94,234,212,0.3)" : "rgba(94,234,212,0.15)"}`,
           fontFamily: "'Space Grotesk', sans-serif",
         }}
       >
