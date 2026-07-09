@@ -523,3 +523,26 @@
 - [x] All steps respect dark navy theme with teal accents
 - [x] Progress bar shows step X of 11
 - [x] "Use Recommended" shortcut on meeting cadence step auto-fills industry defaults and advances
+
+## Meeting Times — Per-Meeting-Type Preferred Times
+
+- [ ] Add meetingTimes field to business_profiles schema (JSON column storing time per meeting type)
+- [ ] Update onboarding.save router to accept and persist meetingTimes
+- [ ] Add smart default times per meeting type to shared/industryDefaults.ts
+- [ ] Add time picker (HH:MM select) per enabled meeting type in Onboarding Step 5 (Meeting Cadence)
+- [ ] Update OnboardingData type to include meetingTimes
+- [ ] Surface meeting times on calendar day detail / meeting card (e.g. "9:00 AM · Owner Weekly Review")
+- [ ] Surface meeting times in ManageSchedule meeting list
+- [ ] Add meeting times to Settings so owners can update them after onboarding
+
+## Meeting Times — Per-Meeting-Type Start Times (Jul 2026)
+- [x] meetingTimes JSON column added to business_profiles schema (drizzle/schema.ts)
+- [x] DEFAULT_MEETING_TIMES, TIME_OPTIONS, formatMeetingTime, MeetingTimes type added to shared/industryDefaults.ts
+- [x] upsertBusinessProfile updated to accept and persist meetingTimes
+- [x] onboarding.save router extended with meetingTimes input field
+- [x] onboarding.updateMeetingPrefs router extended with optional meetingTimes
+- [x] Onboarding Step 5 (Meeting Cadence): time picker per meeting type, below day picker
+- [x] ManageSchedule: TimePicker component added to each MeetingRow, saves with meetingTimes
+- [x] Home.tsx: fetches meetingTimes from onboarding.getStatus, passes to DetailPanel and MeetingSection
+- [x] MeetingSection: shows actual saved time (teal, formatted) instead of static suggestedTime string
+- [x] TypeScript check: zero errors

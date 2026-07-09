@@ -21,6 +21,7 @@ import {
   type CalendarMonth,
   YEAR,
 } from "@/lib/calendarData";
+import { DEFAULT_MEETING_TIMES, formatMeetingTime, type MeetingTimes } from "@shared/industryDefaults";
 
 const DOW_LABELS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
 const MEETING_ORDER: MeetingType[] = ["quarterly", "monthly", "weekly", "daily"];
@@ -332,13 +333,22 @@ const BIZ_TO_DB: Record<string, "chiropractic" | "crossfit" | "realty"> = {
   realty: "realty",
 };
 
+// Map MeetingType to MeetingTimes key
+const MEETING_TYPE_TO_TIME_KEY: Record<MeetingType, keyof MeetingTimes> = {
+  daily: "ownerDaily",
+  weekly: "ownerWeekly",
+  monthly: "ownerMonthly",
+  quarterly: "quarterly",
+};
+
 function MeetingSection({
-  type, day, dateKey, businessContext,
+  type, day, dateKey, businessContext, meetingTimes,
 }: {
   type: MeetingType;
   day: CalendarDay;
   dateKey: string;
   businessContext: BusinessSelection;
+  meetingTimes: MeetingTimes;
 }) {
   const m = MEETING_TYPES[type];
   const [itemStates, setItemStates] = useState<Map<string, { completed: boolean; comment: string }>>(() => new Map());
@@ -473,7 +483,10 @@ function MeetingSection({
         <p className="text-[10px] leading-relaxed" style={{ color: "rgba(255,255,255,0.45)" }}>{m.overview}</p>
         <div className="flex items-center gap-1.5 mt-0.5">
           <span className="text-[9px]" style={{ color: "rgba(255,255,255,0.3)" }}>🕐</span>
-          <span className="text-[10px] italic" style={{ color: "rgba(255,255,255,0.3)" }}>{m.suggestedTime}</span>
+          <span className="text-[10px] font-semibold" style={{ color: "rgba(94,234,212,0.7)" }}>
+            {formatMeetingTime(meetingTimes[MEETING_TYPE_TO_TIME_KEY[type]])}
+          </span>
+          <span className="text-[10px] italic" style={{ color: "rgba(255,255,255,0.25)" }}>— {m.totalDuration}</span>
         </div>
         <div className="mt-2 flex items-center gap-2">
           <div className="flex-1 h-1 rounded-full" style={{ backgroundColor: "rgba(255,255,255,0.1)" }}>
@@ -660,7 +673,7 @@ function BoardIssuesForMeeting({ meetingType, dateMs }: { meetingType: "daily_hu
   );
 }
 
-function DetailPanel({ day, onClose, businessContext }: { day: CalendarDay; onClose: () => void; businessContext: BusinessSelection }) {
+function DetailPanel({ day, onClose, businessContext, meetingTimes }: { day: CalendarDay; onClose: () => void; businessContext: BusinessSelection; meetingTimes: MeetingTimes }) {
   const dateStr = day.date.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
   const dateKey = `${day.date.getFullYear()}-${String(day.date.getMonth() + 1).padStart(2, "0")}-${String(day.date.getDate()).padStart(2, "0")}`;
   const sortedMeetings = MEETING_ORDER.filter((t) => day.meetings.includes(t));
@@ -689,7 +702,7 @@ function DetailPanel({ day, onClose, businessContext }: { day: CalendarDay; onCl
         const boardMeetingType = CALENDAR_TO_BOARD_MEETING[type];
         return (
           <div key={type} className="flex flex-col gap-3">
-            <MeetingSection type={type} day={day} dateKey={dateKey} businessContext={businessContext} />
+            <MeetingSection type={type} day={day} dateKey={dateKey} businessContext={businessContext} meetingTimes={meetingTimes} />
             {boardMeetingType && (
               <div className="px-3">
                 <BoardIssuesForMeeting meetingType={boardMeetingType} dateMs={day.date.getTime()} />
@@ -719,6 +732,21 @@ export default function Home() {
     { accountId: accountId ?? 0, year: viewYear },
     { enabled: accountId !== undefined, refetchOnWindowFocus: true }
   );
+
+  const { data: profileStatus } = trpc.onboarding.getStatus.useQuery(
+    { accountId: accountId ?? 0 },
+    { enabled: accountId !== undefined, staleTime: 300_000 }
+  );
+
+  const meetingTimes = useMemo<MeetingTimes>(() => {
+    if (profileStatus?.profile?.meetingTimes) {
+      try {
+        const parsed = JSON.parse(profileStatus.profile.meetingTimes);
+        return { ...DEFAULT_MEETING_TIMES, ...parsed };
+      } catch { /* fall through */ }
+    }
+    return { ...DEFAULT_MEETING_TIMES };
+  }, [profileStatus]);
 
   const calendar = useMemo<CalendarMonth[]>(() => {
     if (calendarData?.meetings && calendarData.meetings.length > 0) {
@@ -1091,7 +1119,7 @@ export default function Home() {
             style={{ backgroundColor: "#0A1929", borderLeft: "1px solid rgba(255,255,255,0.08)" }}
           >
             <div className="p-4">
-              <DetailPanel day={selectedDay} onClose={() => setSelectedDay(null)} businessContext={businessContext} />
+              <DetailPanel day={selectedDay} onClose={() => setSelectedDay(null)} businessContext={businessContext} meetingTimes={meetingTimes} />
             </div>
           </aside>
         )}

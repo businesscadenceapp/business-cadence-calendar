@@ -7,6 +7,9 @@ import {
   INDUSTRY_SUGGESTED_GOALS,
   INDUSTRY_KPI_DEFAULTS,
   MEETING_TYPE_INFO,
+  DEFAULT_MEETING_TIMES,
+  TIME_OPTIONS,
+  formatMeetingTime,
   type IndustryType,
   type SuggestedGoal,
   type KpiDefault,
@@ -57,6 +60,14 @@ interface OnboardingData {
     quarterlyEnabled: boolean;
     teamDailyEnabled: boolean;
     teamWeeklyEnabled: boolean;
+  };
+  meetingTimes: {
+    ownerDaily: string;
+    ownerWeekly: string;
+    ownerMonthly: string;
+    quarterly: string;
+    teamDaily: string;
+    teamWeekly: string;
   };
   goals: GoalDraft[];
   kpis: KpiDraft[];
@@ -373,13 +384,16 @@ function MeetingCadenceStep({
   onNext,
   onBack,
 }: {
-  data: Pick<OnboardingData, "workDays" | "meetingDayPrefs" | "industry">;
+  data: Pick<OnboardingData, "workDays" | "meetingDayPrefs" | "industry" | "meetingTimes">;
   onChange: (u: Partial<OnboardingData>) => void;
   onNext: () => void;
   onBack: () => void;
 }) {
   const upd = (patch: Partial<OnboardingData["meetingDayPrefs"]>) =>
     onChange({ meetingDayPrefs: { ...data.meetingDayPrefs, ...patch } });
+
+  const updTime = (key: keyof OnboardingData["meetingTimes"], value: string) =>
+    onChange({ meetingTimes: { ...data.meetingTimes, [key]: value } });
 
   const useRecommended = () => {
     onChange({ meetingDayPrefs: INDUSTRY_MEETING_DAY_DEFAULTS[data.industry] });
@@ -507,7 +521,7 @@ function MeetingCadenceStep({
                 </div>
               )}
 
-              {/* Day picker */}
+              {/* Day picker + Time picker */}
               {enabled && (
                 <div className="px-4 pb-3" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
                   <p className="text-xs font-semibold uppercase tracking-wide mt-2 mb-2"
@@ -550,6 +564,33 @@ function MeetingCadenceStep({
                       Select all days you hold this meeting each week.
                     </p>
                   )}
+                  {/* Time picker */}
+                  <div className="flex items-center gap-3 mt-3">
+                    <span className="text-xs font-semibold uppercase tracking-wide" style={{ color: "rgba(255,255,255,0.35)" }}>Start time</span>
+                    <select
+                      value={data.meetingTimes[key as keyof typeof data.meetingTimes]}
+                      onChange={e => updTime(key as keyof OnboardingData["meetingTimes"], e.target.value)}
+                      style={{
+                        backgroundColor: "rgba(255,255,255,0.06)",
+                        border: "1px solid rgba(94,234,212,0.25)",
+                        color: "#5EEAD4",
+                        borderRadius: "8px",
+                        padding: "5px 10px",
+                        fontSize: "13px",
+                        fontWeight: "600",
+                        outline: "none",
+                        fontFamily: "'Space Grotesk', sans-serif",
+                        cursor: "pointer",
+                      }}
+                    >
+                      {TIME_OPTIONS.map(opt => (
+                        <option key={opt.value} value={opt.value} style={{ backgroundColor: "#0F2440", color: "white" }}>
+                          {opt.label}
+                        </option>
+                      ))}
+                    </select>
+                    <span className="text-xs" style={{ color: "rgba(255,255,255,0.35)" }}>— owners can adjust this in Settings later</span>
+                  </div>
                 </div>
               )}
             </div>
@@ -1231,6 +1272,7 @@ export default function Onboarding() {
     employeeCount: 3,
     workDays: [1, 2, 3, 4, 5],
     meetingDayPrefs: INDUSTRY_MEETING_DAY_DEFAULTS["healthcare"],
+    meetingTimes: { ...DEFAULT_MEETING_TIMES },
     goals: [],
     kpis: INDUSTRY_KPI_DEFAULTS["healthcare"].map(k => ({ ...k })),
     employees: [],
@@ -1268,6 +1310,7 @@ export default function Onboarding() {
         employeeCount: data.employeeCount,
         workDays: data.workDays,
         meetingDayPrefs: data.meetingDayPrefs,
+        meetingTimes: data.meetingTimes,
         onboardingComplete: true,
       });
 

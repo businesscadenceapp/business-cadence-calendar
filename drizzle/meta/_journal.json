@@ -148,6 +148,13 @@
       "when": 1783486840662,
       "tag": "0020_acoustic_magma",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "5",
+      "when": 1783564212314,
+      "tag": "0021_woozy_blizzard",
+      "breakpoints": true
     }
   ]
 }

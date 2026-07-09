@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { TIME_OPTIONS, DEFAULT_MEETING_TIMES, formatMeetingTime } from "@shared/industryDefaults";
 
 const MONTH_NAMES = [
   "January", "February", "March", "April", "May", "June",
@@ -161,6 +162,11 @@ type MeetingPrefs = {
   quarterlyEnabled: boolean; teamDailyEnabled: boolean; teamWeeklyEnabled: boolean;
 };
 
+type MeetingTimes = {
+  ownerDaily: string; ownerWeekly: string; ownerMonthly: string;
+  quarterly: string; teamDaily: string; teamWeekly: string;
+};
+
 function MeetingScheduleSection({ accountId }: { accountId: number }) {
   const utils = trpc.useUtils();
   const { data: statusData, refetch } = trpc.onboarding.getStatus.useQuery({ accountId }, { enabled: accountId !== undefined });
@@ -173,6 +179,7 @@ function MeetingScheduleSection({ accountId }: { accountId: number }) {
     onError: (err) => toast.error(err.message ?? "Save failed."),
   });
   const [prefs, setPrefs] = useState<MeetingPrefs | null>(null);
+  const [times, setTimes] = useState<MeetingTimes>({ ...DEFAULT_MEETING_TIMES });
   const [dirty, setDirty] = useState(false);
 
   useEffect(() => {
@@ -192,6 +199,13 @@ function MeetingScheduleSection({ accountId }: { accountId: number }) {
         teamDailyEnabled: raw.teamDailyEnabled !== false,
         teamWeeklyEnabled: raw.teamWeeklyEnabled !== false,
       });
+      // Load saved meeting times if present
+      if (statusData.profile.meetingTimes) {
+        try {
+          const rawTimes = JSON.parse(statusData.profile.meetingTimes);
+          setTimes({ ...DEFAULT_MEETING_TIMES, ...rawTimes });
+        } catch { /* use defaults */ }
+      }
       setDirty(false);
     }
   }, [statusData]);
@@ -200,6 +214,39 @@ function MeetingScheduleSection({ accountId }: { accountId: number }) {
     setPrefs(prev => prev ? { ...prev, ...patch } : prev);
     setDirty(true);
   }, []);
+
+  const updTime = useCallback((key: keyof MeetingTimes, value: string) => {
+    setTimes(prev => ({ ...prev, [key]: value }));
+    setDirty(true);
+  }, []);
+
+  // Inline time picker component
+  const TimePicker = ({ timeKey }: { timeKey: keyof MeetingTimes }) => (
+    <div className="flex items-center gap-2 mt-2">
+      <span className="text-[11px] font-semibold uppercase tracking-wide" style={{ color: "rgba(255,255,255,0.35)" }}>Start time</span>
+      <select
+        value={times[timeKey]}
+        onChange={e => updTime(timeKey, e.target.value)}
+        style={{
+          backgroundColor: "rgba(255,255,255,0.06)",
+          border: "1px solid rgba(94,234,212,0.25)",
+          color: "#5EEAD4",
+          borderRadius: "6px",
+          padding: "3px 8px",
+          fontSize: "12px",
+          fontWeight: "600",
+          outline: "none",
+          cursor: "pointer",
+        }}
+      >
+        {TIME_OPTIONS.map(opt => (
+          <option key={opt.value} value={opt.value} style={{ backgroundColor: "#0F2440", color: "white" }}>
+            {opt.label}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
 
   if (!prefs) return <div className="text-sm p-4" style={{ color: "rgba(255,255,255,0.4)" }}>Loading…</div>;
 
@@ -233,18 +280,22 @@ function MeetingScheduleSection({ accountId }: { accountId: number }) {
           <MeetingRow label="Daily Huddle" desc="Quick daily sync — 10–15 min" enabledKey="ownerDailyEnabled">
             <p className="text-[11px] mb-1" style={{ color: "rgba(255,255,255,0.4)" }}>Which days?</p>
             <MiniDayPickerMulti value={prefs.ownerDaily} onChange={v => upd({ ownerDaily: v })} />
+            <TimePicker timeKey="ownerDaily" />
           </MeetingRow>
           <MeetingRow label="Weekly Review" desc="Weekly business review — 60–90 min" enabledKey="ownerWeeklyEnabled">
             <p className="text-[11px] mb-1" style={{ color: "rgba(255,255,255,0.4)" }}>Which day?</p>
             <MiniDayPicker value={prefs.ownerWeekly} onChange={v => upd({ ownerWeekly: v })} />
+            <TimePicker timeKey="ownerWeekly" />
           </MeetingRow>
           <MeetingRow label="Monthly Finance Review" desc="Monthly financial deep-dive — 60 min" enabledKey="ownerMonthlyEnabled">
             <p className="text-[11px] mb-1" style={{ color: "rgba(255,255,255,0.4)" }}>Which day? (1st occurrence each month)</p>
             <MiniDayPicker value={prefs.ownerMonthly} onChange={v => upd({ ownerMonthly: v })} />
+            <TimePicker timeKey="ownerMonthly" />
           </MeetingRow>
           <MeetingRow label="Quarterly Offsite Meeting" desc="Quarterly strategic offsite — ~4 hrs" enabledKey="quarterlyEnabled">
             <p className="text-[11px] mb-1" style={{ color: "rgba(255,255,255,0.4)" }}>Which day? (first occurring day in Jan, Apr, Jul, Oct)</p>
             <MiniDayPicker value={prefs.quarterlyDay} onChange={v => upd({ quarterlyDay: v })} />
+            <TimePicker timeKey="quarterly" />
           </MeetingRow>
         </div>
       </div>
@@ -255,15 +306,17 @@ function MeetingScheduleSection({ accountId }: { accountId: number }) {
           <MeetingRow label="Team Daily Huddle" desc="Quick daily sync with the team — 10–15 min" enabledKey="teamDailyEnabled">
             <p className="text-[11px] mb-1" style={{ color: "rgba(255,255,255,0.4)" }}>Which days?</p>
             <MiniDayPickerMulti value={prefs.teamDaily} onChange={v => upd({ teamDaily: v })} />
+            <TimePicker timeKey="teamDaily" />
           </MeetingRow>
           <MeetingRow label="Team Weekly Meeting" desc="Weekly all-hands or team review — 30–60 min" enabledKey="teamWeeklyEnabled">
             <p className="text-[11px] mb-1" style={{ color: "rgba(255,255,255,0.4)" }}>Which day?</p>
             <MiniDayPicker value={prefs.teamWeekly} onChange={v => upd({ teamWeekly: v })} />
+            <TimePicker timeKey="teamWeekly" />
           </MeetingRow>
         </div>
       </div>
       {dirty && (
-        <button onClick={() => { if (prefs) { updatePrefs.mutate({ accountId, meetingDayPrefs: prefs }); setDirty(false); } }}
+        <button onClick={() => { if (prefs) { updatePrefs.mutate({ accountId, meetingDayPrefs: prefs, meetingTimes: times }); setDirty(false); } }}
           disabled={updatePrefs.isPending}
           className="self-start px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
           style={{ backgroundColor: "#5EEAD4", color: "#0F2440" }}>

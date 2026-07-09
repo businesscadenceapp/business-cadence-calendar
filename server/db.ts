@@ -403,11 +403,20 @@ export async function upsertBusinessProfile(data: {
     teamWeeklyEnabled?: boolean;
   };
   onboardingComplete: boolean;
+  meetingTimes?: {
+    ownerDaily?: string;
+    ownerWeekly?: string;
+    ownerMonthly?: string;
+    quarterly?: string;
+    teamDaily?: string;
+    teamWeekly?: string;
+  } | null;
 }): Promise<BusinessProfile> {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   const workDaysJson = JSON.stringify(data.workDays);
   const prefsJson = JSON.stringify(data.meetingDayPrefs);
+  const timesJson = data.meetingTimes ? JSON.stringify(data.meetingTimes) : null;
   const existing = await getBusinessProfile(data.accountId);
   if (existing) {
     await db.update(businessProfiles).set({
@@ -417,6 +426,7 @@ export async function upsertBusinessProfile(data: {
       employeeCount: data.employeeCount,
       workDays: workDaysJson,
       meetingDayPrefs: prefsJson,
+      meetingTimes: timesJson ?? existing.meetingTimes,
       onboardingComplete: data.onboardingComplete,
     }).where(eq(businessProfiles.id, existing.id));
     return (await getBusinessProfile(data.accountId))!;
@@ -429,6 +439,7 @@ export async function upsertBusinessProfile(data: {
       employeeCount: data.employeeCount,
       workDays: workDaysJson,
       meetingDayPrefs: prefsJson,
+      meetingTimes: timesJson,
       onboardingComplete: data.onboardingComplete,
     });
     return (await getBusinessProfile(data.accountId))!;

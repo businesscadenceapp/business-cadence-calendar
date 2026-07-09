@@ -492,6 +492,14 @@ Be concise and specific. If a field has nothing, use an empty array.`,
           teamWeeklyEnabled: z.boolean().optional().default(true),
         }),
         onboardingComplete: z.boolean(),
+        meetingTimes: z.object({
+          ownerDaily: z.string().optional(),
+          ownerWeekly: z.string().optional(),
+          ownerMonthly: z.string().optional(),
+          quarterly: z.string().optional(),
+          teamDaily: z.string().optional(),
+          teamWeekly: z.string().optional(),
+        }).optional(),
       }))
       .mutation(async ({ input }) => {
         const profile = await upsertBusinessProfile(input);
@@ -516,6 +524,14 @@ Be concise and specific. If a field has nothing, use an empty array.`,
           teamDailyEnabled: z.boolean().optional().default(true),
           teamWeeklyEnabled: z.boolean().optional().default(true),
         }),
+        meetingTimes: z.object({
+          ownerDaily: z.string().optional(),
+          ownerWeekly: z.string().optional(),
+          ownerMonthly: z.string().optional(),
+          quarterly: z.string().optional(),
+          teamDaily: z.string().optional(),
+          teamWeekly: z.string().optional(),
+        }).optional(),
       }))
       .mutation(async ({ input }) => {
         const profile = await getBusinessProfile(input.accountId);
@@ -530,6 +546,7 @@ Be concise and specific. If a field has nothing, use an empty array.`,
           employeeCount: profile.employeeCount,
           workDays: JSON.parse(profile.workDays),
           meetingDayPrefs: merged,
+          meetingTimes: input.meetingTimes,
           onboardingComplete: profile.onboardingComplete,
         });
         return { success: true };

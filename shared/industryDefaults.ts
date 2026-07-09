@@ -845,3 +845,51 @@ export const MEETING_TYPE_INFO: Record<string, MeetingTypeInfo> = {
     tip: "This is where you share the numbers with your team. Transparency builds trust and ownership.",
   },
 };
+
+// ─── Default meeting times per meeting type ───────────────────────────────────
+
+export interface MeetingTimes {
+  ownerDaily: string;    // "HH:MM" 24h
+  ownerWeekly: string;
+  ownerMonthly: string;
+  quarterly: string;
+  teamDaily: string;
+  teamWeekly: string;
+}
+
+/** Sensible default start times for each meeting type. */
+export const DEFAULT_MEETING_TIMES: MeetingTimes = {
+  ownerDaily:   "08:00",  // 8:00 AM — quick morning sync before the day starts
+  ownerWeekly:  "09:00",  // 9:00 AM — deeper weekly review
+  ownerMonthly: "09:00",  // 9:00 AM — monthly finance review
+  quarterly:    "09:00",  // 9:00 AM — quarterly offsite (half-day)
+  teamDaily:    "08:30",  // 8:30 AM — team huddle after owner sync
+  teamWeekly:   "09:00",  // 9:00 AM — all-hands weekly
+};
+
+/** Human-readable time options for the time picker (30-min increments, 6 AM – 7 PM). */
+export const TIME_OPTIONS: { value: string; label: string }[] = (() => {
+  const opts: { value: string; label: string }[] = [];
+  for (let h = 6; h <= 19; h++) {
+    for (const m of [0, 30]) {
+      const hh = String(h).padStart(2, "0");
+      const mm = String(m).padStart(2, "0");
+      const value = `${hh}:${mm}`;
+      const hour12 = h > 12 ? h - 12 : h === 0 ? 12 : h;
+      const ampm = h < 12 ? "AM" : "PM";
+      const label = `${hour12}:${mm} ${ampm}`;
+      opts.push({ value, label });
+    }
+  }
+  return opts;
+})();
+
+/** Format a "HH:MM" 24h string to "h:MM AM/PM" for display. */
+export function formatMeetingTime(time: string): string {
+  const [hStr, mStr] = time.split(":");
+  const h = parseInt(hStr, 10);
+  const m = mStr ?? "00";
+  const hour12 = h > 12 ? h - 12 : h === 0 ? 12 : h;
+  const ampm = h < 12 ? "AM" : "PM";
+  return `${hour12}:${m} ${ampm}`;
+}

@@ -187,6 +187,7 @@ export const businessProfiles = mysqlTable("business_profiles", {
   employeeCount: int("employeeCount").default(0).notNull(),
   workDays: text("workDays").notNull(), // JSON: number[] e.g. [1,2,3,4,5]
   meetingDayPrefs: text("meetingDayPrefs").notNull(), // JSON: { ownerDaily, ownerWeekly, ownerMonthly, teamDaily, teamWeekly }
+  meetingTimes: text("meetingTimes"), // JSON: { ownerDaily, ownerWeekly, ownerMonthly, quarterly, teamDaily, teamWeekly } — each value is "HH:MM" 24h string
   onboardingComplete: boolean("onboardingComplete").default(false).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
