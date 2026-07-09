@@ -493,3 +493,33 @@
 - [x] NotFound.tsx: converted from slate gradient + white card to dark navy with teal CTA
 - [x] RecordMeeting.tsx: converted AI notes section (summary, action items, key decisions, resolved, transcript) to dark navy
 - [x] TypeScript check: zero errors after all conversions
+
+## Onboarding Redesign — Richer Company Setup (Phase N+4)
+
+### New Step Structure (12 steps total)
+- [x] Step 1: Welcome — headline, 3 value props, "Let's Get Started" CTA
+- [x] Step 2: Business basics — name, industry picker (with icons + descriptions)
+- [x] Step 3: Team size — owner count + employee count stepper
+- [x] Step 4: Work schedule — which days they operate (day toggles)
+- [x] Step 5: Meeting cadence — show smart defaults per industry with meeting count summary (daily/weekly/monthly/quarterly), allow toggle on/off each type with explanation of what each meeting is for, show "Use Our Recommended Schedule" shortcut button
+- [x] Step 6: Goals setup — add 1–3 quarterly/annual goals for the business (name + target + metric), with industry-suggested goal examples, skip option
+- [x] Step 7: KPI education + configuration — explain what KPIs are in plain language, show industry-suggested KPI categories pre-filled, let owner add/remove/rename, skip option
+- [x] Step 8: Employee invites — list employees with name + email + business scope, send invite links, or skip entirely
+- [x] Step 9: Co-owner invite — if ownerCount > 1, prompt to invite co-owner by email (included in step 8), or skip
+- [x] Step 10: Preview — mini calendar + meeting count summary + goals + KPI count + employee count
+- [x] Step 11: Done — celebration, redirect to /app/board
+
+### Backend
+- [x] Extend onboarding.save to accept and persist initial goals array (reuse existing goals.create)
+- [x] Extend onboarding.save to trigger kpi.seedDefaults for the business after save
+- [x] Add onboarding.inviteEmployees procedure that calls person.invite for each employee draft (done inline in handleConfirm)
+
+### UX / Design
+- [x] Each step has a clear title, subtitle, and contextual tip/explainer in a teal info box
+- [x] Meeting cadence step shows a visual "meeting rhythm" summary (e.g. "5× daily, 1× weekly, 1× monthly, 1× quarterly = 67 meetings/year")
+- [x] Goals step shows 3 industry-specific suggested goals as clickable chips the owner can adopt
+- [x] KPI step shows a plain-language explainer: "KPIs are the 3–5 numbers that tell you if your business is healthy at a glance"
+- [x] Employee invite step shows a table of rows (name, email, access level) with Add Row + Send Invites buttons
+- [x] All steps respect dark navy theme with teal accents
+- [x] Progress bar shows step X of 11
+- [x] "Use Recommended" shortcut on meeting cadence step auto-fills industry defaults and advances

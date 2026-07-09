@@ -1,31 +1,56 @@
 import { useState, useCallback } from "react";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
-import { INDUSTRY_TYPES, INDUSTRY_MEETING_DAY_DEFAULTS, type IndustryType } from "@shared/industryDefaults";
+import {
+  INDUSTRY_TYPES,
+  INDUSTRY_MEETING_DAY_DEFAULTS,
+  INDUSTRY_SUGGESTED_GOALS,
+  INDUSTRY_KPI_DEFAULTS,
+  MEETING_TYPE_INFO,
+  type IndustryType,
+  type SuggestedGoal,
+  type KpiDefault,
+} from "@shared/industryDefaults";
 import { generateMeetingSchedule } from "@shared/calendarEngine";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
+
+interface GoalDraft {
+  label: string;
+  metric: string;
+  unit: string;
+  targetValue: string;
+  period: "quarterly" | "annual";
+}
+
+interface KpiDraft {
+  name: string;
+  unit: string;
+  frequency: "weekly" | "monthly";
+  description: string;
+}
+
+interface EmployeeDraft {
+  name: string;
+  email: string;
+  role: "employee" | "coowner";
+}
 
 interface OnboardingData {
   businessName: string;
   industry: IndustryType;
   ownerCount: number;
   employeeCount: number;
-  workDays: number[]; // 0=Sun..6=Sat
+  workDays: number[];
   meetingDayPrefs: {
-    ownerDaily: number[];  // multi-day selection
+    ownerDaily: number[];
     ownerWeekly: number;
     ownerMonthly: number;
-    quarterlyDay: number;  // day of week for quarterly offsite
-    teamDaily: number[];  // multi-day selection
+    quarterlyDay: number;
+    teamDaily: number[];
     teamWeekly: number;
-    // enabled flags
     ownerDailyEnabled: boolean;
     ownerWeeklyEnabled: boolean;
     ownerMonthlyEnabled: boolean;
@@ -33,45 +58,150 @@ interface OnboardingData {
     teamDailyEnabled: boolean;
     teamWeeklyEnabled: boolean;
   };
+  goals: GoalDraft[];
+  kpis: KpiDraft[];
+  employees: EmployeeDraft[];
 }
 
 const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const DAY_FULL = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+const TOTAL_STEPS = 11;
 
-const TOTAL_STEPS = 8;
+// ─── Shared styles ────────────────────────────────────────────────────────────
 
-// ─── Step components ─────────────────────────────────────────────────────────
+const inputStyle: React.CSSProperties = {
+  backgroundColor: "rgba(255,255,255,0.06)",
+  border: "1px solid rgba(255,255,255,0.12)",
+  color: "rgba(255,255,255,0.85)",
+  borderRadius: "8px",
+  padding: "8px 12px",
+  fontSize: "14px",
+  outline: "none",
+  width: "100%",
+  fontFamily: "'Inter', sans-serif",
+};
+
+const selectStyle: React.CSSProperties = {
+  backgroundColor: "rgba(255,255,255,0.06)",
+  border: "1px solid rgba(255,255,255,0.12)",
+  color: "rgba(255,255,255,0.85)",
+  borderRadius: "8px",
+  padding: "8px 10px",
+  fontSize: "14px",
+  outline: "none",
+  fontFamily: "'Inter', sans-serif",
+};
+
+// ─── Shared sub-components ────────────────────────────────────────────────────
+
+function TipBox({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="rounded-xl p-4 text-sm leading-relaxed"
+      style={{ backgroundColor: "rgba(94,234,212,0.07)", border: "1px solid rgba(94,234,212,0.2)", color: "rgba(255,255,255,0.6)" }}>
+      <span style={{ color: "#5EEAD4" }}>💡 </span>{children}
+    </div>
+  );
+}
+
+function StepHeader({ title, subtitle }: { title: string; subtitle: string }) {
+  return (
+    <div className="mb-6">
+      <h2 className="text-2xl font-bold text-white mb-1.5" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>{title}</h2>
+      <p className="text-base" style={{ color: "rgba(255,255,255,0.5)" }}>{subtitle}</p>
+    </div>
+  );
+}
+
+function NavButtons({
+  onBack,
+  onNext,
+  canProceed = true,
+  nextLabel = "Continue →",
+  onSkip,
+  skipLabel = "Skip for now",
+}: {
+  onBack: () => void;
+  onNext: () => void;
+  canProceed?: boolean;
+  nextLabel?: string;
+  onSkip?: () => void;
+  skipLabel?: string;
+}) {
+  return (
+    <div className="flex items-center gap-3 mt-6 pt-4" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+      <button
+        onClick={onBack}
+        className="px-4 py-2.5 rounded-xl text-sm font-medium transition-all"
+        style={{ border: "1px solid rgba(255,255,255,0.12)", color: "rgba(255,255,255,0.5)", backgroundColor: "rgba(255,255,255,0.04)" }}
+      >
+        ← Back
+      </button>
+      <button
+        onClick={onNext}
+        disabled={!canProceed}
+        className="flex-1 py-2.5 rounded-xl text-sm font-bold transition-all active:scale-[0.98] disabled:opacity-40"
+        style={{ background: "linear-gradient(135deg, #5EEAD4, #2DD4BF)", color: "#0F2440" }}
+      >
+        {nextLabel}
+      </button>
+      {onSkip && (
+        <button
+          onClick={onSkip}
+          className="px-4 py-2.5 rounded-xl text-sm transition-all"
+          style={{ color: "rgba(255,255,255,0.3)" }}
+        >
+          {skipLabel}
+        </button>
+      )}
+    </div>
+  );
+}
+
+// ─── Step 1: Welcome ──────────────────────────────────────────────────────────
 
 function StepWelcome({ onNext }: { onNext: () => void }) {
   return (
     <div className="flex flex-col items-center text-center gap-6">
-      <div className="w-20 h-20 rounded-2xl flex items-center justify-center" style={{ backgroundColor: "rgba(94,234,212,0.1)", border: "1px solid rgba(94,234,212,0.2)" }}>
-        <span className="text-4xl">📅</span>
+      <div className="w-20 h-20 rounded-2xl flex items-center justify-center text-4xl"
+        style={{ backgroundColor: "rgba(94,234,212,0.1)", border: "1px solid rgba(94,234,212,0.2)" }}>
+        📅
       </div>
       <div>
-        <h1 className="text-3xl font-bold text-white mb-3" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Welcome to BusinessCadence</h1>
+        <h1 className="text-3xl font-bold text-white mb-3" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+          Welcome to BusinessCadence
+        </h1>
         <p className="text-lg max-w-md" style={{ color: "rgba(255,255,255,0.5)" }}>
-          Let's set up your calendar in about 2 minutes. We'll ask a few questions about your business
-          so we can build a meeting rhythm that actually fits how you work.
+          Let's set up your business in about 5 minutes. We'll build your meeting rhythm,
+          set your goals, configure your KPIs, and get your team ready to go.
         </p>
       </div>
-      <div className="flex flex-col gap-2 text-sm mt-2" style={{ color: "rgba(255,255,255,0.4)" }}>
-        <div className="flex items-center gap-2">
-          <span style={{ color: "#5EEAD4" }}>✓</span> Industry-specific agenda templates
-        </div>
-        <div className="flex items-center gap-2">
-          <span style={{ color: "#5EEAD4" }}>✓</span> Meetings scheduled around your work days
-        </div>
-        <div className="flex items-center gap-2">
-          <span style={{ color: "#5EEAD4" }}>✓</span> Editable closed days that auto-shift meetings
-        </div>
+      <div className="grid grid-cols-2 gap-3 w-full max-w-sm mt-2">
+        {[
+          { icon: "📅", label: "Meeting cadence", sub: "Smart defaults for your industry" },
+          { icon: "🎯", label: "Business goals", sub: "Quarterly & annual targets" },
+          { icon: "📊", label: "KPI tracking", sub: "The numbers that matter most" },
+          { icon: "👥", label: "Team access", sub: "Invite employees right now" },
+        ].map(item => (
+          <div key={item.label} className="rounded-xl p-3 text-left"
+            style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
+            <div className="text-xl mb-1">{item.icon}</div>
+            <div className="text-sm font-semibold text-white">{item.label}</div>
+            <div className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>{item.sub}</div>
+          </div>
+        ))}
       </div>
-      <Button onClick={onNext} size="lg" className="mt-4 px-10 font-bold" style={{ background: "linear-gradient(135deg, #5EEAD4, #2DD4BF)", color: "#0F2440" }}>
+      <button
+        onClick={onNext}
+        className="mt-2 px-10 py-3 rounded-xl font-bold text-base transition-all hover:opacity-90 active:scale-[0.98]"
+        style={{ background: "linear-gradient(135deg, #5EEAD4, #2DD4BF)", color: "#0F2440" }}
+      >
         Let's Get Started →
-      </Button>
+      </button>
     </div>
   );
 }
+
+// ─── Step 2: Business Basics ──────────────────────────────────────────────────
 
 function StepBusinessBasics({
   data,
@@ -80,61 +210,56 @@ function StepBusinessBasics({
   onBack,
 }: {
   data: Pick<OnboardingData, "businessName" | "industry">;
-  onChange: (updates: Partial<OnboardingData>) => void;
+  onChange: (u: Partial<OnboardingData>) => void;
   onNext: () => void;
   onBack: () => void;
 }) {
-  const canProceed = data.businessName.trim().length > 0 && data.industry;
+  const canProceed = data.businessName.trim().length > 0 && !!data.industry;
   return (
-    <div className="flex flex-col gap-6">
-      <div>
-        <h2 className="text-2xl font-bold text-white mb-1" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Tell us about your business</h2>
-        <p style={{ color: "rgba(255,255,255,0.5)" }}>This helps us tailor your meeting agenda templates.</p>
-      </div>
-
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="bizName" className="text-sm font-medium" style={{ color: "rgba(255,255,255,0.6)" }}>Business Name</Label>
-        <Input
-          id="bizName"
-          placeholder="e.g. New Beginnings Chiropractic"
-          value={data.businessName}
-          onChange={e => onChange({ businessName: e.target.value })}
-          className="text-base"
-        />
-      </div>
-
-      <div className="flex flex-col gap-2">
-        <Label className="text-sm font-medium" style={{ color: "rgba(255,255,255,0.6)" }}>Industry</Label>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-          {INDUSTRY_TYPES.map(industry => (
-            <button
-              key={industry.value}
-              onClick={() => {
-                onChange({
-                  industry: industry.value,
-                  meetingDayPrefs: INDUSTRY_MEETING_DAY_DEFAULTS[industry.value],
-                });
-              }}
-              style={{
-                border: `2px solid ${data.industry === industry.value ? "#5EEAD4" : "rgba(255,255,255,0.1)"}`,
-                backgroundColor: data.industry === industry.value ? "rgba(94,234,212,0.1)" : "rgba(255,255,255,0.04)",
-                borderRadius: "12px",
-                padding: "12px",
-                textAlign: "left",
-                transition: "all 150ms",
-              }}
-            >
-              <span className="font-medium text-sm text-white">{industry.label}</span>
-              <span className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>{industry.description}</span>
-            </button>
-          ))}
+    <div>
+      <StepHeader
+        title="Tell us about your business"
+        subtitle="We'll use this to tailor your meeting agendas and suggest the right KPIs."
+      />
+      <div className="flex flex-col gap-5">
+        <div>
+          <label className="block text-xs font-semibold uppercase tracking-wide mb-1.5"
+            style={{ color: "rgba(255,255,255,0.4)" }}>Business Name</label>
+          <input
+            style={inputStyle}
+            value={data.businessName}
+            onChange={e => onChange({ businessName: e.target.value })}
+            placeholder="e.g. New Beginnings Chiropractic"
+            autoFocus
+          />
+        </div>
+        <div>
+          <label className="block text-xs font-semibold uppercase tracking-wide mb-1.5"
+            style={{ color: "rgba(255,255,255,0.4)" }}>Industry</label>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {INDUSTRY_TYPES.map(ind => (
+              <button
+                key={ind.value}
+                onClick={() => onChange({ industry: ind.value, meetingDayPrefs: INDUSTRY_MEETING_DAY_DEFAULTS[ind.value] })}
+                className="flex flex-col items-start p-3 rounded-xl text-left transition-all duration-150"
+                style={{
+                  border: `2px solid ${data.industry === ind.value ? "#5EEAD4" : "rgba(255,255,255,0.1)"}`,
+                  backgroundColor: data.industry === ind.value ? "rgba(94,234,212,0.1)" : "rgba(255,255,255,0.04)",
+                }}
+              >
+                <span className="font-semibold text-sm text-white">{ind.label}</span>
+                <span className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>{ind.description}</span>
+              </button>
+            ))}
+          </div>
         </div>
       </div>
-
-      <StepNav onBack={onBack} onNext={onNext} canProceed={!!canProceed} />
+      <NavButtons onBack={onBack} onNext={onNext} canProceed={canProceed} />
     </div>
   );
 }
+
+// ─── Step 3: Team Size ────────────────────────────────────────────────────────
 
 function StepTeamSize({
   data,
@@ -143,57 +268,51 @@ function StepTeamSize({
   onBack,
 }: {
   data: Pick<OnboardingData, "ownerCount" | "employeeCount">;
-  onChange: (updates: Partial<OnboardingData>) => void;
+  onChange: (u: Partial<OnboardingData>) => void;
   onNext: () => void;
   onBack: () => void;
 }) {
   return (
-    <div className="flex flex-col gap-6">
-      <div>
-        <h2 className="text-2xl font-bold text-white mb-1" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Who's on your team?</h2>
-        <p style={{ color: "rgba(255,255,255,0.5)" }}>Helps us understand your meeting structure.</p>
-      </div>
-
-      <div className="grid grid-cols-2 gap-6">
-        <div className="flex flex-col gap-2">
-          <Label className="text-sm font-medium" style={{ color: "rgba(255,255,255,0.6)" }}>Owners / Partners</Label>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => onChange({ ownerCount: Math.max(1, data.ownerCount - 1) })}
-              className="w-10 h-10 rounded-full flex items-center justify-center text-xl font-bold transition-colors"
-              style={{ border: "2px solid rgba(255,255,255,0.15)", color: "rgba(255,255,255,0.6)" }}
-            >−</button>
-            <span className="text-3xl font-bold text-white w-8 text-center">{data.ownerCount}</span>
-            <button
-              onClick={() => onChange({ ownerCount: Math.min(20, data.ownerCount + 1) })}
-              className="w-10 h-10 rounded-full flex items-center justify-center text-xl font-bold transition-colors"
-              style={{ border: "2px solid rgba(255,255,255,0.15)", color: "rgba(255,255,255,0.6)" }}
-            >+</button>
-          </div>
+    <div>
+      <StepHeader
+        title="Who's on your team?"
+        subtitle="This helps us set up the right meeting structure and employee access."
+      />
+      <div className="flex flex-col gap-6">
+        <div className="grid grid-cols-2 gap-6">
+          {[
+            { label: "Owners / Partners", key: "ownerCount" as const, min: 1, max: 20, value: data.ownerCount },
+            { label: "Employees", key: "employeeCount" as const, min: 0, max: 500, value: data.employeeCount },
+          ].map(item => (
+            <div key={item.key} className="flex flex-col gap-3">
+              <label className="text-xs font-semibold uppercase tracking-wide"
+                style={{ color: "rgba(255,255,255,0.4)" }}>{item.label}</label>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => onChange({ [item.key]: Math.max(item.min, item.value - 1) })}
+                  className="w-10 h-10 rounded-full flex items-center justify-center text-xl font-bold transition-colors"
+                  style={{ border: "2px solid rgba(255,255,255,0.15)", color: "rgba(255,255,255,0.6)" }}
+                >−</button>
+                <span className="text-3xl font-bold text-white w-8 text-center">{item.value}</span>
+                <button
+                  onClick={() => onChange({ [item.key]: Math.min(item.max, item.value + 1) })}
+                  className="w-10 h-10 rounded-full flex items-center justify-center text-xl font-bold transition-colors"
+                  style={{ border: "2px solid rgba(255,255,255,0.15)", color: "rgba(255,255,255,0.6)" }}
+                >+</button>
+              </div>
+            </div>
+          ))}
         </div>
-
-        <div className="flex flex-col gap-2">
-          <Label className="text-sm font-medium" style={{ color: "rgba(255,255,255,0.6)" }}>Employees</Label>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => onChange({ employeeCount: Math.max(0, data.employeeCount - 1) })}
-              className="w-10 h-10 rounded-full flex items-center justify-center text-xl font-bold transition-colors"
-              style={{ border: "2px solid rgba(255,255,255,0.15)", color: "rgba(255,255,255,0.6)" }}
-            >−</button>
-            <span className="text-3xl font-bold text-white w-8 text-center">{data.employeeCount}</span>
-            <button
-              onClick={() => onChange({ employeeCount: Math.min(500, data.employeeCount + 1) })}
-              className="w-10 h-10 rounded-full flex items-center justify-center text-xl font-bold transition-colors"
-              style={{ border: "2px solid rgba(255,255,255,0.15)", color: "rgba(255,255,255,0.6)" }}
-            >+</button>
-          </div>
-        </div>
+        <TipBox>
+          If you have employees, you'll be able to invite them in a later step so they can submit their weekly numbers directly.
+        </TipBox>
       </div>
-
-      <StepNav onBack={onBack} onNext={onNext} canProceed={true} />
+      <NavButtons onBack={onBack} onNext={onNext} />
     </div>
   );
 }
+
+// ─── Step 4: Work Schedule ────────────────────────────────────────────────────
 
 function StepWorkSchedule({
   data,
@@ -202,31 +321,28 @@ function StepWorkSchedule({
   onBack,
 }: {
   data: Pick<OnboardingData, "workDays">;
-  onChange: (updates: Partial<OnboardingData>) => void;
+  onChange: (u: Partial<OnboardingData>) => void;
   onNext: () => void;
   onBack: () => void;
 }) {
-  const toggleDay = (day: number) => {
-    const current = data.workDays;
-    if (current.includes(day)) {
-      onChange({ workDays: current.filter(d => d !== day) });
-    } else {
-      onChange({ workDays: [...current, day].sort() });
-    }
+  const toggle = (day: number) => {
+    const next = data.workDays.includes(day)
+      ? data.workDays.filter(d => d !== day)
+      : [...data.workDays, day].sort();
+    onChange({ workDays: next });
   };
-
   return (
-    <div className="flex flex-col gap-6">
-      <div>
-        <h2 className="text-2xl font-bold text-white mb-1" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>What days do you operate?</h2>
-        <p style={{ color: "rgba(255,255,255,0.5)" }}>We'll only schedule meetings on your work days.</p>
-      </div>
-
-      <div className="flex gap-2 flex-wrap">
-        {DAY_NAMES.map((name, i) => (
-          <button
-            key={i}
-            onClick={() => toggleDay(i)}
+    <div>
+      <StepHeader
+        title="What days do you operate?"
+        subtitle="We'll only schedule meetings on your work days — no meetings on days you're closed."
+      />
+      <div className="flex flex-col gap-5">
+        <div className="flex gap-2 flex-wrap">
+          {DAY_NAMES.map((name, i) => (
+            <button
+              key={i}
+              onClick={() => toggle(i)}
               style={{
                 width: "56px", height: "56px", borderRadius: "12px",
                 border: `2px solid ${data.workDays.includes(i) ? "#5EEAD4" : "rgba(255,255,255,0.12)"}`,
@@ -234,350 +350,696 @@ function StepWorkSchedule({
                 color: data.workDays.includes(i) ? "#0F2440" : "rgba(255,255,255,0.6)",
                 fontWeight: "600", fontSize: "14px", transition: "all 150ms",
               }}
-          >
-            {name}
-          </button>
-        ))}
-      </div>
-
-      {data.workDays.length === 0 && (
-        <p className="text-sm" style={{ color: "#F87171" }}>Please select at least one work day.</p>
-      )}
-
-      <StepNav onBack={onBack} onNext={onNext} canProceed={data.workDays.length > 0} />
-    </div>
-  );
-}
-
-// Multi-select day picker (for Daily Huddle)
-function DayPickerMulti({
-  label,
-  value,
-  onChange,
-  allowedDays,
-}: {
-  label: string;
-  value: number[];
-  onChange: (days: number[]) => void;
-  allowedDays: number[];
-}) {
-  const toggle = (i: number) => {
-    if (!allowedDays.includes(i)) return;
-    const next = value.includes(i) ? value.filter(d => d !== i) : [...value, i];
-    onChange(next);
-  };
-  return (
-    <div className="flex flex-col gap-1.5">
-      <Label className="text-xs font-medium uppercase tracking-wide" style={{ color: "rgba(255,255,255,0.4)" }}>{label}</Label>
-      <p className="text-[11px] -mt-0.5" style={{ color: "rgba(255,255,255,0.3)" }}>Select all days you hold this meeting each week.</p>
-      <div className="flex gap-1.5 flex-wrap">
-        {DAY_NAMES.map((name, i) => {
-          const allowed = allowedDays.includes(i);
-          const selected = value.includes(i);
-          return (
-            <button
-              key={i}
-              disabled={!allowed}
-              onClick={() => toggle(i)}
-              style={{
-                width: "44px", height: "36px", borderRadius: "8px",
-                border: `1px solid ${!allowed ? "rgba(255,255,255,0.06)" : selected ? "#5EEAD4" : "rgba(255,255,255,0.12)"}`,
-                backgroundColor: !allowed ? "transparent" : selected ? "#5EEAD4" : "rgba(255,255,255,0.05)",
-                color: !allowed ? "rgba(255,255,255,0.2)" : selected ? "#0F2440" : "rgba(255,255,255,0.6)",
-                fontSize: "12px", fontWeight: "600", transition: "all 150ms",
-                cursor: !allowed ? "not-allowed" : "pointer",
-                opacity: !allowed ? 0.3 : 1,
-              }}
-            >
-              {name}
-            </button>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-function DayPicker({
-  label,
-  value,
-  onChange,
-  allowedDays,
-}: {
-  label: string;
-  value: number;
-  onChange: (day: number) => void;
-  allowedDays: number[];
-}) {
-  return (
-    <div className="flex flex-col gap-1.5">
-      <Label className="text-xs font-medium uppercase tracking-wide" style={{ color: "rgba(255,255,255,0.4)" }}>{label}</Label>
-      <div className="flex gap-1.5 flex-wrap">
-        {DAY_NAMES.map((name, i) => {
-          const allowed = allowedDays.includes(i);
-          return (
-            <button
-              key={i}
-              disabled={!allowed}
-              onClick={() => allowed && onChange(i)}
-              style={{
-                width: "44px", height: "36px", borderRadius: "8px",
-                border: `1px solid ${!allowed ? "rgba(255,255,255,0.06)" : value === i ? "#5EEAD4" : "rgba(255,255,255,0.12)"}`,
-                backgroundColor: !allowed ? "transparent" : value === i ? "#5EEAD4" : "rgba(255,255,255,0.05)",
-                color: !allowed ? "rgba(255,255,255,0.2)" : value === i ? "#0F2440" : "rgba(255,255,255,0.6)",
-                fontSize: "12px", fontWeight: "600", transition: "all 150ms",
-                cursor: !allowed ? "not-allowed" : "pointer",
-                opacity: !allowed ? 0.3 : 1,
-              }}
-            >
-              {name}
-            </button>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-function MeetingToggleRow({
-  label,
-  description,
-  enabled,
-  onToggle,
-  children,
-}: {
-  label: string;
-  description: string;
-  enabled: boolean;
-  onToggle: (v: boolean) => void;
-  children?: React.ReactNode;
-}) {
-  return (
-    <div style={{ borderRadius: "8px", border: `1px solid ${enabled ? "rgba(94,234,212,0.2)" : "rgba(255,255,255,0.08)"}`, backgroundColor: enabled ? "rgba(94,234,212,0.06)" : "rgba(255,255,255,0.03)", padding: "12px", transition: "all 200ms", opacity: enabled ? 1 : 0.7 }}>
-      <div className="flex items-center justify-between mb-1">
-        <div>
-          <span className="text-sm font-semibold text-white">{label}</span>
-          <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>{description}</p>
+            >{name}</button>
+          ))}
         </div>
+        {data.workDays.length === 0 && (
+          <p className="text-sm" style={{ color: "#F87171" }}>Please select at least one work day.</p>
+        )}
+        <TipBox>
+          You can add specific closed days (holidays, vacations) later in Manage Schedule — meetings will automatically shift to the next available day.
+        </TipBox>
+      </div>
+      <NavButtons onBack={onBack} onNext={onNext} canProceed={data.workDays.length > 0} />
+    </div>
+  );
+}
+
+// ─── Step 5: Meeting Cadence ──────────────────────────────────────────────────
+
+function MeetingCadenceStep({
+  data,
+  onChange,
+  onNext,
+  onBack,
+}: {
+  data: Pick<OnboardingData, "workDays" | "meetingDayPrefs" | "industry">;
+  onChange: (u: Partial<OnboardingData>) => void;
+  onNext: () => void;
+  onBack: () => void;
+}) {
+  const upd = (patch: Partial<OnboardingData["meetingDayPrefs"]>) =>
+    onChange({ meetingDayPrefs: { ...data.meetingDayPrefs, ...patch } });
+
+  const useRecommended = () => {
+    onChange({ meetingDayPrefs: INDUSTRY_MEETING_DAY_DEFAULTS[data.industry] });
+    onNext();
+  };
+
+  const prefs = data.meetingDayPrefs;
+  const allowedDays = data.workDays.length > 0 ? data.workDays : [1, 2, 3, 4, 5];
+
+  // Calculate annual meeting count
+  const countMeetings = () => {
+    const weeksPerYear = 52;
+    let count = 0;
+    if (prefs.ownerDailyEnabled) count += prefs.ownerDaily.length * weeksPerYear;
+    if (prefs.ownerWeeklyEnabled) count += weeksPerYear;
+    if (prefs.ownerMonthlyEnabled) count += 12;
+    if (prefs.quarterlyEnabled) count += 4;
+    if (prefs.teamDailyEnabled) count += prefs.teamDaily.length * weeksPerYear;
+    if (prefs.teamWeeklyEnabled) count += weeksPerYear;
+    return count;
+  };
+
+  const meetingTypes = [
+    { key: "ownerDaily" as const, enabledKey: "ownerDailyEnabled" as const, multi: true },
+    { key: "ownerWeekly" as const, enabledKey: "ownerWeeklyEnabled" as const, multi: false },
+    { key: "ownerMonthly" as const, enabledKey: "ownerMonthlyEnabled" as const, multi: false },
+    { key: "quarterly" as const, enabledKey: "quarterlyEnabled" as const, multi: false },
+    { key: "teamDaily" as const, enabledKey: "teamDailyEnabled" as const, multi: true },
+    { key: "teamWeekly" as const, enabledKey: "teamWeeklyEnabled" as const, multi: false },
+  ];
+
+  const [expandedInfo, setExpandedInfo] = useState<string | null>(null);
+
+  return (
+    <div>
+      <StepHeader
+        title="Set your meeting rhythm"
+        subtitle="Choose which meetings you want and when. You can change any of this later."
+      />
+      <div className="flex flex-col gap-4">
+        {/* Use recommended shortcut */}
         <button
-          type="button"
-          onClick={() => onToggle(!enabled)}
-          className={cn("relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200")}
-          style={{ backgroundColor: enabled ? "#5EEAD4" : "rgba(255,255,255,0.15)" }}
-          aria-checked={enabled}
-          role="switch"
+          onClick={useRecommended}
+          className="flex items-center justify-between w-full px-4 py-3 rounded-xl text-left transition-all hover:opacity-90"
+          style={{ background: "linear-gradient(135deg, rgba(94,234,212,0.15), rgba(45,212,191,0.1))", border: "1px solid rgba(94,234,212,0.3)" }}
         >
-          <span
-            className={cn(
-              "pointer-events-none inline-block h-4 w-4 rounded-full shadow transform transition-transform duration-200",
-              enabled ? "translate-x-4" : "translate-x-0"
-            )}
-            style={{ backgroundColor: enabled ? "#0F2440" : "rgba(255,255,255,0.7)" }}
-          />
+          <div>
+            <div className="text-sm font-bold text-white">⚡ Use our recommended schedule</div>
+            <div className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.5)" }}>
+              Pre-filled defaults for {INDUSTRY_TYPES.find(i => i.value === data.industry)?.label ?? "your industry"} — you can customize later
+            </div>
+          </div>
+          <span className="text-xs font-bold px-3 py-1 rounded-full ml-3 flex-shrink-0"
+            style={{ backgroundColor: "#5EEAD4", color: "#0F2440" }}>Skip →</span>
         </button>
+
+        {/* Meeting count summary */}
+        <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl"
+          style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
+          <span className="text-lg">📅</span>
+          <span className="text-sm text-white font-semibold">{countMeetings()} meetings/year</span>
+          <span className="text-xs ml-auto" style={{ color: "rgba(255,255,255,0.35)" }}>based on current selections</span>
+        </div>
+
+        {/* Meeting type cards */}
+        {meetingTypes.map(({ key, enabledKey, multi }) => {
+          const info = MEETING_TYPE_INFO[key];
+          const enabled = prefs[enabledKey];
+          const isExpanded = expandedInfo === key;
+          const currentDays = multi
+            ? (prefs[key as "ownerDaily" | "teamDaily"] as number[])
+            : [prefs[key as "ownerWeekly" | "ownerMonthly" | "quarterlyDay" | "teamWeekly"] as number];
+
+          return (
+            <div key={key} className="rounded-xl overflow-hidden transition-all"
+              style={{
+                border: `1px solid ${enabled ? "rgba(94,234,212,0.2)" : "rgba(255,255,255,0.08)"}`,
+                backgroundColor: enabled ? "rgba(94,234,212,0.05)" : "rgba(255,255,255,0.03)",
+                opacity: enabled ? 1 : 0.65,
+              }}>
+              {/* Header row */}
+              <div className="flex items-center justify-between px-4 py-3">
+                <div className="flex items-center gap-3 flex-1 min-w-0">
+                  <span className="text-xl">{info.icon}</span>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-semibold text-white">{info.title}</span>
+                      <span className="text-[10px] px-2 py-0.5 rounded-full"
+                        style={{ backgroundColor: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.4)" }}>
+                        {info.duration}
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => setExpandedInfo(isExpanded ? null : key)}
+                      className="text-xs mt-0.5 text-left transition-colors"
+                      style={{ color: "#5EEAD4" }}
+                    >
+                      {isExpanded ? "Hide details ▲" : "What is this? ▼"}
+                    </button>
+                  </div>
+                </div>
+                {/* Toggle */}
+                <button
+                  onClick={() => upd({ [enabledKey]: !enabled })}
+                  className="relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ml-3"
+                  style={{ backgroundColor: enabled ? "#5EEAD4" : "rgba(255,255,255,0.15)" }}
+                  role="switch"
+                  aria-checked={enabled}
+                >
+                  <span
+                    className={cn("pointer-events-none inline-block h-4 w-4 rounded-full shadow transform transition-transform duration-200", enabled ? "translate-x-4" : "translate-x-0")}
+                    style={{ backgroundColor: enabled ? "#0F2440" : "rgba(255,255,255,0.7)" }}
+                  />
+                </button>
+              </div>
+
+              {/* Info panel */}
+              {isExpanded && (
+                <div className="px-4 pb-3 pt-0">
+                  <div className="rounded-lg p-3 text-sm leading-relaxed"
+                    style={{ backgroundColor: "rgba(255,255,255,0.04)", color: "rgba(255,255,255,0.6)" }}>
+                    <p className="mb-2">{info.purpose}</p>
+                    <p className="text-xs italic" style={{ color: "rgba(94,234,212,0.7)" }}>💡 {info.tip}</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Day picker */}
+              {enabled && (
+                <div className="px-4 pb-3" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+                  <p className="text-xs font-semibold uppercase tracking-wide mt-2 mb-2"
+                    style={{ color: "rgba(255,255,255,0.35)" }}>
+                    {multi ? "Which days?" : "Which day?"}
+                  </p>
+                  <div className="flex gap-1.5 flex-wrap">
+                    {DAY_NAMES.map((name, i) => {
+                      const allowed = allowedDays.includes(i);
+                      const selected = currentDays.includes(i);
+                      return (
+                        <button
+                          key={i}
+                          disabled={!allowed}
+                          onClick={() => {
+                            if (!allowed) return;
+                            if (multi) {
+                              const arr = prefs[key as "ownerDaily" | "teamDaily"] as number[];
+                              const next = selected ? arr.filter(d => d !== i) : [...arr, i];
+                              upd({ [key]: next });
+                            } else {
+                              upd({ [key]: i });
+                            }
+                          }}
+                          style={{
+                            width: "40px", height: "34px", borderRadius: "8px",
+                            border: `1px solid ${!allowed ? "rgba(255,255,255,0.06)" : selected ? "#5EEAD4" : "rgba(255,255,255,0.12)"}`,
+                            backgroundColor: !allowed ? "transparent" : selected ? "#5EEAD4" : "rgba(255,255,255,0.05)",
+                            color: !allowed ? "rgba(255,255,255,0.15)" : selected ? "#0F2440" : "rgba(255,255,255,0.6)",
+                            fontSize: "12px", fontWeight: "600", transition: "all 150ms",
+                            cursor: !allowed ? "not-allowed" : "pointer",
+                            opacity: !allowed ? 0.3 : 1,
+                          }}
+                        >{name}</button>
+                      );
+                    })}
+                  </div>
+                  {multi && (
+                    <p className="text-[11px] mt-1.5" style={{ color: "rgba(255,255,255,0.3)" }}>
+                      Select all days you hold this meeting each week.
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
-      {enabled && children && <div className="mt-2 pt-2" style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }}>{children}</div>}
+      <NavButtons onBack={onBack} onNext={onNext} />
     </div>
   );
 }
 
-function StepOwnerMeetings({
+// ─── Step 6: Goals Setup ──────────────────────────────────────────────────────
+
+function StepGoals({
   data,
   onChange,
   onNext,
   onBack,
 }: {
-  data: Pick<OnboardingData, "workDays" | "meetingDayPrefs">;
-  onChange: (updates: Partial<OnboardingData>) => void;
+  data: Pick<OnboardingData, "goals" | "industry">;
+  onChange: (u: Partial<OnboardingData>) => void;
   onNext: () => void;
   onBack: () => void;
 }) {
-  const upd = (patch: Partial<OnboardingData["meetingDayPrefs"]>) =>
-    onChange({ meetingDayPrefs: { ...data.meetingDayPrefs, ...patch } });
+  const suggestions = INDUSTRY_SUGGESTED_GOALS[data.industry] ?? [];
+
+  const addSuggested = (s: SuggestedGoal) => {
+    if (data.goals.some(g => g.label === s.label)) return;
+    onChange({
+      goals: [...data.goals, {
+        label: s.label,
+        metric: s.metric,
+        unit: s.unit,
+        targetValue: "",
+        period: "quarterly",
+      }],
+    });
+  };
+
+  const updateGoal = (idx: number, patch: Partial<GoalDraft>) => {
+    onChange({ goals: data.goals.map((g, i) => i === idx ? { ...g, ...patch } : g) });
+  };
+
+  const removeGoal = (idx: number) => {
+    onChange({ goals: data.goals.filter((_, i) => i !== idx) });
+  };
+
+  const addBlank = () => {
+    onChange({
+      goals: [...data.goals, { label: "", metric: "", unit: "", targetValue: "", period: "quarterly" }],
+    });
+  };
 
   return (
-    <div className="flex flex-col gap-6">
-      <div>
-        <h2 className="text-2xl font-bold text-white mb-1" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Owner meeting days</h2>
-        <p style={{ color: "rgba(255,255,255,0.5)" }}>Choose which meetings you want and when. Toggle off any you don't need — you can always change these later in Manage Schedule.</p>
+    <div>
+      <StepHeader
+        title="Set your business goals"
+        subtitle="What does success look like for your business? Add 1–3 goals to track in your quarterly meetings."
+      />
+      <div className="flex flex-col gap-5">
+        {/* Suggested goals */}
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: "rgba(255,255,255,0.4)" }}>
+            Suggested goals for your industry
+          </p>
+          <div className="flex flex-col gap-2">
+            {suggestions.map(s => {
+              const added = data.goals.some(g => g.label === s.label);
+              return (
+                <button
+                  key={s.label}
+                  onClick={() => addSuggested(s)}
+                  disabled={added}
+                  className="flex items-center justify-between w-full px-3 py-2.5 rounded-xl text-left transition-all"
+                  style={{
+                    border: `1px solid ${added ? "rgba(94,234,212,0.4)" : "rgba(255,255,255,0.1)"}`,
+                    backgroundColor: added ? "rgba(94,234,212,0.08)" : "rgba(255,255,255,0.04)",
+                    opacity: added ? 0.7 : 1,
+                  }}
+                >
+                  <div>
+                    <div className="text-sm font-semibold text-white">{s.label}</div>
+                    <div className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>{s.example}</div>
+                  </div>
+                  <span className="text-xs px-2.5 py-1 rounded-full ml-3 flex-shrink-0 font-medium"
+                    style={{
+                      backgroundColor: added ? "rgba(94,234,212,0.15)" : "rgba(255,255,255,0.08)",
+                      color: added ? "#5EEAD4" : "rgba(255,255,255,0.5)",
+                    }}>
+                    {added ? "✓ Added" : "+ Add"}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Added goals */}
+        {data.goals.length > 0 && (
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: "rgba(255,255,255,0.4)" }}>
+              Your goals
+            </p>
+            <div className="flex flex-col gap-3">
+              {data.goals.map((goal, idx) => (
+                <div key={idx} className="rounded-xl p-3 flex flex-col gap-2"
+                  style={{ backgroundColor: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)" }}>
+                  <div className="flex items-center gap-2">
+                    <input
+                      style={{ ...inputStyle, flex: 1 }}
+                      value={goal.label}
+                      onChange={e => updateGoal(idx, { label: e.target.value })}
+                      placeholder="Goal name (e.g. Grow new patients)"
+                    />
+                    <button
+                      onClick={() => removeGoal(idx)}
+                      className="text-lg leading-none flex-shrink-0 transition-colors"
+                      style={{ color: "rgba(255,255,255,0.25)" }}
+                      onMouseEnter={e => (e.currentTarget.style.color = "#F87171")}
+                      onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.25)")}
+                    >×</button>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    <input
+                      style={inputStyle}
+                      value={goal.metric}
+                      onChange={e => updateGoal(idx, { metric: e.target.value })}
+                      placeholder="Metric (e.g. New patients/month)"
+                    />
+                    <input
+                      style={inputStyle}
+                      value={goal.targetValue}
+                      onChange={e => updateGoal(idx, { targetValue: e.target.value })}
+                      placeholder="Target (e.g. 30)"
+                    />
+                    <select
+                      style={selectStyle}
+                      value={goal.period}
+                      onChange={e => updateGoal(idx, { period: e.target.value as "quarterly" | "annual" })}
+                    >
+                      <option value="quarterly" style={{ backgroundColor: "#0F2440" }}>Quarterly</option>
+                      <option value="annual" style={{ backgroundColor: "#0F2440" }}>Annual</option>
+                    </select>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <button
+          onClick={addBlank}
+          className="text-sm font-medium transition-colors text-left"
+          style={{ color: "#5EEAD4" }}
+        >
+          + Add custom goal
+        </button>
+
+        <TipBox>
+          Goals show up in your Quarterly Offsite agenda automatically. You can always add more goals from the Goals page.
+        </TipBox>
       </div>
-
-      <div className="flex flex-col gap-3">
-        <MeetingToggleRow
-          label="Daily Huddle"
-          description="Quick daily sync between owners — 10–15 min"
-          enabled={data.meetingDayPrefs.ownerDailyEnabled}
-          onToggle={v => upd({ ownerDailyEnabled: v })}
-        >
-          <DayPickerMulti
-            label="Which days?"
-            value={data.meetingDayPrefs.ownerDaily}
-            onChange={days => upd({ ownerDaily: days })}
-            allowedDays={[1, 2, 3, 4, 5]}
-          />
-        </MeetingToggleRow>
-
-        <MeetingToggleRow
-          label="Weekly Review"
-          description="Weekly business review — 60–90 min"
-          enabled={data.meetingDayPrefs.ownerWeeklyEnabled}
-          onToggle={v => upd({ ownerWeeklyEnabled: v })}
-        >
-          <DayPicker
-            label="Which day?"
-            value={data.meetingDayPrefs.ownerWeekly}
-            onChange={v => upd({ ownerWeekly: v })}
-            allowedDays={[1, 2, 3, 4, 5]}
-          />
-        </MeetingToggleRow>
-
-        <MeetingToggleRow
-          label="Monthly Finance Review"
-          description="Monthly financial deep-dive — 60 min, 1st occurrence each month"
-          enabled={data.meetingDayPrefs.ownerMonthlyEnabled}
-          onToggle={v => upd({ ownerMonthlyEnabled: v })}
-        >
-          <DayPicker
-            label="Which day?"
-            value={data.meetingDayPrefs.ownerMonthly}
-            onChange={v => upd({ ownerMonthly: v })}
-            allowedDays={[1, 2, 3, 4, 5]}
-          />
-        </MeetingToggleRow>
-
-        <MeetingToggleRow
-          label="Quarterly Offsite"
-          description="Quarterly strategic offsite — ~4 hrs, first occurrence in Jan, Apr, Jul, Oct"
-          enabled={data.meetingDayPrefs.quarterlyEnabled}
-          onToggle={v => upd({ quarterlyEnabled: v })}
-        >
-          <DayPicker
-            label="Which day?"
-            value={data.meetingDayPrefs.quarterlyDay}
-            onChange={v => upd({ quarterlyDay: v })}
-            allowedDays={[1, 2, 3, 4, 5]}
-          />
-        </MeetingToggleRow>
-      </div>
-
-      <StepNav onBack={onBack} onNext={onNext} canProceed={true} />
+      <NavButtons
+        onBack={onBack}
+        onNext={onNext}
+        nextLabel="Continue →"
+        onSkip={onNext}
+        skipLabel="Skip goals"
+      />
     </div>
   );
 }
 
-function StepTeamMeetings({
+// ─── Step 7: KPI Setup ────────────────────────────────────────────────────────
+
+function StepKPIs({
   data,
   onChange,
   onNext,
   onBack,
 }: {
-  data: Pick<OnboardingData, "workDays" | "meetingDayPrefs">;
-  onChange: (updates: Partial<OnboardingData>) => void;
+  data: Pick<OnboardingData, "kpis" | "industry">;
+  onChange: (u: Partial<OnboardingData>) => void;
   onNext: () => void;
   onBack: () => void;
 }) {
-  const upd = (patch: Partial<OnboardingData["meetingDayPrefs"]>) =>
-    onChange({ meetingDayPrefs: { ...data.meetingDayPrefs, ...patch } });
+  const updateKpi = (idx: number, patch: Partial<KpiDraft>) => {
+    onChange({ kpis: data.kpis.map((k, i) => i === idx ? { ...k, ...patch } : k) });
+  };
+
+  const removeKpi = (idx: number) => {
+    onChange({ kpis: data.kpis.filter((_, i) => i !== idx) });
+  };
+
+  const addBlank = () => {
+    onChange({
+      kpis: [...data.kpis, { name: "", unit: "#", frequency: "weekly", description: "" }],
+    });
+  };
 
   return (
-    <div className="flex flex-col gap-6">
-      <div>
-        <h2 className="text-2xl font-bold text-white mb-1" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Team meeting days</h2>
-        <p style={{ color: "rgba(255,255,255,0.5)" }}>Choose which team meetings you want. Toggle off any you don't need — you can change these later in Manage Schedule.</p>
-      </div>
+    <div>
+      <StepHeader
+        title="Set up your KPIs"
+        subtitle="KPIs are the 3–5 numbers that tell you at a glance whether your business is healthy."
+      />
+      <div className="flex flex-col gap-5">
+        {/* Plain-language explainer */}
+        <div className="rounded-xl p-4"
+          style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)" }}>
+          <p className="text-sm font-semibold text-white mb-2">What is a KPI?</p>
+          <p className="text-sm leading-relaxed" style={{ color: "rgba(255,255,255,0.55)" }}>
+            A <strong style={{ color: "#5EEAD4" }}>Key Performance Indicator</strong> is a specific, measurable number you track regularly — like "new patients this week" or "monthly revenue." Instead of guessing how the business is doing, your KPIs give you a clear, objective answer.
+          </p>
+          <p className="text-sm leading-relaxed mt-2" style={{ color: "rgba(255,255,255,0.55)" }}>
+            Your employees will submit their KPI numbers each week or month. You'll see them summarized in your Weekly Review meeting.
+          </p>
+        </div>
 
-      <div className="flex flex-col gap-3">
-        <MeetingToggleRow
-          label="Team Daily Huddle"
-          description="Quick daily sync with your full team — 10–15 min"
-          enabled={data.meetingDayPrefs.teamDailyEnabled}
-          onToggle={v => upd({ teamDailyEnabled: v })}
+        {/* Pre-filled industry KPIs */}
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: "rgba(255,255,255,0.4)" }}>
+            Your KPIs — edit or remove any
+          </p>
+          <div className="flex flex-col gap-2">
+            {data.kpis.map((kpi, idx) => (
+              <div key={idx} className="rounded-xl p-3"
+                style={{ backgroundColor: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)" }}>
+                <div className="flex items-center gap-2 mb-2">
+                  <input
+                    style={{ ...inputStyle, flex: 1 }}
+                    value={kpi.name}
+                    onChange={e => updateKpi(idx, { name: e.target.value })}
+                    placeholder="KPI name (e.g. New Patients)"
+                  />
+                  <input
+                    style={{ ...inputStyle, width: "70px" }}
+                    value={kpi.unit}
+                    onChange={e => updateKpi(idx, { unit: e.target.value })}
+                    placeholder="Unit"
+                  />
+                  <select
+                    style={{ ...selectStyle, flexShrink: 0 }}
+                    value={kpi.frequency}
+                    onChange={e => updateKpi(idx, { frequency: e.target.value as "weekly" | "monthly" })}
+                  >
+                    <option value="weekly" style={{ backgroundColor: "#0F2440" }}>Weekly</option>
+                    <option value="monthly" style={{ backgroundColor: "#0F2440" }}>Monthly</option>
+                  </select>
+                  <button
+                    onClick={() => removeKpi(idx)}
+                    className="text-lg leading-none flex-shrink-0 transition-colors"
+                    style={{ color: "rgba(255,255,255,0.25)" }}
+                    onMouseEnter={e => (e.currentTarget.style.color = "#F87171")}
+                    onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.25)")}
+                  >×</button>
+                </div>
+                {kpi.description && (
+                  <p className="text-xs" style={{ color: "rgba(255,255,255,0.35)" }}>{kpi.description}</p>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <button
+          onClick={addBlank}
+          className="text-sm font-medium transition-colors text-left"
+          style={{ color: "#5EEAD4" }}
         >
-          <DayPickerMulti
-            label="Which days?"
-            value={data.meetingDayPrefs.teamDaily}
-            onChange={days => upd({ teamDaily: days })}
-            allowedDays={[1, 2, 3, 4, 5]}
-          />
-        </MeetingToggleRow>
+          + Add custom KPI
+        </button>
 
-        <MeetingToggleRow
-          label="Team Weekly Meeting"
-          description="Weekly all-hands or team review — 30–60 min"
-          enabled={data.meetingDayPrefs.teamWeeklyEnabled}
-          onToggle={v => upd({ teamWeeklyEnabled: v })}
-        >
-          <DayPicker
-            label="Which day?"
-            value={data.meetingDayPrefs.teamWeekly}
-            onChange={v => upd({ teamWeekly: v })}
-            allowedDays={[1, 2, 3, 4, 5]}
-          />
-        </MeetingToggleRow>
+        <TipBox>
+          Start with 3–5 KPIs. You can always add more from Settings. Employees will submit these numbers each week or month.
+        </TipBox>
       </div>
-
-      <StepNav onBack={onBack} onNext={onNext} canProceed={true} />
+      <NavButtons
+        onBack={onBack}
+        onNext={onNext}
+        nextLabel="Continue →"
+        onSkip={onNext}
+        skipLabel="Skip KPIs"
+      />
     </div>
   );
 }
 
-const MEETING_TYPE_COLORS: Record<string, { bg: string; text: string; label: string }> = {
-  daily:     { bg: "#DBEAFE", text: "#1D4ED8", label: "Daily" },
-  weekly:    { bg: "#D1FAE5", text: "#065F46", label: "Weekly" },
-  monthly:   { bg: "#CCFBF1", text: "#0F766E", label: "Monthly" },
-  quarterly: { bg: "#FFE4E6", text: "#BE123C", label: "Quarterly" },
-};
+// ─── Step 8: Employee Invites ─────────────────────────────────────────────────
+
+function StepEmployeeInvites({
+  data,
+  onChange,
+  onNext,
+  onBack,
+  businessName,
+}: {
+  data: Pick<OnboardingData, "employees" | "ownerCount">;
+  onChange: (u: Partial<OnboardingData>) => void;
+  onNext: () => void;
+  onBack: () => void;
+  businessName: string;
+}) {
+  const addRow = (role: "employee" | "coowner" = "employee") => {
+    onChange({ employees: [...data.employees, { name: "", email: "", role }] });
+  };
+
+  const updateRow = (idx: number, patch: Partial<EmployeeDraft>) => {
+    onChange({ employees: data.employees.map((e, i) => i === idx ? { ...e, ...patch } : e) });
+  };
+
+  const removeRow = (idx: number) => {
+    onChange({ employees: data.employees.filter((_, i) => i !== idx) });
+  };
+
+  const employees = data.employees.filter(e => e.role === "employee");
+  const coowners = data.employees.filter(e => e.role === "coowner");
+
+  return (
+    <div>
+      <StepHeader
+        title="Invite your team"
+        subtitle="Add employees and co-owners now so they can log in and submit their numbers right away. You can skip this and do it later in Settings."
+      />
+      <div className="flex flex-col gap-6">
+        {/* Co-owner section (only if ownerCount > 1) */}
+        {data.ownerCount > 1 && (
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: "rgba(255,255,255,0.4)" }}>
+                Co-Owners / Partners
+              </p>
+              <button
+                onClick={() => addRow("coowner")}
+                className="text-xs font-medium transition-colors"
+                style={{ color: "#5EEAD4" }}
+              >+ Add co-owner</button>
+            </div>
+            {coowners.length === 0 ? (
+              <div className="rounded-xl p-4 text-center text-sm"
+                style={{ backgroundColor: "rgba(255,255,255,0.03)", border: "1px dashed rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.3)" }}>
+                No co-owners added yet
+              </div>
+            ) : (
+              <div className="flex flex-col gap-2">
+                {data.employees.map((emp, idx) => emp.role !== "coowner" ? null : (
+                  <div key={idx} className="flex items-center gap-2">
+                    <input
+                      style={{ ...inputStyle, flex: 1 }}
+                      value={emp.name}
+                      onChange={e => updateRow(idx, { name: e.target.value })}
+                      placeholder="Name"
+                    />
+                    <input
+                      style={{ ...inputStyle, flex: 1 }}
+                      value={emp.email}
+                      onChange={e => updateRow(idx, { email: e.target.value })}
+                      placeholder="Email address"
+                      type="email"
+                    />
+                    <button
+                      onClick={() => removeRow(idx)}
+                      className="text-lg leading-none flex-shrink-0 transition-colors"
+                      style={{ color: "rgba(255,255,255,0.25)" }}
+                      onMouseEnter={e => (e.currentTarget.style.color = "#F87171")}
+                      onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.25)")}
+                    >×</button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Employees section */}
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: "rgba(255,255,255,0.4)" }}>
+              Employees
+            </p>
+            <button
+              onClick={() => addRow("employee")}
+              className="text-xs font-medium transition-colors"
+              style={{ color: "#5EEAD4" }}
+            >+ Add employee</button>
+          </div>
+          {employees.length === 0 ? (
+            <div className="rounded-xl p-4 text-center text-sm"
+              style={{ backgroundColor: "rgba(255,255,255,0.03)", border: "1px dashed rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.3)" }}>
+              No employees added yet — click "+ Add employee" above
+            </div>
+          ) : (
+            <div className="flex flex-col gap-2">
+              {data.employees.map((emp, idx) => emp.role !== "employee" ? null : (
+                <div key={idx} className="flex items-center gap-2">
+                  <input
+                    style={{ ...inputStyle, flex: 1 }}
+                    value={emp.name}
+                    onChange={e => updateRow(idx, { name: e.target.value })}
+                    placeholder="Name"
+                  />
+                  <input
+                    style={{ ...inputStyle, flex: 1 }}
+                    value={emp.email}
+                    onChange={e => updateRow(idx, { email: e.target.value })}
+                    placeholder="Email address"
+                    type="email"
+                  />
+                  <button
+                    onClick={() => removeRow(idx)}
+                    className="text-lg leading-none flex-shrink-0 transition-colors"
+                    style={{ color: "rgba(255,255,255,0.25)" }}
+                    onMouseEnter={e => (e.currentTarget.style.color = "#F87171")}
+                    onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.25)")}
+                  >×</button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <TipBox>
+          Each person will receive an invite link by email to set their own password. They'll have limited access — they can submit KPIs and view the Command Board, but not change settings.
+        </TipBox>
+      </div>
+      <NavButtons
+        onBack={onBack}
+        onNext={onNext}
+        nextLabel={data.employees.length > 0 ? "Send Invites & Continue →" : "Continue →"}
+        onSkip={onNext}
+        skipLabel="Skip — add later in Settings"
+      />
+    </div>
+  );
+}
+
+// ─── Step 9: Preview ──────────────────────────────────────────────────────────
 
 const MONTH_NAMES_SHORT = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
+const MEETING_TYPE_COLORS: Record<string, { bg: string; text: string; label: string }> = {
+  daily:     { bg: "rgba(59,130,246,0.3)", text: "#93C5FD", label: "Daily" },
+  weekly:    { bg: "rgba(94,234,212,0.3)", text: "#5EEAD4", label: "Weekly" },
+  monthly:   { bg: "rgba(167,139,250,0.3)", text: "#C4B5FD", label: "Monthly" },
+  quarterly: { bg: "rgba(251,146,60,0.3)", text: "#FED7AA", label: "Quarterly" },
+};
+
 function MiniCalendarPreview({ data }: { data: OnboardingData }) {
-  // Generate meetings for the next 3 months starting from today
   const today = new Date();
   const year = today.getFullYear();
-  const startMonth = today.getMonth(); // 0-indexed
-  
+  const startMonth = today.getMonth();
+
   const meetings = generateMeetingSchedule({
     year,
     workDays: data.workDays,
     meetingDayPrefs: data.meetingDayPrefs,
     closedPeriods: [],
   });
-  
-  // Build a set of meeting dates for quick lookup
+
   const meetingMap = new Map<string, Set<string>>();
   for (const m of meetings) {
     if (!meetingMap.has(m.date)) meetingMap.set(m.date, new Set());
     meetingMap.get(m.date)!.add(m.meetingType);
   }
 
-  // Show 3 months
   const months = [0, 1, 2].map(offset => {
     const m = (startMonth + offset) % 12;
     const y = year + Math.floor((startMonth + offset) / 12);
     const firstDay = new Date(y, m, 1);
     const lastDay = new Date(y, m + 1, 0);
     const days: (number | null)[] = [];
-    // Pad with nulls for first week
     for (let i = 0; i < firstDay.getDay(); i++) days.push(null);
     for (let d = 1; d <= lastDay.getDate(); d++) days.push(d);
     return { year: y, month: m, days };
   });
 
-  // Count meetings in the 3-month window
   const windowStart = `${year}-${String(startMonth + 1).padStart(2, "0")}-01`;
   const endMonth = (startMonth + 2) % 12;
   const endYear = year + Math.floor((startMonth + 2) / 12);
   const windowEnd = `${endYear}-${String(endMonth + 1).padStart(2, "0")}-${new Date(endYear, endMonth + 1, 0).getDate()}`;
   const windowMeetings = meetings.filter(m => m.date >= windowStart && m.date <= windowEnd);
   const countByType: Record<string, number> = {};
-  for (const m of windowMeetings) {
-    countByType[m.meetingType] = (countByType[m.meetingType] ?? 0) + 1;
-  }
+  for (const m of windowMeetings) countByType[m.meetingType] = (countByType[m.meetingType] ?? 0) + 1;
 
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-center justify-between">
-        <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "rgba(255,255,255,0.4)" }}>Calendar Preview — Next 3 Months</p>
+        <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "rgba(255,255,255,0.4)" }}>
+          Calendar Preview — Next 3 Months
+        </p>
         <div className="flex gap-1.5 flex-wrap justify-end">
           {Object.entries(countByType).map(([type, count]) => {
             const c = MEETING_TYPE_COLORS[type];
@@ -606,38 +1068,24 @@ function MiniCalendarPreview({ data }: { data: OnboardingData }) {
                 const dateKey = `${y}-${String(m + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
                 const types = meetingMap.get(dateKey);
                 const isToday = dateKey === today.toISOString().slice(0, 10);
-                const hasMeeting = types && types.size > 0;
-                // Pick the most prominent meeting type for color
                 const primaryType = types?.has("quarterly") ? "quarterly"
                   : types?.has("monthly") ? "monthly"
                   : types?.has("weekly") ? "weekly"
                   : types?.has("daily") ? "daily" : null;
                 const c = primaryType ? MEETING_TYPE_COLORS[primaryType] : null;
                 return (
-                  <div
-                    key={i}
+                  <div key={i}
                     className="aspect-square flex items-center justify-center rounded-sm text-[8px] font-medium"
                     style={{
                       backgroundColor: c ? c.bg : isToday ? "rgba(94,234,212,0.15)" : "transparent",
                       color: c ? c.text : isToday ? "#5EEAD4" : "rgba(255,255,255,0.5)",
-                      fontWeight: hasMeeting ? 700 : 400,
+                      fontWeight: c ? 700 : 400,
                       outline: isToday ? "1px solid rgba(94,234,212,0.4)" : undefined,
                     }}
-                    title={primaryType ? `${MEETING_TYPE_COLORS[primaryType].label} meeting` : undefined}
-                  >
-                    {day}
-                  </div>
+                  >{day}</div>
                 );
               })}
             </div>
-          </div>
-        ))}
-      </div>
-      <div className="flex gap-2 flex-wrap">
-        {Object.entries(MEETING_TYPE_COLORS).map(([type, c]) => (
-          <div key={type} className="flex items-center gap-1">
-            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: c.bg, border: `1px solid ${c.text}40` }} />
-            <span className="text-[9px]" style={{ color: "rgba(255,255,255,0.4)" }}>{c.label}</span>
           </div>
         ))}
       </div>
@@ -657,135 +1105,111 @@ function StepPreview({
   isLoading: boolean;
 }) {
   const industry = INDUSTRY_TYPES.find(i => i.value === data.industry);
+  const totalMeetings = (() => {
+    const p = data.meetingDayPrefs;
+    let c = 0;
+    if (p.ownerDailyEnabled) c += p.ownerDaily.length * 52;
+    if (p.ownerWeeklyEnabled) c += 52;
+    if (p.ownerMonthlyEnabled) c += 12;
+    if (p.quarterlyEnabled) c += 4;
+    if (p.teamDailyEnabled) c += p.teamDaily.length * 52;
+    if (p.teamWeeklyEnabled) c += 52;
+    return c;
+  })();
 
   return (
-    <div className="flex flex-col gap-6">
-      <div>
-        <h2 className="text-2xl font-bold text-white mb-1" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Review your setup</h2>
-        <p style={{ color: "rgba(255,255,255,0.5)" }}>Everything look right? You can always change this later in Manage Schedule.</p>
-      </div>
+    <div>
+      <StepHeader
+        title="Review your setup"
+        subtitle="Everything look right? You can change any of this later in Settings or Manage Schedule."
+      />
+      <div className="flex flex-col gap-4">
+        {/* Summary cards */}
+        <div className="grid grid-cols-2 gap-3">
+          {[
+            { icon: "🏢", label: "Business", value: data.businessName },
+            { icon: "🏷️", label: "Industry", value: industry?.label ?? data.industry },
+            { icon: "👤", label: "Owners", value: `${data.ownerCount} owner${data.ownerCount !== 1 ? "s" : ""}` },
+            { icon: "👥", label: "Employees", value: `${data.employeeCount} employee${data.employeeCount !== 1 ? "s" : ""}` },
+            { icon: "📅", label: "Meetings/year", value: `${totalMeetings} meetings` },
+            { icon: "🎯", label: "Goals set", value: `${data.goals.length} goal${data.goals.length !== 1 ? "s" : ""}` },
+            { icon: "📊", label: "KPIs configured", value: `${data.kpis.length} KPI${data.kpis.length !== 1 ? "s" : ""}` },
+            { icon: "✉️", label: "Invites queued", value: `${data.employees.length} person${data.employees.length !== 1 ? "s" : ""}` },
+          ].map(item => (
+            <div key={item.label} className="rounded-xl p-3 flex items-center gap-3"
+              style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
+              <span className="text-xl">{item.icon}</span>
+              <div>
+                <div className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>{item.label}</div>
+                <div className="text-sm font-semibold text-white">{item.value}</div>
+              </div>
+            </div>
+          ))}
+        </div>
 
-      <div className="rounded-xl" style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
-        <PreviewRow label="Business" value={data.businessName} />
-        <PreviewRow label="Industry" value={industry?.label ?? data.industry} />
-        <PreviewRow label="Owners / Partners" value={String(data.ownerCount)} />
-        <PreviewRow label="Employees" value={String(data.employeeCount)} />
-        <PreviewRow
-          label="Work Days"
-          value={data.workDays.map(d => DAY_NAMES[d]).join(", ")}
-        />
-        <PreviewRow
-          label="Owner Daily Huddle"
-          value={data.meetingDayPrefs.ownerDaily.map(d => DAY_NAMES[d]).join(", ") || "None selected"}
-        />
-        <PreviewRow
-          label="Owner Weekly Review"
-          value={`Every ${DAY_FULL[data.meetingDayPrefs.ownerWeekly]}`}
-        />
-        <PreviewRow
-          label="Owner Monthly Review"
-          value={`First ${DAY_FULL[data.meetingDayPrefs.ownerMonthly]} of each month`}
-        />
-        <PreviewRow
-          label="Quarterly Offsite"
-          value={`First ${DAY_FULL[data.meetingDayPrefs.quarterlyDay]} of Jan, Apr, Jul, Oct`}
-        />
-        <PreviewRow
-          label="Team Daily Huddle"
-          value={data.meetingDayPrefs.teamDaily.map(d => DAY_NAMES[d]).join(", ") || "None selected"}
-        />
-        <PreviewRow
-          label="Team Weekly Meeting"
-          value={`Every ${DAY_FULL[data.meetingDayPrefs.teamWeekly]}`}
-        />
-      </div>
+        {/* Mini calendar */}
+        <div className="rounded-xl p-4"
+          style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
+          <MiniCalendarPreview data={data} />
+        </div>
 
-      {/* Mini calendar preview */}
-      <div className="rounded-xl p-4" style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
-        <MiniCalendarPreview data={data} />
-      </div>
-
-      <div className="flex gap-3">
-        <Button variant="outline" onClick={onBack} className="flex-1" style={{ borderColor: "rgba(255,255,255,0.15)", color: "rgba(255,255,255,0.6)", backgroundColor: "rgba(255,255,255,0.05)" }}>
-          ← Back
-        </Button>
-        <Button
-          onClick={onConfirm}
-          disabled={isLoading}
-          className="flex-1 font-bold"
-          style={{ background: "linear-gradient(135deg, #5EEAD4, #2DD4BF)", color: "#0F2440" }}
-        >
-          {isLoading ? "Building your calendar…" : "Build My Calendar →"}
-        </Button>
+        {/* Confirm button */}
+        <div className="flex gap-3 mt-2">
+          <button
+            onClick={onBack}
+            className="px-4 py-2.5 rounded-xl text-sm font-medium transition-all"
+            style={{ border: "1px solid rgba(255,255,255,0.12)", color: "rgba(255,255,255,0.5)", backgroundColor: "rgba(255,255,255,0.04)" }}
+          >
+            ← Back
+          </button>
+          <button
+            onClick={onConfirm}
+            disabled={isLoading}
+            className="flex-1 py-2.5 rounded-xl text-sm font-bold transition-all active:scale-[0.98] disabled:opacity-50"
+            style={{ background: "linear-gradient(135deg, #5EEAD4, #2DD4BF)", color: "#0F2440" }}
+          >
+            {isLoading ? "Building your calendar…" : "Build My Calendar →"}
+          </button>
+        </div>
       </div>
     </div>
   );
 }
 
-function PreviewRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-      <span className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>{label}</span>
-      <span className="text-sm font-medium text-white">{value}</span>
-    </div>
-  );
-}
+// ─── Step 10: Done ────────────────────────────────────────────────────────────
 
-function StepDone({ businessName, onEnter }: { businessName: string; onEnter: () => void }) {
+function StepDone({ businessName, invitesSent, onEnter }: { businessName: string; invitesSent: number; onEnter: () => void }) {
   return (
     <div className="flex flex-col items-center text-center gap-6">
-      <div className="w-20 h-20 rounded-full flex items-center justify-center" style={{ backgroundColor: "rgba(94,234,212,0.1)", border: "1px solid rgba(94,234,212,0.2)" }}>
-        <span className="text-4xl">🎉</span>
+      <div className="w-20 h-20 rounded-full flex items-center justify-center text-4xl"
+        style={{ backgroundColor: "rgba(94,234,212,0.1)", border: "1px solid rgba(94,234,212,0.2)" }}>
+        🎉
       </div>
       <div>
-        <h2 className="text-3xl font-bold text-white mb-2" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>You're all set!</h2>
+        <h2 className="text-3xl font-bold text-white mb-2" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+          You're all set!
+        </h2>
         <p className="text-lg max-w-md" style={{ color: "rgba(255,255,255,0.5)" }}>
-          Your BusinessCadence calendar for <strong style={{ color: "#5EEAD4" }}>{businessName}</strong> is ready.
-          Meetings are scheduled around your work days with industry-specific agendas.
+          <strong style={{ color: "#5EEAD4" }}>{businessName}</strong> is ready to run on BusinessCadence.
         </p>
       </div>
-      <div className="flex flex-col gap-2 text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>
-        <div className="flex items-center gap-2">
-          <span style={{ color: "#5EEAD4" }}>✓</span> Owner meeting cadence built
-        </div>
-        <div className="flex items-center gap-2">
-          <span style={{ color: "#5EEAD4" }}>✓</span> Team meeting cadence built
-        </div>
-        <div className="flex items-center gap-2">
-          <span style={{ color: "#5EEAD4" }}>✓</span> Industry agenda templates applied
-        </div>
+      <div className="flex flex-col gap-2 text-sm w-full max-w-xs" style={{ color: "rgba(255,255,255,0.4)" }}>
+        <div className="flex items-center gap-2"><span style={{ color: "#5EEAD4" }}>✓</span> Meeting cadence built</div>
+        <div className="flex items-center gap-2"><span style={{ color: "#5EEAD4" }}>✓</span> Goals and KPIs configured</div>
+        {invitesSent > 0 && (
+          <div className="flex items-center gap-2">
+            <span style={{ color: "#5EEAD4" }}>✓</span> {invitesSent} invite{invitesSent !== 1 ? "s" : ""} sent
+          </div>
+        )}
+        <div className="flex items-center gap-2"><span style={{ color: "#5EEAD4" }}>✓</span> Industry agendas applied</div>
       </div>
-      <Button onClick={onEnter} size="lg" className="mt-4 px-10 font-bold" style={{ background: "linear-gradient(135deg, #5EEAD4, #2DD4BF)", color: "#0F2440" }}>
-        Open My Calendar →
-      </Button>
-    </div>
-  );
-}
-
-function StepNav({
-  onBack,
-  onNext,
-  canProceed,
-  nextLabel = "Continue →",
-}: {
-  onBack: () => void;
-  onNext: () => void;
-  canProceed: boolean;
-  nextLabel?: string;
-}) {
-  return (
-    <div className="flex gap-3 mt-2">
-      <Button variant="outline" onClick={onBack} className="flex-1" style={{ borderColor: "rgba(255,255,255,0.15)", color: "rgba(255,255,255,0.6)", backgroundColor: "rgba(255,255,255,0.05)" }}>
-        ← Back
-      </Button>
-      <Button
-        onClick={onNext}
-        disabled={!canProceed}
-        className="flex-1 font-bold disabled:opacity-40"
+      <button
+        onClick={onEnter}
+        className="mt-2 px-10 py-3 rounded-xl font-bold text-base transition-all hover:opacity-90 active:scale-[0.98]"
         style={{ background: "linear-gradient(135deg, #5EEAD4, #2DD4BF)", color: "#0F2440" }}
       >
-        {nextLabel}
-      </Button>
+        Open My Calendar →
+      </button>
     </div>
   );
 }
@@ -795,24 +1219,39 @@ function StepNav({
 export default function Onboarding() {
   const [, navigate] = useLocation();
   const [step, setStep] = useState(0);
+  const [invitesSent, setInvitesSent] = useState(0);
 
-  // Get accountId from localStorage (set during login)
   const accountId = Number(localStorage.getItem("bcc_account_id") ?? "0");
+  const personId = localStorage.getItem("bcc_person_id") ?? "";
 
   const [data, setData] = useState<OnboardingData>({
     businessName: "",
     industry: "healthcare",
     ownerCount: 2,
     employeeCount: 3,
-    workDays: [1, 2, 3, 4, 5], // Mon–Fri default
+    workDays: [1, 2, 3, 4, 5],
     meetingDayPrefs: INDUSTRY_MEETING_DAY_DEFAULTS["healthcare"],
+    goals: [],
+    kpis: INDUSTRY_KPI_DEFAULTS["healthcare"].map(k => ({ ...k })),
+    employees: [],
   });
 
   const saveOnboarding = trpc.onboarding.save.useMutation();
   const createBusiness = trpc.business.create.useMutation();
+  const createGoal = trpc.goals.create.useMutation();
+  const seedKpis = trpc.kpi.seedDefaults.useMutation();
+  const invitePerson = trpc.person.invite.useMutation();
 
   const update = useCallback((updates: Partial<OnboardingData>) => {
-    setData(prev => ({ ...prev, ...updates }));
+    setData(prev => {
+      const next = { ...prev, ...updates };
+      // When industry changes, reset KPIs to new industry defaults
+      if (updates.industry && updates.industry !== prev.industry) {
+        next.kpis = INDUSTRY_KPI_DEFAULTS[updates.industry].map(k => ({ ...k }));
+        next.goals = [];
+      }
+      return next;
+    });
   }, []);
 
   const next = () => setStep(s => s + 1);
@@ -820,52 +1259,92 @@ export default function Onboarding() {
 
   const handleConfirm = async () => {
     try {
+      // 1. Save business profile
       await saveOnboarding.mutateAsync({
         accountId,
-        ...data,
+        businessName: data.businessName,
+        industry: data.industry,
+        ownerCount: data.ownerCount,
+        employeeCount: data.employeeCount,
+        workDays: data.workDays,
+        meetingDayPrefs: data.meetingDayPrefs,
         onboardingComplete: true,
       });
-      // Also create the business record so the entire app is scoped to it
-      if (accountId && data.businessName.trim()) {
-        const slug = data.businessName.trim().toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "").slice(0, 60) || "business";
-        // Pick icon based on industry
-        const iconMap: Record<string, string> = {
-          healthcare: "🏥",
-          fitness: "💪",
-          realestate: "🏠",
-          food: "🍕",
-          retail: "🛍️",
-          professional: "💼",
-        };
-        const colorMap: Record<string, string> = {
-          healthcare: "#10B981",
-          fitness: "#F59E0B",
-          realestate: "#2563EB",
-          food: "#E11D48",
-          retail: "#7C3AED",
-          professional: "#0D9488",
-        };
+
+      // 2. Create business record
+      // goals.create requires business to be one of the legacy enum values — map industry to closest
+      const businessSlugMap: Record<string, "chiropractic" | "crossfit" | "realty" | "general"> = {
+        healthcare: "chiropractic",
+        fitness: "crossfit",
+        realestate: "realty",
+        retail: "general",
+        restaurant: "general",
+        professional: "general",
+        construction: "general",
+        salon: "general",
+        other: "general",
+      };
+      const slug = businessSlugMap[data.industry] ?? "general";
+      const kpiSlug = data.businessName.trim().toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "").slice(0, 60) || "business";
+      const iconMap: Record<string, string> = { healthcare: "🏥", fitness: "💪", realestate: "🏠", restaurant: "🍕", retail: "🛍️", professional: "💼", construction: "🔨", salon: "✂️", other: "🏢" };
+      const colorMap: Record<string, string> = { healthcare: "#10B981", fitness: "#F59E0B", realestate: "#2563EB", restaurant: "#E11D48", retail: "#7C3AED", professional: "#0D9488", construction: "#D97706", salon: "#EC4899", other: "#64748B" };
+      try {
+        await createBusiness.mutateAsync({
+          accountId,
+          name: data.businessName.trim(),
+          slug,
+          icon: iconMap[data.industry] ?? "🏢",
+          color: colorMap[data.industry] ?? "#64748B",
+          sortOrder: 0,
+        });
+      } catch { /* non-fatal */ }
+
+      // 3. Save goals
+      for (const goal of data.goals) {
+        if (!goal.label.trim()) continue;
         try {
-          await createBusiness.mutateAsync({
+          await createGoal.mutateAsync({
             accountId,
-            name: data.businessName.trim(),
-            slug,
-            icon: iconMap[data.industry] ?? "🏢",
-            color: colorMap[data.industry] ?? "#64748B",
-            sortOrder: 0,
+            business: slug,
+            title: goal.label.trim(),
+            description: [goal.metric, goal.targetValue ? `Target: ${goal.targetValue} ${goal.unit}`.trim() : ""].filter(Boolean).join(" — "),
+            period: goal.period === "annual" ? "annual" : "quarterly",
+            year: new Date().getFullYear(),
           });
-        } catch (bizErr) {
-          console.warn("Business create failed (non-fatal):", bizErr);
-        }
+        } catch { /* non-fatal */ }
       }
-      next(); // go to Done step
+
+      // 4. Seed KPIs
+        try {
+          await seedKpis.mutateAsync({ accountId, businessSlug: kpiSlug });
+        } catch { /* non-fatal */ }
+
+      // 5. Send employee invites
+      let sent = 0;
+      const origin = window.location.origin;
+      for (const emp of data.employees) {
+        if (!emp.name.trim() || !emp.email.trim()) continue;
+        try {
+          await invitePerson.mutateAsync({
+            accountId,
+            name: emp.name.trim(),
+            email: emp.email.trim(),
+            role: emp.role,
+            businessScope: kpiSlug,
+            origin,
+          });
+          sent++;
+        } catch { /* non-fatal */ }
+      }
+      setInvitesSent(sent);
+
+      next(); // go to Done
     } catch (err) {
       console.error("Onboarding save failed:", err);
     }
   };
 
   const handleEnterApp = () => {
-    // Mark onboarding as done so we don't redirect again on next login
     if (accountId) {
       try { localStorage.setItem("bcc_onboarding_done_" + accountId, "1"); } catch { /* ignore */ }
     }
@@ -875,18 +1354,22 @@ export default function Onboarding() {
   const progressPercent = step === 0 ? 0 : Math.round((step / (TOTAL_STEPS - 1)) * 100);
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4" style={{ background: "linear-gradient(135deg, #0A1929 0%, #0F2440 100%)" }}>
-      <div className="w-full max-w-xl">
+    <div className="min-h-screen flex items-center justify-center p-4"
+      style={{ background: "linear-gradient(135deg, #0A1929 0%, #0F2440 100%)" }}>
+      <div className="w-full max-w-2xl">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: "rgba(94,234,212,0.15)", border: "1px solid rgba(94,234,212,0.3)" }}>
-            <span className="text-xs font-bold" style={{ color: "#5EEAD4" }}>BC</span>
-          </div>
-          <span className="font-semibold text-sm" style={{ color: "rgba(255,255,255,0.7)" }}>BusinessCadence</span>
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center"
+              style={{ backgroundColor: "rgba(94,234,212,0.15)", border: "1px solid rgba(94,234,212,0.3)" }}>
+              <span className="text-xs font-bold" style={{ color: "#5EEAD4" }}>BC</span>
+            </div>
+            <span className="font-semibold text-sm" style={{ color: "rgba(255,255,255,0.7)" }}>BusinessCadence</span>
           </div>
           {step > 0 && step < TOTAL_STEPS - 1 && (
-            <span className="text-xs" style={{ color: "rgba(255,255,255,0.35)" }}>Step {step} of {TOTAL_STEPS - 2}</span>
+            <span className="text-xs" style={{ color: "rgba(255,255,255,0.35)" }}>
+              Step {step} of {TOTAL_STEPS - 2}
+            </span>
           )}
         </div>
 
@@ -898,24 +1381,25 @@ export default function Onboarding() {
         )}
 
         {/* Card */}
-        <div className="rounded-2xl p-8" style={{ backgroundColor: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", backdropFilter: "blur(8px)" }}>
+        <div className="rounded-2xl p-8"
+          style={{ backgroundColor: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", backdropFilter: "blur(8px)" }}>
           {step === 0 && <StepWelcome onNext={next} />}
-          {step === 1 && (
-            <StepBusinessBasics data={data} onChange={update} onNext={next} onBack={back} />
+          {step === 1 && <StepBusinessBasics data={data} onChange={update} onNext={next} onBack={back} />}
+          {step === 2 && <StepTeamSize data={data} onChange={update} onNext={next} onBack={back} />}
+          {step === 3 && <StepWorkSchedule data={data} onChange={update} onNext={next} onBack={back} />}
+          {step === 4 && <MeetingCadenceStep data={data} onChange={update} onNext={next} onBack={back} />}
+          {step === 5 && <StepGoals data={data} onChange={update} onNext={next} onBack={back} />}
+          {step === 6 && <StepKPIs data={data} onChange={update} onNext={next} onBack={back} />}
+          {step === 7 && (
+            <StepEmployeeInvites
+              data={data}
+              onChange={update}
+              onNext={next}
+              onBack={back}
+              businessName={data.businessName}
+            />
           )}
-          {step === 2 && (
-            <StepTeamSize data={data} onChange={update} onNext={next} onBack={back} />
-          )}
-          {step === 3 && (
-            <StepWorkSchedule data={data} onChange={update} onNext={next} onBack={back} />
-          )}
-          {step === 4 && (
-            <StepOwnerMeetings data={data} onChange={update} onNext={next} onBack={back} />
-          )}
-          {step === 5 && (
-            <StepTeamMeetings data={data} onChange={update} onNext={next} onBack={back} />
-          )}
-          {step === 6 && (
+          {step === 8 && (
             <StepPreview
               data={data}
               onConfirm={handleConfirm}
@@ -923,8 +1407,12 @@ export default function Onboarding() {
               isLoading={saveOnboarding.isPending}
             />
           )}
-          {step === 7 && (
-            <StepDone businessName={data.businessName} onEnter={handleEnterApp} />
+          {step === 9 && (
+            <StepDone
+              businessName={data.businessName}
+              invitesSent={invitesSent}
+              onEnter={handleEnterApp}
+            />
           )}
         </div>
       </div>
