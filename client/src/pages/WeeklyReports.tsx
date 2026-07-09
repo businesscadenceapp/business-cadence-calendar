@@ -253,8 +253,8 @@ function EmployeeCard({ row, weekKey, onRefresh }: { row: SummaryRow; weekKey: s
 }
 
 function CheckinsSummary({ accountId, weekKey }: { accountId: number; weekKey: string }) {
-  const answersQuery = trpc.report.getWeekAnswers.useQuery({ accountId, weekKey }, { enabled: accountId > 0 });
-  const personsQuery = trpc.person.list.useQuery({ accountId }, { enabled: accountId > 0 });
+  const answersQuery = trpc.report.getWeekAnswers.useQuery({ accountId, weekKey }, { enabled: accountId !== undefined });
+  const personsQuery = trpc.person.list.useQuery({ accountId }, { enabled: accountId !== undefined });
   const answers = answersQuery.data ?? [];
   const persons = personsQuery.data ?? [];
   const personMap = useMemo(() => { const m: Record<string, string> = {}; for (const p of persons) m[p.id] = p.name; return m; }, [persons]);
@@ -301,7 +301,7 @@ function WeeklyTab({ accountId }: { accountId: number }) {
 
   const summaryQuery = trpc.weeklyReport.getSummary.useQuery(
     { accountId, weekKey: selectedWeek, prevWeekKey },
-    { enabled: accountId > 0 }
+    { enabled: accountId !== undefined }
   );
   const rows: SummaryRow[] = (summaryQuery.data as SummaryRow[] | undefined) ?? [];
   const submittedCount = rows.filter(r => r.submitted).length;
@@ -382,19 +382,19 @@ function WeeklyTab({ accountId }: { accountId: number }) {
 // ── MONTHLY TAB ───────────────────────────────────────────────────────────────
 
 function MonthlyTab({ accountId }: { accountId: number }) {
-  const businessesQuery = trpc.business.list.useQuery({ accountId }, { enabled: accountId > 0 });
+  const businessesQuery = trpc.business.list.useQuery({ accountId }, { enabled: accountId !== undefined });
   const businesses = businessesQuery.data ?? [];
   const [selectedBiz, setSelectedBiz] = useState<string>("");
   const bizSlug = selectedBiz || businesses[0]?.slug || "";
 
   const trendQuery = trpc.kpi.getMultiMonthTrend.useQuery(
     { accountId, businessSlug: bizSlug, months: 3 },
-    { enabled: accountId > 0 && bizSlug !== "" }
+    { enabled: accountId !== undefined && bizSlug !== "" }
   );
   const trendData = trendQuery.data ?? [];
 
   const currentYear = new Date().getFullYear();
-  const goalsQuery = trpc.goalsSummary.get.useQuery({ accountId, year: currentYear }, { enabled: accountId > 0 });
+  const goalsQuery = trpc.goalsSummary.get.useQuery({ accountId, year: currentYear }, { enabled: accountId !== undefined });
   const currentQ = getCurrentQuarter();
   const qGoals = goalsQuery.data?.quarterly.find(q => q.quarter === currentQ);
 
@@ -521,17 +521,17 @@ function QuarterlyTab({ accountId }: { accountId: number }) {
   const currentQ = getCurrentQuarter();
   const [viewQ, setViewQ] = useState(currentQ);
 
-  const goalsQuery = trpc.goalsSummary.get.useQuery({ accountId, year: currentYear }, { enabled: accountId > 0 });
+  const goalsQuery = trpc.goalsSummary.get.useQuery({ accountId, year: currentYear }, { enabled: accountId !== undefined });
   const qData = goalsQuery.data?.quarterly.find(q => q.quarter === viewQ);
 
-  const businessesQuery = trpc.business.list.useQuery({ accountId }, { enabled: accountId > 0 });
+  const businessesQuery = trpc.business.list.useQuery({ accountId }, { enabled: accountId !== undefined });
   const businesses = businessesQuery.data ?? [];
   const [selectedBiz, setSelectedBiz] = useState<string>("");
   const bizSlug = selectedBiz || businesses[0]?.slug || "";
 
   const trendQuery = trpc.kpi.getMultiMonthTrend.useQuery(
     { accountId, businessSlug: bizSlug, months: 3 },
-    { enabled: accountId > 0 && bizSlug !== "" }
+    { enabled: accountId !== undefined && bizSlug !== "" }
   );
   const trendData = trendQuery.data ?? [];
 
@@ -658,7 +658,7 @@ function QuarterlyTab({ accountId }: { accountId: number }) {
 function GoalsTab({ accountId }: { accountId: number }) {
   const currentYear = new Date().getFullYear();
   const [viewYear, setViewYear] = useState(currentYear);
-  const goalsQuery = trpc.goalsSummary.get.useQuery({ accountId, year: viewYear }, { enabled: accountId > 0 });
+  const goalsQuery = trpc.goalsSummary.get.useQuery({ accountId, year: viewYear }, { enabled: accountId !== undefined });
   const data = goalsQuery.data;
 
   return (
