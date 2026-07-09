@@ -24,6 +24,30 @@ function getAccountId(): number | null {
   return raw ? parseInt(raw, 10) : null;
 }
 
+// Shared input style for dark navy theme
+const inputStyle: React.CSSProperties = {
+  backgroundColor: "rgba(255,255,255,0.06)",
+  border: "1px solid rgba(255,255,255,0.12)",
+  color: "rgba(255,255,255,0.85)",
+  borderRadius: "8px",
+  padding: "8px 12px",
+  fontSize: "14px",
+  outline: "none",
+  width: "100%",
+  fontFamily: "'Inter', sans-serif",
+};
+
+const selectStyle: React.CSSProperties = {
+  backgroundColor: "rgba(255,255,255,0.06)",
+  border: "1px solid rgba(255,255,255,0.12)",
+  color: "rgba(255,255,255,0.85)",
+  borderRadius: "8px",
+  padding: "8px 8px",
+  fontSize: "14px",
+  outline: "none",
+  fontFamily: "'Inter', sans-serif",
+};
+
 export default function EmployeeSetup() {
   const accountId = getAccountId();
 
@@ -57,7 +81,6 @@ export default function EmployeeSetup() {
     isEditing: true,
   });
 
-  // Sync existing employees into drafts (view mode)
   useEffect(() => {
     if (existingEmployees) {
       setDrafts(
@@ -147,42 +170,55 @@ export default function EmployeeSetup() {
 
   if (!accountId) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: "#F8F7F4" }}>
-        <p className="text-slate-500">Please log in first.</p>
+      <div className="min-h-screen flex items-center justify-center"
+        style={{ background: "linear-gradient(135deg, #0A1929 0%, #0F2440 100%)" }}>
+        <p style={{ color: "rgba(255,255,255,0.4)" }}>Please log in first.</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen" style={{ background: "#F8F7F4", fontFamily: "'Inter', sans-serif" }}>
+    <div className="min-h-screen" style={{ background: "linear-gradient(135deg, #0A1929 0%, #0F2440 100%)", fontFamily: "'Inter', sans-serif" }}>
       {/* Header */}
       <header
         className="sticky top-0 z-10 flex items-center justify-between px-6 py-4"
-        style={{ background: "#F8F7F4", borderBottom: "1px solid #E5E3DE" }}
+        style={{ background: "rgba(10,25,41,0.95)", borderBottom: "1px solid rgba(255,255,255,0.08)", backdropFilter: "blur(8px)" }}
       >
         <div className="flex items-center gap-3">
           <Link
             href="/app"
-            className="text-sm text-slate-400 hover:text-slate-600 transition-colors"
+            className="text-sm transition-colors"
+            style={{ color: "rgba(255,255,255,0.4)" }}
           >
             ← Back to Calendar
           </Link>
-          <span className="text-slate-300">|</span>
-          <h1 className="text-lg font-semibold text-slate-800">Employee Setup</h1>
+          <span style={{ color: "rgba(255,255,255,0.15)" }}>|</span>
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center text-sm"
+              style={{ backgroundColor: "rgba(94,234,212,0.15)", border: "1px solid rgba(94,234,212,0.3)" }}>
+              👥
+            </div>
+            <h1 className="text-lg font-bold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+              Employee Setup
+            </h1>
+          </div>
         </div>
-        <p className="text-sm text-slate-400">{drafts.length} employee{drafts.length !== 1 ? "s" : ""} configured</p>
+        <span className="text-xs px-2.5 py-1 rounded-full"
+          style={{ backgroundColor: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.4)", border: "1px solid rgba(255,255,255,0.1)" }}>
+          {drafts.length} employee{drafts.length !== 1 ? "s" : ""} configured
+        </span>
       </header>
 
       <main className="max-w-3xl mx-auto px-6 py-8 flex flex-col gap-6">
         {/* Intro */}
         <div
           className="rounded-xl p-5"
-          style={{ background: "rgba(13,148,136,0.06)", border: "1px solid rgba(13,148,136,0.2)" }}
+          style={{ background: "rgba(94,234,212,0.06)", border: "1px solid rgba(94,234,212,0.2)" }}
         >
-          <p className="text-sm text-slate-600 leading-relaxed">
+          <p className="text-sm leading-relaxed" style={{ color: "rgba(255,255,255,0.6)" }}>
             Define each employee's name, role, and the metrics they report every week. Owners enter
             numbers on their behalf — no spreadsheets needed. Reports appear inside the{" "}
-            <strong className="text-teal-700">Team Weekly Review</strong> meeting on the calendar.
+            <strong style={{ color: "#5EEAD4" }}>Team Weekly Review</strong> meeting on the calendar.
           </p>
         </div>
 
@@ -191,29 +227,31 @@ export default function EmployeeSetup() {
           <div
             key={draft.id ?? `draft-${idx}`}
             className="rounded-xl overflow-hidden"
-            style={{ background: "#FFFFFF", border: "1px solid #E5E3DE", boxShadow: "0 1px 4px rgba(0,0,0,0.05)" }}
+            style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)" }}
           >
             {draft.isEditing ? (
               <div className="p-5 flex flex-col gap-4">
                 {/* Name + Role row */}
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wide">
+                    <label className="block text-xs font-semibold mb-1 uppercase tracking-wide"
+                      style={{ color: "rgba(255,255,255,0.4)" }}>
                       Name
                     </label>
                     <input
-                      className="w-full px-3 py-2 rounded-lg text-sm border border-slate-200 focus:outline-none focus:ring-2 focus:ring-teal-400"
+                      style={inputStyle}
                       value={draft.name}
                       onChange={(e) => updateDraft(idx, { name: e.target.value })}
                       placeholder="e.g. Colleen"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wide">
+                    <label className="block text-xs font-semibold mb-1 uppercase tracking-wide"
+                      style={{ color: "rgba(255,255,255,0.4)" }}>
                       Role
                     </label>
                     <input
-                      className="w-full px-3 py-2 rounded-lg text-sm border border-slate-200 focus:outline-none focus:ring-2 focus:ring-teal-400"
+                      style={inputStyle}
                       value={draft.role}
                       onChange={(e) => updateDraft(idx, { role: e.target.value })}
                       placeholder="e.g. Front Desk"
@@ -223,31 +261,35 @@ export default function EmployeeSetup() {
 
                 {/* Metrics */}
                 <div>
-                  <label className="block text-xs font-semibold text-slate-500 mb-2 uppercase tracking-wide">
+                  <label className="block text-xs font-semibold mb-2 uppercase tracking-wide"
+                    style={{ color: "rgba(255,255,255,0.4)" }}>
                     Weekly Metrics
                   </label>
                   <div className="flex flex-col gap-2">
                     {draft.metrics.map((metric, mIdx) => (
                       <div key={mIdx} className="flex items-center gap-2">
                         <input
-                          className="flex-1 px-3 py-2 rounded-lg text-sm border border-slate-200 focus:outline-none focus:ring-2 focus:ring-teal-400"
+                          style={{ ...inputStyle, flex: 1 }}
                           value={metric.label}
                           onChange={(e) => updateMetric(idx, mIdx, { label: e.target.value })}
                           placeholder={`Metric ${mIdx + 1} (e.g. Adjustments this week)`}
                         />
                         <select
-                          className="px-2 py-2 rounded-lg text-sm border border-slate-200 focus:outline-none focus:ring-2 focus:ring-teal-400 bg-white"
+                          style={selectStyle}
                           value={metric.unit}
                           onChange={(e) => updateMetric(idx, mIdx, { unit: e.target.value })}
                         >
                           {UNIT_OPTIONS.map((u) => (
-                            <option key={u} value={u}>{u}</option>
+                            <option key={u} value={u} style={{ backgroundColor: "#0F2440" }}>{u}</option>
                           ))}
                         </select>
                         {draft.metrics.length > 1 && (
                           <button
                             onClick={() => removeMetricFromDraft(idx, mIdx)}
-                            className="text-slate-300 hover:text-rose-400 transition-colors text-lg leading-none"
+                            className="text-lg leading-none transition-colors"
+                            style={{ color: "rgba(255,255,255,0.25)" }}
+                            onMouseEnter={e => (e.currentTarget.style.color = "#F87171")}
+                            onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.25)")}
                             title="Remove metric"
                           >
                             ×
@@ -258,7 +300,8 @@ export default function EmployeeSetup() {
                   </div>
                   <button
                     onClick={() => addMetricToDraft(idx)}
-                    className="mt-2 text-xs text-teal-600 hover:text-teal-800 font-medium transition-colors"
+                    className="mt-2 text-xs font-medium transition-colors"
+                    style={{ color: "#5EEAD4" }}
                   >
                     + Add metric
                   </button>
@@ -269,14 +312,15 @@ export default function EmployeeSetup() {
                   <button
                     onClick={() => handleSaveDraft(idx)}
                     disabled={saveEmployee.isPending}
-                    className="px-4 py-2 rounded-lg text-sm font-semibold text-white transition-all active:scale-95"
-                    style={{ background: "#1E3A5F" }}
+                    className="px-4 py-2 rounded-lg text-sm font-semibold transition-all active:scale-95"
+                    style={{ background: "linear-gradient(135deg, #5EEAD4, #2DD4BF)", color: "#0F2440" }}
                   >
                     {saveEmployee.isPending ? "Saving…" : "Save Employee"}
                   </button>
                   <button
                     onClick={() => updateDraft(idx, { isEditing: false })}
-                    className="px-4 py-2 rounded-lg text-sm text-slate-500 hover:text-slate-700 transition-colors"
+                    className="px-4 py-2 rounded-lg text-sm transition-colors"
+                    style={{ color: "rgba(255,255,255,0.4)" }}
                   >
                     Cancel
                   </button>
@@ -286,10 +330,10 @@ export default function EmployeeSetup() {
               <div className="p-5 flex items-start justify-between gap-4">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-base font-semibold text-slate-800">{draft.name}</span>
+                    <span className="text-base font-semibold text-white">{draft.name}</span>
                     <span
                       className="text-xs px-2 py-0.5 rounded-full font-medium"
-                      style={{ background: "rgba(13,148,136,0.1)", color: "#0D9488" }}
+                      style={{ background: "rgba(94,234,212,0.12)", color: "#5EEAD4", border: "1px solid rgba(94,234,212,0.2)" }}
                     >
                       {draft.role}
                     </span>
@@ -299,9 +343,9 @@ export default function EmployeeSetup() {
                       <span
                         key={mIdx}
                         className="text-xs px-2.5 py-1 rounded-full"
-                        style={{ background: "#F1F0ED", color: "#64748B" }}
+                        style={{ background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.5)", border: "1px solid rgba(255,255,255,0.1)" }}
                       >
-                        {m.label} <span className="text-slate-400">({m.unit})</span>
+                        {m.label} <span style={{ color: "rgba(255,255,255,0.3)" }}>({m.unit})</span>
                       </span>
                     ))}
                   </div>
@@ -309,8 +353,10 @@ export default function EmployeeSetup() {
                 <div className="flex items-center gap-2 flex-shrink-0">
                   <button
                     onClick={() => updateDraft(idx, { isEditing: true })}
-                    className="text-xs px-3 py-1.5 rounded-lg font-medium text-slate-500 hover:text-slate-800 transition-colors"
-                    style={{ border: "1px solid #E5E3DE" }}
+                    className="text-xs px-3 py-1.5 rounded-lg font-medium transition-colors"
+                    style={{ border: "1px solid rgba(255,255,255,0.12)", color: "rgba(255,255,255,0.5)" }}
+                    onMouseEnter={e => (e.currentTarget.style.color = "rgba(255,255,255,0.85)")}
+                    onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.5)")}
                   >
                     Edit
                   </button>
@@ -320,8 +366,10 @@ export default function EmployeeSetup() {
                         deleteEmployee.mutate({ employeeId: draft.id!, accountId: accountId! });
                       }
                     }}
-                    className="text-xs px-3 py-1.5 rounded-lg font-medium text-rose-400 hover:text-rose-600 transition-colors"
-                    style={{ border: "1px solid #FCA5A5" }}
+                    className="text-xs px-3 py-1.5 rounded-lg font-medium transition-colors"
+                    style={{ border: "1px solid rgba(248,113,113,0.3)", color: "#F87171" }}
+                    onMouseEnter={e => (e.currentTarget.style.borderColor = "rgba(248,113,113,0.6)")}
+                    onMouseLeave={e => (e.currentTarget.style.borderColor = "rgba(248,113,113,0.3)")}
                   >
                     Remove
                   </button>
@@ -335,17 +383,19 @@ export default function EmployeeSetup() {
         {showAddForm ? (
           <div
             className="rounded-xl overflow-hidden"
-            style={{ background: "#FFFFFF", border: "1px solid #0D9488", boxShadow: "0 1px 4px rgba(13,148,136,0.1)" }}
+            style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(94,234,212,0.3)" }}
           >
-            <div className="px-5 py-3 flex items-center gap-2" style={{ borderBottom: "1px solid #E5E3DE", background: "rgba(13,148,136,0.04)" }}>
-              <span className="text-sm font-semibold text-teal-700">New Employee</span>
+            <div className="px-5 py-3 flex items-center gap-2"
+              style={{ borderBottom: "1px solid rgba(255,255,255,0.08)", background: "rgba(94,234,212,0.05)" }}>
+              <span className="text-sm font-semibold" style={{ color: "#5EEAD4" }}>New Employee</span>
             </div>
             <div className="p-5 flex flex-col gap-4">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wide">Name</label>
+                  <label className="block text-xs font-semibold mb-1 uppercase tracking-wide"
+                    style={{ color: "rgba(255,255,255,0.4)" }}>Name</label>
                   <input
-                    className="w-full px-3 py-2 rounded-lg text-sm border border-slate-200 focus:outline-none focus:ring-2 focus:ring-teal-400"
+                    style={inputStyle}
                     value={newDraft.name}
                     onChange={(e) => setNewDraft((d) => ({ ...d, name: e.target.value }))}
                     placeholder="e.g. Colleen"
@@ -353,9 +403,10 @@ export default function EmployeeSetup() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wide">Role</label>
+                  <label className="block text-xs font-semibold mb-1 uppercase tracking-wide"
+                    style={{ color: "rgba(255,255,255,0.4)" }}>Role</label>
                   <input
-                    className="w-full px-3 py-2 rounded-lg text-sm border border-slate-200 focus:outline-none focus:ring-2 focus:ring-teal-400"
+                    style={inputStyle}
                     value={newDraft.role}
                     onChange={(e) => setNewDraft((d) => ({ ...d, role: e.target.value }))}
                     placeholder="e.g. Front Desk"
@@ -364,12 +415,13 @@ export default function EmployeeSetup() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-500 mb-2 uppercase tracking-wide">Weekly Metrics</label>
+                <label className="block text-xs font-semibold mb-2 uppercase tracking-wide"
+                  style={{ color: "rgba(255,255,255,0.4)" }}>Weekly Metrics</label>
                 <div className="flex flex-col gap-2">
                   {newDraft.metrics.map((metric, mIdx) => (
                     <div key={mIdx} className="flex items-center gap-2">
                       <input
-                        className="flex-1 px-3 py-2 rounded-lg text-sm border border-slate-200 focus:outline-none focus:ring-2 focus:ring-teal-400"
+                        style={{ ...inputStyle, flex: 1 }}
                         value={metric.label}
                         onChange={(e) =>
                           setNewDraft((d) => ({
@@ -380,7 +432,7 @@ export default function EmployeeSetup() {
                         placeholder={`Metric ${mIdx + 1} (e.g. New patients this week)`}
                       />
                       <select
-                        className="px-2 py-2 rounded-lg text-sm border border-slate-200 focus:outline-none focus:ring-2 focus:ring-teal-400 bg-white"
+                        style={selectStyle}
                         value={metric.unit}
                         onChange={(e) =>
                           setNewDraft((d) => ({
@@ -390,7 +442,7 @@ export default function EmployeeSetup() {
                         }
                       >
                         {UNIT_OPTIONS.map((u) => (
-                          <option key={u} value={u}>{u}</option>
+                          <option key={u} value={u} style={{ backgroundColor: "#0F2440" }}>{u}</option>
                         ))}
                       </select>
                       {newDraft.metrics.length > 1 && (
@@ -398,7 +450,10 @@ export default function EmployeeSetup() {
                           onClick={() =>
                             setNewDraft((d) => ({ ...d, metrics: d.metrics.filter((_, j) => j !== mIdx) }))
                           }
-                          className="text-slate-300 hover:text-rose-400 transition-colors text-lg leading-none"
+                          className="text-lg leading-none transition-colors"
+                          style={{ color: "rgba(255,255,255,0.25)" }}
+                          onMouseEnter={e => (e.currentTarget.style.color = "#F87171")}
+                          onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.25)")}
                         >
                           ×
                         </button>
@@ -408,7 +463,8 @@ export default function EmployeeSetup() {
                 </div>
                 <button
                   onClick={() => setNewDraft((d) => ({ ...d, metrics: [...d.metrics, { label: "", unit: "#" }] }))}
-                  className="mt-2 text-xs text-teal-600 hover:text-teal-800 font-medium transition-colors"
+                  className="mt-2 text-xs font-medium transition-colors"
+                  style={{ color: "#5EEAD4" }}
                 >
                   + Add metric
                 </button>
@@ -418,8 +474,8 @@ export default function EmployeeSetup() {
                 <button
                   onClick={handleSaveNew}
                   disabled={saveEmployee.isPending}
-                  className="px-4 py-2 rounded-lg text-sm font-semibold text-white transition-all active:scale-95"
-                  style={{ background: "#1E3A5F" }}
+                  className="px-4 py-2 rounded-lg text-sm font-semibold transition-all active:scale-95"
+                  style={{ background: "linear-gradient(135deg, #5EEAD4, #2DD4BF)", color: "#0F2440" }}
                 >
                   {saveEmployee.isPending ? "Saving…" : "Add Employee"}
                 </button>
@@ -428,7 +484,8 @@ export default function EmployeeSetup() {
                     setShowAddForm(false);
                     setNewDraft({ name: "", role: "", metrics: [{ label: "", unit: "#" }], isEditing: true });
                   }}
-                  className="px-4 py-2 rounded-lg text-sm text-slate-500 hover:text-slate-700 transition-colors"
+                  className="px-4 py-2 rounded-lg text-sm transition-colors"
+                  style={{ color: "rgba(255,255,255,0.4)" }}
                 >
                   Cancel
                 </button>
@@ -440,9 +497,9 @@ export default function EmployeeSetup() {
             onClick={() => setShowAddForm(true)}
             className="flex items-center justify-center gap-2 w-full py-3.5 rounded-xl text-sm font-semibold transition-all hover:opacity-90 active:scale-95"
             style={{
-              background: "rgba(13,148,136,0.08)",
-              border: "2px dashed rgba(13,148,136,0.35)",
-              color: "#0D9488",
+              background: "rgba(94,234,212,0.06)",
+              border: "2px dashed rgba(94,234,212,0.3)",
+              color: "#5EEAD4",
             }}
           >
             + Add Employee
@@ -450,7 +507,7 @@ export default function EmployeeSetup() {
         )}
 
         {drafts.length === 0 && !showAddForm && (
-          <div className="text-center py-8 text-slate-400 text-sm">
+          <div className="text-center py-8 text-sm" style={{ color: "rgba(255,255,255,0.3)" }}>
             No employees set up yet. Add your first employee above.
           </div>
         )}

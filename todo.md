@@ -486,3 +486,10 @@
 - [x] App shell: teal music note icon in sidebar and mobile header
 - [x] Comment button: always teal for visibility
 - [x] Board comments: Tasks, Updates, Issues all support inline comment threads
+
+## Dark Navy Theme Completion Pass
+- [x] EmployeeSetup.tsx: converted all light backgrounds, inputs, selects, and buttons to dark navy
+- [x] Onboarding.tsx: converted all 39 light-theme instances (page bg, card, headings, labels, buttons, day pickers, toggles, preview)
+- [x] NotFound.tsx: converted from slate gradient + white card to dark navy with teal CTA
+- [x] RecordMeeting.tsx: converted AI notes section (summary, action items, key decisions, resolved, transcript) to dark navy
+- [x] TypeScript check: zero errors after all conversions

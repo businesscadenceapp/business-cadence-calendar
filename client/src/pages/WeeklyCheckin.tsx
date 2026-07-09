@@ -3,6 +3,7 @@
  *
  * Employees answer the owner-configured questions for the current week.
  * Answers are auto-saved per question (upsert). Shows a completion summary.
+ * Dark navy theme: #0F2440 bg, #5EEAD4 teal accent, #C4B5FD purple accent
  */
 
 import { useState, useMemo, useEffect } from "react";
@@ -37,13 +38,6 @@ function formatWeekRange(weekKey: string): string {
   const { start, end } = getWeekRange(weekKey);
   const opts: Intl.DateTimeFormatOptions = { month: "short", day: "numeric" };
   return `${start.toLocaleDateString("en-US", opts)} – ${end.toLocaleDateString("en-US", opts)}`;
-}
-
-function getPrevWeekKey(weekKey: string): string {
-  const { start } = getWeekRange(weekKey);
-  const prev = new Date(start);
-  prev.setUTCDate(start.getUTCDate() - 7);
-  return getWeekKey(prev);
 }
 
 // ─── Main Component ───────────────────────────────────────────────────────────
@@ -161,8 +155,8 @@ export default function WeeklyCheckin() {
 
   if (!person) {
     return (
-      <div className="flex items-center justify-center h-full">
-        <p className="text-slate-400 text-sm">Please sign in to submit your check-in.</p>
+      <div className="flex items-center justify-center h-full" style={{ background: "linear-gradient(135deg, #0A1929 0%, #0F2440 100%)" }}>
+        <p className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>Please sign in to submit your check-in.</p>
       </div>
     );
   }
@@ -170,18 +164,25 @@ export default function WeeklyCheckin() {
   return (
     <div
       className="h-full overflow-y-auto"
-      style={{ backgroundColor: "#F8F7F4", fontFamily: "'Inter', sans-serif" }}
+      style={{ background: "linear-gradient(135deg, #0A1929 0%, #0F2440 100%)", fontFamily: "'Inter', sans-serif" }}
     >
       <div className="max-w-2xl mx-auto px-3 sm:px-5 py-4 sm:py-6">
+
         {/* Header */}
         <div className="mb-6">
-          <h1
-            className="text-2xl font-bold text-[#1E3A5F] mb-1"
-            style={{ fontFamily: "'Space Grotesk', sans-serif" }}
-          >
-            Weekly Check-in
-          </h1>
-          <p className="text-[13px] text-slate-500">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="w-8 h-8 rounded-xl flex items-center justify-center text-base"
+              style={{ backgroundColor: "rgba(196,181,253,0.15)", border: "1px solid rgba(196,181,253,0.3)" }}>
+              📝
+            </div>
+            <h1
+              className="text-2xl font-bold text-white"
+              style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+            >
+              Weekly Check-in
+            </h1>
+          </div>
+          <p className="text-[13px]" style={{ color: "rgba(255,255,255,0.4)" }}>
             Answer your weekly questions and share your progress with the team.
           </p>
         </div>
@@ -190,24 +191,36 @@ export default function WeeklyCheckin() {
         <div className="flex items-center gap-4 mb-6">
           <button
             onClick={() => shiftWeek(-1)}
-            className="w-9 h-9 rounded-xl flex items-center justify-center transition-all hover:bg-[#E2E0DB] active:scale-95 text-lg text-[#64748B]"
-            style={{ border: "1px solid #E2E0DB" }}
+            className="w-9 h-9 rounded-xl flex items-center justify-center transition-all active:scale-95 text-lg"
+            style={{
+              backgroundColor: "rgba(255,255,255,0.06)",
+              border: "1px solid rgba(255,255,255,0.1)",
+              color: "rgba(255,255,255,0.6)",
+            }}
+            onMouseEnter={e => (e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.1)")}
+            onMouseLeave={e => (e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.06)")}
           >
             ‹
           </button>
           <div className="flex-1 text-center">
-            <p className="text-base font-bold text-[#1E3A5F]" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+            <p className="text-base font-bold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
               {formatWeekRange(selectedWeek)}
             </p>
-            <p className="text-[11px] text-slate-400 mt-0.5">
+            <p className="text-[11px] mt-0.5" style={{ color: "rgba(255,255,255,0.35)" }}>
               Week {selectedWeek.split("-W")[1]}{isCurrentWeek ? " · Current Week" : ""}
             </p>
           </div>
           <button
             onClick={() => shiftWeek(1)}
             disabled={isCurrentWeek}
-            className="w-9 h-9 rounded-xl flex items-center justify-center transition-all hover:bg-[#E2E0DB] active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed text-lg text-[#64748B]"
-            style={{ border: "1px solid #E2E0DB" }}
+            className="w-9 h-9 rounded-xl flex items-center justify-center transition-all active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed text-lg"
+            style={{
+              backgroundColor: "rgba(255,255,255,0.06)",
+              border: "1px solid rgba(255,255,255,0.1)",
+              color: "rgba(255,255,255,0.6)",
+            }}
+            onMouseEnter={e => { if (!isCurrentWeek) (e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.1)"); }}
+            onMouseLeave={e => (e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.06)")}
           >
             ›
           </button>
@@ -217,19 +230,21 @@ export default function WeeklyCheckin() {
         {totalCount > 0 && (
           <div className="mb-6">
             <div className="flex items-center justify-between mb-1.5">
-              <span className="text-[11px] text-slate-400 uppercase tracking-widest font-semibold" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+              <span className="text-[11px] uppercase tracking-widest font-semibold" style={{ color: "rgba(255,255,255,0.35)", fontFamily: "'Space Grotesk', sans-serif" }}>
                 Progress
               </span>
-              <span className="text-[11px] font-bold" style={{ color: allDone ? "#059669" : "#64748B", fontFamily: "'JetBrains Mono', monospace" }}>
+              <span className="text-[11px] font-bold" style={{ color: allDone ? "#5EEAD4" : "rgba(255,255,255,0.5)", fontFamily: "'JetBrains Mono', monospace" }}>
                 {answeredCount}/{totalCount}
               </span>
             </div>
-            <div className="h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: "#E2E0DB" }}>
+            <div className="h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: "rgba(255,255,255,0.08)" }}>
               <div
                 className="h-full rounded-full transition-all duration-500"
                 style={{
                   width: totalCount > 0 ? `${(answeredCount / totalCount) * 100}%` : "0%",
-                  background: allDone ? "linear-gradient(90deg, #059669, #34D399)" : "linear-gradient(90deg, #7C3AED, #A78BFA)",
+                  background: allDone
+                    ? "linear-gradient(90deg, #5EEAD4, #2DD4BF)"
+                    : "linear-gradient(90deg, #C4B5FD, #A78BFA)",
                 }}
               />
             </div>
@@ -239,7 +254,8 @@ export default function WeeklyCheckin() {
         {/* Loading */}
         {(questionsQuery.isLoading || businessesQuery.isLoading) && (
           <div className="flex items-center justify-center py-16">
-            <div className="w-8 h-8 rounded-full border-2 border-purple-300 border-t-purple-600 animate-spin" />
+            <div className="w-8 h-8 rounded-full border-2 animate-spin"
+              style={{ borderColor: "rgba(196,181,253,0.3)", borderTopColor: "#C4B5FD" }} />
           </div>
         )}
 
@@ -247,15 +263,16 @@ export default function WeeklyCheckin() {
         {!questionsQuery.isLoading && relevantQuestions.length === 0 && (
           <div
             className="rounded-2xl p-10 text-center"
-            style={{ backgroundColor: "#FFFFFF", border: "1.5px dashed #E2E0DB" }}
+            style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1.5px dashed rgba(255,255,255,0.1)" }}
           >
-            <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4" style={{ backgroundColor: "#EDE9FE" }}>
+            <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4"
+              style={{ backgroundColor: "rgba(196,181,253,0.1)" }}>
               📝
             </div>
-            <p className="text-[14px] font-semibold text-[#1E3A5F] mb-1" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+            <p className="text-[14px] font-semibold text-white mb-1" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
               No check-in questions yet
             </p>
-            <p className="text-[12px] text-slate-400">
+            <p className="text-[12px]" style={{ color: "rgba(255,255,255,0.35)" }}>
               Your owner hasn't configured any questions yet. Check back soon!
             </p>
           </div>
@@ -265,12 +282,12 @@ export default function WeeklyCheckin() {
         {allDone && (
           <div
             className="rounded-2xl p-5 text-center mb-6"
-            style={{ backgroundColor: "#F0FDF4", border: "1.5px solid #86EFAC" }}
+            style={{ backgroundColor: "rgba(94,234,212,0.08)", border: "1.5px solid rgba(94,234,212,0.25)" }}
           >
-            <p className="text-[15px] font-bold text-[#065F46]" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+            <p className="text-[15px] font-bold" style={{ color: "#5EEAD4", fontFamily: "'Space Grotesk', sans-serif" }}>
               ✓ All questions answered for this week!
             </p>
-            <p className="text-[12px] text-[#059669] mt-1">
+            <p className="text-[12px] mt-1" style={{ color: "rgba(94,234,212,0.7)" }}>
               Great work. Your responses have been saved.
             </p>
           </div>
@@ -289,20 +306,22 @@ export default function WeeklyCheckin() {
                   key={q.id}
                   className="rounded-2xl p-5 flex flex-col gap-3 transition-all"
                   style={{
-                    backgroundColor: "#FFFFFF",
-                    border: `1.5px solid ${isSaved ? "#86EFAC" : "#E2E0DB"}`,
-                    boxShadow: "0 2px 12px rgba(30,58,95,0.04)",
+                    backgroundColor: "rgba(255,255,255,0.04)",
+                    border: `1.5px solid ${isSaved ? "rgba(94,234,212,0.25)" : "rgba(255,255,255,0.08)"}`,
                   }}
                 >
                   {/* Question header */}
                   <div className="flex items-start gap-3">
                     <span
                       className="w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold flex-shrink-0 mt-0.5"
-                      style={{ backgroundColor: isSaved ? "#DCFCE7" : "#EDE9FE", color: isSaved ? "#166534" : "#5B21B6" }}
+                      style={{
+                        backgroundColor: isSaved ? "rgba(94,234,212,0.15)" : "rgba(196,181,253,0.15)",
+                        color: isSaved ? "#5EEAD4" : "#C4B5FD",
+                      }}
                     >
                       {isSaved ? "✓" : idx + 1}
                     </span>
-                    <p className="text-[14px] font-semibold text-[#1E3A5F] flex-1" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+                    <p className="text-[14px] font-semibold text-white flex-1" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
                       {q.question}
                     </p>
                   </div>
@@ -316,35 +335,36 @@ export default function WeeklyCheckin() {
                     }}
                     placeholder="Type your answer here…"
                     rows={3}
-                    className="w-full rounded-xl px-4 py-3 text-[13px] text-[#1E3A5F] placeholder-[#94A3B8] resize-none focus:outline-none transition-all"
+                    className="w-full rounded-xl px-4 py-3 text-[13px] resize-none focus:outline-none transition-all"
                     style={{
-                      backgroundColor: "#F8F7F4",
-                      border: `1.5px solid ${isSaved ? "#86EFAC" : "#E2E0DB"}`,
+                      backgroundColor: "rgba(255,255,255,0.05)",
+                      border: `1.5px solid ${isSaved ? "rgba(94,234,212,0.2)" : "rgba(255,255,255,0.1)"}`,
+                      color: "rgba(255,255,255,0.85)",
                       fontFamily: "'Inter', sans-serif",
                     }}
-                    onFocus={e => { if (!isSaved) e.target.style.borderColor = "#7C3AED"; }}
-                    onBlur={e => { if (!isSaved) e.target.style.borderColor = "#E2E0DB"; }}
+                    onFocus={e => { if (!isSaved) e.target.style.borderColor = "rgba(196,181,253,0.5)"; }}
+                    onBlur={e => { if (!isSaved) e.target.style.borderColor = "rgba(255,255,255,0.1)"; }}
                   />
 
                   {/* Save button */}
                   <div className="flex items-center justify-between">
                     {isSaved ? (
-                      <span className="text-[11px] font-semibold text-[#059669]">✓ Saved</span>
+                      <span className="text-[11px] font-semibold" style={{ color: "#5EEAD4" }}>✓ Saved</span>
                     ) : (
-                      <span className="text-[11px] text-slate-400">Unsaved changes</span>
+                      <span className="text-[11px]" style={{ color: "rgba(255,255,255,0.3)" }}>Unsaved changes</span>
                     )}
                     <button
                       onClick={() => handleSave(q.id)}
                       disabled={isSaving || !hasText}
                       className="px-4 py-1.5 rounded-lg text-[12px] font-bold transition-all hover:opacity-90 active:scale-[0.97] disabled:opacity-40"
                       style={{
-                        backgroundColor: isSaved ? "#F0FDF4" : "#7C3AED",
-                        color: isSaved ? "#059669" : "white",
-                        border: isSaved ? "1px solid #86EFAC" : "none",
+                        backgroundColor: isSaved ? "rgba(94,234,212,0.1)" : "#C4B5FD",
+                        color: isSaved ? "#5EEAD4" : "#0F2440",
+                        border: isSaved ? "1px solid rgba(94,234,212,0.25)" : "none",
                         fontFamily: "'Space Grotesk', sans-serif",
                       }}
                     >
-                      {isSaving ? "Saving…" : isSaved ? "Update" : "Save"}
+                      {isSaving ? "Saving…" : isSaved ? "✓ Saved" : "Save"}
                     </button>
                   </div>
                 </div>
@@ -357,8 +377,9 @@ export default function WeeklyCheckin() {
                 onClick={handleSaveAll}
                 className="w-full py-3 rounded-xl text-[13px] font-bold text-white transition-all hover:opacity-90 active:scale-[0.98] mt-2"
                 style={{
-                  background: "linear-gradient(135deg, #7C3AED 0%, #4F46E5 100%)",
-                  boxShadow: "0 4px 16px rgba(124,58,237,0.25)",
+                  background: "linear-gradient(135deg, #C4B5FD 0%, #A78BFA 100%)",
+                  color: "#0F2440",
+                  boxShadow: "0 4px 16px rgba(196,181,253,0.2)",
                   fontFamily: "'Space Grotesk', sans-serif",
                 }}
               >

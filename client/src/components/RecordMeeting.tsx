@@ -271,7 +271,8 @@ export function RecordMeeting({ dateKey, meetingType, agendaItems }: RecordMeeti
               </div>
               <button
                 onClick={resetRecording}
-                className="text-xs text-[#6B7280] hover:text-[#1E3A5F] transition-colors flex items-center gap-1"
+                className="text-xs transition-colors flex items-center gap-1"
+                style={{ color: "rgba(255,255,255,0.4)" }}
               >
                 <Mic className="w-3 h-3" />
                 Re-record
@@ -282,20 +283,20 @@ export function RecordMeeting({ dateKey, meetingType, agendaItems }: RecordMeeti
               <div className="space-y-3">
                 {/* Summary */}
                 {parsedNotes.summary && (
-                  <div className="rounded-lg bg-[#F0F9F8] border border-[#B2DFDB] p-3">
-                    <p className="text-xs font-semibold text-[#0D9488] mb-1 uppercase tracking-wide">Summary</p>
-                    <p className="text-sm text-[#1A1F2E] leading-relaxed">{parsedNotes.summary}</p>
+                  <div className="rounded-lg p-3" style={{ backgroundColor: "rgba(94,234,212,0.08)", border: "1px solid rgba(94,234,212,0.2)" }}>
+                    <p className="text-xs font-semibold mb-1 uppercase tracking-wide" style={{ color: "#5EEAD4" }}>Summary</p>
+                    <p className="text-sm leading-relaxed" style={{ color: "rgba(255,255,255,0.75)" }}>{parsedNotes.summary}</p>
                   </div>
                 )}
 
                 {/* Action Items */}
                 {parsedNotes.actionItems?.length > 0 && (
                   <div>
-                    <p className="text-xs font-semibold text-[#1E3A5F] mb-1.5 uppercase tracking-wide">Action Items</p>
+                    <p className="text-xs font-semibold mb-1.5 uppercase tracking-wide" style={{ color: "rgba(255,255,255,0.5)" }}>Action Items</p>
                     <ul className="space-y-1">
                       {parsedNotes.actionItems.map((item, i) => (
-                        <li key={i} className="flex items-start gap-2 text-sm text-[#1A1F2E]">
-                          <span className="mt-0.5 w-4 h-4 rounded-full bg-[#1E3A5F] text-white text-[10px] flex items-center justify-center flex-shrink-0 font-bold">
+                        <li key={i} className="flex items-start gap-2 text-sm" style={{ color: "rgba(255,255,255,0.75)" }}>
+                          <span className="mt-0.5 w-4 h-4 rounded-full text-[10px] flex items-center justify-center flex-shrink-0 font-bold" style={{ backgroundColor: "rgba(94,234,212,0.2)", color: "#5EEAD4" }}>
                             {i + 1}
                           </span>
                           {item}
@@ -308,10 +309,10 @@ export function RecordMeeting({ dateKey, meetingType, agendaItems }: RecordMeeti
                 {/* Key Decisions */}
                 {parsedNotes.keyDecisions?.length > 0 && (
                   <div>
-                    <p className="text-xs font-semibold text-[#1E3A5F] mb-1.5 uppercase tracking-wide">Key Decisions</p>
+                    <p className="text-xs font-semibold mb-1.5 uppercase tracking-wide" style={{ color: "rgba(255,255,255,0.5)" }}>Key Decisions</p>
                     <ul className="space-y-1">
                       {parsedNotes.keyDecisions.map((item, i) => (
-                        <li key={i} className="flex items-start gap-2 text-sm text-[#1A1F2E]">
+                        <li key={i} className="flex items-start gap-2 text-sm" style={{ color: "rgba(255,255,255,0.75)" }}>
                           <span className="mt-0.5 text-[#0D9488]">◆</span>
                           {item}
                         </li>
@@ -323,10 +324,10 @@ export function RecordMeeting({ dateKey, meetingType, agendaItems }: RecordMeeti
                 {/* Resolved Items */}
                 {parsedNotes.resolvedItems?.length > 0 && (
                   <div>
-                    <p className="text-xs font-semibold text-[#1E3A5F] mb-1.5 uppercase tracking-wide">Resolved</p>
+                    <p className="text-xs font-semibold mb-1.5 uppercase tracking-wide" style={{ color: "rgba(255,255,255,0.5)" }}>Resolved</p>
                     <ul className="space-y-1">
                       {parsedNotes.resolvedItems.map((item, i) => (
-                        <li key={i} className="flex items-start gap-2 text-sm text-[#6B7280] line-through">
+                        <li key={i} className="flex items-start gap-2 text-sm line-through" style={{ color: "rgba(255,255,255,0.3)" }}>
                           <CheckCircle2 className="w-4 h-4 text-[#0D9488] flex-shrink-0 mt-0.5 no-underline" style={{ textDecoration: "none" }} />
                           <span className="no-underline" style={{ textDecoration: "none" }}>{item}</span>
                         </li>
@@ -336,23 +337,24 @@ export function RecordMeeting({ dateKey, meetingType, agendaItems }: RecordMeeti
                 )}
               </div>
             ) : (
-              <p className="text-sm text-[#6B7280] italic">Notes could not be parsed. See transcript below.</p>
+              <p className="text-sm italic" style={{ color: "rgba(255,255,255,0.35)" }}>Notes could not be parsed. See transcript below.</p>
             )}
 
             {/* Transcript toggle */}
             {transcript && (
-              <div className="border-t border-[#E8E4DC] pt-3">
+              <div className="pt-3" style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }}>
                 <button
                   onClick={() => setShowTranscript(t => !t)}
-                  className="flex items-center gap-1.5 text-xs text-[#6B7280] hover:text-[#1E3A5F] transition-colors"
+                  className="flex items-center gap-1.5 text-xs transition-colors"
+                  style={{ color: "rgba(255,255,255,0.4)" }}
                 >
                   <Clock className="w-3 h-3" />
                   {showTranscript ? "Hide" : "Show"} full transcript
                   {showTranscript ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
                 </button>
                 {showTranscript && (
-                  <div className="mt-2 rounded-lg bg-[#F8F7F4] border border-[#E8E4DC] p-3 max-h-48 overflow-y-auto">
-                    <p className="text-xs text-[#6B7280] leading-relaxed whitespace-pre-wrap">{transcript}</p>
+                  <div className="mt-2 rounded-lg p-3 max-h-48 overflow-y-auto" style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
+                    <p className="text-xs leading-relaxed whitespace-pre-wrap" style={{ color: "rgba(255,255,255,0.45)" }}>{transcript}</p>
                   </div>
                 )}
               </div>
