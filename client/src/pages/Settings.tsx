@@ -354,30 +354,48 @@ export default function Settings() {
   const selectedMtInfo = MEETING_LIST.find((m) => m.key === selectedMt) ?? MEETING_LIST[0];
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: "#0F2440", fontFamily: "'Inter', sans-serif" }}>
-      <div className="relative z-10 max-w-4xl mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="flex items-center gap-4 mb-8">
-          <Link
-            href="/app"
-            className="flex items-center gap-2 text-[12px] transition-colors"
-            style={{ color: "rgba(255,255,255,0.4)", fontFamily: "'Space Grotesk', sans-serif" }}
-            onMouseEnter={e => (e.currentTarget.style.color = "rgba(255,255,255,0.8)")}
-            onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.4)")}
-          >
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-              <path d="M9 2L4 7L9 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-            Back to Calendar
-          </Link>
-          <div className="flex-1" />
+    <div className="min-h-screen" style={{ backgroundColor: "#0A1929", fontFamily: "'Inter', sans-serif" }}>
+      {/* Hero header */}
+      <div style={{
+        background: "linear-gradient(135deg, #0D2035 0%, #0F2440 50%, #0D1F38 100%)",
+        borderBottom: "1px solid rgba(94,234,212,0.12)",
+        padding: "20px 20px 16px",
+        position: "relative",
+        overflow: "hidden",
+      }}>
+        <div style={{
+          position: "absolute", top: "-30px", right: "-30px",
+          width: "160px", height: "160px",
+          background: "radial-gradient(circle, rgba(94,234,212,0.07) 0%, transparent 70%)",
+          pointerEvents: "none",
+        }} />
+        <Link
+          href="/app"
+          className="inline-flex items-center gap-1.5 text-[11px] mb-3 transition-colors"
+          style={{ color: "rgba(255,255,255,0.35)", fontFamily: "'Space Grotesk', sans-serif" }}
+          onMouseEnter={e => (e.currentTarget.style.color = "rgba(255,255,255,0.7)")}
+          onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.35)")}
+        >
+          <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
+            <path d="M9 2L4 7L9 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+          Back to Calendar
+        </Link>
+        <div className="flex items-center gap-2.5">
+          <div style={{
+            width: 30, height: 30, borderRadius: "9px",
+            background: "linear-gradient(135deg, rgba(94,234,212,0.25) 0%, rgba(94,234,212,0.1) 100%)",
+            border: "1px solid rgba(94,234,212,0.35)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            fontSize: "15px", boxShadow: "0 0 10px rgba(94,234,212,0.12)",
+          }}>⚙️</div>
           <div>
-            <h1 className="font-bold text-[18px] text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-              Settings
-            </h1>
+            <h1 className="font-black text-[20px] text-white leading-tight" style={{ fontFamily: "'Space Grotesk', sans-serif", letterSpacing: "-0.02em" }}>Settings</h1>
             <p className="text-[11px]" style={{ color: "rgba(255,255,255,0.4)" }}>Customize agenda items per meeting type</p>
           </div>
         </div>
+      </div>
+      <div className="relative z-10 max-w-4xl mx-auto px-4 py-6">
 
         <div className="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-6">
           {/* Left: Business + Meeting selector */}
@@ -420,7 +438,7 @@ export default function Settings() {
           </div>
 
           {/* Right: Editor */}
-          <div className="rounded-2xl p-6" style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)" }}>
+          <div className="rounded-2xl p-6" style={{ background: "linear-gradient(135deg, rgba(94,234,212,0.06) 0%, rgba(94,234,212,0.02) 100%)", border: "1.5px solid rgba(94,234,212,0.18)", boxShadow: "0 4px 20px rgba(94,234,212,0.05)" }}>
             <div className="flex items-center gap-3 mb-5">
               <span className="text-xl">{selectedBizInfo.icon}</span>
               <div>
@@ -475,6 +493,7 @@ export default function Settings() {
   );
 }
 
+
 // ─── Employee Invite Panel ────────────────────────────────────────────────────
 function EmployeeInvitePanel({ accountId }: { accountId: number }) {
   const [name, setName] = useState("");
@@ -523,10 +542,11 @@ function EmployeeInvitePanel({ accountId }: { accountId: number }) {
 
   return (
     <div className="max-w-4xl mx-auto px-4 pb-8">
-      <div className="rounded-2xl p-6" style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)" }}>
-        <h2 className="font-bold text-[16px] mb-1 text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-          👥 Team Members
-        </h2>
+      <div className="rounded-2xl p-6" style={{ background: "linear-gradient(135deg, rgba(56,189,248,0.07) 0%, rgba(56,189,248,0.03) 100%)", border: "1.5px solid rgba(56,189,248,0.2)", boxShadow: "0 4px 20px rgba(56,189,248,0.05)" }}>
+        <div className="flex items-center gap-3 mb-1">
+          <div style={{ width: 28, height: 28, borderRadius: 8, background: "rgba(56,189,248,0.18)", border: "1px solid rgba(56,189,248,0.3)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>👥</div>
+          <h2 className="font-bold text-[16px] text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Team Members</h2>
+        </div>
         <p className="text-[12px] mb-6" style={{ color: "rgba(255,255,255,0.4)" }}>
           Add employees and send them an invite link to create their account.
         </p>
@@ -675,16 +695,12 @@ function ReportQuestionsPanel({ accountId, businesses }: { accountId: number; bu
 
   return (
     <div className="max-w-4xl mx-auto px-4 pb-8">
-      <div className="rounded-2xl p-6" style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)" }}>
+      <div className="rounded-2xl p-6" style={{ background: "linear-gradient(135deg, rgba(124,58,237,0.08) 0%, rgba(124,58,237,0.04) 100%)", border: "1.5px solid rgba(124,58,237,0.22)", boxShadow: "0 4px 20px rgba(124,58,237,0.06)" }}>
         <div className="flex items-center gap-3 mb-5">
-          <span className="text-xl">📝</span>
+          <div style={{ width: 28, height: 28, borderRadius: 8, background: "rgba(124,58,237,0.2)", border: "1px solid rgba(124,58,237,0.35)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>📝</div>
           <div>
-            <h2 className="font-bold text-[14px] text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-              Weekly Report Questions
-            </h2>
-            <p className="text-[11px]" style={{ color: "rgba(255,255,255,0.4)" }}>
-              Configure the questions employees answer in their weekly check-in.
-            </p>
+            <h2 className="font-bold text-[14px] text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Weekly Report Questions</h2>
+            <p className="text-[11px]" style={{ color: "rgba(255,255,255,0.4)" }}>Configure the questions employees answer in their weekly check-in.</p>
           </div>
         </div>
 

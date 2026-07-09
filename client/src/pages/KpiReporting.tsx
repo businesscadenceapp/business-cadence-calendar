@@ -526,13 +526,14 @@ function OwnerKpiDashboard({ accountId }: { accountId: number }) {
 
       {/* Monthly Totals vs Goals */}
       <div className="rounded-2xl p-5 flex flex-col gap-4"
-        style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1.5px solid rgba(255,255,255,0.1)" }}>
+        style={{ background: "linear-gradient(135deg, rgba(94,234,212,0.07) 0%, rgba(94,234,212,0.03) 100%)", border: "1.5px solid rgba(94,234,212,0.2)", boxShadow: "0 4px 24px rgba(94,234,212,0.06)" }}>
         <div className="flex items-center justify-between flex-wrap gap-3">
-          <div>
-            <h3 className="text-[15px] font-bold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-              Monthly Totals
-            </h3>
-            <p className="text-[11px] mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>Running totals for the month, compared to your goals</p>
+          <div className="flex items-center gap-3">
+            <div style={{ width: 28, height: 28, borderRadius: 8, background: "rgba(94,234,212,0.18)", border: "1px solid rgba(94,234,212,0.3)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>📈</div>
+            <div>
+              <h3 className="text-[15px] font-bold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Monthly Totals</h3>
+              <p className="text-[11px] mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>Running totals for the month, compared to your goals</p>
+            </div>
           </div>
           <select value={selectedMonth} onChange={e => setSelectedMonth(e.target.value)}
             className="rounded-lg px-3 py-1.5 text-[12px] focus:outline-none"
@@ -595,12 +596,13 @@ function OwnerKpiDashboard({ accountId }: { accountId: number }) {
 
       {/* This Week — per-employee matrix */}
       <div className="rounded-2xl p-5 flex flex-col gap-4"
-        style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1.5px solid rgba(255,255,255,0.1)" }}>
-        <div>
-          <h3 className="text-[15px] font-bold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-            This Week — {formatPeriod(currentWeekKey)}
-          </h3>
-          <p className="text-[11px] mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>Employee submissions for the current week</p>
+        style={{ background: "linear-gradient(135deg, rgba(56,189,248,0.07) 0%, rgba(56,189,248,0.03) 100%)", border: "1.5px solid rgba(56,189,248,0.2)", boxShadow: "0 4px 24px rgba(56,189,248,0.06)" }}>
+        <div className="flex items-center gap-3">
+          <div style={{ width: 28, height: 28, borderRadius: 8, background: "rgba(56,189,248,0.18)", border: "1px solid rgba(56,189,248,0.3)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>📅</div>
+          <div>
+            <h3 className="text-[15px] font-bold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>This Week — {formatPeriod(currentWeekKey)}</h3>
+            <p className="text-[11px] mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>Employee submissions for the current week</p>
+          </div>
         </div>
 
         {categories.length === 0 ? (
@@ -649,13 +651,14 @@ function OwnerKpiDashboard({ accountId }: { accountId: number }) {
 
       {/* Manage KPI Categories */}
       <div className="rounded-2xl p-5 flex flex-col gap-4"
-        style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1.5px solid rgba(255,255,255,0.1)" }}>
+        style={{ background: "linear-gradient(135deg, rgba(124,58,237,0.08) 0%, rgba(124,58,237,0.04) 100%)", border: "1.5px solid rgba(124,58,237,0.22)", boxShadow: "0 4px 24px rgba(124,58,237,0.08)" }}>
         <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-[15px] font-bold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-              KPI Categories & Goals
-            </h3>
-            <p className="text-[11px] mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>Set monthly targets and control what staff can see</p>
+          <div className="flex items-center gap-3">
+            <div style={{ width: 28, height: 28, borderRadius: 8, background: "rgba(124,58,237,0.2)", border: "1px solid rgba(124,58,237,0.35)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>🎯</div>
+            <div>
+              <h3 className="text-[15px] font-bold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>KPI Categories &amp; Goals</h3>
+              <p className="text-[11px] mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>Set monthly targets and control what staff can see</p>
+            </div>
           </div>
           <button onClick={() => setShowAddCategory(v => !v)}
             className="text-[11px] px-3 py-1.5 rounded-lg font-semibold transition-all hover:opacity-90 active:scale-[0.97]"
@@ -739,19 +742,44 @@ export default function KpiReporting() {
   const isOwner = person.role === "owner" || person.role === "coowner";
 
   return (
-    <div className="h-full overflow-y-auto" style={{ backgroundColor: "#0F2440", fontFamily: "'Inter', sans-serif" }}>
-      <div className="max-w-4xl mx-auto px-3 sm:px-5 py-4 sm:py-6">
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-white mb-1" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+    <div className="h-full overflow-y-auto" style={{ backgroundColor: "#0A1929", fontFamily: "'Inter', sans-serif" }}>
+      {/* Hero header */}
+      <div style={{
+        background: "linear-gradient(135deg, #0D2035 0%, #0F2440 50%, #0D1F38 100%)",
+        borderBottom: "1px solid rgba(196,181,253,0.15)",
+        padding: "24px 20px 20px",
+        position: "relative",
+        overflow: "hidden",
+      }}>
+        <div style={{
+          position: "absolute", top: "-40px", right: "-40px",
+          width: "200px", height: "200px",
+          background: "radial-gradient(circle, rgba(196,181,253,0.08) 0%, transparent 70%)",
+          pointerEvents: "none",
+        }} />
+        <div className="flex items-center gap-2.5 mb-1.5">
+          <div style={{
+            width: 32, height: 32, borderRadius: "10px",
+            background: "linear-gradient(135deg, rgba(196,181,253,0.25) 0%, rgba(196,181,253,0.1) 100%)",
+            border: "1px solid rgba(196,181,253,0.35)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            fontSize: "16px", boxShadow: "0 0 12px rgba(196,181,253,0.15)",
+          }}>📊</div>
+          <span className="text-[11px] font-bold uppercase tracking-[0.15em]" style={{ color: "#C4B5FD", fontFamily: "'Space Grotesk', sans-serif" }}>
             {isOwner ? "KPI Dashboard" : "My KPIs"}
-          </h1>
-          <p className="text-[13px]" style={{ color: "rgba(255,255,255,0.5)" }}>
-            {isOwner
-              ? "Monthly running totals, goals, and weekly employee submissions."
-              : "Submit your weekly numbers and track your progress toward monthly goals."}
-          </p>
+          </span>
         </div>
+        <h1 className="text-[22px] font-black text-white leading-tight" style={{ fontFamily: "'Space Grotesk', sans-serif", letterSpacing: "-0.02em" }}>
+          {isOwner ? "Numbers at a Glance" : "Track Your Numbers"}
+        </h1>
+        <p className="text-[12px] mt-1" style={{ color: "rgba(255,255,255,0.45)" }}>
+          {isOwner
+            ? "Monthly running totals, goals, and weekly employee submissions."
+            : "Submit your weekly numbers and track your progress toward monthly goals."}
+        </p>
+      </div>
 
+      <div className="max-w-4xl mx-auto px-3 sm:px-5 py-4 sm:py-6">
         {isOwner ? (
           <OwnerKpiDashboard accountId={accountId} />
         ) : (
