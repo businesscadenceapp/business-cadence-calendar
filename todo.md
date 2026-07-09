@@ -439,9 +439,9 @@
 - [ ] Load all persons from DB in AddCardForm for the picker
 
 ## PWA Build
-- [ ] Add manifest.json with app name, icons, theme color, display: standalone
+- [x] Add manifest.json with app name, icons, theme color, display: standalone
 - [x] Add service worker for offline shell caching
-- [ ] Add iOS meta tags (apple-mobile-web-app-capable, status-bar-style, apple-touch-icon)
+- [x] Add iOS meta tags (apple-mobile-web-app-capable, status-bar-style, apple-touch-icon)
 - [ ] Mobile-optimize AppShell: collapsible sidebar, bottom nav bar for mobile
 - [ ] Mobile-optimize Board page: single-column layout, full-width form, scrollable card columns
 - [ ] Mobile-optimize Goals page: card stack layout on mobile
@@ -471,6 +471,18 @@
 
 ## Dark Navy Theme Redesign (Phase N+2)
 - [x] Hero section: deep navy gradient background, white text, teal accent
-- [ ] Landing page: full dark navy theme (nav, all sections, footer)
-- [ ] App UI: dark navy theme (AppShell sidebar, bottom nav, Board, all pages)
-- [ ] Global CSS variables in index.css updated for dark theme
+- [x] Landing page: full dark navy theme (nav, all sections, footer)
+- [x] App UI: dark navy theme (AppShell sidebar, bottom nav, Board, all pages)
+- [x] Global CSS variables in index.css updated for dark theme)
+
+## UI Polish Pass (Phase N+3)
+- [x] Admin Panel: dark navy panels, remove white cards
+- [x] KPI Dashboard: colored panels (teal/blue/purple), hero header
+- [x] Settings: dark panels for all sections, hero header
+- [x] Goals page: already DB-backed (businesses loaded from trpc.business.list)
+- [x] Board: card entry animations, empty states, premium column headers
+- [x] PWA manifest + iOS meta tags: background_color and theme_color updated to #0F2440
+- [x] Login icon: teal music note (pre-colored PNG)
+- [x] App shell: teal music note icon in sidebar and mobile header
+- [x] Comment button: always teal for visibility
+- [x] Board comments: Tasks, Updates, Issues all support inline comment threads

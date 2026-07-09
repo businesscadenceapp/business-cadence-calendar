@@ -5,8 +5,8 @@
   "start_url": "/app/board",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#F5F4F0",
-  "theme_color": "#1E3A5F",
+  "background_color": "#0F2440",
+  "theme_color": "#0F2440",
   "icons": [
     {
       "src": "/manus-storage/icon-192_a4529c68.png",
