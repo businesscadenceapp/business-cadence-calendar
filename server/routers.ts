@@ -963,6 +963,45 @@ Be concise and specific. If a field has nothing, use an empty array.`,
       }),
   }),
 
+  /** Goals summary — grouped by period with status counts. */
+  goalsSummary: router({
+    /** Get goals grouped by period (quarterly/annual) with status breakdown. */
+    get: publicProcedure
+      .input(z.object({ accountId: z.number(), year: z.number() }))
+      .query(async ({ input }) => {
+        const allGoals = await getGoals(input.accountId, input.year);
+        const quarterly = allGoals.filter(g => g.period === "quarterly");
+        const annual = allGoals.filter(g => g.period === "annual");
+
+        const statusCounts = (list: typeof allGoals) => ({
+          total: list.length,
+          active: list.filter(g => g.status === "active").length,
+          achieved: list.filter(g => g.status === "achieved").length,
+          missed: list.filter(g => g.status === "missed").length,
+          deferred: list.filter(g => g.status === "deferred").length,
+        });
+
+        // Group quarterly goals by quarter
+        const byQuarter: Record<number, typeof allGoals> = {};
+        for (const g of quarterly) {
+          const q = g.quarter ?? 0;
+          if (!byQuarter[q]) byQuarter[q] = [];
+          byQuarter[q].push(g);
+        }
+
+        return {
+          annual: { goals: annual, counts: statusCounts(annual) },
+          quarterly: Object.entries(byQuarter).map(([q, gs]) => ({
+            quarter: Number(q),
+            goals: gs,
+            counts: statusCounts(gs),
+          })).sort((a, b) => a.quarter - b.quarter),
+          all: allGoals,
+          totalCounts: statusCounts(allGoals),
+        };
+      }),
+  }),
+
   /** Person auth — individual logins for owners and employees. */
   person: router({
     /** Login with email + password. Returns personId stored in localStorage. */
@@ -1232,6 +1271,28 @@ Be concise and specific. If a field has nothing, use an empty array.`,
       }))
       .query(async ({ input }) => {
         return getKpiMonthlyTotals(input.accountId, input.businessSlug, input.yearMonth);
+      }),
+
+    /**
+     * Get KPI monthly totals for multiple months (trend view).
+     * Returns an array of { yearMonth, totals[] } for the last N months.
+     */
+    getMultiMonthTrend: publicProcedure
+      .input(z.object({
+        accountId: z.number(),
+        businessSlug: z.string(),
+        months: z.number().min(1).max(12).default(3), // how many months back
+      }))
+      .query(async ({ input }) => {
+        const results: { yearMonth: string; totals: Awaited<ReturnType<typeof getKpiMonthlyTotals>> }[] = [];
+        const now = new Date();
+        for (let i = input.months - 1; i >= 0; i--) {
+          const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+          const ym = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+          const totals = await getKpiMonthlyTotals(input.accountId, input.businessSlug, ym);
+          results.push({ yearMonth: ym, totals });
+        }
+        return results;
       }),
 
     /**

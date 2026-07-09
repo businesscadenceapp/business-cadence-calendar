@@ -546,3 +546,15 @@
 - [x] Home.tsx: fetches meetingTimes from onboarding.getStatus, passes to DetailPanel and MeetingSection
 - [x] MeetingSection: shows actual saved time (teal, formatted) instead of static suggestedTime string
 - [x] TypeScript check: zero errors
+
+## In-App Reports Summary Hub (Jul 2026)
+- [x] Rebuild Reports page with 4 tabs: Weekly, Monthly, Quarterly, Goals
+- [x] Weekly tab: this week's KPI submissions per employee (submitted vs pending), delta vs last week, missing submissions flagged in red
+- [x] Monthly tab: month-over-month KPI trend table (last 3 months per metric), goal progress bars for current quarter
+- [x] Quarterly tab: all goals for current quarter with status badges (On Track / At Risk / Achieved / Missed), KPI sparklines for last 3 months
+- [x] Goals tab: all active goals grouped by period (quarterly / annual) with progress bars and status
+- [x] Backend: tRPC kpi.getMultiMonthTrend — returns last N months of totals per KPI metric
+- [x] Backend: tRPC goalsSummary.get — returns all goals grouped by period with status counts
+- [x] Backend: existing weeklyReport.getSummary reused for submission status
+- [x] Dark navy theme consistent with rest of app
+- [x] Tab state persisted in localStorage so returning to Reports opens the last-used tab
