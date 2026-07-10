@@ -627,11 +627,13 @@ Be concise and specific. If a field has nothing, use an empty array.`,
   }),
 
   board: router({
-    /** List all active (non-archived) board cards. */
-    list: publicProcedure.query(async () => {
-      const cards = await getBoardCards(false);
-      return { cards };
-    }),
+    /** List all active (non-archived) board cards, optionally filtered by audience. */
+    list: publicProcedure
+      .input(z.object({ audience: z.enum(["owner", "team"]).optional() }).optional())
+      .query(async ({ input }) => {
+        const cards = await getBoardCards(false, input?.audience);
+        return { cards };
+      }),
 
     /** Create a new board card (update, issue, or task). */
     create: publicProcedure
@@ -641,15 +643,17 @@ Be concise and specific. If a field has nothing, use an empty array.`,
         business: z.enum(["chiropractic", "crossfit", "realty", "general"]),
         content: z.string().min(1).max(1000),
         assignedTo: z.string().min(1).max(128).optional(),
+        assignedToPersonId: z.string().optional(),
         dueAt: z.number().optional(),          // ms since epoch — task due date
         updateDate: z.number().optional(),     // ms since epoch — date this update covers
         meetingType: z.enum(["daily_huddle", "weekly_meeting", "quarterly_review"]).optional(), // issue: which meeting
         scheduledDate: z.number().optional(),  // ms since epoch — date of the meeting occurrence
         accountId: z.number().optional(),      // for notification routing
         notifyPersonIds: z.array(z.string()).optional(), // explicit recipient list (person IDs)
+        audience: z.enum(["owner", "team"]).optional(), // which side of the wall
       }))
       .mutation(async ({ input }) => {
-        const card = await createBoardCard(input);
+        const card = await createBoardCard({ ...input, audience: input.audience ?? "owner" });
         // Generate notifications for relevant recipients
         if (input.accountId) {
           const allPersons = await getPersonsByAccount(input.accountId);

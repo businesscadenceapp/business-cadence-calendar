@@ -45,7 +45,7 @@ const OWNER_NAV: NavItem[] = [
 ];
 
 const EMPLOYEE_NAV: NavItem[] = [
-  { path: "/app/board",    label: "Board",    icon: "📋", activeColor: "#5EEAD4" },
+  { path: "/app/team",     label: "My Board", icon: "👥", activeColor: "#A78BFA" },
   { path: "/app/kpi",      label: "KPIs",     icon: "📈", activeColor: "#5EEAD4" },
   { path: "/app/checkin",  label: "Check-in", icon: "✅", activeColor: "#5EEAD4" },
 ];
@@ -271,30 +271,67 @@ export default function AppShell({ children }: AppShellProps) {
 
           {/* Nav items */}
           <nav className="flex-1 overflow-y-auto px-3 py-4 flex flex-col gap-1">
-            {NAV_ITEMS.map(item => {
-              const isActive = activePath === item.path || activePath.startsWith(item.path + "/");
-              return (
+            {/* Owner/Team pill toggle — owners and co-owners only */}
+            {(person?.role === "owner" || person?.role === "coowner") && (
+              <div
+                className="flex mb-3 rounded-xl overflow-hidden flex-shrink-0"
+                style={{ backgroundColor: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}
+              >
                 <Link
-                  key={item.path}
-                  href={item.path}
-                  className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-semibold transition-all duration-150"
+                  href="/app/board"
+                  className="flex-1 py-2 text-center text-[11px] font-bold transition-all"
                   style={{
-                    backgroundColor: isActive ? "rgba(94,234,212,0.12)" : "transparent",
-                    color: isActive ? "#5EEAD4" : "rgba(255,255,255,0.55)",
+                    backgroundColor: !activePath.startsWith("/app/team") ? "rgba(94,234,212,0.18)" : "transparent",
+                    color: !activePath.startsWith("/app/team") ? "#5EEAD4" : "rgba(255,255,255,0.4)",
                     fontFamily: "'Space Grotesk', sans-serif",
+                    borderRadius: "10px 0 0 10px",
                   }}
                 >
-                  <span className="text-base w-5 text-center flex-shrink-0">{item.icon}</span>
-                  {item.label}
-                  {isActive && (
-                    <div
-                      className="ml-auto w-1.5 h-1.5 rounded-full flex-shrink-0"
-                      style={{ backgroundColor: "#5EEAD4" }}
-                    />
-                  )}
+                  👔 Owner
                 </Link>
-              );
-            })}
+                <Link
+                  href="/app/team"
+                  className="flex-1 py-2 text-center text-[11px] font-bold transition-all"
+                  style={{
+                    backgroundColor: activePath.startsWith("/app/team") ? "rgba(167,139,250,0.18)" : "transparent",
+                    color: activePath.startsWith("/app/team") ? "#A78BFA" : "rgba(255,255,255,0.4)",
+                    fontFamily: "'Space Grotesk', sans-serif",
+                    borderRadius: "0 10px 10px 0",
+                  }}
+                >
+                  👥 Team
+                </Link>
+              </div>
+            )}
+
+            {/* Show owner nav or team-side nav based on active path */}
+            {(activePath.startsWith("/app/team") && (person?.role === "owner" || person?.role === "coowner"))
+              ? null  // No extra nav items on team side — the board is the whole page
+              : NAV_ITEMS.map(item => {
+                  const isActive = activePath === item.path || activePath.startsWith(item.path + "/");
+                  return (
+                    <Link
+                      key={item.path}
+                      href={item.path}
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-semibold transition-all duration-150"
+                      style={{
+                        backgroundColor: isActive ? "rgba(94,234,212,0.12)" : "transparent",
+                        color: isActive ? "#5EEAD4" : "rgba(255,255,255,0.55)",
+                        fontFamily: "'Space Grotesk', sans-serif",
+                      }}
+                    >
+                      <span className="text-base w-5 text-center flex-shrink-0">{item.icon}</span>
+                      {item.label}
+                      {isActive && (
+                        <div
+                          className="ml-auto w-1.5 h-1.5 rounded-full flex-shrink-0"
+                          style={{ backgroundColor: "#5EEAD4" }}
+                        />
+                      )}
+                    </Link>
+                  );
+                })
+            }
           </nav>
 
           {/* Logged-in person + sign out */}

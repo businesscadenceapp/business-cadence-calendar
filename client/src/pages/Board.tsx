@@ -67,6 +67,7 @@ type Card = {
   seenAt: Date | null;
   seenBy: Author | null;
   archivedAt: Date | null;
+  audience: "owner" | "team" | null;
   createdAt: Date;
 };
 
@@ -977,7 +978,7 @@ export default function Board() {
     return labels;
   }, [dbBusinesses]);
 
-  const { data, refetch, isLoading } = trpc.board.list.useQuery(undefined, {
+  const { data, refetch, isLoading } = trpc.board.list.useQuery({ audience: "owner" }, {
     refetchInterval: 15_000,
   });
 
@@ -994,7 +995,8 @@ export default function Board() {
   });
 
   const allCards = ((data?.cards ?? []) as Card[]).filter(c =>
-    c.business === "general" || allowedBusinesses.includes(c.business)
+    (c.business === "general" || allowedBusinesses.includes(c.business)) &&
+    (c.audience === "owner" || c.audience == null)
   );
 
   const filtered = filterBusiness === "all"

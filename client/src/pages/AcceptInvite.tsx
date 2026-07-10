@@ -37,7 +37,9 @@ export default function AcceptInvite() {
           localStorage.setItem("bcc_auth_v1", "granted");
         } catch { /* ignore */ }
         toast.success(`Welcome, ${data.person.name}! Your account is ready.`);
-        navigate("/app/board");
+        // Employees land on the Team Board; owners/co-owners go to the main board
+        const role = (data.person as any).role;
+        navigate(role === "employee" ? "/app/team" : "/app/board");
       } else {
         const reason = (data as any).reason;
         if (reason === "already_accepted") {

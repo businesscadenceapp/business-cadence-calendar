@@ -1,0 +1,1 @@
+ALTER TABLE `board_cards` ADD `audience` enum('owner','team') DEFAULT 'owner' NOT NULL;

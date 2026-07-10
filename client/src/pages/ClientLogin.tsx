@@ -45,7 +45,11 @@ export default function ClientLogin() {
         // Check onboarding status — co-owners and employees skip onboarding
         const accountId = data.person.accountId;
         const role = data.person.role;
-        if (role === "coowner" || role === "employee") {
+        if (role === "employee") {
+          navigate("/app/team");
+          return;
+        }
+        if (role === "coowner") {
           navigate("/app/board");
           return;
         }

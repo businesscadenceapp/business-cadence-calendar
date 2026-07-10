@@ -558,3 +558,46 @@
 - [x] Backend: existing weeklyReport.getSummary reused for submission status
 - [x] Dark navy theme consistent with rest of app
 - [x] Tab state persisted in localStorage so returning to Reports opens the last-used tab
+
+## Owner/Employee Wall Feature
+
+### Database & Backend
+- [ ] Add `owner_messages` table — id, accountId, fromPersonId, toPersonId, body, createdAt (owner-to-owner only)
+- [ ] Add `tasks` table — id, accountId, fromPersonId, toPersonId (employee), title, description, dueDate, status (open/completed/confirmed), createdAt
+- [ ] Add `task_comments` table — id, taskId, fromPersonId, body, createdAt
+- [ ] Add `announcements` table — id, accountId, fromPersonId, toPersonId (null = all employees), body, createdAt
+- [ ] Run pnpm db:push to migrate schema
+- [ ] tRPC ownerMessages.list — list messages between co-owners for this account
+- [ ] tRPC ownerMessages.send — send a message from one owner to another
+- [ ] tRPC tasks.list — list tasks (owner sees all, employee sees only theirs)
+- [ ] tRPC tasks.create — owner creates task assigned to specific employee
+- [ ] tRPC tasks.markComplete — employee marks task done
+- [ ] tRPC tasks.confirm — owner confirms task completion
+- [ ] tRPC taskComments.list — list comments on a task
+- [ ] tRPC taskComments.add — add a comment to a task thread
+- [ ] tRPC announcements.list — list announcements for an employee (or all)
+- [ ] tRPC announcements.send — owner sends announcement to specific employee or all
+
+### Owner Side Command Board
+- [ ] Build OwnerCommandBoard.tsx page — co-owner message thread, task creation panel, employee performance feed
+- [ ] Co-owner message thread — shows messages between Matt and Lynn, send new message
+- [ ] Task creation panel — select employee, title, description, optional due date, send
+- [ ] Employee performance feed — shows latest KPI submissions per employee vs goals, check-in completion status
+- [ ] Task status panel — shows all open/completed/pending-confirmation tasks with employee names
+
+### Employee Side Command Board
+- [ ] Build EmployeeCommandBoard.tsx page — tasks assigned to this employee, announcements, quick KPI submit, check-in link
+- [ ] Task list — shows open tasks with due date, mark complete button, comment thread
+- [ ] Comment thread per task — employee can reply, owner replies visible
+- [ ] Announcements section — shows messages sent to this employee or all employees
+- [ ] Quick KPI submit shortcut — inline number entry for this week
+- [ ] Check-in link — button to go to weekly check-in
+
+### App Shell & Permission Wall
+- [ ] Add Owner | Employee pill toggle to DashboardLayout header (owners only)
+- [ ] Owners default to Owner Side on login; pill toggle switches to Employee Side
+- [ ] Employees always land on Employee Side — no toggle shown
+- [ ] Store active side in localStorage so it persists across page refreshes
+- [ ] Route /app/command → OwnerCommandBoard (owners) or EmployeeCommandBoard (employees)
+- [ ] Add "Command" nav item to DashboardLayout sidebar
+- [ ] Enforce permission wall — employees cannot access owner-side routes

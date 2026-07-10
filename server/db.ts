@@ -176,22 +176,25 @@ export async function toggleAgendaItem(
 
 // ─── Command Board helpers ────────────────────────────────────────────────────
 
-export async function getBoardCards(includeArchived = false): Promise<BoardCard[]> {
+export async function getBoardCards(includeArchived = false, audience?: "owner" | "team"): Promise<BoardCard[]> {
   const db = await getDb();
   if (!db) return [];
   const rows = await db.select().from(boardCards).orderBy(boardCards.createdAt);
-  if (includeArchived) return rows;
-  return rows.filter(r => r.archivedAt === null);
+  const active = includeArchived ? rows : rows.filter(r => r.archivedAt === null);
+  if (audience) return active.filter(r => r.audience === audience);
+  return active;
 }
 
 export async function createBoardCard(
   data: Pick<InsertBoardCard, "type" | "business" | "content"> & {
     author: string;
     assignedTo?: string;
+    assignedToPersonId?: string;
     dueAt?: number;
     meetingType?: "daily_huddle" | "weekly_meeting" | "quarterly_review";
     scheduledDate?: number;
     updateDate?: number;
+    audience?: "owner" | "team";
   }
 ): Promise<BoardCard> {
   const db = await getDb();

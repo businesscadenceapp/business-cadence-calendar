@@ -87,6 +87,8 @@ export const boardCards = mysqlTable("board_cards", {
   scheduledDate: bigint("scheduledDate", { mode: "number" }),  // ms since epoch — date of the meeting occurrence
   // Update-specific fields — date coverage
   updateDate: bigint("updateDate", { mode: "number" }),  // ms since epoch — date this update covers
+  // Audience — which side of the wall this card belongs to
+  audience: mysqlEnum("audience", ["owner", "team"]).notNull().default("owner"),
   // Legacy seen/archive fields (updates + issues)
   seenAt: timestamp("seenAt"),
   seenBy: varchar("seenBy", { length: 128 }),
