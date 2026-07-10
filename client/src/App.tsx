@@ -23,27 +23,12 @@ import AdminPanel from "@/pages/AdminPanel";
 import TeamBoard from "@/pages/TeamBoard";
 import TeamCalendar from "@/pages/TeamCalendar";
 
-// Calendar app routes — all protected by the password gate, wrapped in AppShell
-function CalendarApp() {
+// Wrapper that applies PasswordGate + AppShell to any page component
+function Protected({ component: Component }: { component: React.ComponentType }) {
   return (
     <PasswordGate>
       <AppShell>
-        <Switch>
-          <Route path={"/app"} component={Board} />
-          <Route path={"/app/board"} component={Board} />
-          <Route path={"/app/calendar"} component={Home} />
-          <Route path={"/app/goals"} component={Goals} />
-          <Route path={"/app/reports"} component={WeeklyReports} />
-          <Route path={"/app/schedule"} component={ManageSchedule} />
-          <Route path={"/app/employees"} component={EmployeeSetup} />
-          <Route path={"/app/kpi"} component={KpiReporting} />
-          <Route path={"/app/checkin"} component={WeeklyCheckin} />
-          <Route path={"/app/settings"} component={Settings} />
-          <Route path={"/app/admin"} component={AdminPanel} />
-          <Route path={"/app/team/calendar"} component={TeamCalendar} />
-          <Route path={"/app/team"} component={TeamBoard} />
-          <Route component={NotFound} />
-        </Switch>
+        <Component />
       </AppShell>
     </PasswordGate>
   );
@@ -52,19 +37,55 @@ function CalendarApp() {
 function Router() {
   return (
     <Switch>
-      {/* Public marketing homepage */}
+      {/* Public routes */}
       <Route path={"/"} component={Landing} />
-      {/* Business selection portal — public, leads to password gate */}
       <Route path={"/login"} component={ClientLogin} />
-      {/* Onboarding wizard — first-login setup */}
       <Route path={"/onboarding"} component={Onboarding} />
-      {/* Employee invite acceptance — public route */}
       <Route path={"/accept-invite"} component={AcceptInvite} />
-      {/* Password-gated calendar app (all /app/* routes) */}
-      <Route path={"/app"} component={CalendarApp} />
-      <Route path={"/app/:rest*"} component={CalendarApp} />
+
+      {/* Protected app routes — more specific paths MUST come before less specific ones */}
+      <Route path={"/app/team/calendar"}>
+        <Protected component={TeamCalendar} />
+      </Route>
+      <Route path={"/app/team"}>
+        <Protected component={TeamBoard} />
+      </Route>
+      <Route path={"/app/board"}>
+        <Protected component={Board} />
+      </Route>
+      <Route path={"/app/calendar"}>
+        <Protected component={Home} />
+      </Route>
+      <Route path={"/app/goals"}>
+        <Protected component={Goals} />
+      </Route>
+      <Route path={"/app/reports"}>
+        <Protected component={WeeklyReports} />
+      </Route>
+      <Route path={"/app/schedule"}>
+        <Protected component={ManageSchedule} />
+      </Route>
+      <Route path={"/app/employees"}>
+        <Protected component={EmployeeSetup} />
+      </Route>
+      <Route path={"/app/kpi"}>
+        <Protected component={KpiReporting} />
+      </Route>
+      <Route path={"/app/checkin"}>
+        <Protected component={WeeklyCheckin} />
+      </Route>
+      <Route path={"/app/settings"}>
+        <Protected component={Settings} />
+      </Route>
+      <Route path={"/app/admin"}>
+        <Protected component={AdminPanel} />
+      </Route>
+      {/* /app root redirects to board */}
+      <Route path={"/app"}>
+        <Protected component={Board} />
+      </Route>
+
       <Route path={"/404"} component={NotFound} />
-      {/* Final fallback route */}
       <Route component={NotFound} />
     </Switch>
   );
