@@ -149,12 +149,14 @@ function MonthGrid({
 
   return (
     <div
-      className="rounded-xl p-3 flex flex-col gap-2"
+      className="rounded-xl p-3 flex flex-col gap-2 overflow-hidden"
       style={{
         backgroundColor: "rgba(255,255,255,0.04)",
         border: quarterlyDays > 0
           ? "1.5px solid rgba(244,63,94,0.35)"
           : "1.5px solid rgba(255,255,255,0.08)",
+        position: "relative",
+        zIndex: 0,
       }}
     >
       <div className="flex items-center justify-between">
@@ -1032,7 +1034,7 @@ export default function Home() {
           </div>
 
           {/* Calendar Navigation Bar */}
-          <div className="flex items-center justify-between gap-2 flex-wrap">
+          <div className="flex items-center justify-between gap-2 flex-wrap" style={{ position: "relative", zIndex: 10 }}>
             {viewMode === "month" ? (
               <div className="flex items-center gap-2 flex-shrink-0">
                 <button
