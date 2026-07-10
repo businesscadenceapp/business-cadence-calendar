@@ -379,7 +379,7 @@ export default function AppShell({ children }: AppShellProps) {
 
         {/* ── Main content area ── */}
         <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-          {/* Mobile top bar — shows brand + notification bell */}
+          {/* Mobile top bar — shows brand + Owner/Team toggle (owners only) + notification bell */}
           <header
             className="md:hidden flex items-center justify-between px-4 flex-shrink-0"
             style={{
@@ -389,12 +389,55 @@ export default function AppShell({ children }: AppShellProps) {
               paddingTop: "env(safe-area-inset-top, 0px)",
             }}
           >
-            <div className="flex items-center gap-2.5">
-              <BrandIcon size={28} variant="teal" />
-              <p className="text-sm font-bold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-                BusinessCadence
-              </p>
-            </div>
+            {/* Left: brand (hidden when owner toggle is shown to save space) */}
+            {!(person?.role === "owner" || person?.role === "coowner") && (
+              <div className="flex items-center gap-2.5">
+                <BrandIcon size={28} variant="teal" />
+                <p className="text-sm font-bold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+                  BusinessCadence
+                </p>
+              </div>
+            )}
+
+            {/* Owner/Team pill toggle — owners and co-owners only, mobile */}
+            {(person?.role === "owner" || person?.role === "coowner") && (
+              <div className="flex items-center gap-2">
+                <BrandIcon size={24} variant="teal" className="flex-shrink-0" />
+                <div
+                  className="flex rounded-xl overflow-hidden"
+                  style={{
+                    backgroundColor: "rgba(255,255,255,0.06)",
+                    border: "1px solid rgba(255,255,255,0.12)",
+                  }}
+                >
+                  <Link
+                    href="/app/board"
+                    className="px-4 py-1.5 text-[11px] font-bold transition-all"
+                    style={{
+                      backgroundColor: !activePath.startsWith("/app/team") ? "rgba(94,234,212,0.2)" : "transparent",
+                      color: !activePath.startsWith("/app/team") ? "#5EEAD4" : "rgba(255,255,255,0.4)",
+                      fontFamily: "'Space Grotesk', sans-serif",
+                      borderRadius: "10px 0 0 10px",
+                    }}
+                  >
+                    👔 Owner
+                  </Link>
+                  <Link
+                    href="/app/team"
+                    className="px-4 py-1.5 text-[11px] font-bold transition-all"
+                    style={{
+                      backgroundColor: activePath.startsWith("/app/team") ? "rgba(167,139,250,0.2)" : "transparent",
+                      color: activePath.startsWith("/app/team") ? "#A78BFA" : "rgba(255,255,255,0.4)",
+                      fontFamily: "'Space Grotesk', sans-serif",
+                      borderRadius: "0 10px 10px 0",
+                    }}
+                  >
+                    👥 Team
+                  </Link>
+                </div>
+              </div>
+            )}
+
             <div className="flex items-center gap-2">
               {person && (
                 <NotificationBell accountId={person.accountId} personId={person.id} />
