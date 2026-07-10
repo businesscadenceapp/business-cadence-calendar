@@ -21,6 +21,7 @@ import KpiReporting from "@/pages/KpiReporting";
 import WeeklyCheckin from "@/pages/WeeklyCheckin";
 import AdminPanel from "@/pages/AdminPanel";
 import TeamBoard from "@/pages/TeamBoard";
+import TeamCalendar from "@/pages/TeamCalendar";
 
 // Calendar app routes — all protected by the password gate, wrapped in AppShell
 function CalendarApp() {
@@ -40,6 +41,7 @@ function CalendarApp() {
           <Route path={"/app/settings"} component={Settings} />
           <Route path={"/app/admin"} component={AdminPanel} />
           <Route path={"/app/team"} component={TeamBoard} />
+          <Route path={"/app/team/calendar"} component={TeamCalendar} />
           <Route component={NotFound} />
         </Switch>
       </AppShell>

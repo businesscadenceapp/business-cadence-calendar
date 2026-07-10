@@ -498,3 +498,22 @@ export const boardComments = mysqlTable("board_comments", {
 
 export type BoardComment = typeof boardComments.$inferSelect;
 export type InsertBoardComment = typeof boardComments.$inferInsert;
+
+/**
+ * Team Calendar Settings — controls which meeting types are visible on the Team Calendar.
+ * One row per account. All types default to true (visible).
+ * Owners can toggle each type off to hide it from employees.
+ */
+export const teamCalendarSettings = mysqlTable("team_calendar_settings", {
+  id: int("id").autoincrement().primaryKey(),
+  accountId: int("accountId").notNull().unique(), // references app_users.id
+  showDaily: boolean("showDaily").default(true).notNull(),
+  showWeekly: boolean("showWeekly").default(true).notNull(),
+  showMonthly: boolean("showMonthly").default(true).notNull(),
+  showQuarterly: boolean("showQuarterly").default(true).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type TeamCalendarSettings = typeof teamCalendarSettings.$inferSelect;
+export type InsertTeamCalendarSettings = typeof teamCalendarSettings.$inferInsert;

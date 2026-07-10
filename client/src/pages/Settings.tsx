@@ -316,6 +316,20 @@ export default function Settings() {
     }
   }, [visibleBusinesses, selectedBiz]);
 
+  // Team Calendar visibility settings
+  const { data: teamCalSettings, refetch: refetchTeamCal } = trpc.teamCalendar.getSettings.useQuery(
+    { accountId: accountId ?? 0 },
+    { enabled: accountId !== undefined }
+  );
+  const [teamCalToggles, setTeamCalToggles] = useState({ showDaily: true, showWeekly: true, showMonthly: true, showQuarterly: true });
+  useEffect(() => {
+    if (teamCalSettings) setTeamCalToggles(teamCalSettings);
+  }, [teamCalSettings]);
+  const updateTeamCal = trpc.teamCalendar.updateSettings.useMutation({
+    onSuccess: () => { toast.success("Team calendar visibility saved."); refetchTeamCal(); },
+    onError: () => toast.error("Failed to save team calendar settings."),
+  });
+
   const effectiveSelectedBiz = (selectedBiz && visibleBusinesses.some(b => b.key === selectedBiz))
     ? selectedBiz
     : (visibleBusinesses[0]?.key ?? "chiropractic" as DbBusiness);
@@ -479,6 +493,69 @@ export default function Settings() {
 
       {(person?.role === "owner" || person?.role === "coowner") && (
         <ReportQuestionsPanel accountId={accountId ?? 0} businesses={visibleBusinesses} />
+      )}
+
+      {/* ── Team Calendar Visibility ──────────────────────────────────────── */}
+      {(person?.role === "owner" || person?.role === "coowner") && (
+        <div
+          className="mx-4 sm:mx-6 mb-8 rounded-2xl p-5"
+          style={{ backgroundColor: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}
+        >
+          <div className="flex items-center gap-3 mb-4">
+            <span className="text-xl">📅</span>
+            <div>
+              <h2 className="text-sm font-bold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+                Team Calendar Visibility
+              </h2>
+              <p className="text-[11px] mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>
+                Choose which meeting types appear on the Team Calendar. Employees only see the types you enable.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-3 mb-4">
+            {([
+              { key: "showDaily" as const, label: "Daily Huddle", color: "#8B5CF6", desc: "Every workday — quick team sync" },
+              { key: "showWeekly" as const, label: "Weekly Review", color: "#0EA5E9", desc: "Weekly team performance review" },
+              { key: "showMonthly" as const, label: "Monthly Meeting", color: "#14B8A6", desc: "Monthly financial & business review" },
+              { key: "showQuarterly" as const, label: "Quarterly / Annual", color: "#F43F5E", desc: "Quarterly offsite or end-of-year" },
+            ] as const).map(({ key, label, color, desc }) => (
+              <div
+                key={key}
+                className="flex items-center justify-between gap-3 rounded-xl px-4 py-3"
+                style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)" }}
+              >
+                <div className="flex items-center gap-2.5">
+                  <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: color }} />
+                  <div>
+                    <p className="text-xs font-semibold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>{label}</p>
+                    <p className="text-[10px]" style={{ color: "rgba(255,255,255,0.4)" }}>{desc}</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setTeamCalToggles(prev => ({ ...prev, [key]: !prev[key] }))}
+                  className="relative flex-shrink-0 w-10 h-5 rounded-full transition-colors duration-200"
+                  style={{ backgroundColor: teamCalToggles[key] ? "#5EEAD4" : "rgba(255,255,255,0.12)" }}
+                  aria-label={`Toggle ${label}`}
+                >
+                  <span
+                    className="absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform duration-200"
+                    style={{ transform: teamCalToggles[key] ? "translateX(1.25rem)" : "translateX(0.125rem)" }}
+                  />
+                </button>
+              </div>
+            ))}
+          </div>
+
+          <button
+            onClick={() => updateTeamCal.mutate({ accountId: accountId ?? 0, ...teamCalToggles })}
+            disabled={updateTeamCal.isPending || accountId === undefined}
+            className="w-full py-2.5 rounded-xl text-sm font-bold transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-40"
+            style={{ backgroundColor: "#5EEAD4", color: "#0A1929", fontFamily: "'Space Grotesk', sans-serif" }}
+          >
+            {updateTeamCal.isPending ? "Saving…" : "Save Team Calendar Settings"}
+          </button>
+        </div>
       )}
 
       {pendingSave && (
@@ -782,6 +859,7 @@ function ReportQuestionsPanel({ accountId, businesses }: { accountId: number; bu
           Questions tagged "All" appear for every business. Select a specific business tab to add questions for that business only.
         </p>
       </div>
+
     </div>
   );
 }

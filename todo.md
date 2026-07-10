@@ -619,3 +619,15 @@
 - [ ] Test on physical Android device via Android Studio
 - [ ] Submit to Apple App Store (requires Apple Developer account $99/yr)
 - [ ] Submit to Google Play Store (requires Google Play account $25 one-time)
+
+## Team Calendar (Phase N)
+- [x] DB table: team_calendar_settings (per-account meeting type visibility toggles)
+- [x] Push DB migration for team_calendar_settings
+- [x] tRPC teamCalendar.getSettings procedure
+- [x] tRPC teamCalendar.updateSettings procedure
+- [x] TeamCalendar.tsx page — filtered calendar respecting owner visibility settings
+- [x] Settings page: Team Calendar Visibility section with 4 toggle switches (owners only)
+- [x] Route /app/team/calendar registered in App.tsx
+- [x] EMPLOYEE_NAV: Calendar entry added for employees
+- [x] AppShell: team-side sidebar nav for owners shows EMPLOYEE_NAV items
+- [x] AppShell: mobile bottom tab bar switches to EMPLOYEE_NAV when on team-side pages

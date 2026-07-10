@@ -45,9 +45,10 @@ const OWNER_NAV: NavItem[] = [
 ];
 
 const EMPLOYEE_NAV: NavItem[] = [
-  { path: "/app/team",     label: "My Board", icon: "👥", activeColor: "#A78BFA" },
-  { path: "/app/kpi",      label: "KPIs",     icon: "📈", activeColor: "#5EEAD4" },
-  { path: "/app/checkin",  label: "Check-in", icon: "✅", activeColor: "#5EEAD4" },
+  { path: "/app/team",          label: "My Board",  icon: "👥", activeColor: "#A78BFA" },
+  { path: "/app/team/calendar", label: "Calendar",  icon: "📅", activeColor: "#5EEAD4" },
+  { path: "/app/kpi",           label: "KPIs",      icon: "📈", activeColor: "#5EEAD4" },
+  { path: "/app/checkin",       label: "Check-in",  icon: "✅", activeColor: "#5EEAD4" },
 ];
 
 // Mobile bottom bar: show first 4 items + "More" for the rest
@@ -215,7 +216,8 @@ export default function AppShell({ children }: AppShellProps) {
 
   // Employees only see Board + KPIs; owners/co-owners see full nav
   // Admin panel is only visible to owners (not co-owners)
-  const baseNav = person?.role === "employee" ? EMPLOYEE_NAV : OWNER_NAV;
+  const isTeamSide = activePath.startsWith("/app/team");
+  const baseNav = (person?.role === "employee" || isTeamSide) ? EMPLOYEE_NAV : OWNER_NAV;
   const NAV_ITEMS = person?.role === "owner"
     ? baseNav
     : baseNav.filter(item => item.path !== "/app/admin");
@@ -306,7 +308,27 @@ export default function AppShell({ children }: AppShellProps) {
 
             {/* Show owner nav or team-side nav based on active path */}
             {(activePath.startsWith("/app/team") && (person?.role === "owner" || person?.role === "coowner"))
-              ? null  // No extra nav items on team side — the board is the whole page
+              ? EMPLOYEE_NAV.map(item => {
+                  const isActive = activePath === item.path || activePath.startsWith(item.path + "/");
+                  return (
+                    <Link
+                      key={item.path}
+                      href={item.path}
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-semibold transition-all duration-150"
+                      style={{
+                        backgroundColor: isActive ? "rgba(167,139,250,0.12)" : "transparent",
+                        color: isActive ? "#A78BFA" : "rgba(255,255,255,0.55)",
+                        fontFamily: "'Space Grotesk', sans-serif",
+                      }}
+                    >
+                      <span className="text-base w-5 text-center flex-shrink-0">{item.icon}</span>
+                      {item.label}
+                      {isActive && (
+                        <div className="ml-auto w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: "#A78BFA" }} />
+                      )}
+                    </Link>
+                  );
+                })
               : NAV_ITEMS.map(item => {
                   const isActive = activePath === item.path || activePath.startsWith(item.path + "/");
                   return (

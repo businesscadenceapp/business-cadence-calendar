@@ -1464,5 +1464,59 @@ Be concise and specific. If a field has nothing, use an empty array.`,
         return { success: true };
       }),
   }),
+
+  teamCalendar: router({
+    /** Get team calendar visibility settings for an account. Returns defaults if not yet configured. */
+    getSettings: publicProcedure
+      .input(z.object({ accountId: z.number() }))
+      .query(async ({ input }) => {
+        const db = await getDb();
+        if (!db) return { showDaily: true, showWeekly: true, showMonthly: true, showQuarterly: true };
+        const { teamCalendarSettings } = await import("../drizzle/schema");
+        const rows = await db.select().from(teamCalendarSettings)
+          .where(eq(teamCalendarSettings.accountId, input.accountId))
+          .limit(1);
+        if (rows.length === 0) {
+          // Return defaults — all meeting types visible
+          return { showDaily: true, showWeekly: true, showMonthly: true, showQuarterly: true };
+        }
+        const r = rows[0];
+        return { showDaily: r.showDaily, showWeekly: r.showWeekly, showMonthly: r.showMonthly, showQuarterly: r.showQuarterly };
+      }),
+
+    /** Upsert team calendar visibility settings for an account. */
+    updateSettings: publicProcedure
+      .input(z.object({
+        accountId: z.number(),
+        showDaily: z.boolean(),
+        showWeekly: z.boolean(),
+        showMonthly: z.boolean(),
+        showQuarterly: z.boolean(),
+      }))
+      .mutation(async ({ input }) => {
+        const db = await getDb();
+        if (!db) throw new Error('DB unavailable');
+        const { teamCalendarSettings } = await import("../drizzle/schema");
+        // Try update first
+        const existing = await db.select({ id: teamCalendarSettings.id })
+          .from(teamCalendarSettings)
+          .where(eq(teamCalendarSettings.accountId, input.accountId))
+          .limit(1);
+        if (existing.length > 0) {
+          await db.update(teamCalendarSettings)
+            .set({ showDaily: input.showDaily, showWeekly: input.showWeekly, showMonthly: input.showMonthly, showQuarterly: input.showQuarterly })
+            .where(eq(teamCalendarSettings.accountId, input.accountId));
+        } else {
+          await db.insert(teamCalendarSettings).values({
+            accountId: input.accountId,
+            showDaily: input.showDaily,
+            showWeekly: input.showWeekly,
+            showMonthly: input.showMonthly,
+            showQuarterly: input.showQuarterly,
+          });
+        }
+        return { success: true };
+      }),
+  }),
 });
 export type AppRouter = typeof appRouter;
