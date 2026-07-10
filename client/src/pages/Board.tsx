@@ -1,5 +1,5 @@
 /**
- * Command Board — Shared Updates, Issues & Tasks for Matt and Lynn
+ * Owner Board — Shared Updates, Issues & Tasks between Owners
  * Dark navy theme: #0F2440 bg, #5EEAD4 teal accent, white text
  */
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
@@ -1045,7 +1045,7 @@ export default function Board() {
                 fontSize: "16px",
                 boxShadow: "0 0 12px rgba(94,234,212,0.15)",
               }}>⚡</div>
-              <span className="text-[11px] font-bold uppercase tracking-[0.15em]" style={{ color: "#5EEAD4", fontFamily: "'Space Grotesk', sans-serif", letterSpacing: "0.15em" }}>Command Board</span>
+              <span className="text-[11px] font-bold uppercase tracking-[0.15em]" style={{ color: "#5EEAD4", fontFamily: "'Space Grotesk', sans-serif", letterSpacing: "0.15em" }}>Owner Board</span>
             </div>
             <h1 className="text-[22px] font-black text-white leading-tight" style={{ fontFamily: "'Space Grotesk', sans-serif", letterSpacing: "-0.02em" }}>
               Your Business,<br />

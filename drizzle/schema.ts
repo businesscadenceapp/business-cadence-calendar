@@ -62,7 +62,7 @@ export type AgendaItem = typeof agendaItems.$inferSelect;
 export type InsertAgendaItem = typeof agendaItems.$inferInsert;
 
 /**
- * Command Board cards — shared updates and issues between Matt and Lynn.
+ * Owner Board cards — shared updates and issues between co-owners.
  * type: "update" = what I did since last meeting
  *       "issue"  = what we need to discuss at next meeting
  * author: "Matt" | "Lynn"

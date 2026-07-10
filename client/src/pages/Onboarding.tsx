@@ -1013,7 +1013,7 @@ function StepEmployeeInvites({
         </div>
 
         <TipBox>
-          Each person will receive an invite link by email to set their own password. They'll have limited access — they can submit KPIs and view the Command Board, but not change settings.
+          Each person will receive an invite link by email to set their own password. They'll have limited access — they can submit KPIs and view the Team Board, but not change settings.
         </TipBox>
       </div>
       <NavButtons

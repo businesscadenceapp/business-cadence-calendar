@@ -1,5 +1,5 @@
 /**
- * Team Command Board — Employee Side of the Wall
+ * Team Board — Employee Side of the Wall
  *
  * Owners see this when they click the "Team" pill toggle.
  * Employees always land here after login.

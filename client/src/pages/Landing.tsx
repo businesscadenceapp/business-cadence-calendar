@@ -298,8 +298,8 @@ const FEATURES = [
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
       </svg>
     ),
-    title: "Command Board",
-    body: "A shared digital board where each team member posts updates and issues before the meeting. Everyone arrives prepared, nothing gets forgotten, and the meeting stays focused.",
+    title: "Owner Board",
+    body: "A shared digital board where co-owners post updates and issues before the meeting. Everyone arrives prepared, nothing gets forgotten, and the meeting stays focused.",
   },
   {
     icon: (

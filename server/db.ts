@@ -174,7 +174,7 @@ export async function toggleAgendaItem(
   }
 }
 
-// ─── Command Board helpers ────────────────────────────────────────────────────
+// ─── Owner Board helpers ────────────────────────────────────────────────────
 
 export async function getBoardCards(includeArchived = false, audience?: "owner" | "team"): Promise<BoardCard[]> {
   const db = await getDb();

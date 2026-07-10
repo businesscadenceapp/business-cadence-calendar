@@ -904,7 +904,7 @@ export default function Home() {
             </p>
             <Link href="/app/board" className="flex items-center gap-2 w-full px-3 py-2.5 rounded-lg text-[11px] font-semibold transition-all hover:opacity-90"
               style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: "rgba(255,255,255,0.75)", fontFamily: "'Space Grotesk', sans-serif" }}>
-              <span>📋</span> Command Board
+              <span>📋</span> Owner Board
             </Link>
             <Link href="/app/goals" className="flex items-center gap-2 w-full px-3 py-2.5 rounded-lg text-[11px] font-semibold transition-all hover:opacity-90"
               style={{ background: "rgba(196,181,253,0.08)", border: "1px solid rgba(196,181,253,0.2)", color: "#C4B5FD", fontFamily: "'Space Grotesk', sans-serif" }}>
