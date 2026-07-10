@@ -40,8 +40,8 @@ function CalendarApp() {
           <Route path={"/app/checkin"} component={WeeklyCheckin} />
           <Route path={"/app/settings"} component={Settings} />
           <Route path={"/app/admin"} component={AdminPanel} />
-          <Route path={"/app/team"} component={TeamBoard} />
           <Route path={"/app/team/calendar"} component={TeamCalendar} />
+          <Route path={"/app/team"} component={TeamBoard} />
           <Route component={NotFound} />
         </Switch>
       </AppShell>
