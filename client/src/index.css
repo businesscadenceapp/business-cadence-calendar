@@ -242,9 +242,15 @@ button, a, input, select, textarea {
   touch-action: manipulation;
 }
 
-/* Smooth scrolling on iOS */
+/* Smooth momentum scrolling on iOS */
 .overflow-y-auto, .overflow-y-scroll {
   -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+
+/* Prevent nested scroll containers from fighting each other on iOS */
+.overflow-hidden {
+  -webkit-overflow-scrolling: auto;
 }
 
 /* Board aside panel — hidden on mobile, visible on md+ */

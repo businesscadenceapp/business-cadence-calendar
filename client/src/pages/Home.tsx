@@ -842,7 +842,7 @@ export default function Home() {
   const isViewingToday = viewMonthIndex === todayMonthIndex && viewYear === todayYear;
 
   return (
-    <div className="h-full flex flex-col" style={{ backgroundColor: "#0F2440", fontFamily: "'Inter', sans-serif" }}>
+    <div style={{ backgroundColor: "#0F2440", fontFamily: "'Inter', sans-serif" }}>
       {/* Slim page title bar */}
       <div
         className="px-4 py-2.5 flex items-center justify-between flex-shrink-0 relative z-30"
@@ -881,7 +881,7 @@ export default function Home() {
         <div className="fixed inset-0 z-20 bg-black/50 md:hidden" onClick={() => setSidebarOpen(false)} />
       )}
 
-      <div className="flex flex-1 overflow-hidden relative">
+      <div className="flex flex-1 min-h-0">
         {/* Left Sidebar */}
         <aside
           className={`flex-shrink-0 flex flex-col gap-4 p-4 overflow-y-auto transition-transform duration-300
@@ -1001,7 +1001,7 @@ export default function Home() {
         </aside>
 
         {/* Main Calendar */}
-        <main className="flex-1 overflow-y-auto p-3 sm:p-5 flex flex-col gap-3 sm:gap-4">
+        <main className="flex-1 p-3 sm:p-5 flex flex-col gap-3 sm:gap-4">
           {/* Summary Strip */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
             {(["daily", "weekly", "monthly", "quarterly"] as MeetingType[]).map((type) => {
