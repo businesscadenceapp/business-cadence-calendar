@@ -3,8 +3,8 @@
 
   <head>
     <meta charset="UTF-8" />
-    <!-- Prevent zoom on input focus (iOS) while allowing pinch-zoom -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <!-- Prevent zoom on input focus (iOS) while allowing pinch-zoom; viewport-fit=cover for safe areas -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <title>BusinessCadence</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="shortcut icon" href="/favicon.svg" />
@@ -32,6 +32,11 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <!-- Capacitor runtime (no-op on web, activates on iOS/Android) -->
+    <script>
+      // Capacitor is loaded by the native layer; this is a safe no-op guard for web
+      window.Capacitor = window.Capacitor || {};
+    </script>
     <!-- Register service worker -->
     <script>
       if ('serviceWorker' in navigator) {

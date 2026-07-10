@@ -601,3 +601,21 @@
 - [ ] Route /app/command → OwnerCommandBoard (owners) or EmployeeCommandBoard (employees)
 - [ ] Add "Command" nav item to DashboardLayout sidebar
 - [ ] Enforce permission wall — employees cannot access owner-side routes
+
+## Capacitor / Mobile App (iOS + Android)
+
+- [x] Install Capacitor core, CLI, iOS and Android platforms
+- [x] Create capacitor.config.ts (appId: com.businesscadence.app, webDir: dist/public)
+- [x] Add iOS and Android platform folders (ios/, android/)
+- [x] Add native plugins: status-bar, splash-screen, keyboard, app, haptics, device, capacitor-voice-recorder
+- [x] Add RECORD_AUDIO permission to Android AndroidManifest.xml
+- [x] Add NSMicrophoneUsageDescription to iOS Info.plist
+- [x] Add viewport-fit=cover to index.html for iPhone notch/Dynamic Island
+- [x] Add Capacitor safe area CSS utilities to index.css
+- [x] Add cap:sync, cap:open:ios, cap:open:android scripts to package.json
+- [ ] Update RecordMeeting.tsx to use capacitor-voice-recorder on native (branch on Capacitor.isNativePlatform())
+- [ ] Generate app icon (1024x1024) and splash screen assets for iOS and Android
+- [ ] Test on physical iOS device via Xcode
+- [ ] Test on physical Android device via Android Studio
+- [ ] Submit to Apple App Store (requires Apple Developer account $99/yr)
+- [ ] Submit to Google Play Store (requires Google Play account $25 one-time)
