@@ -672,6 +672,7 @@ export default function TeamBoard() {
   const accountId = person?.accountId;
 
   const [formOpen, setFormOpen] = useState(false);
+  const [showCompleted, setShowCompleted] = useState(false);
 
   // Fetch all persons to separate owners from employees
   const { data: personsData } = trpc.person.list.useQuery(
@@ -787,187 +788,219 @@ export default function TeamBoard() {
             </p>
           </div>
 
-          {/* Stats */}
-          <div className="flex flex-col gap-2 flex-shrink-0">
-            {taskCount > 0 && (
-              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl"
-                style={{ backgroundColor: "rgba(124,58,237,0.15)", border: "1px solid rgba(124,58,237,0.3)" }}>
-                <span className="text-[18px] font-black" style={{ color: "#C4B5FD", fontFamily: "'Space Grotesk', sans-serif" }}>{taskCount}</span>
-                <span className="text-[10px] font-medium" style={{ color: "rgba(255,255,255,0.5)" }}>open tasks</span>
-              </div>
-            )}
-            {unseenAnnouncements > 0 && (
-              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl"
-                style={{ backgroundColor: "rgba(94,234,212,0.12)", border: "1px solid rgba(94,234,212,0.25)" }}>
-                <span className="text-[18px] font-black" style={{ color: "#5EEAD4", fontFamily: "'Space Grotesk', sans-serif" }}>{unseenAnnouncements}</span>
-                <span className="text-[10px] font-medium" style={{ color: "rgba(255,255,255,0.5)" }}>new</span>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* ── Content ── */}
-      <div className="flex-1 flex flex-col lg:flex-row gap-0">
-
-        {/* Left column — main feed */}
-        <div className="flex-1 min-w-0 p-5 flex flex-col gap-6">
-
-          {/* Employee quick actions (employees only) */}
-          {!isOwner && person && (
-            <EmployeeQuickActions personName={person.name} accountId={accountId ?? 0} />
-          )}
-
-          {/* Open Tasks */}
-          <div className="flex flex-col gap-3">
-            <div className="flex items-center justify-between">
-              <h2 className="text-[13px] font-bold uppercase tracking-wider" style={{ color: "rgba(255,255,255,0.5)", fontFamily: "'Space Grotesk', sans-serif" }}>
-                ☑ Open Tasks {openTasks.length > 0 && <span style={{ color: "#C4B5FD" }}>({openTasks.length})</span>}
-              </h2>
-            </div>
-            {isLoading && (
-              <div className="flex flex-col gap-2">
-                {[1, 2].map(i => (
-                  <div key={i} className="h-24 rounded-2xl animate-pulse" style={{ backgroundColor: "rgba(255,255,255,0.05)" }} />
-                ))}
-              </div>
-            )}
-            {!isLoading && openTasks.length === 0 && (
-              <div className="rounded-2xl p-6 text-center" style={{ backgroundColor: "rgba(255,255,255,0.03)", border: "1px dashed rgba(255,255,255,0.1)" }}>
-                <p className="text-[13px]" style={{ color: "rgba(255,255,255,0.3)" }}>No open tasks</p>
-              </div>
-            )}
-            {openTasks.map(card => (
-              <TeamTaskCard
-                key={card.id}
-                card={card}
-                currentUser={currentUser}
-                accountId={accountId}
-                onMarkDone={id => markDone.mutate({ id, completedBy: currentUser ?? "", accountId })}
-                onConfirmDone={id => confirmDone.mutate({ id, confirmedBy: currentUser ?? "", accountId })}
-                onDelete={id => deleteCard.mutate({ id })}
-              />
-            ))}
-          </div>
-
-          {/* Awaiting Confirmation */}
-          {donePendingTasks.length > 0 && (
-            <div className="flex flex-col gap-3">
-              <h2 className="text-[13px] font-bold uppercase tracking-wider" style={{ color: "rgba(255,255,255,0.5)", fontFamily: "'Space Grotesk', sans-serif" }}>
-                ⏳ Awaiting Confirmation <span style={{ color: "#FCD34D" }}>({donePendingTasks.length})</span>
-              </h2>
-              {donePendingTasks.map(card => (
-                <TeamTaskCard
-                  key={card.id}
-                  card={card}
-                  currentUser={currentUser}
-                  accountId={accountId}
-                  onMarkDone={id => markDone.mutate({ id, completedBy: currentUser ?? "", accountId })}
-                  onConfirmDone={id => confirmDone.mutate({ id, confirmedBy: currentUser ?? "", accountId })}
-                  onDelete={id => deleteCard.mutate({ id })}
-                />
-              ))}
-            </div>
-          )}
-
-          {/* Announcements */}
-          <div className="flex flex-col gap-3">
-            <h2 className="text-[13px] font-bold uppercase tracking-wider" style={{ color: "rgba(255,255,255,0.5)", fontFamily: "'Space Grotesk', sans-serif" }}>
-              📢 Announcements {announcements.length > 0 && <span style={{ color: "#5EEAD4" }}>({announcements.length})</span>}
-            </h2>
-            {announcements.length === 0 && (
-              <div className="rounded-2xl p-6 text-center" style={{ backgroundColor: "rgba(255,255,255,0.03)", border: "1px dashed rgba(255,255,255,0.1)" }}>
-                <p className="text-[13px]" style={{ color: "rgba(255,255,255,0.3)" }}>No announcements</p>
-              </div>
-            )}
-            {announcements.map(card => (
-              <AnnouncementCard
-                key={card.id}
-                card={card}
-                currentUser={currentUser}
-                accountId={accountId}
-                onSeen={id => markSeen.mutate({ id, seenBy: currentUser ?? "" })}
-                onArchive={id => archive.mutate({ id })}
-                onDelete={id => deleteCard.mutate({ id })}
-              />
-            ))}
-          </div>
-
-          {/* Completed Tasks (collapsed) */}
-          {completedTasks.length > 0 && (
-            <CompletedTasksSection tasks={completedTasks} currentUser={currentUser} accountId={accountId} />
-          )}
+          {/* Stats row + Post button (owners only) */}
         </div>
 
-        {/* Right sidebar — owner post form */}
-        {isOwner && (
-          <div
-            className="lg:w-80 flex-shrink-0 p-5 flex flex-col gap-4"
-            style={{ borderLeft: "1px solid rgba(255,255,255,0.06)" }}
-          >
-            <div className="flex items-center justify-between">
-              <h2 className="text-[13px] font-bold uppercase tracking-wider" style={{ color: "rgba(255,255,255,0.5)", fontFamily: "'Space Grotesk', sans-serif" }}>
-                Post to Team
-              </h2>
+        <div className="flex items-center gap-3 mt-4 flex-wrap">
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl" style={{ backgroundColor: "rgba(124,58,237,0.15)", border: "1px solid rgba(124,58,237,0.25)" }}>
+            <span className="text-[11px] font-bold" style={{ color: "#C4B5FD", fontFamily: "'Space Grotesk', sans-serif" }}>☑ {openTasks.length + donePendingTasks.length} Tasks</span>
+          </div>
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl" style={{ backgroundColor: "rgba(94,234,212,0.12)", border: "1px solid rgba(94,234,212,0.25)" }}>
+            <span className="text-[11px] font-bold" style={{ color: "#5EEAD4", fontFamily: "'Space Grotesk', sans-serif" }}>📢 {announcements.length} Announcements</span>
+          </div>
+          {isOwner && (
+            <div className="ml-auto">
               <button
                 onClick={() => setFormOpen(o => !o)}
-                className="text-[11px] px-2.5 py-1 rounded-lg font-semibold transition-all"
+                className="px-4 py-2 rounded-xl text-[12px] font-bold transition-all active:scale-[0.97]"
                 style={{
-                  backgroundColor: formOpen ? "rgba(94,234,212,0.15)" : "rgba(255,255,255,0.06)",
-                  border: `1px solid ${formOpen ? "rgba(94,234,212,0.3)" : "rgba(255,255,255,0.12)"}`,
-                  color: formOpen ? "#5EEAD4" : "rgba(255,255,255,0.5)",
+                  background: formOpen ? "rgba(255,255,255,0.08)" : "linear-gradient(135deg, #A78BFA, #5EEAD4)",
+                  color: formOpen ? "rgba(255,255,255,0.5)" : "#0F2440",
                   fontFamily: "'Space Grotesk', sans-serif",
+                  boxShadow: formOpen ? "none" : "0 4px 16px rgba(167,139,250,0.3), 0 2px 6px rgba(0,0,0,0.3)",
+                  border: formOpen ? "1px solid rgba(255,255,255,0.1)" : "none",
                 }}
               >
-                {formOpen ? "▲ Close" : "▼ Open"}
+                {formOpen ? "✕ Close" : "+ Post to Team"}
               </button>
             </div>
+          )}
+        </div>
+      </div>
 
-            {formOpen && (
-              <TeamPostForm
-                currentUser={currentUser}
-                accountId={accountId}
-                employees={employeePersons}
-                onAdded={() => { refetch(); setFormOpen(false); }}
-                allowedBusinesses={allowedBusinesses}
-                defaultBusiness={defaultBusiness}
-              />
-            )}
+      {/* ── Collapsible post form band (owners only) ── */}
+      {isOwner && formOpen && (
+        <div
+          className="flex-shrink-0 px-4 py-4"
+          style={{
+            background: "linear-gradient(180deg, #0D2035 0%, #0A1929 100%)",
+            borderBottom: "1px solid rgba(167,139,250,0.12)",
+            boxShadow: "inset 0 -1px 0 rgba(167,139,250,0.08)",
+          }}
+        >
+          <div className="max-w-xl">
+            <TeamPostForm
+              currentUser={currentUser}
+              accountId={accountId}
+              employees={employeePersons}
+              onAdded={() => { refetch(); setFormOpen(false); }}
+              allowedBusinesses={allowedBusinesses}
+              defaultBusiness={defaultBusiness}
+            />
+          </div>
+        </div>
+      )}
 
-            {/* Employee summary */}
-            <div className="flex flex-col gap-2 mt-2">
-              <p className="text-[11px] uppercase tracking-wider font-bold" style={{ color: "rgba(255,255,255,0.4)", fontFamily: "'Space Grotesk', sans-serif" }}>Team Members</p>
-              {employeePersons.length === 0 && (
-                <p className="text-[12px] italic" style={{ color: "rgba(255,255,255,0.3)" }}>No employees invited yet</p>
-              )}
-              {employeePersons.map(emp => {
-                const colors = getAuthorColors(emp.name);
-                const empTasks = openTasks.filter(c => c.assignedTo === emp.name);
-                return (
-                  <div
-                    key={emp.id}
-                    className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl"
-                    style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
-                  >
-                    <div
-                      className="w-8 h-8 rounded-full flex items-center justify-center text-[12px] font-bold flex-shrink-0"
-                      style={{ backgroundColor: colors.badgeBg, color: colors.badgeText }}
-                    >
-                      {emp.name[0]}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[12px] font-bold text-white truncate" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>{emp.name}</p>
-                      <p className="text-[10px]" style={{ color: "rgba(255,255,255,0.35)" }}>
-                        {empTasks.length > 0 ? `${empTasks.length} open task${empTasks.length > 1 ? "s" : ""}` : "No open tasks"}
-                      </p>
-                    </div>
-                  </div>
-                );
-              })}
+      {/* ── Main content ── */}
+      <main className="flex-1 p-3 md:p-5 flex flex-col gap-5 md:gap-7">
+        {isLoading ? (
+          <div className="flex items-center justify-center h-40">
+            <div className="flex flex-col items-center gap-3">
+              <div className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: "rgba(167,139,250,0.5)", borderTopColor: "transparent" }} />
+              <span className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>Loading board…</span>
             </div>
           </div>
+        ) : (
+          <>
+            {/* Employee quick actions (employees only) */}
+            {!isOwner && person && (
+              <EmployeeQuickActions personName={person.name} accountId={accountId ?? 0} />
+            )}
+
+            {/* ── Tasks section ── */}
+            <section
+              className="flex flex-col gap-3 rounded-2xl p-4"
+              style={{
+                background: "linear-gradient(135deg, rgba(124,58,237,0.08) 0%, rgba(124,58,237,0.04) 100%)",
+                border: "1.5px solid rgba(124,58,237,0.2)",
+                boxShadow: "0 4px 24px rgba(124,58,237,0.08), inset 0 1px 0 rgba(255,255,255,0.04)",
+              }}
+            >
+              <div className="flex items-center gap-3 pb-3 min-w-0" style={{ borderBottom: "1px solid rgba(124,58,237,0.25)" }}>
+                <div className="w-8 h-8 rounded-xl flex items-center justify-center text-sm flex-shrink-0" style={{ background: "linear-gradient(135deg, rgba(124,58,237,0.3), rgba(124,58,237,0.15))", border: "1px solid rgba(124,58,237,0.4)", boxShadow: "0 0 10px rgba(124,58,237,0.2)" }}>☑</div>
+                <div className="min-w-0 flex-1">
+                  <h2 className="text-sm font-bold text-white leading-tight" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Tasks</h2>
+                  <p className="text-[10px]" style={{ color: "rgba(255,255,255,0.4)" }}>Assigned to-dos for your team</p>
+                </div>
+                {(openTasks.length + donePendingTasks.length) > 0 && (
+                  <span className="ml-auto text-[11px] font-bold px-2.5 py-1 rounded-full" style={{ background: "linear-gradient(135deg, rgba(124,58,237,0.4), rgba(124,58,237,0.25))", color: "#C4B5FD", border: "1px solid rgba(124,58,237,0.4)", fontFamily: "'Space Grotesk', sans-serif" }}>
+                    {openTasks.length + donePendingTasks.length}
+                  </span>
+                )}
+              </div>
+
+              {openTasks.length === 0 && donePendingTasks.length === 0 ? (
+                <div className="rounded-2xl p-8 text-center flex flex-col items-center gap-3" style={{ backgroundColor: "rgba(255,255,255,0.03)", border: "1.5px dashed rgba(124,58,237,0.3)" }}>
+                  <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl" style={{ backgroundColor: "rgba(124,58,237,0.15)" }}>☑</div>
+                  <div>
+                    <p className="text-[13px] font-semibold text-white">All clear on tasks</p>
+                    <p className="text-[11px] mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>{isOwner ? 'Tap "+ Post to Team" above to assign a task.' : "No tasks assigned to you right now."}</p>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  {openTasks.map(card => (
+                    <TeamTaskCard
+                      key={card.id}
+                      card={card}
+                      currentUser={currentUser}
+                      accountId={accountId}
+                      onMarkDone={id => markDone.mutate({ id, completedBy: currentUser ?? "", accountId })}
+                      onConfirmDone={id => confirmDone.mutate({ id, confirmedBy: currentUser ?? "", accountId })}
+                      onDelete={id => deleteCard.mutate({ id })}
+                    />
+                  ))}
+                </>
+              )}
+
+              {/* Done — Awaiting Confirmation subsection */}
+              {donePendingTasks.length > 0 && (
+                <div className="mt-2 flex flex-col gap-2">
+                  <p className="text-[10px] font-bold uppercase tracking-widest px-1" style={{ color: "#FCD34D", fontFamily: "'Space Grotesk', sans-serif" }}>
+                    ⏳ Done — Awaiting Confirmation ({donePendingTasks.length})
+                  </p>
+                  {donePendingTasks.map(card => (
+                    <TeamTaskCard
+                      key={card.id}
+                      card={card}
+                      currentUser={currentUser}
+                      accountId={accountId}
+                      onMarkDone={id => markDone.mutate({ id, completedBy: currentUser ?? "", accountId })}
+                      onConfirmDone={id => confirmDone.mutate({ id, confirmedBy: currentUser ?? "", accountId })}
+                      onDelete={id => deleteCard.mutate({ id })}
+                    />
+                  ))}
+                </div>
+              )}
+
+              {/* Completed archive (collapsible) */}
+              {completedTasks.length > 0 && (
+                <div className="mt-2">
+                  <button
+                    onClick={() => setShowCompleted(v => !v)}
+                    className="text-[11px] transition-colors flex items-center gap-1.5 px-1"
+                    style={{ color: "rgba(255,255,255,0.35)", fontFamily: "'Space Grotesk', sans-serif" }}
+                    onMouseEnter={e => (e.currentTarget.style.color = "rgba(255,255,255,0.6)")}
+                    onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.35)")}
+                  >
+                    {showCompleted ? "▾" : "▸"} Completed this period ({completedTasks.length})
+                  </button>
+                  {showCompleted && (
+                    <div className="mt-2 flex flex-col gap-2 opacity-60">
+                      {completedTasks.map(card => (
+                        <TeamTaskCard
+                          key={card.id}
+                          card={card}
+                          currentUser={currentUser}
+                          accountId={accountId}
+                          onMarkDone={() => {}}
+                          onConfirmDone={() => {}}
+                          onDelete={id => deleteCard.mutate({ id })}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </section>
+
+            {/* ── Announcements section ── */}
+            <section
+              className="flex flex-col gap-3 rounded-2xl p-4"
+              style={{
+                background: "linear-gradient(135deg, rgba(94,234,212,0.07) 0%, rgba(94,234,212,0.03) 100%)",
+                border: "1.5px solid rgba(94,234,212,0.18)",
+                boxShadow: "0 4px 24px rgba(94,234,212,0.06), inset 0 1px 0 rgba(255,255,255,0.04)",
+              }}
+            >
+              <div className="flex items-center gap-3 pb-3 min-w-0" style={{ borderBottom: "1px solid rgba(94,234,212,0.2)" }}>
+                <div className="w-8 h-8 rounded-xl flex items-center justify-center text-sm flex-shrink-0" style={{ background: "linear-gradient(135deg, rgba(94,234,212,0.25), rgba(94,234,212,0.1))", border: "1px solid rgba(94,234,212,0.35)", boxShadow: "0 0 10px rgba(94,234,212,0.15)" }}>📢</div>
+                <div className="min-w-0 flex-1">
+                  <h2 className="text-sm font-bold text-white leading-tight" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Announcements</h2>
+                  <p className="text-[10px]" style={{ color: "rgba(255,255,255,0.4)" }}>Broadcasts from ownership to the team</p>
+                </div>
+                {announcements.length > 0 && (
+                  <span className="ml-auto text-[11px] font-bold px-2.5 py-1 rounded-full" style={{ background: "linear-gradient(135deg, rgba(94,234,212,0.3), rgba(94,234,212,0.15))", color: "#5EEAD4", border: "1px solid rgba(94,234,212,0.35)", fontFamily: "'Space Grotesk', sans-serif" }}>
+                    {announcements.length}
+                  </span>
+                )}
+              </div>
+
+              {announcements.length === 0 ? (
+                <div className="rounded-xl p-6 text-center flex flex-col items-center gap-2" style={{ backgroundColor: "rgba(94,234,212,0.04)", border: "1px dashed rgba(94,234,212,0.2)" }}>
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl" style={{ backgroundColor: "rgba(94,234,212,0.12)" }}>📢</div>
+                  <div>
+                    <p className="text-[12px] font-semibold text-white">No announcements yet</p>
+                    <p className="text-[10px] mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>{isOwner ? 'Post an announcement to broadcast to your team.' : 'Nothing from ownership yet.'}</p>
+                  </div>
+                </div>
+              ) : (
+                announcements.map(card => (
+                  <AnnouncementCard
+                    key={card.id}
+                    card={card}
+                    currentUser={currentUser}
+                    accountId={accountId}
+                    onSeen={id => markSeen.mutate({ id, seenBy: currentUser ?? "" })}
+                    onArchive={id => archive.mutate({ id })}
+                    onDelete={id => deleteCard.mutate({ id })}
+                  />
+                ))
+              )}
+            </section>
+          </>
         )}
-      </div>
+      </main>
     </div>
   );
 }
