@@ -137,12 +137,14 @@ function MonthGrid({
   selectedDay,
   highlightType,
   loggedDates,
+  hideHeader,
 }: {
   month: CalendarMonth;
   onSelectDay: (day: CalendarDay) => void;
   selectedDay: CalendarDay | null;
   highlightType: MeetingType | null;
   loggedDates: Set<string>;
+  hideHeader?: boolean;
 }) {
   const quarterlyDays = month.days.filter((d) => d && d.meetings.includes("quarterly")).length;
   const monthlyDays = month.days.filter((d) => d && d.meetings.includes("monthly")).length;
@@ -159,32 +161,34 @@ function MonthGrid({
         zIndex: 0,
       }}
     >
-      <div className="flex items-center justify-between">
-        <h3
-          className="text-xs font-semibold tracking-wider uppercase"
-          style={{ color: "rgba(255,255,255,0.8)", fontFamily: "'Space Grotesk', sans-serif" }}
-        >
-          {month.name}
-        </h3>
-        <div className="flex gap-1">
-          {quarterlyDays > 0 && (
-            <span
-              className="text-[9px] px-1.5 py-0.5 rounded font-semibold"
-              style={{ backgroundColor: "rgba(244,63,94,0.2)", color: "#FDA4AF", fontFamily: "'Space Grotesk', sans-serif" }}
-            >
-              OFFSITE
-            </span>
-          )}
-          {monthlyDays > 0 && quarterlyDays === 0 && (
-            <span
-              className="text-[9px] px-1.5 py-0.5 rounded font-semibold"
-              style={{ backgroundColor: "rgba(13,148,136,0.2)", color: "#5EEAD4", fontFamily: "'Space Grotesk', sans-serif" }}
-            >
-              FINANCE
-            </span>
-          )}
+      {!hideHeader && (
+        <div className="flex items-center justify-between">
+          <h3
+            className="text-xs font-semibold tracking-wider uppercase"
+            style={{ color: "rgba(255,255,255,0.8)", fontFamily: "'Space Grotesk', sans-serif" }}
+          >
+            {month.name}
+          </h3>
+          <div className="flex gap-1">
+            {quarterlyDays > 0 && (
+              <span
+                className="text-[9px] px-1.5 py-0.5 rounded font-semibold"
+                style={{ backgroundColor: "rgba(244,63,94,0.2)", color: "#FDA4AF", fontFamily: "'Space Grotesk', sans-serif" }}
+              >
+                OFFSITE
+              </span>
+            )}
+            {monthlyDays > 0 && quarterlyDays === 0 && (
+              <span
+                className="text-[9px] px-1.5 py-0.5 rounded font-semibold"
+                style={{ backgroundColor: "rgba(13,148,136,0.2)", color: "#5EEAD4", fontFamily: "'Space Grotesk', sans-serif" }}
+              >
+                FINANCE
+              </span>
+            )}
+          </div>
         </div>
-      </div>
+      )}
       <div className="grid grid-cols-7 gap-1">
         {DOW_LABELS.map((d) => (
           <div
@@ -1096,6 +1100,7 @@ export default function Home() {
                   selectedDay={selectedDay}
                   highlightType={highlightType}
                   loggedDates={loggedDatesSet}
+                  hideHeader
                 />
               )}
             </div>
