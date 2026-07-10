@@ -1032,54 +1032,56 @@ export default function Home() {
           </div>
 
           {/* Calendar Navigation Bar */}
-          <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center justify-between gap-2 flex-wrap">
             {viewMode === "month" ? (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-shrink-0">
                 <button
                   onClick={goToPrevMonth}
-                  className="w-8 h-8 flex items-center justify-center rounded-lg transition-all hover:opacity-70"
-                  style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: "rgba(255,255,255,0.7)" }}
+                  className="w-9 h-9 flex items-center justify-center rounded-lg transition-all active:scale-95"
+                  style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: "rgba(255,255,255,0.7)", flexShrink: 0 }}
                   aria-label="Previous month"
                 >
                   <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 11L5 7l4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
                 </button>
-                <h2 className="text-sm font-bold text-white min-w-[120px] text-center" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+                <h2 className="text-sm font-bold text-white text-center" style={{ fontFamily: "'Space Grotesk', sans-serif", minWidth: "110px" }}>
                   {calendar[viewMonthIndex]?.name ?? ""} {viewYear}
                 </h2>
                 <button
                   onClick={goToNextMonth}
-                  className="w-8 h-8 flex items-center justify-center rounded-lg transition-all hover:opacity-70"
-                  style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: "rgba(255,255,255,0.7)" }}
+                  className="w-9 h-9 flex items-center justify-center rounded-lg transition-all active:scale-95"
+                  style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: "rgba(255,255,255,0.7)", flexShrink: 0 }}
                   aria-label="Next month"
                 >
                   <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M5 3l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
                 </button>
-                {!isViewingToday && (
-                  <button
-                    onClick={goToToday}
-                    className="text-[11px] font-semibold px-2.5 py-1 rounded-lg transition-all"
-                    style={{ background: "rgba(94,234,212,0.1)", border: "1px solid rgba(94,234,212,0.25)", color: "#5EEAD4" }}
-                  >
-                    Today
-                  </button>
-                )}
               </div>
             ) : (
-              <h2 className="text-sm font-bold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+              <h2 className="text-sm font-bold text-white flex-shrink-0" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
                 {viewYear} — Full Year
               </h2>
             )}
-            <button
-              onClick={toggleViewMode}
-              className="text-[11px] font-semibold px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5"
-              style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: "rgba(255,255,255,0.7)" }}
-            >
-              {viewMode === "month" ? (
-                <><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="1" y="1" width="4" height="4" rx="0.5" stroke="currentColor" strokeWidth="1.2"/><rect x="7" y="1" width="4" height="4" rx="0.5" stroke="currentColor" strokeWidth="1.2"/><rect x="1" y="7" width="4" height="4" rx="0.5" stroke="currentColor" strokeWidth="1.2"/><rect x="7" y="7" width="4" height="4" rx="0.5" stroke="currentColor" strokeWidth="1.2"/></svg>Year View</>
-              ) : (
-                <><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="1" y="1" width="10" height="10" rx="1" stroke="currentColor" strokeWidth="1.2"/></svg>Month View</>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              {viewMode === "month" && !isViewingToday && (
+                <button
+                  onClick={goToToday}
+                  className="text-[11px] font-semibold px-3 py-2 rounded-lg transition-all active:scale-95"
+                  style={{ background: "rgba(94,234,212,0.1)", border: "1px solid rgba(94,234,212,0.25)", color: "#5EEAD4", minHeight: "36px" }}
+                >
+                  Today
+                </button>
               )}
-            </button>
+              <button
+                onClick={toggleViewMode}
+                className="text-[11px] font-semibold px-3 py-2 rounded-lg transition-all flex items-center gap-1.5 active:scale-95"
+                style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: "rgba(255,255,255,0.7)", minHeight: "36px" }}
+              >
+                {viewMode === "month" ? (
+                  <><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="1" y="1" width="4" height="4" rx="0.5" stroke="currentColor" strokeWidth="1.2"/><rect x="7" y="1" width="4" height="4" rx="0.5" stroke="currentColor" strokeWidth="1.2"/><rect x="1" y="7" width="4" height="4" rx="0.5" stroke="currentColor" strokeWidth="1.2"/><rect x="7" y="7" width="4" height="4" rx="0.5" stroke="currentColor" strokeWidth="1.2"/></svg>Year</>
+                ) : (
+                  <><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="1" y="1" width="10" height="10" rx="1" stroke="currentColor" strokeWidth="1.2"/></svg>Month</>
+                )}
+              </button>
+            </div>
           </div>
 
           {/* Calendar Grid */}

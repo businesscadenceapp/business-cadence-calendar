@@ -381,64 +381,62 @@ export default function AppShell({ children }: AppShellProps) {
         <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
           {/* Mobile top bar — shows brand + Owner/Team toggle (owners only) + notification bell */}
           <header
-            className="md:hidden flex items-center justify-between px-4 flex-shrink-0"
+            className="md:hidden flex items-center justify-between flex-shrink-0"
             style={{
               backgroundColor: "#0A1929",
               borderBottom: "1px solid rgba(255,255,255,0.08)",
-              height: "52px",
+              minHeight: "52px",
               paddingTop: "env(safe-area-inset-top, 0px)",
+              paddingLeft: "12px",
+              paddingRight: "12px",
+              paddingBottom: "0px",
             }}
           >
-            {/* Left: brand (hidden when owner toggle is shown to save space) */}
-            {!(person?.role === "owner" || person?.role === "coowner") && (
-              <div className="flex items-center gap-2.5">
-                <BrandIcon size={28} variant="teal" />
-                <p className="text-sm font-bold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-                  BusinessCadence
-                </p>
-              </div>
-            )}
+            {/* Left: brand icon always visible */}
+            <BrandIcon size={28} variant="teal" className="flex-shrink-0" />
 
-            {/* Owner/Team pill toggle — owners and co-owners only, mobile */}
+            {/* Owner/Team pill toggle — owners and co-owners only, mobile — centred in remaining space */}
             {(person?.role === "owner" || person?.role === "coowner") && (
-              <div className="flex items-center gap-2">
-                <BrandIcon size={24} variant="teal" className="flex-shrink-0" />
-                <div
-                  className="flex rounded-xl overflow-hidden"
+              <div
+                className="flex rounded-xl overflow-hidden mx-3 flex-1"
+                style={{
+                  backgroundColor: "rgba(255,255,255,0.06)",
+                  border: "1px solid rgba(255,255,255,0.12)",
+                  maxWidth: "260px",
+                }}
+              >
+                <Link
+                  href="/app/board"
+                  className="flex-1 flex items-center justify-center gap-1.5 py-2 text-[12px] font-bold transition-all"
                   style={{
-                    backgroundColor: "rgba(255,255,255,0.06)",
-                    border: "1px solid rgba(255,255,255,0.12)",
+                    backgroundColor: !activePath.startsWith("/app/team") ? "rgba(94,234,212,0.2)" : "transparent",
+                    color: !activePath.startsWith("/app/team") ? "#5EEAD4" : "rgba(255,255,255,0.4)",
+                    fontFamily: "'Space Grotesk', sans-serif",
+                    borderRadius: "10px 0 0 10px",
+                    minHeight: "36px",
                   }}
                 >
-                  <Link
-                    href="/app/board"
-                    className="px-4 py-1.5 text-[11px] font-bold transition-all"
-                    style={{
-                      backgroundColor: !activePath.startsWith("/app/team") ? "rgba(94,234,212,0.2)" : "transparent",
-                      color: !activePath.startsWith("/app/team") ? "#5EEAD4" : "rgba(255,255,255,0.4)",
-                      fontFamily: "'Space Grotesk', sans-serif",
-                      borderRadius: "10px 0 0 10px",
-                    }}
-                  >
-                    👔 Owner
-                  </Link>
-                  <Link
-                    href="/app/team"
-                    className="px-4 py-1.5 text-[11px] font-bold transition-all"
-                    style={{
-                      backgroundColor: activePath.startsWith("/app/team") ? "rgba(167,139,250,0.2)" : "transparent",
-                      color: activePath.startsWith("/app/team") ? "#A78BFA" : "rgba(255,255,255,0.4)",
-                      fontFamily: "'Space Grotesk', sans-serif",
-                      borderRadius: "0 10px 10px 0",
-                    }}
-                  >
-                    👥 Team
-                  </Link>
-                </div>
+                  <span>👔</span><span>Owner</span>
+                </Link>
+                <div style={{ width: "1px", backgroundColor: "rgba(255,255,255,0.1)", flexShrink: 0 }} />
+                <Link
+                  href="/app/team"
+                  className="flex-1 flex items-center justify-center gap-1.5 py-2 text-[12px] font-bold transition-all"
+                  style={{
+                    backgroundColor: activePath.startsWith("/app/team") ? "rgba(167,139,250,0.2)" : "transparent",
+                    color: activePath.startsWith("/app/team") ? "#A78BFA" : "rgba(255,255,255,0.4)",
+                    fontFamily: "'Space Grotesk', sans-serif",
+                    borderRadius: "0 10px 10px 0",
+                    minHeight: "36px",
+                  }}
+                >
+                  <span>👥</span><span>Team</span>
+                </Link>
               </div>
             )}
 
-            <div className="flex items-center gap-2">
+            {/* Right: notification bell (or spacer to keep brand icon left-aligned for non-owners) */}
+            <div className="flex items-center gap-2 flex-shrink-0">
               {person && (
                 <NotificationBell accountId={person.accountId} personId={person.id} />
               )}
