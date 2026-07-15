@@ -71,6 +71,10 @@ import {
   countUnreadNotifications,
   markNotificationRead,
   markAllNotificationsRead,
+  getBusinessHours,
+  updateBusinessHours,
+  toggleDnd,
+  setDnd,
 } from "./db";
 import { generateMeetingSchedule } from "../shared/calendarEngine";
 import { notifyOwner } from "./_core/notification";
@@ -1615,6 +1619,108 @@ Be concise and specific. If a field has nothing, use an empty array.`,
           });
         }
         return { success: true };
+      }),
+  }),
+
+  // ─── Business Hours / DND ─────────────────────────────────────────────────
+  businessHours: router({
+    /** Get (or create default) business hours settings for an account. */
+    getSettings: publicProcedure
+      .input(z.object({ accountId: z.number() }))
+      .query(async ({ input }) => {
+        return getBusinessHours(input.accountId);
+      }),
+
+    /** Update work days, start/end time, and timezone. */
+    updateSettings: publicProcedure
+      .input(z.object({
+        accountId: z.number(),
+        workDays: z.string().optional(),   // JSON number[] e.g. "[1,2,3,4,5]"
+        startTime: z.string().optional(),  // "HH:MM"
+        endTime: z.string().optional(),    // "HH:MM"
+        timezone: z.string().optional(),   // IANA timezone
+      }))
+      .mutation(async ({ input }) => {
+        const { accountId, ...data } = input;
+        return updateBusinessHours(accountId, data);
+      }),
+
+    /** Toggle the manual DND flag. Returns the new active state. */
+    toggleDnd: publicProcedure
+      .input(z.object({ accountId: z.number() }))
+      .mutation(async ({ input }) => {
+        const active = await toggleDnd(input.accountId);
+        return { active };
+      }),
+
+    /** Set DND to a specific value. */
+    setDnd: publicProcedure
+      .input(z.object({ accountId: z.number(), active: z.boolean() }))
+      .mutation(async ({ input }) => {
+        const active = await setDnd(input.accountId, input.active);
+        return { active };
+      }),
+
+    /**
+     * Check if the current time is within business hours (and DND is not active).
+     * Returns { withinHours, dndActive, nextStartTime } where nextStartTime is
+     * an ISO string of when business hours next begin (for the after-hours pop-up).
+     */
+    checkStatus: publicProcedure
+      .input(z.object({ accountId: z.number() }))
+      .query(async ({ input }) => {
+        const settings = await getBusinessHours(input.accountId);
+        const workDays: number[] = JSON.parse(settings.workDays || "[1,2,3,4,5]");
+        const tz = settings.timezone || "America/New_York";
+
+        // Get current time in the account's timezone
+        const now = new Date();
+        const tzDate = new Date(now.toLocaleString("en-US", { timeZone: tz }));
+        const currentDay = tzDate.getDay(); // 0=Sun, 6=Sat
+        const currentHour = tzDate.getHours();
+        const currentMin = tzDate.getMinutes();
+        const currentMins = currentHour * 60 + currentMin;
+
+        const [startH, startM] = settings.startTime.split(":").map(Number);
+        const [endH, endM] = settings.endTime.split(":").map(Number);
+        const startMins = startH * 60 + startM;
+        const endMins = endH * 60 + endM;
+
+        const isWorkDay = workDays.includes(currentDay);
+        const isWithinTime = currentMins >= startMins && currentMins < endMins;
+        const withinHours = isWorkDay && isWithinTime;
+
+        // Calculate next business hours start
+        let nextStartTime: string | null = null;
+        if (!withinHours) {
+          // Find next work day at start time
+          for (let offset = 0; offset <= 7; offset++) {
+            const checkDate = new Date(tzDate);
+            checkDate.setDate(checkDate.getDate() + offset);
+            const checkDay = checkDate.getDay();
+            if (workDays.includes(checkDay)) {
+              if (offset === 0 && currentMins < startMins) {
+                // Today, before start time
+                checkDate.setHours(startH, startM, 0, 0);
+                nextStartTime = checkDate.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true });
+                break;
+              } else if (offset > 0) {
+                // Future day
+                checkDate.setHours(startH, startM, 0, 0);
+                const dayName = checkDate.toLocaleDateString("en-US", { weekday: "long" });
+                nextStartTime = `${dayName} at ${checkDate.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true })}`;
+                break;
+              }
+            }
+          }
+        }
+
+        return {
+          withinHours,
+          dndActive: settings.manualDndActive,
+          nextStartTime,
+          settings,
+        };
       }),
   }),
 });

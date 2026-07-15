@@ -1,9 +1,11 @@
-import { useState, createContext, useContext, ReactNode, useRef, useEffect } from "react";
+import { useState, createContext, useContext, ReactNode, useRef, useEffect, useCallback } from "react";
 import { Link, useLocation } from "wouter";
 import { usePerson } from "@/contexts/PersonContext";
 import { clearAuth } from "@/components/PasswordGate";
 import { BrandIcon } from "@/components/BrandLogo";
 import { NotificationBell } from "@/components/NotificationBell";
+import { trpc } from "@/lib/trpc";
+import { toast } from "sonner";
 
 // ─── Identity Context ─────────────────────────────────────────────────────────
 
@@ -214,6 +216,29 @@ export default function AppShell({ children }: AppShellProps) {
 
   const activePath = location === "/app" ? "/app/board" : location;
 
+  // DND state — only loaded when person has an accountId
+  const accountId = person?.accountId;
+  const { data: bhStatus, refetch: refetchBh } = trpc.businessHours.checkStatus.useQuery(
+    { accountId: accountId! },
+    { enabled: accountId !== undefined, staleTime: 30_000 }
+  );
+  const dndActive = bhStatus?.dndActive ?? false;
+
+  const toggleDndMutation = trpc.businessHours.toggleDnd.useMutation({
+    onSuccess: (data) => {
+      refetchBh();
+      toast(data.active ? "Off the Clock — notifications paused" : "Back on the clock", {
+        icon: data.active ? "🌙" : "☀️",
+        duration: 3000,
+      });
+    },
+  });
+
+  const handleDndToggle = useCallback(() => {
+    if (accountId === undefined) return;
+    toggleDndMutation.mutate({ accountId });
+  }, [accountId, toggleDndMutation]);
+
   // Employees only see Board + KPIs; owners/co-owners see full nav
   // Admin panel is only visible to owners (not co-owners)
   const isTeamSide = activePath.startsWith("/app/team");
@@ -376,6 +401,20 @@ export default function AppShell({ children }: AppShellProps) {
                   <p className="text-[10px] truncate" style={{ color: "rgba(255,255,255,0.35)" }}>{roleLabel}</p>
                 </div>
                 <NotificationBell accountId={person?.accountId} personId={person?.id} />
+                {/* DND toggle — owners and co-owners only */}
+                {(person.role === "owner" || person.role === "coowner") && (
+                  <button
+                    onClick={handleDndToggle}
+                    className="flex-shrink-0 w-7 h-7 rounded-lg flex items-center justify-center transition-all active:scale-95"
+                    style={{
+                      backgroundColor: dndActive ? "rgba(167,139,250,0.2)" : "rgba(255,255,255,0.06)",
+                      border: dndActive ? "1px solid rgba(167,139,250,0.4)" : "1px solid rgba(255,255,255,0.1)",
+                    }}
+                    title={dndActive ? "Off the Clock — click to go back online" : "Click to go Off the Clock"}
+                  >
+                    <span className="text-[13px]">{dndActive ? "🌙" : "☀️"}</span>
+                  </button>
+                )}
                 <button
                   onClick={handleSignOut}
                   className="flex-shrink-0 text-[10px] transition-colors px-1.5 py-1 rounded"
@@ -457,8 +496,21 @@ export default function AppShell({ children }: AppShellProps) {
               </div>
             )}
 
-            {/* Right: notification bell (or spacer to keep brand icon left-aligned for non-owners) */}
+            {/* Right: DND toggle (owners/co-owners) + notification bell */}
             <div className="flex items-center gap-2 flex-shrink-0">
+              {person && (person.role === "owner" || person.role === "coowner") && (
+                <button
+                  onClick={handleDndToggle}
+                  className="w-8 h-8 rounded-lg flex items-center justify-center transition-all active:scale-95"
+                  style={{
+                    backgroundColor: dndActive ? "rgba(167,139,250,0.2)" : "rgba(255,255,255,0.06)",
+                    border: dndActive ? "1px solid rgba(167,139,250,0.4)" : "1px solid rgba(255,255,255,0.1)",
+                  }}
+                  title={dndActive ? "Off the Clock" : "Go Off the Clock"}
+                >
+                  <span className="text-sm">{dndActive ? "🌙" : "☀️"}</span>
+                </button>
+              )}
               {person && (
                 <NotificationBell accountId={person.accountId} personId={person.id} />
               )}

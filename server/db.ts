@@ -1,6 +1,6 @@
 import { eq, and, desc, inArray, asc } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, meetingLogs, agendaItems, MeetingLog, AgendaItem, boardCards, agendaTemplates, type BoardCard, type InsertBoardCard, waitlistEmails, meetingRecordings, type MeetingRecording, businessProfiles, type BusinessProfile, closedPeriods, type ClosedPeriod, meetingScheduleOverrides, employees, employeeMetrics, weeklyReports, weeklyReportEntries, type Employee, type EmployeeMetric, type WeeklyReport, type WeeklyReportEntry, goals, type Goal, type InsertGoal, notifications, type Notification } from "../drizzle/schema";
+import { InsertUser, users, meetingLogs, agendaItems, MeetingLog, AgendaItem, boardCards, agendaTemplates, type BoardCard, type InsertBoardCard, waitlistEmails, meetingRecordings, type MeetingRecording, businessProfiles, type BusinessProfile, closedPeriods, type ClosedPeriod, meetingScheduleOverrides, employees, employeeMetrics, weeklyReports, weeklyReportEntries, type Employee, type EmployeeMetric, type WeeklyReport, type WeeklyReportEntry, goals, type Goal, type InsertGoal, notifications, type Notification, businessHours, type BusinessHours } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -1129,4 +1129,62 @@ export async function markAllNotificationsRead(
         eq(notifications.isRead, false)
       )
     );
+}
+
+// ─── Business Hours helpers ─────────────────────────────────────────────────
+
+const DEFAULT_WORK_DAYS = "[1,2,3,4,5]";
+const DEFAULT_START_TIME = "08:00";
+const DEFAULT_END_TIME = "18:00";
+const DEFAULT_TIMEZONE = "America/New_York";
+
+/** Get (or lazily create) the business hours row for an account. */
+export async function getBusinessHours(accountId: number): Promise<BusinessHours> {
+  const db = await getDb();
+  if (!db) throw new Error("DB unavailable");
+  const rows = await db.select().from(businessHours).where(eq(businessHours.accountId, accountId)).limit(1);
+  if (rows.length > 0) return rows[0];
+  // Create default row
+  await db.insert(businessHours).values({
+    accountId,
+    workDays: DEFAULT_WORK_DAYS,
+    startTime: DEFAULT_START_TIME,
+    endTime: DEFAULT_END_TIME,
+    timezone: DEFAULT_TIMEZONE,
+    manualDndActive: false,
+  });
+  const created = await db.select().from(businessHours).where(eq(businessHours.accountId, accountId)).limit(1);
+  return created[0];
+}
+
+/** Update business hours settings for an account. */
+export async function updateBusinessHours(
+  accountId: number,
+  data: { workDays?: string; startTime?: string; endTime?: string; timezone?: string }
+): Promise<BusinessHours> {
+  const db = await getDb();
+  if (!db) throw new Error("DB unavailable");
+  // Ensure row exists
+  await getBusinessHours(accountId);
+  await db.update(businessHours).set(data).where(eq(businessHours.accountId, accountId));
+  return getBusinessHours(accountId);
+}
+
+/** Toggle the manual DND flag for an account. Returns the new state. */
+export async function toggleDnd(accountId: number): Promise<boolean> {
+  const db = await getDb();
+  if (!db) throw new Error("DB unavailable");
+  const row = await getBusinessHours(accountId);
+  const newState = !row.manualDndActive;
+  await db.update(businessHours).set({ manualDndActive: newState }).where(eq(businessHours.accountId, accountId));
+  return newState;
+}
+
+/** Set DND to a specific value. */
+export async function setDnd(accountId: number, active: boolean): Promise<boolean> {
+  const db = await getDb();
+  if (!db) throw new Error("DB unavailable");
+  await getBusinessHours(accountId);
+  await db.update(businessHours).set({ manualDndActive: active }).where(eq(businessHours.accountId, accountId));
+  return active;
 }

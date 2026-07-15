@@ -782,7 +782,24 @@ function AddCardForm({ currentUser, onAdded, allowedBusinesses, defaultBusiness,
     onError: () => toast.error("Failed to post card"),
   });
 
+  // After-hours status — used for the once-per-session posting reminder
+  const { data: bhStatus } = trpc.businessHours.checkStatus.useQuery(
+    { accountId: accountId! },
+    { enabled: accountId !== undefined, staleTime: 60_000 }
+  );
+
   const handleSubmit = () => {
+    // After-hours reminder: show once per session if outside business hours or DND is on
+    const SESSION_KEY = "bh_after_hours_shown";
+    if (bhStatus && (!bhStatus.withinHours || bhStatus.dndActive) && !sessionStorage.getItem(SESSION_KEY)) {
+      sessionStorage.setItem(SESSION_KEY, "1");
+      const msg = bhStatus.dndActive
+        ? "You're Off the Clock. Your partner won't be notified until you go back online."
+        : bhStatus.nextStartTime
+          ? `You're posting after business hours. Your partner won't be notified until ${bhStatus.nextStartTime}.`
+          : "You're posting after business hours. Your partner won't be notified until business hours resume.";
+      toast(msg, { icon: "🌙", duration: 6000 });
+    }
     if (!currentUser) { toast.error("Select who you are first (top right)"); return; }
     if (!content.trim()) { toast.error("Please write something"); return; }
     if (type === "task" && !assignedTo) { toast.error("Please select who this task is assigned to"); return; }

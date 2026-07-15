@@ -47,6 +47,14 @@ interface OnboardingData {
   ownerCount: number;
   employeeCount: number;
   workDays: number[];
+  // Co-owner invite
+  coOwnerName: string;
+  coOwnerEmail: string;
+  // Business hours
+  bhWorkDays: number[];
+  bhStartTime: string;
+  bhEndTime: string;
+  bhTimezone: string;
   meetingDayPrefs: {
     ownerDaily: number[];
     ownerWeekly: number;
@@ -76,7 +84,7 @@ interface OnboardingData {
 
 const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const DAY_FULL = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-const TOTAL_STEPS = 11;
+const TOTAL_STEPS = 13;
 
 // ─── Shared styles ────────────────────────────────────────────────────────────
 
@@ -208,6 +216,67 @@ function StepWelcome({ onNext }: { onNext: () => void }) {
       >
         Let's Get Started →
       </button>
+    </div>
+  );
+}
+
+// ─── Step 1b: Co-Owner Invite ────────────────────────────────────────────────
+
+function StepCoOwnerInvite({
+  data,
+  onChange,
+  onNext,
+  onBack,
+}: {
+  data: Pick<OnboardingData, "coOwnerName" | "coOwnerEmail">;
+  onChange: (u: Partial<OnboardingData>) => void;
+  onNext: () => void;
+  onBack: () => void;
+}) {
+  const isValidEmail = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
+  const canProceed = data.coOwnerName.trim().length > 0 && isValidEmail(data.coOwnerEmail.trim());
+
+  return (
+    <div>
+      <StepHeader
+        title="Invite your co-owner"
+        subtitle="BusinessCadence is built for two. Who are you running this business with?"
+      />
+      <div className="flex flex-col gap-5">
+        <div>
+          <label className="block text-xs font-semibold uppercase tracking-wide mb-1.5"
+            style={{ color: "rgba(255,255,255,0.4)" }}>Their Name</label>
+          <input
+            style={inputStyle}
+            value={data.coOwnerName}
+            onChange={e => onChange({ coOwnerName: e.target.value })}
+            placeholder="e.g. Lynn"
+            autoFocus
+          />
+        </div>
+        <div>
+          <label className="block text-xs font-semibold uppercase tracking-wide mb-1.5"
+            style={{ color: "rgba(255,255,255,0.4)" }}>Their Email</label>
+          <input
+            style={inputStyle}
+            value={data.coOwnerEmail}
+            onChange={e => onChange({ coOwnerEmail: e.target.value })}
+            placeholder="e.g. lynn@yourbusiness.com"
+            type="email"
+          />
+        </div>
+        <TipBox>
+          Your co-owner will receive an invite link to join BusinessCadence as a co-owner. They'll have full access to the Owner Board, KPIs, and all settings.
+        </TipBox>
+      </div>
+      <NavButtons
+        onBack={onBack}
+        onNext={onNext}
+        canProceed={canProceed}
+        nextLabel="Send Invite & Continue →"
+        onSkip={onNext}
+        skipLabel="Skip — invite later"
+      />
     </div>
   );
 }
@@ -1027,6 +1096,154 @@ function StepEmployeeInvites({
   );
 }
 
+// ─── Step 8b: Business Hours ────────────────────────────────────────────────
+
+const COMMON_TIMEZONES = [
+  "America/New_York", "America/Chicago", "America/Denver", "America/Los_Angeles",
+  "America/Phoenix", "America/Anchorage", "Pacific/Honolulu",
+  "Europe/London", "Europe/Paris", "Europe/Berlin",
+  "Asia/Tokyo", "Asia/Shanghai", "Asia/Kolkata",
+  "Australia/Sydney", "Australia/Melbourne",
+];
+
+const TZ_LABELS: Record<string, string> = {
+  "America/New_York": "Eastern (ET)",
+  "America/Chicago": "Central (CT)",
+  "America/Denver": "Mountain (MT)",
+  "America/Los_Angeles": "Pacific (PT)",
+  "America/Phoenix": "Arizona (MST)",
+  "America/Anchorage": "Alaska (AKT)",
+  "Pacific/Honolulu": "Hawaii (HST)",
+  "Europe/London": "London (GMT/BST)",
+  "Europe/Paris": "Paris (CET)",
+  "Europe/Berlin": "Berlin (CET)",
+  "Asia/Tokyo": "Tokyo (JST)",
+  "Asia/Shanghai": "Shanghai (CST)",
+  "Asia/Kolkata": "India (IST)",
+  "Australia/Sydney": "Sydney (AEDT)",
+  "Australia/Melbourne": "Melbourne (AEDT)",
+};
+
+const TIME_OPTIONS_BH = Array.from({ length: 24 * 2 }, (_, i) => {
+  const h = Math.floor(i / 2);
+  const m = i % 2 === 0 ? "00" : "30";
+  const hh = String(h).padStart(2, "0");
+  const label = h === 0 ? `12:${m} AM` : h < 12 ? `${h}:${m} AM` : h === 12 ? `12:${m} PM` : `${h - 12}:${m} PM`;
+  return { value: `${hh}:${m}`, label };
+});
+
+function StepBusinessHours({
+  data,
+  onChange,
+  onNext,
+  onBack,
+}: {
+  data: Pick<OnboardingData, "bhWorkDays" | "bhStartTime" | "bhEndTime" | "bhTimezone">;
+  onChange: (u: Partial<OnboardingData>) => void;
+  onNext: () => void;
+  onBack: () => void;
+}) {
+  const toggleDay = (d: number) => {
+    const days = data.bhWorkDays.includes(d)
+      ? data.bhWorkDays.filter(x => x !== d)
+      : [...data.bhWorkDays, d].sort((a, b) => a - b);
+    onChange({ bhWorkDays: days });
+  };
+
+  // Ensure the timezone list includes the user's detected timezone
+  const detectedTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const tzList = COMMON_TIMEZONES.includes(detectedTz)
+    ? COMMON_TIMEZONES
+    : [detectedTz, ...COMMON_TIMEZONES];
+
+  return (
+    <div>
+      <StepHeader
+        title="Set your business hours"
+        subtitle="We'll use this to manage notifications and remind you when you're posting after hours."
+      />
+      <div className="flex flex-col gap-5">
+        {/* Work days */}
+        <div>
+          <label className="block text-xs font-semibold uppercase tracking-wide mb-2"
+            style={{ color: "rgba(255,255,255,0.4)" }}>Work Days</label>
+          <div className="flex gap-2 flex-wrap">
+            {DAY_NAMES.map((name, idx) => (
+              <button
+                key={idx}
+                onClick={() => toggleDay(idx)}
+                className="w-10 h-10 rounded-lg text-xs font-bold transition-all active:scale-95"
+                style={{
+                  backgroundColor: data.bhWorkDays.includes(idx) ? "rgba(94,234,212,0.2)" : "rgba(255,255,255,0.05)",
+                  border: data.bhWorkDays.includes(idx) ? "1.5px solid rgba(94,234,212,0.5)" : "1.5px solid rgba(255,255,255,0.1)",
+                  color: data.bhWorkDays.includes(idx) ? "#5EEAD4" : "rgba(255,255,255,0.4)",
+                }}
+              >
+                {name}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Hours */}
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="block text-xs font-semibold uppercase tracking-wide mb-1.5"
+              style={{ color: "rgba(255,255,255,0.4)" }}>Start Time</label>
+            <select
+              style={selectStyle}
+              value={data.bhStartTime}
+              onChange={e => onChange({ bhStartTime: e.target.value })}
+            >
+              {TIME_OPTIONS_BH.map(t => (
+                <option key={t.value} value={t.value}>{t.label}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs font-semibold uppercase tracking-wide mb-1.5"
+              style={{ color: "rgba(255,255,255,0.4)" }}>End Time</label>
+            <select
+              style={selectStyle}
+              value={data.bhEndTime}
+              onChange={e => onChange({ bhEndTime: e.target.value })}
+            >
+              {TIME_OPTIONS_BH.map(t => (
+                <option key={t.value} value={t.value}>{t.label}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {/* Timezone */}
+        <div>
+          <label className="block text-xs font-semibold uppercase tracking-wide mb-1.5"
+            style={{ color: "rgba(255,255,255,0.4)" }}>Timezone</label>
+          <select
+            style={selectStyle}
+            value={data.bhTimezone}
+            onChange={e => onChange({ bhTimezone: e.target.value })}
+          >
+            {tzList.map(tz => (
+              <option key={tz} value={tz}>{TZ_LABELS[tz] ?? tz}</option>
+            ))}
+          </select>
+        </div>
+
+        <TipBox>
+          You can always change these in Settings. When you post outside business hours, we'll remind you that your partner won't be notified until business hours resume.
+        </TipBox>
+      </div>
+      <NavButtons
+        onBack={onBack}
+        onNext={onNext}
+        canProceed={data.bhWorkDays.length > 0}
+        nextLabel="Continue →"
+      />
+    </div>
+  );
+}
+
 // ─── Step 9: Preview ──────────────────────────────────────────────────────────
 
 const MONTH_NAMES_SHORT = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -1219,7 +1436,7 @@ function StepPreview({
 
 // ─── Step 10: Done ────────────────────────────────────────────────────────────
 
-function StepDone({ businessName, invitesSent, onEnter }: { businessName: string; invitesSent: number; onEnter: () => void }) {
+function StepDone({ businessName, invitesSent, coOwnerName, onEnter }: { businessName: string; invitesSent: number; coOwnerName: string; onEnter: () => void }) {
   return (
     <div className="flex flex-col items-center text-center gap-6">
       <div className="w-20 h-20 rounded-full flex items-center justify-center text-4xl"
@@ -1237,9 +1454,15 @@ function StepDone({ businessName, invitesSent, onEnter }: { businessName: string
       <div className="flex flex-col gap-2 text-sm w-full max-w-xs" style={{ color: "rgba(255,255,255,0.4)" }}>
         <div className="flex items-center gap-2"><span style={{ color: "#5EEAD4" }}>✓</span> Meeting cadence built</div>
         <div className="flex items-center gap-2"><span style={{ color: "#5EEAD4" }}>✓</span> Goals and KPIs configured</div>
+        <div className="flex items-center gap-2"><span style={{ color: "#5EEAD4" }}>✓</span> Business hours set</div>
+        {coOwnerName && (
+          <div className="flex items-center gap-2">
+            <span style={{ color: "#5EEAD4" }}>✓</span> Invite sent to {coOwnerName}
+          </div>
+        )}
         {invitesSent > 0 && (
           <div className="flex items-center gap-2">
-            <span style={{ color: "#5EEAD4" }}>✓</span> {invitesSent} invite{invitesSent !== 1 ? "s" : ""} sent
+            <span style={{ color: "#5EEAD4" }}>✓</span> {invitesSent} team invite{invitesSent !== 1 ? "s" : ""} sent
           </div>
         )}
         <div className="flex items-center gap-2"><span style={{ color: "#5EEAD4" }}>✓</span> Industry agendas applied</div>
@@ -1271,6 +1494,14 @@ export default function Onboarding() {
     ownerCount: 2,
     employeeCount: 3,
     workDays: [1, 2, 3, 4, 5],
+    // Co-owner invite
+    coOwnerName: "",
+    coOwnerEmail: "",
+    // Business hours
+    bhWorkDays: [1, 2, 3, 4, 5],
+    bhStartTime: "08:00",
+    bhEndTime: "18:00",
+    bhTimezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "America/New_York",
     meetingDayPrefs: INDUSTRY_MEETING_DAY_DEFAULTS["healthcare"],
     meetingTimes: { ...DEFAULT_MEETING_TIMES },
     goals: [],
@@ -1283,6 +1514,7 @@ export default function Onboarding() {
   const createGoal = trpc.goals.create.useMutation();
   const seedKpis = trpc.kpi.seedDefaults.useMutation();
   const invitePerson = trpc.person.invite.useMutation();
+  const saveBusinessHours = trpc.businessHours.updateSettings.useMutation();
 
   const update = useCallback((updates: Partial<OnboardingData>) => {
     setData(prev => {
@@ -1379,7 +1611,33 @@ export default function Onboarding() {
           sent++;
         } catch { /* non-fatal */ }
       }
+
+      // 6. Send co-owner invite (if provided)
+      if (data.coOwnerName.trim() && data.coOwnerEmail.trim()) {
+        try {
+          await invitePerson.mutateAsync({
+            accountId,
+            name: data.coOwnerName.trim(),
+            email: data.coOwnerEmail.trim(),
+            role: "coowner",
+            businessScope: kpiSlug,
+            origin,
+          });
+          sent++;
+        } catch { /* non-fatal */ }
+      }
       setInvitesSent(sent);
+
+      // 7. Save business hours
+      try {
+        await saveBusinessHours.mutateAsync({
+          accountId,
+          workDays: JSON.stringify(data.bhWorkDays),
+          startTime: data.bhStartTime,
+          endTime: data.bhEndTime,
+          timezone: data.bhTimezone,
+        });
+      } catch { /* non-fatal */ }
 
       next(); // go to Done
     } catch (err) {
@@ -1427,13 +1685,16 @@ export default function Onboarding() {
         <div className="rounded-2xl p-8"
           style={{ backgroundColor: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", backdropFilter: "blur(8px)" }}>
           {step === 0 && <StepWelcome onNext={next} />}
-          {step === 1 && <StepBusinessBasics data={data} onChange={update} onNext={next} onBack={back} />}
-          {step === 2 && <StepTeamSize data={data} onChange={update} onNext={next} onBack={back} />}
-          {step === 3 && <StepWorkSchedule data={data} onChange={update} onNext={next} onBack={back} />}
-          {step === 4 && <MeetingCadenceStep data={data} onChange={update} onNext={next} onBack={back} />}
-          {step === 5 && <StepGoals data={data} onChange={update} onNext={next} onBack={back} />}
-          {step === 6 && <StepKPIs data={data} onChange={update} onNext={next} onBack={back} />}
-          {step === 7 && (
+          {/* Step 1: Co-owner invite — first thing after welcome */}
+          {step === 1 && <StepCoOwnerInvite data={data} onChange={update} onNext={next} onBack={back} />}
+          {/* Steps 2–8: existing business setup flow (shifted +1) */}
+          {step === 2 && <StepBusinessBasics data={data} onChange={update} onNext={next} onBack={back} />}
+          {step === 3 && <StepTeamSize data={data} onChange={update} onNext={next} onBack={back} />}
+          {step === 4 && <StepWorkSchedule data={data} onChange={update} onNext={next} onBack={back} />}
+          {step === 5 && <MeetingCadenceStep data={data} onChange={update} onNext={next} onBack={back} />}
+          {step === 6 && <StepGoals data={data} onChange={update} onNext={next} onBack={back} />}
+          {step === 7 && <StepKPIs data={data} onChange={update} onNext={next} onBack={back} />}
+          {step === 8 && (
             <StepEmployeeInvites
               data={data}
               onChange={update}
@@ -1442,7 +1703,9 @@ export default function Onboarding() {
               businessName={data.businessName}
             />
           )}
-          {step === 8 && (
+          {/* Step 9: Business hours — new step after employee invites */}
+          {step === 9 && <StepBusinessHours data={data} onChange={update} onNext={next} onBack={back} />}
+          {step === 10 && (
             <StepPreview
               data={data}
               onConfirm={handleConfirm}
@@ -1450,10 +1713,11 @@ export default function Onboarding() {
               isLoading={saveOnboarding.isPending}
             />
           )}
-          {step === 9 && (
+          {step === 11 && (
             <StepDone
               businessName={data.businessName}
               invitesSent={invitesSent}
+              coOwnerName={data.coOwnerName}
               onEnter={handleEnterApp}
             />
           )}

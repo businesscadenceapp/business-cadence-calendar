@@ -182,12 +182,12 @@ function Hero() {
           </div>
 
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight mb-6">
-            Stop Letting Your Business Invade{" "}
-            <span className="text-[#5EEAD4]">Your Personal Life.</span>
+            Stop Bringing the Boardroom{" "}
+            <span className="text-[#5EEAD4]">to the Dinner Table.</span>
           </h1>
 
           <p className="text-lg sm:text-xl text-white/70 max-w-2xl mx-auto mb-10 leading-relaxed">
-            BusinessCadence gives co-owners, family businesses, and small business teams a structured meeting rhythm — so every conversation happens at the right time, in the right place, with the right agenda.
+            BusinessCadence gives co-preneurs, family businesses, and small business teams a structured meeting rhythm — so every conversation happens at the right time, in the right place, with the right agenda. Your business stays in the boardroom. Your life stays yours.
           </p>
 
           <div className="animate-fade-up animation-delay-200 flex justify-center">
@@ -331,6 +331,15 @@ const FEATURES = [
   {
     icon: (
       <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+      </svg>
+    ),
+    title: "Business Hours & Do Not Disturb",
+    body: "Set your business hours and BusinessCadence goes quiet when you're off the clock. No notifications after hours, on holidays, or on closure days. Work mode ends when you say it ends.",
+  },
+  {
+    icon: (
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
       </svg>
     ),
@@ -346,10 +355,10 @@ function FeaturesSection() {
         <div className="text-center mb-14">
           <p className="text-[#5EEAD4] text-sm font-semibold uppercase tracking-widest mb-3">What's Inside</p>
           <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
-            Everything You Need to Run Your Business Meetings
+            Everything You Need to Run Your Business — and Protect Your Life
           </h2>
           <p className="text-white/60 max-w-xl mx-auto">
-            BusinessCadence is a complete meeting management system designed specifically for small business owners and co-owning teams.
+            BusinessCadence is a complete operating system for co-preneurs and small business teams — built to keep work structured, communication clear, and your personal time sacred.
           </p>
         </div>
 

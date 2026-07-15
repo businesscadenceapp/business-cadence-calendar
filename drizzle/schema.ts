@@ -222,6 +222,27 @@ export type ClosedPeriod = typeof closedPeriods.$inferSelect;
 export type InsertClosedPeriod = typeof closedPeriods.$inferInsert;
 
 /**
+ * Business hours — defines the working hours schedule for an account.
+ * workDays: JSON number[] e.g. [1,2,3,4,5] (0=Sun, 6=Sat)
+ * startTime / endTime: "HH:MM" 24h strings
+ * timezone: IANA timezone string e.g. "America/New_York"
+ */
+export const businessHours = mysqlTable("business_hours", {
+  id: int("id").autoincrement().primaryKey(),
+  accountId: int("accountId").notNull().unique(), // one row per account
+  workDays: text("workDays").notNull(), // JSON number[] — default [1,2,3,4,5] set in application layer
+  startTime: varchar("startTime", { length: 5 }).notNull().default("08:00"), // HH:MM
+  endTime: varchar("endTime", { length: 5 }).notNull().default("18:00"),   // HH:MM
+  timezone: varchar("timezone", { length: 64 }).notNull().default("America/New_York"),
+  manualDndActive: boolean("manualDndActive").default(false).notNull(), // manual "off the clock" toggle
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type BusinessHours = typeof businessHours.$inferSelect;
+export type InsertBusinessHours = typeof businessHours.$inferInsert;
+
+/**
  * Meeting schedule overrides — tracks meetings that were auto-shifted due to closed periods.
  * originalDate: the date the meeting was originally scheduled
  * rescheduledDate: the date it was moved to

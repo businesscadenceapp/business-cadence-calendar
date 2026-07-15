@@ -648,3 +648,30 @@
 - [x] Team Board Archive page with search, topic tags, decision markers
 - [x] Archive button on Team Board header (visible to all roles)
 - [x] boardComments.attachmentsJson column added to DB
+
+## Business Hours / Do Not Disturb + Onboarding Wizard Upgrade (Jul 2026)
+
+### Business Hours & DND
+- [x] DB schema: business_hours table (accountId, workDays JSON, startTime, endTime, timezone, manualDndActive)
+- [x] Push DB migration for business_hours
+- [x] tRPC businessHours.getSettings — fetch or create default business hours for account
+- [x] tRPC businessHours.updateSettings — update work days, start/end time, timezone
+- [x] tRPC businessHours.toggleDnd — toggle manual DND flag on/off
+- [x] tRPC businessHours.setDnd — set DND to a specific value
+- [x] tRPC businessHours.checkStatus — returns { withinHours, dndActive, nextStartTime } for after-hours pop-up
+- [x] DND toggle button (☀️/🌙) in desktop sidebar bottom bar (owners + co-owners only)
+- [x] DND toggle button in mobile top header (owners + co-owners only)
+- [x] Toast notification on DND toggle ("Off the Clock — notifications paused" / "Back on the clock")
+- [x] After-hours posting reminder: once-per-session toast when posting outside business hours or DND active (Board.tsx)
+- [x] After-hours posting reminder: same logic applied to Team Board (TeamBoard.tsx)
+
+### Onboarding Wizard Upgrade
+- [x] Add co-owner invite step (Step 1) immediately after Welcome — collects name + email, sends invite on confirm
+- [x] Add business hours setup step (Step 9) after employee invites — work days, start/end time, timezone
+- [x] Co-owner invite sent via existing person.invite procedure with role="coowner" during handleConfirm
+- [x] Business hours saved via businessHours.updateSettings during handleConfirm
+- [x] StepDone screen shows co-owner invite status ("✓ Invite sent to [Name]")
+- [x] StepDone screen shows "✓ Business hours set" confirmation
+- [x] Total steps updated from 11 to 13 (added 2 new steps)
+- [x] Progress bar and step counter updated to reflect new total
+- [x] Co-owner invite acceptance flow already correct: role=coowner lands on /app/board (populated dashboard)
