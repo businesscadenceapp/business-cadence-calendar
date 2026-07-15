@@ -1,4 +1,15 @@
-import { useState, createContext, useContext, ReactNode, useRef, useEffect, useCallback } from "react";
+/**
+ * AppShell — main layout shell for the authenticated app.
+ * Dark navy: #0A1929 sidebar, #0F2440 main bg.
+ *
+ * Desktop: fixed 220px sidebar with brand, nav, active-business badge,
+ *          optional Switch Business button, person row + DND toggle.
+ * Mobile:  top bar (brand + Owner/Team toggle + DND + bell) +
+ *          fixed bottom tab bar with "More" sheet.
+ */
+
+import { useState, useCallback, useContext, createContext, useRef, useEffect } from "react";
+import type { ReactNode } from "react";
 import { Link, useLocation } from "wouter";
 import { usePerson } from "@/contexts/PersonContext";
 import { clearAuth } from "@/components/PasswordGate";
@@ -6,6 +17,12 @@ import { BrandIcon } from "@/components/BrandLogo";
 import { NotificationBell } from "@/components/NotificationBell";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
+import {
+  useActiveBusiness,
+  ActiveBusinessBadge,
+  SwitchBusinessButton,
+  BusinessSwitcherModal,
+} from "@/components/BusinessSwitcher";
 
 // ─── Identity Context ─────────────────────────────────────────────────────────
 
@@ -101,12 +118,16 @@ function MoreSheet({
   person,
   onClose,
   onSignOut,
+  onSwitchBusiness,
+  showSwitchBusiness,
 }: {
   items: NavItem[];
   activePath: string;
   person: { name: string; role: string; accountId?: number; id?: string } | null;
   onClose: () => void;
   onSignOut: () => void;
+  onSwitchBusiness?: () => void;
+  showSwitchBusiness?: boolean;
 }) {
   const roleLabel = person
     ? person.role === "coowner" ? "Co-owner"
@@ -179,6 +200,11 @@ function MoreSheet({
               </Link>
             );
           })}
+
+          {/* Switch Business — only for multi-business owners/co-owners */}
+          {showSwitchBusiness && onSwitchBusiness && (
+            <SwitchBusinessButton onClick={() => { onClose(); onSwitchBusiness(); }} compact />
+          )}
         </div>
 
         {/* Sign out */}
@@ -213,8 +239,15 @@ export default function AppShell({ children }: AppShellProps) {
   const [location, navigate] = useLocation();
   const { person, setPerson } = usePerson();
   const [moreOpen, setMoreOpen] = useState(false);
+  const [switcherOpen, setSwitcherOpen] = useState(false);
 
   const activePath = location === "/app" ? "/app/board" : location;
+
+  // Active business state
+  const { activeBusiness, setActiveBusiness, available } = useActiveBusiness(person?.businessScope);
+  const hasMultipleBusinesses = available.length > 1;
+  const isOwnerOrCoOwner = person?.role === "owner" || person?.role === "coowner";
+  const showSwitchBusiness = isOwnerOrCoOwner && hasMultipleBusinesses;
 
   // DND state — only loaded when person has an accountId
   const accountId = person?.accountId;
@@ -296,10 +329,17 @@ export default function AppShell({ children }: AppShellProps) {
             </div>
           </div>
 
+          {/* Active business badge — shown for owners/co-owners */}
+          {isOwnerOrCoOwner && (
+            <div className="px-3 pt-3 pb-1 flex-shrink-0">
+              <ActiveBusinessBadge businessKey={activeBusiness} />
+            </div>
+          )}
+
           {/* Nav items */}
-          <nav className="flex-1 overflow-y-auto px-3 py-4 flex flex-col gap-1">
+          <nav className="flex-1 overflow-y-auto px-3 py-3 flex flex-col gap-1">
             {/* Owner/Team pill toggle — owners and co-owners only */}
-            {(person?.role === "owner" || person?.role === "coowner") && (
+            {isOwnerOrCoOwner && (
               <div
                 className="flex mb-3 rounded-xl overflow-hidden flex-shrink-0"
                 style={{ backgroundColor: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}
@@ -332,7 +372,7 @@ export default function AppShell({ children }: AppShellProps) {
             )}
 
             {/* Show owner nav or team-side nav based on active path */}
-            {(activePath.startsWith("/app/team") && (person?.role === "owner" || person?.role === "coowner"))
+            {(activePath.startsWith("/app/team") && isOwnerOrCoOwner)
               ? EMPLOYEE_NAV.map(item => {
                   const isActive = activePath === item.path || activePath.startsWith(item.path + "/");
                   return (
@@ -381,6 +421,13 @@ export default function AppShell({ children }: AppShellProps) {
             }
           </nav>
 
+          {/* Switch Business button — desktop, only for multi-business owners */}
+          {showSwitchBusiness && (
+            <div className="px-3 pb-2 flex-shrink-0">
+              <SwitchBusinessButton onClick={() => setSwitcherOpen(true)} />
+            </div>
+          )}
+
           {/* Logged-in person + sign out */}
           <div
             className="px-4 py-4 flex-shrink-0"
@@ -402,7 +449,7 @@ export default function AppShell({ children }: AppShellProps) {
                 </div>
                 <NotificationBell accountId={person?.accountId} personId={person?.id} />
                 {/* DND toggle — owners and co-owners only */}
-                {(person.role === "owner" || person.role === "coowner") && (
+                {isOwnerOrCoOwner && (
                   <button
                     onClick={handleDndToggle}
                     className="flex-shrink-0 w-7 h-7 rounded-lg flex items-center justify-center transition-all active:scale-95"
@@ -440,7 +487,7 @@ export default function AppShell({ children }: AppShellProps) {
 
         {/* ── Main content area ── */}
         <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-          {/* Mobile top bar — shows brand + Owner/Team toggle (owners only) + notification bell */}
+          {/* Mobile top bar — shows brand + active business + Owner/Team toggle + DND + bell */}
           <header
             className="md:hidden flex items-center justify-between flex-shrink-0"
             style={{
@@ -453,17 +500,22 @@ export default function AppShell({ children }: AppShellProps) {
               paddingBottom: "0px",
             }}
           >
-            {/* Left: brand icon always visible */}
-            <BrandIcon size={28} variant="teal" className="flex-shrink-0" />
+            {/* Left: brand icon + active business name (compact) */}
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <BrandIcon size={28} variant="teal" className="flex-shrink-0" />
+              {isOwnerOrCoOwner && (
+                <ActiveBusinessBadge businessKey={activeBusiness} compact />
+              )}
+            </div>
 
             {/* Owner/Team pill toggle — owners and co-owners only, mobile — centred in remaining space */}
-            {(person?.role === "owner" || person?.role === "coowner") && (
+            {isOwnerOrCoOwner && (
               <div
-                className="flex rounded-xl overflow-hidden mx-3 flex-1"
+                className="flex rounded-xl overflow-hidden mx-2 flex-1"
                 style={{
                   backgroundColor: "rgba(255,255,255,0.06)",
                   border: "1px solid rgba(255,255,255,0.12)",
-                  maxWidth: "260px",
+                  maxWidth: "200px",
                 }}
               >
                 <Link
@@ -498,7 +550,7 @@ export default function AppShell({ children }: AppShellProps) {
 
             {/* Right: DND toggle (owners/co-owners) + notification bell */}
             <div className="flex items-center gap-2 flex-shrink-0">
-              {person && (person.role === "owner" || person.role === "coowner") && (
+              {person && isOwnerOrCoOwner && (
                 <button
                   onClick={handleDndToggle}
                   className="w-8 h-8 rounded-lg flex items-center justify-center transition-all active:scale-95"
@@ -570,24 +622,22 @@ export default function AppShell({ children }: AppShellProps) {
             })}
 
             {/* More button — shows remaining nav items + person info */}
-            {(moreItems.length > 0 || true) && (
-              <button
-                onClick={() => setMoreOpen(true)}
-                className="relative flex-1 flex flex-col items-center justify-center gap-0.5 transition-all duration-150 active:scale-95"
-                style={{ color: moreIsActive ? "#5EEAD4" : "rgba(255,255,255,0.35)" }}
+            <button
+              onClick={() => setMoreOpen(true)}
+              className="relative flex-1 flex flex-col items-center justify-center gap-0.5 transition-all duration-150 active:scale-95"
+              style={{ color: moreIsActive ? "#5EEAD4" : "rgba(255,255,255,0.35)" }}
+            >
+              <span className="text-[20px] leading-none">☰</span>
+              <span
+                className="text-[9px] font-semibold leading-none"
+                style={{ fontFamily: "'Space Grotesk', sans-serif" }}
               >
-                <span className="text-[20px] leading-none">☰</span>
-                <span
-                  className="text-[9px] font-semibold leading-none"
-                  style={{ fontFamily: "'Space Grotesk', sans-serif" }}
-                >
-                  More
-                </span>
-                {moreIsActive && (
-                  <div className="absolute top-0 w-8 h-0.5 rounded-full" style={{ backgroundColor: "#5EEAD4" }} />
-                )}
-              </button>
-            )}
+                More
+              </span>
+              {moreIsActive && (
+                <div className="absolute top-0 w-8 h-0.5 rounded-full" style={{ backgroundColor: "#5EEAD4" }} />
+              )}
+            </button>
           </nav>
         </div>
       </div>
@@ -600,6 +650,18 @@ export default function AppShell({ children }: AppShellProps) {
           person={person}
           onClose={() => setMoreOpen(false)}
           onSignOut={handleSignOut}
+          showSwitchBusiness={showSwitchBusiness}
+          onSwitchBusiness={() => setSwitcherOpen(true)}
+        />
+      )}
+
+      {/* Business Switcher Modal */}
+      {switcherOpen && (
+        <BusinessSwitcherModal
+          available={available}
+          current={activeBusiness}
+          onSelect={setActiveBusiness}
+          onClose={() => setSwitcherOpen(false)}
         />
       )}
     </IdentityContext.Provider>

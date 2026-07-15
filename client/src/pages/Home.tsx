@@ -926,48 +926,7 @@ export default function Home() {
             </Link>
           </div>
 
-          {/* Businesses */}
-          <div>
-            <div className="flex items-center justify-between mb-2 px-1">
-              <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.3)", fontFamily: "'Space Grotesk', sans-serif" }}>
-                Your Businesses
-              </p>
-              {businessContext === "owner" && (
-                <a href="/login" className="text-[9px] transition-colors" style={{ color: "rgba(255,255,255,0.3)" }}
-                  onMouseEnter={e => (e.currentTarget.style.color = "rgba(255,255,255,0.6)")}
-                  onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.3)")}>
-                  Switch
-                </a>
-              )}
-            </div>
-            <div className="flex flex-col gap-1">
-              {(Object.entries(BUSINESSES) as [keyof typeof BUSINESSES, typeof BUSINESSES[keyof typeof BUSINESSES]][]).filter(([key]) => {
-                if (businessContext === "owner") return true;
-                if (businessContext === "chiro") return key === "chiro";
-                if (businessContext === "crossfit") return key === "crossfit";
-                return false;
-              }).map(([key, biz]) => {
-                const isSingleSelected = businessContext !== "owner";
-                return (
-                  <div
-                    key={key}
-                    className="flex items-center gap-2.5 px-3 py-2 rounded-lg"
-                    style={{
-                      backgroundColor: "rgba(255,255,255,0.04)",
-                      border: isSingleSelected ? `1px solid ${biz.color}30` : "1px solid transparent",
-                    }}
-                  >
-                    <span className="text-base leading-none">{biz.icon}</span>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-medium text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>{biz.shortName}</p>
-                      <p className="text-[9px] truncate" style={{ color: "rgba(255,255,255,0.3)" }}>{biz.tagline}</p>
-                    </div>
-                    <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: biz.color }} />
-                  </div>
-                );
-              })}
-            </div>
-          </div>
+
 
           {/* Manage Schedule */}
           <div className="flex flex-col gap-2">

@@ -675,3 +675,12 @@
 - [x] Total steps updated from 11 to 13 (added 2 new steps)
 - [x] Progress bar and step counter updated to reflect new total
 - [x] Co-owner invite acceptance flow already correct: role=coowner lands on /app/board (populated dashboard)
+
+## Business Switcher Redesign (Jul 2026)
+- [x] Create BusinessSwitcher.tsx component with useActiveBusiness hook, ActiveBusinessBadge, SwitchBusinessButton, BusinessSwitcherModal
+- [x] Show active business badge prominently in desktop sidebar (below brand header)
+- [x] Show active business name compactly in mobile top bar (next to brand icon)
+- [x] Add Switch Business button at bottom of desktop sidebar (owners/co-owners with 2+ businesses only)
+- [x] Add Switch Business option in mobile More sheet
+- [x] Remove confusing "Your Businesses" list from Home.tsx calendar sidebar
+- [x] Active business persisted in localStorage (bcc_active_business)
