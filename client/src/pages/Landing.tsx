@@ -299,7 +299,25 @@ const FEATURES = [
       </svg>
     ),
     title: "Owner Board",
-    body: "A shared digital board where co-owners post updates and issues before the meeting. Everyone arrives prepared, nothing gets forgotten, and the meeting stays focused.",
+    body: "A shared digital board where co-owners post updates, issues, and tasks before the meeting. Everyone arrives prepared, nothing gets forgotten, and the meeting stays focused.",
+  },
+  {
+    icon: (
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+      </svg>
+    ),
+    title: "Set Goals & Track KPIs",
+    body: "Set goals with your partner and share them with your team. Employees submit their numbers each week — revenue, new clients, appointments booked, hours logged — so you always know where you stand.",
+  },
+  {
+    icon: (
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+      </svg>
+    ),
+    title: "Team Board",
+    body: "Keep your whole team aligned. Post announcements, assign tasks, track progress, and let employees check in — all in one place. Owners see everything; employees see what's relevant to them.",
   },
   {
     icon: (

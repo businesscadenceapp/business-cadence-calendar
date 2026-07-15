@@ -864,18 +864,32 @@ function StepKPIs({
     <div>
       <StepHeader
         title="Set up your KPIs"
-        subtitle="KPIs are the 3–5 numbers that tell you at a glance whether your business is healthy."
+        subtitle="Key Performance Indicators — the 3–5 numbers that tell you at a glance whether your business is healthy."
       />
       <div className="flex flex-col gap-5">
         {/* Plain-language explainer */}
         <div className="rounded-xl p-4"
           style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)" }}>
-          <p className="text-sm font-semibold text-white mb-2">What is a KPI?</p>
+          <p className="text-sm font-semibold text-white mb-2">What is a KPI (Key Performance Indicator)?</p>
           <p className="text-sm leading-relaxed" style={{ color: "rgba(255,255,255,0.55)" }}>
-            A <strong style={{ color: "#5EEAD4" }}>Key Performance Indicator</strong> is a specific, measurable number you track regularly — like "new patients this week" or "monthly revenue." Instead of guessing how the business is doing, your KPIs give you a clear, objective answer.
+            A <strong style={{ color: "#5EEAD4" }}>Key Performance Indicator</strong> is a specific, measurable number you track regularly to know if your business is on track — without guessing. Think of KPIs as your business's vital signs.
           </p>
-          <p className="text-sm leading-relaxed mt-2" style={{ color: "rgba(255,255,255,0.55)" }}>
-            Your employees will submit their KPI numbers each week or month. You'll see them summarized in your Weekly Review meeting.
+          <div className="mt-3 flex flex-col gap-1.5">
+            <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: "rgba(255,255,255,0.35)" }}>Examples</p>
+            {[
+              { label: "New patients / clients this week", icon: "👥" },
+              { label: "Monthly revenue ($)", icon: "💰" },
+              { label: "Google reviews received this month", icon: "⭐" },
+              { label: "Classes attended (fitness) or appointments booked", icon: "📅" },
+              { label: "Employee hours logged", icon: "⏰" },
+            ].map(ex => (
+              <div key={ex.label} className="flex items-center gap-2 text-sm" style={{ color: "rgba(255,255,255,0.5)" }}>
+                <span>{ex.icon}</span><span>{ex.label}</span>
+              </div>
+            ))}
+          </div>
+          <p className="text-sm leading-relaxed mt-3" style={{ color: "rgba(255,255,255,0.55)" }}>
+            Your employees submit their numbers each week or month. You'll review them together in your Weekly Review meeting.
           </p>
         </div>
 
