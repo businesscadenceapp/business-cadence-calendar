@@ -460,6 +460,36 @@ function TeamPostForm({ currentUser, accountId, employees, onAdded, allowedBusin
   const [assignedToPersonId, setAssignedToPersonId] = useState<string | null>(null);
   const [dueDate, setDueDate] = useState("");
   const [business, setBusiness] = useState(defaultBusiness);
+  const [attachments, setAttachments] = useState<Array<{ key: string; url: string; name: string; mimeType: string; sizeBytes: number }>>([]);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const uploadAttachment = trpc.board.uploadAttachment.useMutation();
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const reader = new FileReader();
+      reader.onload = async (ev) => {
+        const base64 = (ev.target?.result as string).split(',')[1];
+        const result = await uploadAttachment.mutateAsync({
+          fileName: file.name,
+          mimeType: file.type,
+          base64Data: base64,
+          sizeBytes: file.size,
+        });
+        setAttachments(prev => [...prev, result]);
+        setUploading(false);
+      };
+      reader.readAsDataURL(file);
+    } catch {
+      toast.error('Upload failed');
+      setUploading(false);
+    }
+    e.target.value = '';
+  };
 
   const createCard = trpc.board.create.useMutation({
     onSuccess: () => {
@@ -467,6 +497,7 @@ function TeamPostForm({ currentUser, accountId, employees, onAdded, allowedBusin
       setAssignedTo(null);
       setAssignedToPersonId(null);
       setDueDate("");
+      setAttachments([]);
       onAdded();
       toast.success(type === "task" ? "Task assigned to team" : "Announcement posted to team");
     },
@@ -484,6 +515,7 @@ function TeamPostForm({ currentUser, accountId, employees, onAdded, allowedBusin
       business: (business as "chiropractic" | "crossfit" | "realty" | "general"),
       content: content.trim(),
       audience: "team",
+      ...(attachments.length > 0 ? { attachmentsJson: JSON.stringify(attachments) } : {}),
       ...(type === "task" && assignedTo ? { assignedTo, ...(assignedToPersonId ? { assignedToPersonId } : {}) } : {}),
       ...(dueAt ? { dueAt } : {}),
       ...(accountId ? { accountId } : {}),
@@ -612,6 +644,32 @@ function TeamPostForm({ currentUser, accountId, employees, onAdded, allowedBusin
         onKeyDown={e => { if ((e.ctrlKey || e.metaKey) && e.key === "Enter") { e.preventDefault(); handleSubmit(); } }}
       />
 
+      {/* Attachment picker */}
+      <input ref={fileInputRef} type="file" accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.csv" className="hidden" onChange={handleFileChange} />
+      {attachments.length > 0 && (
+        <div className="flex flex-wrap gap-1.5">
+          {attachments.map((a, i) => a.mimeType.startsWith('image/') ? (
+            <div key={i} className="relative">
+              <img src={a.url} alt={a.name} className="w-16 h-16 rounded-lg object-cover border" style={{ borderColor: 'rgba(94,234,212,0.3)' }} />
+              <button onClick={() => setAttachments(prev => prev.filter((_, j) => j !== i))} className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-[9px]" style={{ backgroundColor: '#F87171', color: 'white' }}>✕</button>
+            </div>
+          ) : (
+            <div key={i} className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px]" style={{ backgroundColor: 'rgba(94,234,212,0.1)', border: '1px solid rgba(94,234,212,0.25)', color: '#5EEAD4' }}>
+              📎 {a.name}
+              <button onClick={() => setAttachments(prev => prev.filter((_, j) => j !== i))} className="ml-1 text-[9px]" style={{ color: '#F87171' }}>✕</button>
+            </div>
+          ))}
+        </div>
+      )}
+      <button
+        onClick={() => fileInputRef.current?.click()}
+        disabled={uploading}
+        className="flex items-center gap-2 px-3 py-2 rounded-lg text-[12px] transition-all active:scale-[0.97] w-full"
+        style={{ backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.45)', fontFamily: "'Space Grotesk', sans-serif" }}
+      >
+        {uploading ? '⏳ Uploading…' : '📎 Attach photo or file'}
+      </button>
+
       <button
         onClick={handleSubmit}
         disabled={createCard.isPending}
@@ -667,6 +725,7 @@ function EmployeeQuickActions({ personName, accountId }: { personName: string; a
 
 export default function TeamBoard() {
   const { person } = usePerson();
+  const [, navigate] = useLocation();
   const isOwner = person?.role === "owner" || person?.role === "coowner";
   const currentUser = person?.name ?? null;
   const accountId = person?.accountId;
@@ -798,8 +857,15 @@ export default function TeamBoard() {
           <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl" style={{ backgroundColor: "rgba(94,234,212,0.12)", border: "1px solid rgba(94,234,212,0.25)" }}>
             <span className="text-[11px] font-bold" style={{ color: "#5EEAD4", fontFamily: "'Space Grotesk', sans-serif" }}>📢 {announcements.length} Announcements</span>
           </div>
-          {isOwner && (
-            <div className="ml-auto">
+          <div className="ml-auto flex items-center gap-2">
+            <button
+              onClick={() => navigate("/app/team/archive")}
+              className="px-3 py-2 rounded-xl text-[12px] font-medium transition-all active:scale-[0.97]"
+              style={{ backgroundColor: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: "rgba(255,255,255,0.5)", fontFamily: "'Space Grotesk', sans-serif" }}
+            >
+              🗂 Archive
+            </button>
+            {isOwner && (
               <button
                 onClick={() => setFormOpen(o => !o)}
                 className="px-4 py-2 rounded-xl text-[12px] font-bold transition-all active:scale-[0.97]"
@@ -813,8 +879,8 @@ export default function TeamBoard() {
               >
                 {formOpen ? "✕ Close" : "+ Post to Team"}
               </button>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
 

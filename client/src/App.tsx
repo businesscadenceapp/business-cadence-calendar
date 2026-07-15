@@ -23,6 +23,7 @@ import AdminPanel from "@/pages/AdminPanel";
 import TeamBoard from "@/pages/TeamBoard";
 import TeamCalendar from "@/pages/TeamCalendar";
 import BoardArchive from "@/pages/BoardArchive";
+import TeamBoardArchive from "@/pages/TeamBoardArchive";
 
 // Wrapper that applies PasswordGate + AppShell to any page component
 function Protected({ component: Component }: { component: React.ComponentType }) {
@@ -47,6 +48,9 @@ function Router() {
       {/* Protected app routes — more specific paths MUST come before less specific ones */}
       <Route path={"/app/team/calendar"}>
         <Protected component={TeamCalendar} />
+      </Route>
+      <Route path={"/app/team/archive"}>
+        <Protected component={TeamBoardArchive} />
       </Route>
       <Route path={"/app/team"}>
         <Protected component={TeamBoard} />

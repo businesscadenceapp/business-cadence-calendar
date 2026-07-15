@@ -80,6 +80,7 @@ type Comment = {
   authorName: string;
   authorPersonId: string | null;
   content: string;
+  attachmentsJson: string | null;
   createdAt: Date;
 };
 
@@ -91,6 +92,36 @@ function CardComments({ cardId, currentUser, accountId }: {
   const [open, setOpen] = useState(false);
   const [text, setText] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [commentAttachments, setCommentAttachments] = useState<Array<{ key: string; url: string; name: string; mimeType: string; sizeBytes: number }>>([]);
+  const [uploading, setUploading] = useState(false);
+
+  const uploadAttachment = trpc.board.uploadAttachment.useMutation();
+
+  const handleCommentFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const reader = new FileReader();
+      reader.onload = async (ev) => {
+        const base64 = (ev.target?.result as string).split(',')[1];
+        const result = await uploadAttachment.mutateAsync({
+          fileName: file.name,
+          mimeType: file.type,
+          base64Data: base64,
+          sizeBytes: file.size,
+        });
+        setCommentAttachments(prev => [...prev, result]);
+        setUploading(false);
+      };
+      reader.readAsDataURL(file);
+    } catch {
+      toast.error('Upload failed');
+      setUploading(false);
+    }
+    e.target.value = '';
+  };
 
   const { data, refetch } = trpc.board.listComments.useQuery(
     { cardId },
@@ -112,13 +143,15 @@ function CardComments({ cardId, currentUser, accountId }: {
 
   const handleSubmit = () => {
     if (!currentUser) { toast.error("Select who you are first"); return; }
-    if (!text.trim()) return;
+    if (!text.trim() && commentAttachments.length === 0) return;
     addComment.mutate({
       cardId,
       authorName: currentUser,
-      content: text.trim(),
+      content: text.trim() || '📎',
+      ...(commentAttachments.length > 0 ? { attachmentsJson: JSON.stringify(commentAttachments) } : {}),
       ...(accountId ? { accountId } : {}),
     });
+    setCommentAttachments([]);
   };
 
   return (
@@ -175,7 +208,23 @@ function CardComments({ cardId, currentUser, accountId }: {
                         </button>
                       )}
                     </div>
-                    <p className="text-[12px] mt-0.5 leading-relaxed" style={{ color: "rgba(255,255,255,0.8)" }}>{c.content}</p>
+                    {c.content !== '📎' && <p className="text-[12px] mt-0.5 leading-relaxed" style={{ color: "rgba(255,255,255,0.8)" }}>{c.content}</p>}
+                    {c.attachmentsJson && (() => {
+                      const atts = JSON.parse(c.attachmentsJson) as Array<{ key: string; url: string; name: string; mimeType: string }>;
+                      return (
+                        <div className="flex flex-wrap gap-1.5 mt-1.5">
+                          {atts.map((a, i) => a.mimeType.startsWith('image/') ? (
+                            <a key={i} href={a.url} target="_blank" rel="noopener noreferrer">
+                              <img src={a.url} alt={a.name} className="w-16 h-16 rounded-lg object-cover border" style={{ borderColor: 'rgba(94,234,212,0.2)' }} />
+                            </a>
+                          ) : (
+                            <a key={i} href={a.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-medium" style={{ backgroundColor: 'rgba(94,234,212,0.1)', border: '1px solid rgba(94,234,212,0.25)', color: '#5EEAD4' }}>
+                              📎 {a.name}
+                            </a>
+                          ))}
+                        </div>
+                      );
+                    })()}
                   </div>
                 </div>
               ))}
@@ -183,6 +232,23 @@ function CardComments({ cardId, currentUser, accountId }: {
           )}
 
           {/* New comment input */}
+          <input ref={fileInputRef} type="file" accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.csv" className="hidden" onChange={handleCommentFileChange} />
+          {/* Attachment previews */}
+          {commentAttachments.length > 0 && (
+            <div className="flex flex-wrap gap-1.5">
+              {commentAttachments.map((a, i) => a.mimeType.startsWith('image/') ? (
+                <div key={i} className="relative">
+                  <img src={a.url} alt={a.name} className="w-14 h-14 rounded-lg object-cover border" style={{ borderColor: 'rgba(94,234,212,0.3)' }} />
+                  <button onClick={() => setCommentAttachments(prev => prev.filter((_, j) => j !== i))} className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-[9px]" style={{ backgroundColor: '#F87171', color: 'white' }}>✕</button>
+                </div>
+              ) : (
+                <div key={i} className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px]" style={{ backgroundColor: 'rgba(94,234,212,0.1)', border: '1px solid rgba(94,234,212,0.25)', color: '#5EEAD4' }}>
+                  📎 {a.name}
+                  <button onClick={() => setCommentAttachments(prev => prev.filter((_, j) => j !== i))} className="ml-1 text-[9px]" style={{ color: '#F87171' }}>✕</button>
+                </div>
+              ))}
+            </div>
+          )}
           <div className="flex gap-2 items-end">
             <textarea
               ref={textareaRef}
@@ -206,21 +272,32 @@ function CardComments({ cardId, currentUser, accountId }: {
               onFocus={e => (e.target.style.borderColor = "#5EEAD4")}
               onBlur={e => (e.target.style.borderColor = "rgba(255,255,255,0.12)")}
             />
-            <button
-              onClick={handleSubmit}
-              disabled={!text.trim() || addComment.isPending}
-              className="px-3 py-2 rounded-lg text-[11px] font-bold transition-all active:scale-[0.97] flex-shrink-0"
-              style={{
-                backgroundColor: text.trim() ? "rgba(94,234,212,0.2)" : "rgba(255,255,255,0.05)",
-                border: `1.5px solid ${text.trim() ? "rgba(94,234,212,0.4)" : "rgba(255,255,255,0.1)"}`,
-                color: text.trim() ? "#5EEAD4" : "rgba(255,255,255,0.3)",
-                fontFamily: "'Space Grotesk', sans-serif",
-              }}
-            >
-              {addComment.isPending ? "…" : "Post"}
-            </button>
+            <div className="flex flex-col gap-1.5 flex-shrink-0">
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+                className="px-2.5 py-2 rounded-lg text-[11px] transition-all active:scale-[0.97]"
+                style={{ backgroundColor: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.5)' }}
+                title="Attach photo or file"
+              >
+                {uploading ? '⏳' : '📎'}
+              </button>
+              <button
+                onClick={handleSubmit}
+                disabled={(!text.trim() && commentAttachments.length === 0) || addComment.isPending}
+                className="px-3 py-2 rounded-lg text-[11px] font-bold transition-all active:scale-[0.97]"
+                style={{
+                  backgroundColor: (text.trim() || commentAttachments.length > 0) ? "rgba(94,234,212,0.2)" : "rgba(255,255,255,0.05)",
+                  border: `1.5px solid ${(text.trim() || commentAttachments.length > 0) ? "rgba(94,234,212,0.4)" : "rgba(255,255,255,0.1)"}`,
+                  color: (text.trim() || commentAttachments.length > 0) ? "#5EEAD4" : "rgba(255,255,255,0.3)",
+                  fontFamily: "'Space Grotesk', sans-serif",
+                }}
+              >
+                {addComment.isPending ? "…" : "Post"}
+              </button>
+            </div>
           </div>
-          <p className="text-[10px]" style={{ color: "rgba(255,255,255,0.25)" }}>Enter to post · Shift+Enter for new line</p>
+          <p className="text-[10px]" style={{ color: "rgba(255,255,255,0.25)" }}>Enter to post · Shift+Enter for new line · 📎 to attach</p>
         </div>
       )}
     </div>

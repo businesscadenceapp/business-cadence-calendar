@@ -497,6 +497,7 @@ export const boardComments = mysqlTable("board_comments", {
   authorName: varchar("authorName", { length: 128 }).notNull(),
   authorPersonId: varchar("authorPersonId", { length: 64 }), // references persons.id
   content: text("content").notNull(),
+  attachmentsJson: text("attachmentsJson"), // JSON: Array<{ key, url, name, mimeType, sizeBytes }>
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });

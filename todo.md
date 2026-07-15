@@ -640,3 +640,11 @@
 - [x] BoardArchive page: full-text search, topic tag filters, decision markers, pagination
 - [x] Archive link (🗂) in Board header (desktop + mobile)
 - [x] Route /app/board/archive registered in App.tsx
+
+## Board Upgrades - Attachments & Archive
+- [x] Photo/file attachments on Owner Board posts
+- [x] Photo/file attachments in board comments (Owner Board)
+- [x] Photo/file attachments on Team Board posts
+- [x] Team Board Archive page with search, topic tags, decision markers
+- [x] Archive button on Team Board header (visible to all roles)
+- [x] boardComments.attachmentsJson column added to DB

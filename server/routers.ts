@@ -805,6 +805,7 @@ Be concise and specific. If a field has nothing, use an empty array.`,
         authorName: z.string().min(1).max(128),
         authorPersonId: z.string().optional(),
         content: z.string().min(1).max(2000),
+        attachmentsJson: z.string().optional(),
         accountId: z.number().optional(),
       }))
       .mutation(async ({ input }) => {
@@ -818,6 +819,7 @@ Be concise and specific. If a field has nothing, use an empty array.`,
           authorName: input.authorName,
           authorPersonId: input.authorPersonId,
           content: input.content,
+          ...(input.attachmentsJson ? { attachmentsJson: input.attachmentsJson } : {}),
         }).$returningId();
         // Notify the card author if they're not the commenter
         if (input.accountId) {
@@ -861,13 +863,13 @@ Be concise and specific. If a field has nothing, use an empty array.`,
         mimeType: z.string().min(1).max(128),
         base64Data: z.string().min(1), // base64-encoded file content
         sizeBytes: z.number().int().positive(),
-        accountId: z.number(),
+        accountId: z.number().optional(),
       }))
       .mutation(async ({ input }) => {
         const { storagePut } = await import('./storage');
         const buffer = Buffer.from(input.base64Data, 'base64');
         const ext = input.fileName.split('.').pop() || 'bin';
-        const key = `board-attachments/${input.accountId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+        const key = `board-attachments/${input.accountId ?? 'shared'}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
         const { url } = await storagePut(key, buffer, input.mimeType);
         return { key, url, name: input.fileName, mimeType: input.mimeType, sizeBytes: input.sizeBytes };
       }),
