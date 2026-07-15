@@ -68,6 +68,7 @@ type Card = {
   seenBy: Author | null;
   archivedAt: Date | null;
   audience: "owner" | "team" | null;
+  attachmentsJson: string | null;
   createdAt: Date;
 };
 
@@ -543,6 +544,32 @@ function BoardCard({ card, currentUser, accountId, onSeen, onArchive, onDelete }
             </div>
 
             <p className="text-[14px] text-white leading-relaxed font-medium">{card.content}</p>
+            {/* Attachments */}
+            {card.attachmentsJson && (() => {
+              try {
+                const atts: Array<{ key: string; url: string; name: string; mimeType: string; sizeBytes: number }> = JSON.parse(card.attachmentsJson);
+                if (!atts.length) return null;
+                return (
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {atts.map(att => att.mimeType.startsWith('image/') ? (
+                      <a key={att.key} href={att.url} target="_blank" rel="noopener noreferrer" className="block w-24 h-24 rounded-lg overflow-hidden flex-shrink-0" style={{ border: '1.5px solid rgba(94,234,212,0.25)' }}>
+                        <img src={att.url} alt={att.name} className="w-full h-full object-cover" />
+                      </a>
+                    ) : (
+                      <a key={att.key} href={att.url} target="_blank" rel="noopener noreferrer"
+                        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] transition-opacity hover:opacity-80"
+                        style={{ backgroundColor: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(255,255,255,0.12)', color: '#5EEAD4' }}
+                      >
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+                        </svg>
+                        <span className="max-w-[120px] truncate">{att.name}</span>
+                      </a>
+                    ))}
+                  </div>
+                );
+              } catch { return null; }
+            })()}
           </div>
         </div>
 
@@ -624,6 +651,43 @@ function AddCardForm({ currentUser, onAdded, allowedBusinesses, defaultBusiness,
   const [meetingType, setMeetingType] = useState<"daily_huddle" | "weekly_meeting" | "quarterly_review" | null>(null);
   const [scheduledDate, setScheduledDate] = useState("");
   const [notifyPersonIds, setNotifyPersonIds] = useState<string[]>([]);
+  const [pendingAttachments, setPendingAttachments] = useState<Array<{ key: string; url: string; name: string; mimeType: string; sizeBytes: number }>>([]);
+  const [uploadingFile, setUploadingFile] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const uploadAttachment = trpc.board.uploadAttachment.useMutation();
+
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 16 * 1024 * 1024) { toast.error("File too large (max 16 MB)"); return; }
+    setUploadingFile(true);
+    try {
+      const base64Data = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const result = reader.result as string;
+          resolve(result.split(',')[1]); // strip data:...;base64, prefix
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+      const result = await uploadAttachment.mutateAsync({
+        fileName: file.name,
+        mimeType: file.type || 'application/octet-stream',
+        base64Data,
+        sizeBytes: file.size,
+        accountId: accountId ?? 0,
+      });
+      setPendingAttachments(prev => [...prev, result]);
+      toast.success('File attached');
+    } catch {
+      toast.error('Failed to upload file');
+    } finally {
+      setUploadingFile(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
 
   const createCard = trpc.board.create.useMutation({
     onSuccess: () => {
@@ -634,6 +698,7 @@ function AddCardForm({ currentUser, onAdded, allowedBusinesses, defaultBusiness,
       setMeetingType(null);
       setScheduledDate("");
       setNotifyPersonIds([]);
+      setPendingAttachments([]);
       onAdded();
       toast.success("Posted to the board");
     },
@@ -660,6 +725,7 @@ function AddCardForm({ currentUser, onAdded, allowedBusinesses, defaultBusiness,
       ...(type === "issue" && scheduledDateMs ? { scheduledDate: scheduledDateMs } : {}),
       ...(accountId ? { accountId } : {}),
       ...((type === "update" || type === "issue") && notifyPersonIds.length > 0 ? { notifyPersonIds } : {}),
+      ...(pendingAttachments.length > 0 ? { attachmentsJson: JSON.stringify(pendingAttachments) } : {}),
     });
   };
 
@@ -872,6 +938,79 @@ function AddCardForm({ currentUser, onAdded, allowedBusinesses, defaultBusiness,
         }}
       />
 
+      {/* Attachment picker */}
+      <div className="flex flex-col gap-2">
+        <div className="flex items-center gap-2">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx,.csv"
+            className="hidden"
+            onChange={handleFileSelect}
+          />
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploadingFile}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-medium transition-all active:scale-[0.97] disabled:opacity-50"
+            style={{
+              backgroundColor: "rgba(94,234,212,0.08)",
+              border: "1.5px solid rgba(94,234,212,0.2)",
+              color: "#5EEAD4",
+              fontFamily: "'Space Grotesk', sans-serif",
+            }}
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+            </svg>
+            {uploadingFile ? "Uploading…" : "Attach photo or file"}
+          </button>
+          {pendingAttachments.length > 0 && (
+            <span className="text-[11px]" style={{ color: "rgba(255,255,255,0.4)" }}>
+              {pendingAttachments.length} file{pendingAttachments.length !== 1 ? "s" : ""} attached
+            </span>
+          )}
+        </div>
+        {/* Attachment previews */}
+        {pendingAttachments.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {pendingAttachments.map((att, i) => (
+              <div key={att.key} className="relative group">
+                {att.mimeType.startsWith('image/') ? (
+                  <div className="relative w-20 h-20 rounded-lg overflow-hidden" style={{ border: "1.5px solid rgba(94,234,212,0.25)" }}>
+                    <img src={att.url} alt={att.name} className="w-full h-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => setPendingAttachments(prev => prev.filter((_, j) => j !== i))}
+                      className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full flex items-center justify-center text-[10px] opacity-0 group-hover:opacity-100 transition-opacity"
+                      style={{ backgroundColor: "rgba(0,0,0,0.7)", color: "#F87171" }}
+                    >✕</button>
+                  </div>
+                ) : (
+                  <div
+                    className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg"
+                    style={{ backgroundColor: "rgba(255,255,255,0.06)", border: "1.5px solid rgba(255,255,255,0.12)" }}
+                  >
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#5EEAD4" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+                    </svg>
+                    <span className="text-[11px] max-w-[100px] truncate" style={{ color: "rgba(255,255,255,0.7)" }}>{att.name}</span>
+                    <button
+                      type="button"
+                      onClick={() => setPendingAttachments(prev => prev.filter((_, j) => j !== i))}
+                      className="text-[10px] ml-1 transition-colors"
+                      style={{ color: "rgba(255,255,255,0.3)" }}
+                      onMouseEnter={e => (e.currentTarget.style.color = "#F87171")}
+                      onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.3)")}
+                    >✕</button>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
       {/* Notify — recipient picker */}
       {(type === "update" || type === "issue") && assignablePersons && assignablePersons.length > 0 && (
         <div className="flex flex-col gap-1.5">
@@ -1066,7 +1205,19 @@ export default function Board() {
           <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl" style={{ backgroundColor: "rgba(225,29,72,0.15)", border: "1px solid rgba(225,29,72,0.25)" }}>
             <span className="text-[11px] font-bold" style={{ color: "#FDA4AF", fontFamily: "'Space Grotesk', sans-serif" }}>🔥 {issues.length} Issues</span>
           </div>
-          <div className="ml-auto">
+          <div className="ml-auto flex items-center gap-2">
+            <a
+              href="/app/board/archive"
+              className="px-3 py-2 rounded-xl text-[12px] font-medium transition-all hover:opacity-80"
+              style={{
+                backgroundColor: "rgba(255,255,255,0.06)",
+                border: "1px solid rgba(255,255,255,0.12)",
+                color: "rgba(255,255,255,0.5)",
+                fontFamily: "'Space Grotesk', sans-serif",
+              }}
+            >
+              🗂 Archive
+            </a>
             <button
               onClick={() => setFormOpen(o => !o)}
               className="px-4 py-2 rounded-xl text-[12px] font-bold transition-all active:scale-[0.97]"
@@ -1158,7 +1309,19 @@ export default function Board() {
             })}
           </div>
         )}
-        <div className="ml-auto flex-shrink-0">
+        <div className="ml-auto flex-shrink-0 flex items-center gap-2">
+          <a
+            href="/app/board/archive"
+            className="px-2.5 py-2 rounded-xl text-[11px] font-medium transition-all hover:opacity-80"
+            style={{
+              backgroundColor: "rgba(255,255,255,0.06)",
+              border: "1px solid rgba(255,255,255,0.12)",
+              color: "rgba(255,255,255,0.5)",
+              fontFamily: "'Space Grotesk', sans-serif",
+            }}
+          >
+            🗂
+          </a>
           <button
             onClick={() => setFormOpen(o => !o)}
             className="px-4 py-2 rounded-xl text-[12px] font-bold transition-all active:scale-[0.97]"

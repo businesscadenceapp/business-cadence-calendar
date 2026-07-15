@@ -853,6 +853,103 @@ Be concise and specific. If a field has nothing, use an empty array.`,
         await db.delete(boardComments).where(eq(boardComments.id, input.commentId));
         return { success: true };
       }),
+
+    /** Upload a file attachment and return its storage URL + key. */
+    uploadAttachment: publicProcedure
+      .input(z.object({
+        fileName: z.string().min(1).max(256),
+        mimeType: z.string().min(1).max(128),
+        base64Data: z.string().min(1), // base64-encoded file content
+        sizeBytes: z.number().int().positive(),
+        accountId: z.number(),
+      }))
+      .mutation(async ({ input }) => {
+        const { storagePut } = await import('./storage');
+        const buffer = Buffer.from(input.base64Data, 'base64');
+        const ext = input.fileName.split('.').pop() || 'bin';
+        const key = `board-attachments/${input.accountId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+        const { url } = await storagePut(key, buffer, input.mimeType);
+        return { key, url, name: input.fileName, mimeType: input.mimeType, sizeBytes: input.sizeBytes };
+      }),
+
+    /** Archive a card with optional topic tag and decision summary. */
+    archiveWithMeta: publicProcedure
+      .input(z.object({
+        id: z.number(),
+        topicTag: z.string().max(128).optional(),
+        decision: z.string().max(2000).optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { getDb } = await import('./db');
+        const { boardCards } = await import('../drizzle/schema');
+        const { eq } = await import('drizzle-orm');
+        const db = await getDb();
+        if (!db) throw new Error('DB unavailable');
+        await db.update(boardCards)
+          .set({
+            archivedAt: new Date(),
+            archiveTopicTag: input.topicTag ?? null,
+            archiveDecision: input.decision ?? null,
+          })
+          .where(eq(boardCards.id, input.id));
+        return { success: true };
+      }),
+
+    /** Get archived cards for an account with optional search and topic filter. */
+    getArchived: publicProcedure
+      .input(z.object({
+        accountId: z.number(),
+        search: z.string().optional(),
+        topicTag: z.string().optional(),
+        audience: z.enum(['owner', 'team']).optional(),
+        limit: z.number().int().min(1).max(100).default(50),
+        offset: z.number().int().min(0).default(0),
+      }))
+      .query(async ({ input }) => {
+        const { getDb } = await import('./db');
+        const { boardCards } = await import('../drizzle/schema');
+        const { and, eq, isNotNull, like, desc, sql } = await import('drizzle-orm');
+        const db = await getDb();
+        if (!db) return { cards: [], total: 0 };
+        const conditions = [
+          isNotNull(boardCards.archivedAt),
+        ];
+        if (input.audience) conditions.push(eq(boardCards.audience, input.audience));
+        if (input.topicTag) conditions.push(eq(boardCards.archiveTopicTag, input.topicTag));
+        if (input.search) {
+          const term = `%${input.search}%`;
+          conditions.push(
+            sql`(${boardCards.content} LIKE ${term} OR ${boardCards.archiveDecision} LIKE ${term} OR ${boardCards.archiveTopicTag} LIKE ${term})`
+          );
+        }
+        const [cards, countResult] = await Promise.all([
+          db.select().from(boardCards)
+            .where(and(...conditions))
+            .orderBy(desc(boardCards.archivedAt))
+            .limit(input.limit)
+            .offset(input.offset),
+          db.select({ count: sql<number>`count(*)` }).from(boardCards)
+            .where(and(...conditions)),
+        ]);
+        return { cards, total: Number(countResult[0]?.count ?? 0) };
+      }),
+
+    /** Get all unique topic tags used in archived cards for an account. */
+    getArchiveTags: publicProcedure
+      .input(z.object({ accountId: z.number() }))
+      .query(async ({ input }) => {
+        const { getDb } = await import('./db');
+        const { boardCards } = await import('../drizzle/schema');
+        const { isNotNull, isNotNull: _isNotNull, sql } = await import('drizzle-orm');
+        const db = await getDb();
+        if (!db) return { tags: [] };
+        const rows = await db
+          .selectDistinct({ tag: boardCards.archiveTopicTag })
+          .from(boardCards)
+          .where(isNotNull(boardCards.archiveTopicTag));
+        const tags = rows.map(r => r.tag).filter(Boolean) as string[];
+        return { tags: tags.sort() };
+      }),
   }),
   weeklyReport: router({
     /** Get all employees with their metrics for the current account. */

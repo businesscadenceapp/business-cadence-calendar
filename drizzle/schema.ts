@@ -89,10 +89,15 @@ export const boardCards = mysqlTable("board_cards", {
   updateDate: bigint("updateDate", { mode: "number" }),  // ms since epoch — date this update covers
   // Audience — which side of the wall this card belongs to
   audience: mysqlEnum("audience", ["owner", "team"]).notNull().default("owner"),
+  // Attachments — JSON array of { key: string, url: string, name: string, mimeType: string, sizeBytes: number }
+  attachmentsJson: text("attachmentsJson"), // JSON: Array<{ key, url, name, mimeType, sizeBytes }>
   // Legacy seen/archive fields (updates + issues)
   seenAt: timestamp("seenAt"),
   seenBy: varchar("seenBy", { length: 128 }),
   archivedAt: timestamp("archivedAt"),
+  // Archive metadata
+  archiveTopicTag: varchar("archiveTopicTag", { length: 128 }), // e.g. "Staffing", "Equipment", "Finance"
+  archiveDecision: text("archiveDecision"), // optional summary of what was decided
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });

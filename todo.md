@@ -631,3 +631,12 @@
 - [x] EMPLOYEE_NAV: Calendar entry added for employees
 - [x] AppShell: team-side sidebar nav for owners shows EMPLOYEE_NAV items
 - [x] AppShell: mobile bottom tab bar switches to EMPLOYEE_NAV when on team-side pages
+
+## Board Upgrades (Attachments + Archive)
+- [x] DB schema: attachmentsJson, archiveTopicTag, archiveDecision fields on boardCards
+- [x] tRPC: uploadAttachment, archiveWithMeta, getArchived, getArchiveTags procedures
+- [x] Board post composer: attach photo/file button with preview thumbnails
+- [x] Board card display: inline image thumbnails and file links
+- [x] BoardArchive page: full-text search, topic tag filters, decision markers, pagination
+- [x] Archive link (🗂) in Board header (desktop + mobile)
+- [x] Route /app/board/archive registered in App.tsx
