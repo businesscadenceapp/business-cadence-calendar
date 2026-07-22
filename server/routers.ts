@@ -995,6 +995,7 @@ Be concise and specific. If a field has nothing, use an empty array.`,
         id: z.number().optional(),
         name: z.string().min(1),
         role: z.string().min(1),
+        businessSlug: z.string().min(1),
         sortOrder: z.number().optional(),
         metrics: z.array(z.object({
           label: z.string().min(1),
@@ -1037,9 +1038,10 @@ Be concise and specific. If a field has nothing, use an empty array.`,
         accountId: z.number(),
         weekKey: z.string(),
         prevWeekKey: z.string(),
+        businessSlug: z.string().optional(),
       }))
       .query(async ({ input }) => {
-        return getWeeklyReportSummary(input.accountId, input.weekKey, input.prevWeekKey);
+        return getWeeklyReportSummary(input.accountId, input.weekKey, input.prevWeekKey, input.businessSlug);
       }),
   }),
   goals: router({

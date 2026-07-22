@@ -563,15 +563,18 @@ export async function recalculateOverrides(
 // ─── Weekly Report Helpers ───────────────────────────────────────────────────
 
 /** Get all active employees with their metrics for an account. */
-export async function getEmployeesWithMetrics(accountId: number): Promise<
+export async function getEmployeesWithMetrics(accountId: number, businessSlug?: string): Promise<
   Array<Employee & { metrics: EmployeeMetric[] }>
 > {
   const db = await getDb();
   if (!db) return [];
+  const whereClause = businessSlug
+    ? and(eq(employees.accountId, accountId), eq(employees.isActive, true), eq(employees.businessSlug, businessSlug))
+    : and(eq(employees.accountId, accountId), eq(employees.isActive, true));
   const emps = await db
     .select()
     .from(employees)
-    .where(and(eq(employees.accountId, accountId), eq(employees.isActive, true)))
+    .where(whereClause)
     .orderBy(employees.sortOrder, employees.id);
   if (emps.length === 0) return [];
   const empIds = emps.map((e) => e.id);
@@ -595,6 +598,7 @@ export async function saveEmployee(data: {
   id?: number;
   name: string;
   role: string;
+  businessSlug: string;
   sortOrder?: number;
   metrics: Array<{ label: string; unit?: string; sortOrder?: number }>;
 }): Promise<number> {
@@ -605,13 +609,14 @@ export async function saveEmployee(data: {
   if (empId) {
     await db
       .update(employees)
-      .set({ name: data.name, role: data.role, sortOrder: data.sortOrder ?? 0, updatedAt: new Date() })
+      .set({ name: data.name, role: data.role, businessSlug: data.businessSlug, sortOrder: data.sortOrder ?? 0, updatedAt: new Date() })
       .where(and(eq(employees.id, empId), eq(employees.accountId, data.accountId)));
   } else {
     const [result] = await db.insert(employees).values({
       accountId: data.accountId,
       name: data.name,
       role: data.role,
+      businessSlug: data.businessSlug,
       sortOrder: data.sortOrder ?? 0,
     });
     empId = (result as any).insertId as number;
@@ -686,7 +691,7 @@ export async function submitWeeklyReport(data: {
 }
 
 /** Get weekly report data for all employees for a given account + weekKey. */
-export async function getWeeklyReportSummary(accountId: number, weekKey: string, prevWeekKey: string): Promise<
+export async function getWeeklyReportSummary(accountId: number, weekKey: string, prevWeekKey: string, businessSlug?: string): Promise<
   Array<{
     employee: Employee;
     metrics: EmployeeMetric[];
@@ -698,7 +703,7 @@ export async function getWeeklyReportSummary(accountId: number, weekKey: string,
   const db = await getDb();
   if (!db) return [];
 
-  const empsWithMetrics = await getEmployeesWithMetrics(accountId);
+  const empsWithMetrics = await getEmployeesWithMetrics(accountId, businessSlug);
   if (empsWithMetrics.length === 0) return [];
 
   const empIds = empsWithMetrics.map((e) => e.id);

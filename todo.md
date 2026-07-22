@@ -716,4 +716,17 @@
 - [x] Goals: filter goals by active business
 - [x] KPIs: filter KPI categories/entries by active business
 - [x] Reports (Monthly/Quarterly/Goals tabs): filter by active business
-- [ ] Reports (Weekly tab): employees are account-wide, no business field on employees table (data model limitation)
+- [x] Reports (Weekly tab): now filters employees by businessSlug via getSummary procedure
+
+## Employee Business Scoping
+- [x] Add `businessSlug` column to `employees` table in schema.ts
+- [x] Push DB migration (pnpm db:push)
+- [x] Update `getEmployeesWithMetrics` in db.ts to accept optional businessSlug filter
+- [x] Update `getWeeklyReportSummary` in db.ts to filter employees by businessSlug
+- [x] Update `weeklyReport.getSummary` tRPC procedure to accept businessSlug param
+- [x] Update `weeklyReport.getEmployees` to accept businessSlug param (optional, used by owner)
+- [x] Update `weeklyReport.saveEmployee` to accept and store businessSlug
+- [x] Update Employee Setup page to show/require business assignment per employee (grouped by business, selector in form)
+- [x] Update Weekly Reports WeeklyTab to pass active business slug to getSummary
+- [x] Update KPI employee view to only show categories for the employee's assigned business (already scoped via persons.businessScope)
+- [x] Update Team Board to only show tasks assigned to employees of the active business

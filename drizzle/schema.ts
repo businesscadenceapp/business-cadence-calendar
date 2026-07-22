@@ -269,6 +269,7 @@ export const employees = mysqlTable("employees", {
   accountId: int("accountId").notNull(), // references app_users.id
   name: varchar("name", { length: 128 }).notNull(),
   role: varchar("role", { length: 128 }).notNull(),
+  businessSlug: varchar("businessSlug", { length: 64 }).default("").notNull(), // which business this employee belongs to
   isActive: boolean("isActive").default(true).notNull(),
   sortOrder: int("sortOrder").default(0).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),

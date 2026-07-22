@@ -301,7 +301,7 @@ function WeeklyTab({ accountId, forcedBusiness }: { accountId: number; forcedBus
   const [subTab, setSubTab] = useState<"metrics" | "checkins">("metrics");
 
   const summaryQuery = trpc.weeklyReport.getSummary.useQuery(
-    { accountId, weekKey: selectedWeek, prevWeekKey },
+    { accountId, weekKey: selectedWeek, prevWeekKey, businessSlug: forcedBusiness ?? undefined },
     { enabled: accountId !== undefined }
   );
   const rows: SummaryRow[] = (summaryQuery.data as SummaryRow[] | undefined) ?? [];

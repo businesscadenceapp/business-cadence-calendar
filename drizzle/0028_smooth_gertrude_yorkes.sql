@@ -1,0 +1,1 @@
+ALTER TABLE `employees` ADD `businessSlug` varchar(64) DEFAULT '' NOT NULL;
