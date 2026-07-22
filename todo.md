@@ -684,3 +684,12 @@
 - [x] Add Switch Business option in mobile More sheet
 - [x] Remove confusing "Your Businesses" list from Home.tsx calendar sidebar
 - [x] Active business persisted in localStorage (bcc_active_business)
+
+## Co-owner Business Scope Selection (Jul 2026)
+- [x] Add coOwnerBusinesses field to OnboardingData interface
+- [x] Add business checkboxes to StepCoOwnerInvite (Chiropractic, CrossFit)
+- [x] Default to all businesses checked
+- [x] Pass coOwnerBusinesses as comma-separated string to person.invite
+- [x] Backend person.invite already accepts and stores businessScope correctly
+- [x] AcceptInvite flow returns businessScope from person record
+- [x] Co-owner lands with only selected businesses visible in switcher

@@ -50,6 +50,7 @@ interface OnboardingData {
   // Co-owner invite
   coOwnerName: string;
   coOwnerEmail: string;
+  coOwnerBusinesses: string[]; // business slugs they have access to
   // Business hours
   bhWorkDays: number[];
   bhStartTime: string;
@@ -228,7 +229,7 @@ function StepCoOwnerInvite({
   onNext,
   onBack,
 }: {
-  data: Pick<OnboardingData, "coOwnerName" | "coOwnerEmail">;
+  data: Pick<OnboardingData, "coOwnerName" | "coOwnerEmail" | "coOwnerBusinesses">;
   onChange: (u: Partial<OnboardingData>) => void;
   onNext: () => void;
   onBack: () => void;
@@ -265,8 +266,30 @@ function StepCoOwnerInvite({
             type="email"
           />
         </div>
+        <div>
+          <label className="block text-xs font-semibold uppercase tracking-wide mb-3"
+            style={{ color: "rgba(255,255,255,0.4)" }}>Which businesses should they access?</label>
+          <div className="flex flex-col gap-2">
+            {[{ slug: "chiro", label: "Chiropractic" }, { slug: "crossfit", label: "CrossFit" }].map(biz => (
+              <label key={biz.slug} className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={data.coOwnerBusinesses?.includes(biz.slug) ?? false}
+                  onChange={e => {
+                    const updated = e.target.checked
+                      ? [...(data.coOwnerBusinesses || []), biz.slug]
+                      : (data.coOwnerBusinesses || []).filter(s => s !== biz.slug);
+                    onChange({ coOwnerBusinesses: updated });
+                  }}
+                  className="w-4 h-4 rounded"
+                />
+                <span className="text-sm" style={{ color: "rgba(255,255,255,0.8)" }}>{biz.label}</span>
+              </label>
+            ))}
+          </div>
+        </div>
         <TipBox>
-          Your co-owner will receive an invite link to join BusinessCadence as a co-owner. They'll have full access to the Owner Board, KPIs, and all settings.
+          Your co-owner will receive an invite link to join BusinessCadence. They will have access to the businesses you select above.
         </TipBox>
       </div>
       <NavButtons
@@ -1511,6 +1534,7 @@ export default function Onboarding() {
     // Co-owner invite
     coOwnerName: "",
     coOwnerEmail: "",
+    coOwnerBusinesses: ["chiro", "crossfit"], // default to all available
     // Business hours
     bhWorkDays: [1, 2, 3, 4, 5],
     bhStartTime: "08:00",
@@ -1634,7 +1658,7 @@ export default function Onboarding() {
             name: data.coOwnerName.trim(),
             email: data.coOwnerEmail.trim(),
             role: "coowner",
-            businessScope: kpiSlug,
+            businessScope: data.coOwnerBusinesses.join(","),
             origin,
           });
           sent++;
