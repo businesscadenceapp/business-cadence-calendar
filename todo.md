@@ -702,3 +702,10 @@
 - [ ] Fix kpi procedures to filter by businessScope
 - [ ] Fix team board to filter by businessScope
 - [ ] Audit calendar and other features for businessScope filtering
+
+## Realty Removal (Beta Cleanup)
+- [ ] Remove Realty from BusinessSwitcher getAvailableBusinesses
+- [ ] Remove Realty from calendarData BUSINESSES constant
+- [ ] Remove Realty from Board.tsx type and bizKeyToEnum
+- [ ] Remove Realty from Onboarding business options
+- [ ] Fix protectedProcedure import error in server/routers.ts

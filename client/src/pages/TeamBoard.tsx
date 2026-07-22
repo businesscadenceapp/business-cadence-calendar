@@ -20,7 +20,7 @@ import { useLocation } from "wouter";
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type CardType = "update" | "issue" | "task";
-type Business = "chiropractic" | "crossfit" | "realty" | "general";
+type Business = "chiropractic" | "crossfit" | "general";
 
 type Card = {
   id: number;
@@ -529,7 +529,7 @@ function TeamPostForm({ currentUser, accountId, employees, onAdded, allowedBusin
     createCard.mutate({
       author: currentUser,
       type,
-      business: (business as "chiropractic" | "crossfit" | "realty" | "general"),
+      business: (business as "chiropractic" | "crossfit" | "general"),
       content: content.trim(),
       audience: "team",
       ...(attachments.length > 0 ? { attachmentsJson: JSON.stringify(attachments) } : {}),

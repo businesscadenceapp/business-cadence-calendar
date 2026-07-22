@@ -190,7 +190,7 @@ export const appRouter = router({
           .map(i => i.comment ? `  ○ ${i.label}\n     → Note: ${i.comment}` : `  ○ ${i.label}`)
           .join("\n");
 
-        const prompt = `You are a business advisor summarizing a ${input.meetingType} meeting for a husband-and-wife co-owner team who run three businesses: New Beginnings Chiropractic (17+ years, anchor business), Evolved CrossFit (2 years, recently profitable), and Bubbles Realty (rental property, targeting $8K net/year).
+        const prompt = `You are a business advisor summarizing a ${input.meetingType} meeting for a husband-and-wife co-owner team who run two businesses: New Beginnings Chiropractic (17+ years, anchor business) and Evolved CrossFit (2 years, recently profitable).
 
 Meeting date: ${input.dateKey}
 Meeting type: ${input.meetingType.charAt(0).toUpperCase() + input.meetingType.slice(1)} — ${input.businessContext}
@@ -236,7 +236,7 @@ Keep the tone warm but professional. This summary will be saved under this speci
     /** Get the template for a specific business + meeting type (used by the calendar detail panel). */
     get: publicProcedure
       .input(z.object({
-        business: z.enum(["chiropractic", "crossfit", "realty"]),
+        business: z.enum(["chiropractic", "crossfit"]),
         meetingType: z.enum(["daily", "weekly", "monthly", "quarterly"]),
       }))
       .query(async ({ input }) => {
@@ -247,7 +247,7 @@ Keep the tone warm but professional. This summary will be saved under this speci
     /** Save a customized agenda template. Requires password verification on the frontend. */
     save: publicProcedure
       .input(z.object({
-        business: z.enum(["chiropractic", "crossfit", "realty"]),
+        business: z.enum(["chiropractic", "crossfit"]),
         meetingType: z.enum(["daily", "weekly", "monthly", "quarterly"]),
         items: z.array(z.object({
           key: z.string(),
@@ -655,7 +655,7 @@ Be concise and specific. If a field has nothing, use an empty array.`,
       .input(z.object({
         author: z.string().min(1).max(128),
         type: z.enum(["update", "issue", "task"]),
-        business: z.enum(["chiropractic", "crossfit", "realty", "general"]),
+        business: z.enum(["chiropractic", "crossfit", "general"]),
         content: z.string().min(1).max(1000),
         assignedTo: z.string().min(1).max(128).optional(),
         assignedToPersonId: z.string().optional(),
@@ -1054,7 +1054,7 @@ Be concise and specific. If a field has nothing, use an empty array.`,
     create: publicProcedure
       .input(z.object({
         accountId: z.number(),
-        business: z.enum(["chiropractic", "crossfit", "realty", "general"]),
+        business: z.enum(["chiropractic", "crossfit", "general"]),
         period: z.enum(["annual", "quarterly"]),
         quarter: z.number().min(1).max(4).optional(),
         year: z.number(),
@@ -1429,7 +1429,7 @@ Be concise and specific. If a field has nothing, use an empty array.`,
      * Seed default KPI categories for a business if none exist yet.
      * Chiro defaults: Adjustments/week, New Patients/week, Reactivated Patients/month.
      * CrossFit defaults: Active Members/month, Classes Held/week, New Members/month.
-     * Realty defaults: Listings Active/month, Closings/month, Leads/week.
+     * Other defaults: Revenue/month, Tasks Completed/week.
      */
     seedDefaults: publicProcedure
       .input(z.object({ accountId: z.number(), businessSlug: z.string() }))
@@ -1448,11 +1448,6 @@ Be concise and specific. If a field has nothing, use an empty array.`,
             { name: "Classes Held", unit: "classes", frequency: "weekly" },
             { name: "New Members", unit: "members", frequency: "monthly" },
             { name: "Attendance", unit: "check-ins", frequency: "weekly" },
-          ],
-          realty: [
-            { name: "Active Listings", unit: "listings", frequency: "monthly" },
-            { name: "Closings", unit: "closings", frequency: "monthly" },
-            { name: "New Leads", unit: "leads", frequency: "weekly" },
           ],
         };
         const cats = defaults[input.businessSlug] ?? [

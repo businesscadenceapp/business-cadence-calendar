@@ -66,13 +66,13 @@ export type InsertAgendaItem = typeof agendaItems.$inferInsert;
  * type: "update" = what I did since last meeting
  *       "issue"  = what we need to discuss at next meeting
  * author: "Matt" | "Lynn"
- * business: "chiropractic" | "crossfit" | "realty" | "general"
+ * business: "chiropractic" | "crossfit" | "general"
  */
 export const boardCards = mysqlTable("board_cards", {
   id: int("id").autoincrement().primaryKey(),
   author: varchar("author", { length: 128 }).notNull(),
   type: mysqlEnum("type", ["update", "issue", "task"]).notNull(),
-  business: mysqlEnum("business", ["chiropractic", "crossfit", "realty", "general"]).notNull().default("general"),
+  business: mysqlEnum("business", ["chiropractic", "crossfit", "general"]).notNull().default("general"),
   content: text("content").notNull(),
   // Task-specific fields
   assignedTo: varchar("assignedTo", { length: 128 }),       // display name of assignee (legacy)
@@ -112,7 +112,7 @@ export type InsertBoardCard = typeof boardCards.$inferInsert;
  */
 export const agendaTemplates = mysqlTable("agenda_templates", {
   id: int("id").autoincrement().primaryKey(),
-  business: mysqlEnum("business", ["chiropractic", "crossfit", "realty"]).notNull(),
+  business: mysqlEnum("business", ["chiropractic", "crossfit"]).notNull(),
   meetingType: mysqlEnum("meetingType", ["daily", "weekly", "monthly", "quarterly"]).notNull(),
   itemsJson: text("itemsJson").notNull(), // JSON: Array<{ key: string; label: string; sortOrder: number }>
   updatedBy: varchar("updatedBy", { length: 128 }).notNull(),
@@ -339,7 +339,7 @@ export type InsertWeeklyReportEntry = typeof weeklyReportEntries.$inferInsert;
 export const goals = mysqlTable("goals", {
   id: int("id").autoincrement().primaryKey(),
   accountId: int("accountId").notNull(), // references app_users.id
-  business: mysqlEnum("business", ["chiropractic", "crossfit", "realty", "general"]).notNull().default("general"),
+  business: mysqlEnum("business", ["chiropractic", "crossfit", "general"]).notNull().default("general"),
   period: mysqlEnum("period", ["annual", "quarterly"]).notNull().default("quarterly"),
   quarter: int("quarter"), // 1-4, null for annual goals
   year: int("year").notNull(),

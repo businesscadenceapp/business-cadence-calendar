@@ -1586,10 +1586,10 @@ export default function Onboarding() {
 
       // 2. Create business record
       // goals.create requires business to be one of the legacy enum values — map industry to closest
-      const businessSlugMap: Record<string, "chiropractic" | "crossfit" | "realty" | "general"> = {
+      const businessSlugMap: Record<string, "chiropractic" | "crossfit" | "general"> = {
         healthcare: "chiropractic",
         fitness: "crossfit",
-        realestate: "realty",
+        realestate: "general",
         retail: "general",
         restaurant: "general",
         professional: "general",

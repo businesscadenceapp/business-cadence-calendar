@@ -19,11 +19,10 @@ const STORAGE_KEY = "bcc_active_business";
 // Businesses available to a given scope
 function getAvailableBusinesses(businessScope: string | undefined): BusinessKey[] {
   if (!businessScope || businessScope === "all") {
-    return ["chiro", "crossfit", "realty"] as BusinessKey[];
+    return ["chiro", "crossfit"] as BusinessKey[];
   }
   if (businessScope === "chiro") return ["chiro"];
   if (businessScope === "crossfit") return ["crossfit"];
-  if (businessScope === "realty") return ["realty"];
   // Handle full business names
   if (businessScope === "chiropractic") return ["chiro"];
   // comma-separated — normalize names and filter

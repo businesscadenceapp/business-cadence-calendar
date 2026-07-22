@@ -13,15 +13,13 @@ import { usePerson } from "@/contexts/PersonContext";
 import { personScopeToBusinessSelection } from "@/lib/businessScope";
 import type { MeetingType, BusinessKey } from "@/lib/calendarData";
 
-const BIZ_MAP: Record<BusinessKey, "chiropractic" | "crossfit" | "realty"> = {
+const BIZ_MAP: Record<BusinessKey, "chiropractic" | "crossfit"> = {
   chiro: "chiropractic",
   crossfit: "crossfit",
-  realty: "realty",
 };
-const BIZ_MAP_REVERSE: Record<"chiropractic" | "crossfit" | "realty", BusinessKey> = {
+const BIZ_MAP_REVERSE: Record<"chiropractic" | "crossfit", BusinessKey> = {
   chiropractic: "chiro",
   crossfit: "crossfit",
-  realty: "realty",
 };
 
 type DbBusiness = string;
@@ -43,7 +41,6 @@ function getDefaultItems(biz: BusinessKey, mt: MeetingType): AgendaItem[] {
 const BUSINESSES_LIST: { key: DbBusiness; bizKey: BusinessKey; label: string; color: string; icon: string }[] = [
   { key: "chiropractic", bizKey: "chiro", label: "New Beginnings Chiropractic", color: "#10B981", icon: "🏥" },
   { key: "crossfit", bizKey: "crossfit", label: "Evolved CrossFit", color: "#F59E0B", icon: "💪" },
-  { key: "realty", bizKey: "realty", label: "Bubbles Realty", color: "#64748B", icon: "🏠" },
 ];
 
 const MEETING_LIST: { key: DbMeetingType; label: string; color: string }[] = [
@@ -354,7 +351,7 @@ export default function Settings() {
   const handlePasswordConfirm = (password: string, updatedBy: string) => {
     if (!pendingSave) return;
     saveTemplate.mutate({
-      business: effectiveSelectedBiz as "chiropractic" | "crossfit" | "realty",
+      business: effectiveSelectedBiz as "chiropractic" | "crossfit",
       meetingType: selectedMt,
       items: pendingSave.items,
       updatedBy,

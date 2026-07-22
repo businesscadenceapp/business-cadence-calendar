@@ -204,7 +204,7 @@ function AddGoalForm({
     if (!title.trim()) return;
     createGoal.mutate({
       accountId,
-      business: (businessSlug || "general") as "chiropractic" | "crossfit" | "realty" | "general",
+      business: (businessSlug || "general") as "chiropractic" | "crossfit" | "general",
       period,
       quarter: period === "quarterly" ? quarter : undefined,
       year,

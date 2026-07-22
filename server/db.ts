@@ -255,7 +255,7 @@ export async function deleteBoardCard(id: number): Promise<void> {
 export type AgendaTemplateItem = { key: string; label: string; sortOrder: number };
 
 export async function getAgendaTemplate(
-  business: "chiropractic" | "crossfit" | "realty",
+  business: "chiropractic" | "crossfit",
   meetingType: "daily" | "weekly" | "monthly" | "quarterly"
 ): Promise<AgendaTemplateItem[] | null> {
   const db = await getDb();
@@ -285,7 +285,7 @@ export async function getAllAgendaTemplates(): Promise<
 }
 
 export async function upsertAgendaTemplate(
-  business: "chiropractic" | "crossfit" | "realty",
+  business: "chiropractic" | "crossfit",
   meetingType: "daily" | "weekly" | "monthly" | "quarterly",
   items: AgendaTemplateItem[],
   updatedBy: string

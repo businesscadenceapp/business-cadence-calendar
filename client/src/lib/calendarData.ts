@@ -6,7 +6,7 @@
 export const YEAR = 2026;
 
 export type MeetingType = "daily" | "weekly" | "monthly" | "quarterly";
-export type BusinessKey = "chiro" | "crossfit" | "realty";
+export type BusinessKey = "chiro" | "crossfit";
 
 export interface TimeBlock {
   business: BusinessKey;
@@ -45,13 +45,6 @@ export const BUSINESSES: Record<BusinessKey, { name: string; shortName: string; 
     color: "#F59E0B",
     icon: "💪",
     tagline: "2 years · Turning profit",
-  },
-  realty: {
-    name: "Bubbles Realty",
-    shortName: "Realty",
-    color: "#64748B",
-    icon: "🏠",
-    tagline: "Rental property · $8K net goal",
   },
 };
 
@@ -93,18 +86,6 @@ export const MEETING_TYPES: Record<MeetingType, Meeting> = {
           "Class attendance expected today?",
           "Any member concerns or equipment issues?",
           "Programming or coaching notes for today's class?",
-        ],
-      },
-      {
-        business: "realty",
-        duration: "2 min",
-        startOffset: "0:08",
-        endOffset: "0:10",
-        focus: "Active issues only (skip if nothing urgent)",
-        items: [
-          "Any renter communication needing a response today?",
-          "Any maintenance or repair follow-up needed?",
-          "(Skip entirely if no active issues — this is passive income)",
         ],
       },
     ],
@@ -157,19 +138,6 @@ export const MEETING_TYPES: Record<MeetingType, Meeting> = {
           "Member retention: Anyone at risk of canceling?",
           "IDS: Solve top 1 CrossFit issue from the Issues List",
           "Action items: Who does what by when?",
-        ],
-      },
-      {
-        business: "realty",
-        duration: "15 min",
-        startOffset: "1:30",
-        endOffset: "1:45",
-        focus: "Passive asset — keep it simple",
-        items: [
-          "Rent received on time? Any late payments?",
-          "Any maintenance requests or property issues?",
-          "Tracking toward $8K net annual goal?",
-          "Skip or shorten if no active issues this week",
         ],
       },
     ],
@@ -225,20 +193,6 @@ export const MEETING_TYPES: Record<MeetingType, Meeting> = {
           "One financial decision: e.g. pricing, membership drive, new class",
         ],
       },
-      {
-        business: "realty",
-        duration: "15 min",
-        startOffset: "0:45",
-        endOffset: "1:00",
-        focus: "Track the $8K net goal",
-        items: [
-          "Rent collected this month — on time?",
-          "Any expenses: repairs, insurance, property tax installments?",
-          "Running YTD net — are we on pace for $8K annual net?",
-          "Lease renewal date — any action needed in next 90 days?",
-          "One financial decision: e.g. rent increase, maintenance reserve",
-        ],
-      },
     ],
     sharedItems: [
       "Note: This meeting replaces the regular Weekly Review on the first Tuesday of the month",
@@ -289,19 +243,6 @@ export const MEETING_TYPES: Record<MeetingType, Meeting> = {
           "Set 1–2 'Rocks' for CrossFit",
           "Example Rocks: Add Saturday open gym, reach X members, run a challenge event",
           "Assign owner and deadline for each Rock",
-        ],
-      },
-      {
-        business: "realty",
-        duration: "30 min",
-        startOffset: "2:30",
-        endOffset: "3:00",
-        focus: "Optimize the passive income",
-        items: [
-          "YTD net vs. $8K annual goal — on track?",
-          "Any lease, maintenance, or capital improvement decisions?",
-          "Set 1 'Rock' for Realty if needed (often none required)",
-          "Example Rock: Raise rent at renewal, complete deferred maintenance",
         ],
       },
     ],

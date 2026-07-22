@@ -1,8 +1,8 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "254c9d9c-a01e-4a35-be59-eb8642d4e4c5",
-  "prevId": "6f95db78-07a6-4a1d-9370-5d0a034b2635",
+  "id": "ab1d31a2-7b40-45b1-a46b-3a22109ef265",
+  "prevId": "254c9d9c-a01e-4a35-be59-eb8642d4e4c5",
   "tables": {
     "agenda_items": {
       "name": "agenda_items",
@@ -86,7 +86,7 @@
         },
         "business": {
           "name": "business",
-          "type": "enum('chiropractic','crossfit','realty')",
+          "type": "enum('chiropractic','crossfit')",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
@@ -245,7 +245,7 @@
         },
         "business": {
           "name": "business",
-          "type": "enum('chiropractic','crossfit','realty','general')",
+          "type": "enum('chiropractic','crossfit','general')",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
@@ -1006,7 +1006,7 @@
         },
         "business": {
           "name": "business",
-          "type": "enum('chiropractic','crossfit','realty','general')",
+          "type": "enum('chiropractic','crossfit','general')",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,

@@ -333,10 +333,9 @@ function BusinessBlock({
   );
 }
 
-const BIZ_TO_DB: Record<string, "chiropractic" | "crossfit" | "realty"> = {
+const BIZ_TO_DB: Record<string, "chiropractic" | "crossfit"> = {
   chiro: "chiropractic",
   crossfit: "crossfit",
-  realty: "realty",
 };
 
 // Map MeetingType to MeetingTimes key

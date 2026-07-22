@@ -8,7 +8,6 @@
  *   "all"   → owner/co-owner sees all businesses
  *   "chiro" → only New Beginnings Chiropractic
  *   "crossfit" → only Evolved CrossFit
- *   "realty"   → only Realty
  *   comma-separated slugs → multiple businesses
  */
 

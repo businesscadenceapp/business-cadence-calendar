@@ -7,10 +7,11 @@ import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { usePerson } from "@/contexts/PersonContext";
 import { useIdentity } from "@/components/AppShell";
+import { useActiveBusiness } from "@/components/BusinessSwitcher";
 
 type Author = string;
 type CardType = "update" | "issue" | "task";
-type Business = "chiropractic" | "crossfit" | "realty" | "general";
+type Business = "chiropractic" | "crossfit" | "general";
 
 const IDENTITY_KEY = "bcc_identity";
 
@@ -37,7 +38,6 @@ const AUTHOR_COLORS: Record<string, typeof PALETTE[0]> = new Proxy({} as Record<
 const BUSINESS_LABELS: Record<Business, { label: string; icon: string; bg: string; text: string; border: string }> = {
   chiropractic: { label: "Chiropractic", icon: "🦴", bg: "rgba(16,185,129,0.15)", text: "#6EE7B7", border: "rgba(16,185,129,0.3)" },
   crossfit:     { label: "CrossFit",     icon: "💪", bg: "rgba(245,158,11,0.15)", text: "#FCD34D", border: "rgba(245,158,11,0.3)" },
-  realty:       { label: "Realty",       icon: "🏠", bg: "rgba(124,58,237,0.15)", text: "#C4B5FD", border: "rgba(124,58,237,0.3)" },
   general:      { label: "General",      icon: "📋", bg: "rgba(255,255,255,0.08)", text: "rgba(255,255,255,0.6)", border: "rgba(255,255,255,0.15)" },
 };
 
@@ -1167,12 +1167,22 @@ function AddCardForm({ currentUser, onAdded, allowedBusinesses, defaultBusiness,
 
 // ─── Main Board Page ──────────────────────────────────────────────────────────
 
+// Map BusinessKey (switcher) → Business (board enum)
+function bizKeyToEnum(key: string): Business | "all" {
+  if (key === "chiro") return "chiropractic";
+  if (key === "crossfit") return "crossfit";
+  return "all";
+}
+
 export default function Board() {
   const { currentUser } = useIdentity();
-  const [filterBusiness, setFilterBusiness] = useState<Business | "all">("all");
+  const { person } = usePerson();
+  const { activeBusiness } = useActiveBusiness(person?.businessScope);
+  // filterBusiness is driven by the active business switcher
+  const filterBusiness: Business | "all" = bizKeyToEnum(activeBusiness);
+  const setFilterBusiness = (_: Business | "all") => {}; // no-op: switching happens via sidebar
   const [showCompleted, setShowCompleted] = useState(false);
 
-  const { person } = usePerson();
   const accountId = person?.accountId ?? (() => {
     const stored = localStorage.getItem("bcc_account_id");
     return stored ? parseInt(stored, 10) : undefined;
