@@ -641,9 +641,12 @@ Be concise and specific. If a field has nothing, use an empty array.`,
         if (!person) return { cards }; // Fallback: return all if person not found
         // Filter cards by user's businessScope
         const userScope = person.businessScope ?? "all";
+        console.log(`[board.list] User: ${person.name}, businessScope: "${userScope}"`);
         if (userScope === "all") return { cards };
         const allowedBusinesses = userScope.split(",").map((s: string) => s.trim());
+        console.log(`[board.list] Allowed: ${JSON.stringify(allowedBusinesses)}, Cards: ${cards.map(c => c.business).join(", ")}`);
         const filtered = cards.filter(c => c.business === "general" || allowedBusinesses.includes(c.business));
+        console.log(`[board.list] Filtered from ${cards.length} to ${filtered.length}`);
         return { cards: filtered };
       }),
 

@@ -24,8 +24,18 @@ function getAvailableBusinesses(businessScope: string | undefined): BusinessKey[
   if (businessScope === "chiro") return ["chiro"];
   if (businessScope === "crossfit") return ["crossfit"];
   if (businessScope === "realty") return ["realty"];
-  // comma-separated
-  return businessScope.split(",").filter(s => s in BUSINESSES) as BusinessKey[];
+  // Handle full business names
+  if (businessScope === "chiropractic") return ["chiro"];
+  // comma-separated — normalize names and filter
+  const normalized = businessScope
+    .split(",")
+    .map(s => {
+      const trimmed = s.trim();
+      if (trimmed === "chiropractic") return "chiro";
+      return trimmed;
+    })
+    .filter(s => s in BUSINESSES) as BusinessKey[];
+  return normalized.length > 0 ? normalized : ["chiro"];
 }
 
 // Read active business from localStorage, validated against available businesses
