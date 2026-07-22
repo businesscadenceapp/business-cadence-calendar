@@ -1244,7 +1244,7 @@ export default function Board() {
 
   const filtered = filterBusiness === "all"
     ? allCards
-    : allCards.filter(c => c.business === filterBusiness);
+    : allCards.filter(c => c.business === filterBusiness || c.business === "general");
 
   const updates = filtered.filter(c => c.type === "update" && !c.archivedAt);
   const issues = filtered.filter(c => c.type === "issue" && !c.archivedAt);

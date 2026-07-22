@@ -6,6 +6,7 @@ import { useState, useMemo } from "react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { usePerson } from "@/contexts/PersonContext";
+import { useActiveBusiness } from "@/components/BusinessSwitcher";
 
 type Period = "annual" | "quarterly";
 type Status = "active" | "achieved" | "missed" | "deferred";
@@ -445,6 +446,7 @@ export default function Goals() {
     return stored ? parseInt(stored, 10) : undefined;
   })();
   const personScope = person?.businessScope ?? "all";
+  const { activeBusiness } = useActiveBusiness(personScope);
 
   const [selectedYear, setSelectedYear] = useState(CURRENT_YEAR);
   const [showAddForm, setShowAddForm] = useState(false);
@@ -497,15 +499,21 @@ export default function Goals() {
   const handleStatusChange = (id: number, status: Status) => updateGoal.mutate({ id, status });
   const handleDelete = (id: number) => { if (confirm("Delete this goal?")) deleteGoal.mutate({ id }); };
 
-  const annualGoals = goalsData.filter(g => g.period === "annual");
+  // Filter goals by active business from sidebar switcher
+  const activeDbSlug = activeBusiness === "chiro" ? "chiropractic" : activeBusiness === "crossfit" ? "crossfit" : null;
+  const filteredGoals = activeDbSlug
+    ? goalsData.filter(g => g.business === activeDbSlug || g.business === "general")
+    : goalsData;
+
+  const annualGoals = filteredGoals.filter(g => g.period === "annual");
   const quarterlyGoals = [1, 2, 3, 4].map(q => ({
     quarter: q,
-    goals: goalsData.filter(g => g.period === "quarterly" && g.quarter === q),
+    goals: filteredGoals.filter(g => g.period === "quarterly" && g.quarter === q),
   }));
 
-  const total = goalsData.length;
-  const achieved = goalsData.filter(g => g.status === "achieved").length;
-  const active = goalsData.filter(g => g.status === "active").length;
+  const total = filteredGoals.length;
+  const achieved = filteredGoals.filter(g => g.status === "achieved").length;
+  const active = filteredGoals.filter(g => g.status === "active").length;
   const pct = total > 0 ? Math.round((achieved / total) * 100) : 0;
 
   return (

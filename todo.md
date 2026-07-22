@@ -709,3 +709,11 @@
 - [ ] Remove Realty from Board.tsx type and bizKeyToEnum
 - [ ] Remove Realty from Onboarding business options
 - [ ] Fix protectedProcedure import error in server/routers.ts
+
+## Business Separation — Filter content by active business switcher
+- [x] Board (Owner): filter cards by active business (when CrossFit selected, only show CrossFit+General cards; when Chiro selected, only Chiro+General cards)
+- [x] Board (Team): filter cards by active business
+- [x] Goals: filter goals by active business
+- [x] KPIs: filter KPI categories/entries by active business
+- [x] Reports (Monthly/Quarterly/Goals tabs): filter by active business
+- [ ] Reports (Weekly tab): employees are account-wide, no business field on employees table (data model limitation)

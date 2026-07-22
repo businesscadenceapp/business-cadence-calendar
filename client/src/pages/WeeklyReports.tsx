@@ -12,6 +12,7 @@ import { Link } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { usePerson } from "@/contexts/PersonContext";
+import { useActiveBusiness } from "@/components/BusinessSwitcher";
 
 // ── Week helpers ──────────────────────────────────────────────────────────────
 
@@ -292,7 +293,7 @@ function CheckinsSummary({ accountId, weekKey }: { accountId: number; weekKey: s
   );
 }
 
-function WeeklyTab({ accountId }: { accountId: number }) {
+function WeeklyTab({ accountId, forcedBusiness }: { accountId: number; forcedBusiness?: string | null }) {
   const today = useMemo(() => new Date(), []);
   const currentWeekKey = useMemo(() => getWeekKey(today), [today]);
   const [selectedWeek, setSelectedWeek] = useState(currentWeekKey);
@@ -381,11 +382,11 @@ function WeeklyTab({ accountId }: { accountId: number }) {
 
 // ── MONTHLY TAB ───────────────────────────────────────────────────────────────
 
-function MonthlyTab({ accountId }: { accountId: number }) {
+function MonthlyTab({ accountId, forcedBusiness }: { accountId: number; forcedBusiness?: string | null }) {
   const businessesQuery = trpc.business.list.useQuery({ accountId }, { enabled: accountId !== undefined });
   const businesses = businessesQuery.data ?? [];
   const [selectedBiz, setSelectedBiz] = useState<string>("");
-  const bizSlug = selectedBiz || businesses[0]?.slug || "";
+  const bizSlug = forcedBusiness || selectedBiz || businesses[0]?.slug || "";
 
   const trendQuery = trpc.kpi.getMultiMonthTrend.useQuery(
     { accountId, businessSlug: bizSlug, months: 3 },
@@ -516,18 +517,33 @@ function MonthlyTab({ accountId }: { accountId: number }) {
 
 // ── QUARTERLY TAB ─────────────────────────────────────────────────────────────
 
-function QuarterlyTab({ accountId }: { accountId: number }) {
+function QuarterlyTab({ accountId, forcedBusiness }: { accountId: number; forcedBusiness?: string | null }) {
   const currentYear = new Date().getFullYear();
   const currentQ = getCurrentQuarter();
   const [viewQ, setViewQ] = useState(currentQ);
 
   const goalsQuery = trpc.goalsSummary.get.useQuery({ accountId, year: currentYear }, { enabled: accountId !== undefined });
-  const qData = goalsQuery.data?.quarterly.find(q => q.quarter === viewQ);
+  const rawQData = goalsQuery.data?.quarterly.find(q => q.quarter === viewQ);
+  const qData = useMemo(() => {
+    if (!rawQData || !forcedBusiness) return rawQData;
+    const filtered = rawQData.goals.filter(g => g.business === forcedBusiness || g.business === "general");
+    return {
+      ...rawQData,
+      goals: filtered,
+      counts: {
+        total: filtered.length,
+        active: filtered.filter(g => g.status === "active").length,
+        achieved: filtered.filter(g => g.status === "achieved").length,
+        missed: filtered.filter(g => g.status === "missed").length,
+        deferred: filtered.filter(g => g.status === "deferred").length,
+      },
+    };
+  }, [rawQData, forcedBusiness]);
 
   const businessesQuery = trpc.business.list.useQuery({ accountId }, { enabled: accountId !== undefined });
   const businesses = businessesQuery.data ?? [];
   const [selectedBiz, setSelectedBiz] = useState<string>("");
-  const bizSlug = selectedBiz || businesses[0]?.slug || "";
+  const bizSlug = forcedBusiness || selectedBiz || businesses[0]?.slug || "";
 
   const trendQuery = trpc.kpi.getMultiMonthTrend.useQuery(
     { accountId, businessSlug: bizSlug, months: 3 },
@@ -655,11 +671,38 @@ function QuarterlyTab({ accountId }: { accountId: number }) {
 
 // ── GOALS TAB ─────────────────────────────────────────────────────────────────
 
-function GoalsTab({ accountId }: { accountId: number }) {
+function GoalsTab({ accountId, forcedBusiness }: { accountId: number; forcedBusiness?: string | null }) {
   const currentYear = new Date().getFullYear();
   const [viewYear, setViewYear] = useState(currentYear);
   const goalsQuery = trpc.goalsSummary.get.useQuery({ accountId, year: viewYear }, { enabled: accountId !== undefined });
-  const data = goalsQuery.data;
+  const rawData = goalsQuery.data;
+
+  // Filter goals by active business
+  const data = useMemo(() => {
+    if (!rawData || !forcedBusiness) return rawData;
+    const filterGoals = (goals: typeof rawData.all) => goals.filter(g => g.business === forcedBusiness || g.business === "general");
+    const filteredAll = filterGoals(rawData.all);
+    const countStatuses = (goals: typeof rawData.all) => ({
+      total: goals.length,
+      active: goals.filter(g => g.status === "active").length,
+      achieved: goals.filter(g => g.status === "achieved").length,
+      missed: goals.filter(g => g.status === "missed").length,
+      deferred: goals.filter(g => g.status === "deferred").length,
+    });
+    return {
+      all: filteredAll,
+      totalCounts: countStatuses(filteredAll),
+      annual: {
+        goals: filterGoals(rawData.annual.goals),
+        counts: countStatuses(filterGoals(rawData.annual.goals)),
+      },
+      quarterly: rawData.quarterly.map(q => ({
+        ...q,
+        goals: filterGoals(q.goals),
+        counts: countStatuses(filterGoals(q.goals)),
+      })),
+    };
+  }, [rawData, forcedBusiness]);
 
   return (
     <div>
@@ -784,6 +827,8 @@ export default function WeeklyReports() {
   }
 
   const aid = accountId ?? 0;
+  const { activeBusiness } = useActiveBusiness(person?.businessScope);
+  const activeDbSlug = activeBusiness === "chiro" ? "chiropractic" : activeBusiness === "crossfit" ? "crossfit" : null;
 
   return (
     <div className="h-full flex flex-col" style={{ background: "#0F2440" }}>
@@ -826,10 +871,10 @@ export default function WeeklyReports() {
 
       {/* Tab content */}
       <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-6 max-w-5xl w-full mx-auto">
-        {activeTab === "weekly"    && <WeeklyTab    accountId={aid} />}
-        {activeTab === "monthly"   && <MonthlyTab   accountId={aid} />}
-        {activeTab === "quarterly" && <QuarterlyTab accountId={aid} />}
-        {activeTab === "goals"     && <GoalsTab     accountId={aid} />}
+        {activeTab === "weekly"    && <WeeklyTab    accountId={aid} forcedBusiness={activeDbSlug} />}
+        {activeTab === "monthly"   && <MonthlyTab   accountId={aid} forcedBusiness={activeDbSlug} />}
+        {activeTab === "quarterly" && <QuarterlyTab accountId={aid} forcedBusiness={activeDbSlug} />}
+        {activeTab === "goals"     && <GoalsTab     accountId={aid} forcedBusiness={activeDbSlug} />}
       </div>
     </div>
   );

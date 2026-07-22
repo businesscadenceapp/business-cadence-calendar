@@ -16,6 +16,7 @@ import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { usePerson } from "@/contexts/PersonContext";
 import { useLocation } from "wouter";
+import { useActiveBusiness } from "@/components/BusinessSwitcher";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -746,6 +747,8 @@ export default function TeamBoard() {
   const isOwner = person?.role === "owner" || person?.role === "coowner";
   const currentUser = person?.name ?? null;
   const accountId = person?.accountId;
+  const { activeBusiness } = useActiveBusiness(person?.businessScope);
+  const activeDbSlug = activeBusiness === "chiro" ? "chiropractic" : activeBusiness === "crossfit" ? "crossfit" : null;
 
   const [formOpen, setFormOpen] = useState(false);
   const [showCompleted, setShowCompleted] = useState(false);
@@ -777,7 +780,11 @@ export default function TeamBoard() {
   );
 
   const allCards = useMemo(() => {
-    const cards = ((data?.cards ?? []) as Card[]).filter(c => c.audience === "team");
+    let cards = ((data?.cards ?? []) as Card[]).filter(c => c.audience === "team");
+    // Filter by active business from sidebar switcher
+    if (activeDbSlug) {
+      cards = cards.filter(c => c.business === activeDbSlug || c.business === "general");
+    }
     // Employees only see their own tasks and all announcements
     if (!isOwner && currentUser) {
       return cards.filter(c =>
@@ -786,7 +793,7 @@ export default function TeamBoard() {
       );
     }
     return cards;
-  }, [data, isOwner, currentUser]);
+  }, [data, isOwner, currentUser, activeDbSlug]);
 
   const openTasks = allCards.filter(c => c.type === "task" && !c.archivedAt && !c.completedAt);
   const donePendingTasks = allCards.filter(c => c.type === "task" && !c.archivedAt && c.completedAt && !c.confirmedAt);

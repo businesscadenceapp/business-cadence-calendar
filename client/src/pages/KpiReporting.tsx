@@ -5,6 +5,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
 import { usePerson } from "@/contexts/PersonContext";
+import { useActiveBusiness } from "@/components/BusinessSwitcher";
 import { toast } from "sonner";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -46,10 +47,11 @@ const darkInput = {
 
 // ─── Employee View ────────────────────────────────────────────────────────────
 
-function EmployeeKpiView({ accountId, personId, businessScope }: {
+function EmployeeKpiView({ accountId, personId, businessScope, forcedBusiness }: {
   accountId: number;
   personId: string;
   businessScope: string;
+  forcedBusiness?: string | null;
 }) {
   const [selectedPeriod, setSelectedPeriod] = useState(getCurrentWeekKey());
   const [values, setValues] = useState<Record<number, string>>({});
@@ -62,7 +64,7 @@ function EmployeeKpiView({ accountId, personId, businessScope }: {
     try { return JSON.parse(businessScope) as string[]; } catch { return [businessScope]; }
   }, [businessScope, dbBusinessSlugs]);
 
-  const primarySlug = scopes[0] ?? "general";
+  const primarySlug = forcedBusiness ?? scopes[0] ?? "general";
   const currentMonth = getCurrentMonthKey();
 
   const categoriesQuery = trpc.kpi.listCategories.useQuery(
@@ -391,18 +393,21 @@ function CategoryEditorRow({ cat, onUpdated }: {
 
 // ─── Owner Dashboard View ─────────────────────────────────────────────────────
 
-function OwnerKpiDashboard({ accountId }: { accountId: number }) {
+function OwnerKpiDashboard({ accountId, forcedBusiness }: { accountId: number; forcedBusiness?: string | null }) {
   const [selectedMonth, setSelectedMonth] = useState(getCurrentMonthKey());
 
   const businessesQuery = trpc.business.list.useQuery({ accountId }, { staleTime: 60_000 });
   const dbBusinesses = businessesQuery.data ?? [];
   const [selectedBusiness, setSelectedBusiness] = useState("");
 
+  // Sync with sidebar business switcher
   useEffect(() => {
-    if (dbBusinesses.length > 0 && !selectedBusiness) {
+    if (forcedBusiness && dbBusinesses.some(b => b.slug === forcedBusiness)) {
+      setSelectedBusiness(forcedBusiness);
+    } else if (dbBusinesses.length > 0 && !selectedBusiness) {
       setSelectedBusiness(dbBusinesses[0].slug);
     }
-  }, [dbBusinesses.length, selectedBusiness]);
+  }, [forcedBusiness, dbBusinesses.length, selectedBusiness]);
 
   const categoriesQuery = trpc.kpi.listCategories.useQuery(
     { accountId, businessSlug: selectedBusiness },
@@ -740,6 +745,9 @@ export default function KpiReporting() {
     return stored ? parseInt(stored, 10) : 0;
   })();
   const isOwner = person.role === "owner" || person.role === "coowner";
+  const { activeBusiness } = useActiveBusiness(person.businessScope);
+  // Map switcher key to DB slug
+  const activeDbSlug = activeBusiness === "chiro" ? "chiropractic" : activeBusiness === "crossfit" ? "crossfit" : null;
 
   return (
     <div className="h-full overflow-y-auto" style={{ backgroundColor: "#0A1929", fontFamily: "'Inter', sans-serif" }}>
@@ -781,9 +789,9 @@ export default function KpiReporting() {
 
       <div className="max-w-4xl mx-auto px-3 sm:px-5 py-4 sm:py-6">
         {isOwner ? (
-          <OwnerKpiDashboard accountId={accountId} />
+          <OwnerKpiDashboard accountId={accountId} forcedBusiness={activeDbSlug} />
         ) : (
-          <EmployeeKpiView accountId={accountId} personId={person.id} businessScope={person.businessScope} />
+          <EmployeeKpiView accountId={accountId} personId={person.id} businessScope={person.businessScope} forcedBusiness={activeDbSlug} />
         )}
       </div>
     </div>
