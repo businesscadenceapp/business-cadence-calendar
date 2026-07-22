@@ -2,7 +2,7 @@ import { z } from "zod";
 import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
-import { publicProcedure, router } from "./_core/trpc";
+import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { invokeLLM } from "./_core/llm";
 import { ENV } from "./_core/env";
 import {
@@ -632,15 +632,23 @@ Be concise and specific. If a field has nothing, use an empty array.`,
 
   board: router({
     /** List all active (non-archived) board cards, optionally filtered by audience. */
-    list: publicProcedure
+    list: protectedProcedure
       .input(z.object({ audience: z.enum(["owner", "team"]).optional() }).optional())
-      .query(async ({ input }) => {
+      .query(async ({ input, ctx }) => {
         const cards = await getBoardCards(false, input?.audience);
-        return { cards };
+        // Get the person record to check businessScope
+        const person = await getPersonByEmail(ctx.user.email ?? "");
+        if (!person) return { cards }; // Fallback: return all if person not found
+        // Filter cards by user's businessScope
+        const userScope = person.businessScope ?? "all";
+        if (userScope === "all") return { cards };
+        const allowedBusinesses = userScope.split(",").map((s: string) => s.trim());
+        const filtered = cards.filter(c => c.business === "general" || allowedBusinesses.includes(c.business));
+        return { cards: filtered };
       }),
 
     /** Create a new board card (update, issue, or task). */
-    create: publicProcedure
+    create: protectedProcedure
       .input(z.object({
         author: z.string().min(1).max(128),
         type: z.enum(["update", "issue", "task"]),
@@ -656,7 +664,19 @@ Be concise and specific. If a field has nothing, use an empty array.`,
         notifyPersonIds: z.array(z.string()).optional(), // explicit recipient list (person IDs)
         audience: z.enum(["owner", "team"]).optional(), // which side of the wall
       }))
-      .mutation(async ({ input }) => {
+      .mutation(async ({ input, ctx }) => {
+        // Validate user has access to this business
+        if (input.business !== "general") {
+          const person = await getPersonByEmail(ctx.user.email ?? "");
+          if (!person) throw new Error("User not found");
+          const userScope = person.businessScope ?? "all";
+          if (userScope !== "all") {
+            const allowedBusinesses = userScope.split(",").map((s: string) => s.trim());
+            if (!allowedBusinesses.includes(input.business)) {
+              throw new Error("You don't have access to this business");
+            }
+          }
+        }
         const card = await createBoardCard({ ...input, audience: input.audience ?? "owner" });
         // Generate notifications for relevant recipients
         if (input.accountId) {

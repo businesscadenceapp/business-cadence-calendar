@@ -693,3 +693,12 @@
 - [x] Backend person.invite already accepts and stores businessScope correctly
 - [x] AcceptInvite flow returns businessScope from person record
 - [x] Co-owner lands with only selected businesses visible in switcher
+
+## Business Scope Filtering / Data Compartmentalization (Jul 2026)
+- [x] Fix board.list to filter by user's businessScope (protectedProcedure)
+- [x] Fix board.create to validate user has access to the business they're posting to
+- [ ] Fix goals.list to filter by user's businessScope
+- [ ] Fix goals.create to validate user has access to the business
+- [ ] Fix kpi procedures to filter by businessScope
+- [ ] Fix team board to filter by businessScope
+- [ ] Audit calendar and other features for businessScope filtering
