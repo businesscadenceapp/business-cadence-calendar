@@ -968,19 +968,18 @@ Be concise and specific. If a field has nothing, use an empty array.`,
     /**
      * Get notification counts per business for the Business Selector screen.
      * Returns open task count + unseen owner-board card count for each business slug.
-     * Used to show badge counters on business cards before entering a workspace.
+     * Uses publicProcedure + accountId so it works with the app's own email/password auth
+     * (not Manus OAuth), preventing the global UNAUTHORIZED redirect from blocking the selector.
      */
-    getBusinessCounts: protectedProcedure
-      .query(async ({ ctx }) => {
+    getBusinessCounts: publicProcedure
+      .input(z.object({ accountId: z.number() }))
+      .query(async ({ input }) => {
+        if (!input.accountId) return { counts: {} };
         const { getDb } = await import('./db');
         const { boardCards } = await import('../drizzle/schema');
-        const { isNull, isNotNull, and, eq, or, sql } = await import('drizzle-orm');
+        const { isNull, and, eq } = await import('drizzle-orm');
         const db = await getDb();
         if (!db) return { counts: {} };
-
-        // Get the person to know their scope
-        const person = await getPersonByEmail(ctx.user.email ?? "");
-        if (!person) return { counts: {} };
 
         // Fetch all active (non-archived) owner-audience cards
         const cards = await db
@@ -989,9 +988,7 @@ Be concise and specific. If a field has nothing, use an empty array.`,
             type: boardCards.type,
             business: boardCards.business,
             seenAt: boardCards.seenAt,
-            completedAt: boardCards.completedAt,
             confirmedAt: boardCards.confirmedAt,
-            author: boardCards.author,
           })
           .from(boardCards)
           .where(
@@ -1002,7 +999,7 @@ Be concise and specific. If a field has nothing, use an empty array.`,
           );
 
         // Count per business slug
-        // open tasks: type=task, not archived, not confirmed done
+        // open tasks: type=task, not confirmed done
         // unseen cards: type=update or issue, not seen
         const counts: Record<string, { tasks: number; unseen: number; total: number }> = {};
 

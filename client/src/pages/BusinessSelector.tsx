@@ -161,10 +161,14 @@ export default function BusinessSelector() {
   const [dragOffset, setDragOffset] = useState(0);
 
   // Fetch per-business notification counts (polls every 30s)
-  const { data: countsData } = trpc.board.getBusinessCounts.useQuery(undefined, {
-    refetchInterval: 30_000,
-    enabled: !!person,
-  });
+  // Uses publicProcedure + accountId to avoid Manus OAuth requirement
+  const { data: countsData } = trpc.board.getBusinessCounts.useQuery(
+    { accountId: person?.accountId ?? 0 },
+    {
+      refetchInterval: 30_000,
+      enabled: !!person?.accountId,
+    }
+  );
   const counts = countsData?.counts ?? {};
 
   // Filter to only the businesses this user can access

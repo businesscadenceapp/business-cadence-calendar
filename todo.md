@@ -774,4 +774,4 @@
 - [x] Add tRPC procedure board.getBusinessCounts — returns open task count + unseen card count per business slug
 - [x] Display notification badge (counter) in top-right of each business card on BusinessSelector
 - [x] Badge shows combined count of open tasks + unseen board messages for that business
-- [ ] Checkpoint and deploy
+- [x] Checkpoint and deploy
