@@ -174,7 +174,13 @@ export default function ClientLogin() {
                 />
               </div>
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold text-white/70" htmlFor="password">Password</label>
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-semibold text-white/70" htmlFor="password">Password</label>
+                  <a href="/forgot-password" className="text-xs transition-colors" style={{ color: "rgba(94,234,212,0.7)" }}
+                    onMouseEnter={e => (e.currentTarget.style.color = "#5EEAD4")}
+                    onMouseLeave={e => (e.currentTarget.style.color = "rgba(94,234,212,0.7)")}
+                  >Forgot password?</a>
+                </div>
                 <input
                   id="password"
                   type="password"

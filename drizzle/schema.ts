@@ -375,6 +375,8 @@ export const persons = mysqlTable("persons", {
   passwordHash: varchar("passwordHash", { length: 255 }),
   inviteToken: varchar("inviteToken", { length: 128 }),
   inviteAccepted: boolean("inviteAccepted").default(false).notNull(),
+  passwordResetToken: varchar("passwordResetToken", { length: 128 }),
+  passwordResetExpiry: timestamp("passwordResetExpiry"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });

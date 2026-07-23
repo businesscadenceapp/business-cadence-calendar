@@ -829,10 +829,17 @@ export async function createPerson(data: Omit<InsertPerson, "id" | "createdAt" |
   return p;
 }
 
-export async function updatePerson(id: string, data: Partial<Pick<Person, "name" | "passwordHash" | "inviteToken" | "inviteAccepted" | "businessScope" | "role">>): Promise<void> {
+export async function updatePerson(id: string, data: Partial<Pick<Person, "name" | "passwordHash" | "inviteToken" | "inviteAccepted" | "businessScope" | "role" | "passwordResetToken" | "passwordResetExpiry">>): Promise<void> {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   await db.update(persons).set(data).where(eq(persons.id, id));
+}
+
+export async function getPersonByResetToken(token: string): Promise<Person | null> {
+  const db = await getDb();
+  if (!db) return null;
+  const [p] = await db.select().from(persons).where(eq(persons.passwordResetToken, token)).limit(1);
+  return p ?? null;
 }
 
 export async function deletePerson(id: string): Promise<void> {

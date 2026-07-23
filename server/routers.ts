@@ -48,6 +48,7 @@ import {
   getPersonByEmail,
   getPersonById,
   getPersonByInviteToken,
+  getPersonByResetToken,
   getPersonsByAccount,
   createPerson,
   updatePerson,
@@ -85,6 +86,7 @@ import { eq } from "drizzle-orm";
 import { storagePut } from "./storage";
 import { transcribeAudio } from "./_core/voiceTranscription";
 import { nanoid } from "nanoid";
+import { sendPasswordResetEmail } from "./email";
 
 const meetingTypeSchema = z.enum(["daily", "weekly", "monthly", "quarterly"]);
 
@@ -1260,6 +1262,64 @@ Be concise and specific. If a field has nothing, use an empty array.`,
             accountId: person.accountId,
           },
         };
+      }),
+
+    /** Request a password reset — generates a token and sends a reset email. */
+    forgotPassword: publicProcedure
+      .input(z.object({ email: z.string().email(), origin: z.string().url() }))
+      .mutation(async ({ input }) => {
+        // Always return success to prevent email enumeration
+        const person = await getPersonByEmail(input.email);
+        if (!person || !person.inviteAccepted) {
+          return { success: true };
+        }
+        const token = nanoid(48);
+        const expiry = new Date(Date.now() + 60 * 60 * 1000); // 1 hour from now
+        await updatePerson(person.id, {
+          passwordResetToken: token,
+          passwordResetExpiry: expiry,
+        });
+        const resetUrl = `${input.origin}/reset-password?token=${token}`;
+        await sendPasswordResetEmail({
+          to: person.email,
+          name: person.name,
+          resetUrl,
+        });
+        return { success: true };
+      }),
+
+    /** Validate a reset token (before showing the form). */
+    validateResetToken: publicProcedure
+      .input(z.object({ token: z.string() }))
+      .query(async ({ input }) => {
+        const person = await getPersonByResetToken(input.token);
+        if (!person || !person.passwordResetToken || !person.passwordResetExpiry) {
+          return { valid: false as const, reason: "invalid" as const };
+        }
+        if (new Date() > new Date(person.passwordResetExpiry)) {
+          return { valid: false as const, reason: "expired" as const };
+        }
+        return { valid: true as const, name: person.name };
+      }),
+
+    /** Reset password using a valid token. */
+    resetPassword: publicProcedure
+      .input(z.object({ token: z.string(), password: z.string().min(8) }))
+      .mutation(async ({ input }) => {
+        const person = await getPersonByResetToken(input.token);
+        if (!person || !person.passwordResetToken || !person.passwordResetExpiry) {
+          return { success: false as const, reason: "invalid_token" as const };
+        }
+        if (new Date() > new Date(person.passwordResetExpiry)) {
+          return { success: false as const, reason: "expired" as const };
+        }
+        const passwordHash = await bcrypt.hash(input.password, 10);
+        await updatePerson(person.id, {
+          passwordHash,
+          passwordResetToken: null,
+          passwordResetExpiry: null,
+        });
+        return { success: true as const };
       }),
 
     /** Remove a person from the account (owner only). */

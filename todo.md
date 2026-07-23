@@ -730,3 +730,28 @@
 - [x] Update Weekly Reports WeeklyTab to pass active business slug to getSummary
 - [x] Update KPI employee view to only show categories for the employee's assigned business (already scoped via persons.businessScope)
 - [x] Update Team Board to only show tasks assigned to employees of the active business
+
+## Native App Setup (Capacitor + App Stores)
+- [ ] Install and configure Capacitor for iOS/Android builds
+- [ ] Create iOS app identifier and provisioning profiles (Apple Developer)
+- [ ] Create Android app signing key (Google Play)
+- [ ] Set up app icons and splash screens for both platforms
+- [ ] Configure app.json with app metadata (name, version, bundle IDs)
+- [ ] Build iOS app and test on simulator/device
+- [ ] Build Android app and test on emulator/device
+- [ ] Create app store listings (screenshots, descriptions, privacy policy)
+- [ ] Submit to Apple App Store
+- [ ] Submit to Google Play Store
+
+## Forgot Password / Reset Password Flow
+- [x] Add RESEND_API_KEY secret
+- [x] Install resend npm package
+- [x] Add passwordResetToken and passwordResetExpiry columns to persons table
+- [x] Push DB migration
+- [x] Add server helper: sendPasswordResetEmail (via Resend)
+- [x] Add tRPC procedure: person.forgotPassword (generate token, send email)
+- [x] Add tRPC procedure: person.resetPassword (validate token, update password)
+- [x] Build /forgot-password page (email input form)
+- [x] Build /reset-password page (new password form with token validation)
+- [x] Add "Forgot password?" link to ClientLogin.tsx
+- [x] Register new routes in App.tsx
