@@ -965,6 +965,68 @@ Be concise and specific. If a field has nothing, use an empty array.`,
         return { cards, total: Number(countResult[0]?.count ?? 0) };
       }),
 
+    /**
+     * Get notification counts per business for the Business Selector screen.
+     * Returns open task count + unseen owner-board card count for each business slug.
+     * Used to show badge counters on business cards before entering a workspace.
+     */
+    getBusinessCounts: protectedProcedure
+      .query(async ({ ctx }) => {
+        const { getDb } = await import('./db');
+        const { boardCards } = await import('../drizzle/schema');
+        const { isNull, isNotNull, and, eq, or, sql } = await import('drizzle-orm');
+        const db = await getDb();
+        if (!db) return { counts: {} };
+
+        // Get the person to know their scope
+        const person = await getPersonByEmail(ctx.user.email ?? "");
+        if (!person) return { counts: {} };
+
+        // Fetch all active (non-archived) owner-audience cards
+        const cards = await db
+          .select({
+            id: boardCards.id,
+            type: boardCards.type,
+            business: boardCards.business,
+            seenAt: boardCards.seenAt,
+            completedAt: boardCards.completedAt,
+            confirmedAt: boardCards.confirmedAt,
+            author: boardCards.author,
+          })
+          .from(boardCards)
+          .where(
+            and(
+              isNull(boardCards.archivedAt),
+              eq(boardCards.audience, "owner"),
+            )
+          );
+
+        // Count per business slug
+        // open tasks: type=task, not archived, not confirmed done
+        // unseen cards: type=update or issue, not seen
+        const counts: Record<string, { tasks: number; unseen: number; total: number }> = {};
+
+        const businessSlugs = ["chiropractic", "crossfit"];
+        for (const slug of businessSlugs) {
+          const bizCards = cards.filter(c =>
+            c.business === slug || c.business === "general"
+          );
+          const openTasks = bizCards.filter(
+            c => c.type === "task" && !c.confirmedAt
+          ).length;
+          const unseenCards = bizCards.filter(
+            c => (c.type === "update" || c.type === "issue") && !c.seenAt
+          ).length;
+          counts[slug] = {
+            tasks: openTasks,
+            unseen: unseenCards,
+            total: openTasks + unseenCards,
+          };
+        }
+
+        return { counts };
+      }),
+
     /** Get all unique topic tags used in archived cards for an account. */
     getArchiveTags: publicProcedure
       .input(z.object({ accountId: z.number() }))

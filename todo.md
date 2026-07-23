@@ -768,4 +768,10 @@
 - [x] Update ClientLogin.tsx to redirect owners/co-owners to /select-business after login
 - [x] Update AppShell.tsx sidebar to show "← All Businesses" back button for owners/co-owners
 - [x] Update BUSINESSES constant in calendarData.ts to include logo paths
+- [x] Checkpoint and deploy
+
+## Business Selector Notification Badges
+- [x] Add tRPC procedure board.getBusinessCounts — returns open task count + unseen card count per business slug
+- [x] Display notification badge (counter) in top-right of each business card on BusinessSelector
+- [x] Badge shows combined count of open tasks + unseen board messages for that business
 - [ ] Checkpoint and deploy

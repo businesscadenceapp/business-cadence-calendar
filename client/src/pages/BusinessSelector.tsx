@@ -2,8 +2,9 @@
  * BusinessSelector — post-login screen showing swipeable business cards.
  *
  * Shown after login for owners and co-owners who have access to multiple
- * businesses. Tapping a card sets that business as active and navigates
- * to the dashboard.
+ * businesses. Each card shows a live notification badge (open tasks +
+ * unseen board messages) in the top-right corner so you can triage before
+ * entering a workspace.
  *
  * Single-business users are redirected directly to /app/board and never
  * see this screen.
@@ -13,13 +14,15 @@ import { useState, useRef, useEffect } from "react";
 import { useLocation } from "wouter";
 import { usePerson } from "@/contexts/PersonContext";
 import { useActiveBusiness } from "@/components/BusinessSwitcher";
+import { trpc } from "@/lib/trpc";
 import type { BusinessKey } from "@/lib/calendarData";
-import { BUSINESSES } from "@/lib/calendarData";
 
 // ─── Business card data ───────────────────────────────────────────────────────
 
 interface BusinessCard {
   key: BusinessKey;
+  /** DB slug used in board_cards.business column */
+  dbSlug: string;
   name: string;
   shortName: string;
   tagline: string;
@@ -33,6 +36,7 @@ interface BusinessCard {
 const BUSINESS_CARDS: Record<BusinessKey, BusinessCard> = {
   crossfit: {
     key: "crossfit",
+    dbSlug: "crossfit",
     name: "Evolved CrossFit",
     shortName: "Evolved CrossFit",
     tagline: "Fitness · Community · Performance",
@@ -41,12 +45,12 @@ const BUSINESS_CARDS: Record<BusinessKey, BusinessCard> = {
     accentColor: "#F59E0B",
     bgGradient: "linear-gradient(135deg, #1a1200 0%, #2d1f00 40%, #1a1200 100%)",
     logoStyle: {
-      // White logo on dark amber bg
       filter: "invert(1) brightness(1.0)",
     },
   },
   chiro: {
     key: "chiro",
+    dbSlug: "chiropractic",
     name: "New Beginnings Chiropractic",
     shortName: "New Beginnings Chiropractic",
     tagline: "Health · Healing · Wellness",
@@ -55,11 +59,93 @@ const BUSINESS_CARDS: Record<BusinessKey, BusinessCard> = {
     accentColor: "#10B981",
     bgGradient: "linear-gradient(135deg, #001a0f 0%, #002d1a 40%, #001a0f 100%)",
     logoStyle: {
-      // White logo on dark green bg
       filter: "invert(1) brightness(1.0)",
     },
   },
 };
+
+// ─── Notification badge ───────────────────────────────────────────────────────
+
+interface BadgeProps {
+  tasks: number;
+  unseen: number;
+  accentColor: string;
+}
+
+function NotificationBadge({ tasks, unseen, accentColor }: BadgeProps) {
+  const total = tasks + unseen;
+  if (total === 0) return null;
+
+  const display = total > 99 ? "99+" : String(total);
+
+  return (
+    <div
+      className="absolute top-3 right-3 flex flex-col items-end gap-1 z-20"
+      style={{ pointerEvents: "none" }}
+    >
+      {/* Total badge */}
+      <div
+        className="flex items-center justify-center rounded-full text-[11px] font-bold text-white leading-none"
+        style={{
+          minWidth: display.length > 1 ? "24px" : "20px",
+          height: "20px",
+          padding: "0 5px",
+          backgroundColor: "#EF4444",
+          boxShadow: "0 2px 8px rgba(239,68,68,0.5)",
+        }}
+      >
+        {display}
+      </div>
+
+      {/* Breakdown pill — tasks vs unseen */}
+      {tasks > 0 && unseen > 0 && (
+        <div
+          className="flex items-center gap-1 rounded-full px-2 py-0.5"
+          style={{
+            backgroundColor: "rgba(0,0,0,0.55)",
+            border: "1px solid rgba(255,255,255,0.12)",
+            backdropFilter: "blur(4px)",
+          }}
+        >
+          {tasks > 0 && (
+            <span className="text-[9px] font-semibold" style={{ color: "#FCD34D" }}>
+              {tasks} task{tasks !== 1 ? "s" : ""}
+            </span>
+          )}
+          {tasks > 0 && unseen > 0 && (
+            <span className="text-[9px]" style={{ color: "rgba(255,255,255,0.3)" }}>·</span>
+          )}
+          {unseen > 0 && (
+            <span className="text-[9px] font-semibold" style={{ color: "#93C5FD" }}>
+              {unseen} new
+            </span>
+          )}
+        </div>
+      )}
+
+      {/* Single-type label */}
+      {(tasks > 0) !== (unseen > 0) && (
+        <div
+          className="flex items-center rounded-full px-2 py-0.5"
+          style={{
+            backgroundColor: "rgba(0,0,0,0.55)",
+            border: "1px solid rgba(255,255,255,0.12)",
+            backdropFilter: "blur(4px)",
+          }}
+        >
+          <span
+            className="text-[9px] font-semibold"
+            style={{ color: tasks > 0 ? "#FCD34D" : "#93C5FD" }}
+          >
+            {tasks > 0
+              ? `${tasks} open task${tasks !== 1 ? "s" : ""}`
+              : `${unseen} new message${unseen !== 1 ? "s" : ""}`}
+          </span>
+        </div>
+      )}
+    </div>
+  );
+}
 
 // ─── BusinessSelector ─────────────────────────────────────────────────────────
 
@@ -73,7 +159,13 @@ export default function BusinessSelector() {
   const [isDragging, setIsDragging] = useState(false);
   const [dragStartX, setDragStartX] = useState(0);
   const [dragOffset, setDragOffset] = useState(0);
-  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Fetch per-business notification counts (polls every 30s)
+  const { data: countsData } = trpc.board.getBusinessCounts.useQuery(undefined, {
+    refetchInterval: 30_000,
+    enabled: !!person,
+  });
+  const counts = countsData?.counts ?? {};
 
   // Filter to only the businesses this user can access
   const cards = available
@@ -135,8 +227,6 @@ export default function BusinessSelector() {
 
   if (!person || cards.length === 0) return null;
 
-  const activeCard = cards[activeIndex];
-
   return (
     <div
       className="min-h-screen flex flex-col items-center justify-center overflow-hidden"
@@ -166,7 +256,6 @@ export default function BusinessSelector() {
 
       {/* Card carousel */}
       <div
-        ref={containerRef}
         className="relative w-full flex items-center justify-center"
         style={{ height: "420px", touchAction: "pan-y" }}
         onPointerDown={handlePointerDown}
@@ -178,18 +267,19 @@ export default function BusinessSelector() {
           const offset = i - activeIndex;
           const isDragActive = isDragging && Math.abs(dragOffset) > 5;
 
-          // Position: active card is centered, others are offset left/right
           const baseX = offset * 320;
           const x = baseX + (isDragActive ? dragOffset : 0);
           const scale = offset === 0 ? 1 : 0.85;
           const opacity = Math.abs(offset) > 1 ? 0 : offset === 0 ? 1 : 0.55;
           const zIndex = offset === 0 ? 10 : 5;
 
+          const cardCounts = counts[card.dbSlug] ?? { tasks: 0, unseen: 0, total: 0 };
+
           return (
             <div
               key={card.key}
               onClick={() => {
-                if (Math.abs(dragOffset) > 10) return; // ignore tap after drag
+                if (Math.abs(dragOffset) > 10) return;
                 if (offset === 0) {
                   handleSelect(card);
                 } else if (offset < 0) {
@@ -206,7 +296,7 @@ export default function BusinessSelector() {
                 opacity,
                 zIndex,
                 transition: isDragActive ? "none" : "transform 320ms cubic-bezier(0.23,1,0.32,1), opacity 280ms ease-out",
-                cursor: offset === 0 ? "pointer" : "pointer",
+                cursor: "pointer",
                 borderRadius: "24px",
                 overflow: "hidden",
                 boxShadow: offset === 0
@@ -215,15 +305,19 @@ export default function BusinessSelector() {
               }}
             >
               {/* Card background */}
-              <div
-                className="absolute inset-0"
-                style={{ background: card.bgGradient }}
-              />
+              <div className="absolute inset-0" style={{ background: card.bgGradient }} />
 
               {/* Accent glow top */}
               <div
                 className="absolute inset-x-0 top-0 h-1"
                 style={{ backgroundColor: card.accentColor, opacity: 0.9 }}
+              />
+
+              {/* Notification badge — top right */}
+              <NotificationBadge
+                tasks={cardCounts.tasks}
+                unseen={cardCounts.unseen}
+                accentColor={card.accentColor}
               />
 
               {/* Logo area */}
@@ -246,9 +340,7 @@ export default function BusinessSelector() {
               </div>
 
               {/* Card content */}
-              <div
-                className="absolute inset-x-0 bottom-0 flex flex-col items-center text-center px-6 pb-8"
-              >
+              <div className="absolute inset-x-0 bottom-0 flex flex-col items-center text-center px-6 pb-8">
                 <div
                   className="w-full h-px mb-5"
                   style={{ backgroundColor: `${card.accentColor}30` }}
@@ -292,19 +384,32 @@ export default function BusinessSelector() {
       {/* Dot indicators */}
       {cards.length > 1 && (
         <div className="flex items-center gap-2 mt-6">
-          {cards.map((card, i) => (
-            <button
-              key={card.key}
-              onClick={() => setActiveIndex(i)}
-              className="transition-all duration-300"
-              style={{
-                width: i === activeIndex ? "24px" : "8px",
-                height: "8px",
-                borderRadius: "4px",
-                backgroundColor: i === activeIndex ? cards[activeIndex].accentColor : "rgba(255,255,255,0.2)",
-              }}
-            />
-          ))}
+          {cards.map((card, i) => {
+            const cardCounts = counts[card.dbSlug] ?? { total: 0 };
+            return (
+              <button
+                key={card.key}
+                onClick={() => setActiveIndex(i)}
+                className="relative transition-all duration-300"
+                style={{
+                  width: i === activeIndex ? "24px" : "8px",
+                  height: "8px",
+                  borderRadius: "4px",
+                  backgroundColor: i === activeIndex
+                    ? cards[activeIndex].accentColor
+                    : "rgba(255,255,255,0.2)",
+                }}
+              >
+                {/* Small dot indicator on inactive dots if they have notifications */}
+                {i !== activeIndex && cardCounts.total > 0 && (
+                  <span
+                    className="absolute -top-1 -right-1 w-2 h-2 rounded-full"
+                    style={{ backgroundColor: "#EF4444" }}
+                  />
+                )}
+              </button>
+            );
+          })}
         </div>
       )}
 
