@@ -692,6 +692,11 @@ export default function AppShell({ children }: AppShellProps) {
           current={activeBusiness}
           onSelect={setActiveBusiness}
           onClose={() => setSwitcherOpen(false)}
+          onSelectAndNavigate={(key) => {
+            setActiveBusiness(key);
+            setSwitcherOpen(false);
+            navigate("/select-business");
+          }}
         />
       )}
     </IdentityContext.Provider>

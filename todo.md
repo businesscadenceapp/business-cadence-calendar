@@ -783,4 +783,8 @@
 - [x] Fix board.create: change from protectedProcedure to publicProcedure with personId input
 - [x] Remove setPointerCapture from carousel to prevent click-swallowing
 - [x] Fix DB: update Matt and Lynn accountId from 0 to 3
+- [x] Checkpoint and deploy
+
+## UX Improvement: Switch Business Modal
+- [x] When clicking a business in the "Switch Business" modal, navigate to /select-business instead of just switching the active business
 - [ ] Checkpoint and deploy

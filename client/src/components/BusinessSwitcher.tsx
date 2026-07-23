@@ -183,6 +183,7 @@ interface BusinessSwitcherModalProps {
   current: BusinessKey;
   onSelect: (key: BusinessKey) => void;
   onClose: () => void;
+  onSelectAndNavigate?: (key: BusinessKey) => void; // If provided, clicking a business navigates to /select-business
 }
 
 export function BusinessSwitcherModal({
@@ -190,6 +191,7 @@ export function BusinessSwitcherModal({
   current,
   onSelect,
   onClose,
+  onSelectAndNavigate,
 }: BusinessSwitcherModalProps) {
   return (
     <>
@@ -234,7 +236,14 @@ export function BusinessSwitcherModal({
             return (
               <button
                 key={key}
-                onClick={() => { onSelect(key); onClose(); }}
+                onClick={() => {
+                  if (onSelectAndNavigate) {
+                    onSelectAndNavigate(key);
+                  } else {
+                    onSelect(key);
+                    onClose();
+                  }
+                }}
                 className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-left transition-all active:scale-[0.98]"
                 style={{
                   backgroundColor: isActive ? `${biz.color}18` : "rgba(255,255,255,0.04)",
