@@ -755,3 +755,8 @@
 - [x] Build /reset-password page (new password form with token validation)
 - [x] Add "Forgot password?" link to ClientLogin.tsx
 - [x] Register new routes in App.tsx
+
+## Strict Business Filtering (no cross-business bleed)
+- [x] Goals: strict filter — only show goals matching active business slug exactly (no general/both bleed)
+- [x] KPIs: strict filter — only show KPI categories/entries for active business (already strict via businessSlug query param)
+- [x] Reports (Quarterly/Goals tabs): strict filter for goals shown (no general bleed)

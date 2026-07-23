@@ -526,7 +526,7 @@ function QuarterlyTab({ accountId, forcedBusiness }: { accountId: number; forced
   const rawQData = goalsQuery.data?.quarterly.find(q => q.quarter === viewQ);
   const qData = useMemo(() => {
     if (!rawQData || !forcedBusiness) return rawQData;
-    const filtered = rawQData.goals.filter(g => g.business === forcedBusiness || g.business === "general");
+    const filtered = rawQData.goals.filter(g => g.business === forcedBusiness);
     return {
       ...rawQData,
       goals: filtered,
@@ -680,7 +680,7 @@ function GoalsTab({ accountId, forcedBusiness }: { accountId: number; forcedBusi
   // Filter goals by active business
   const data = useMemo(() => {
     if (!rawData || !forcedBusiness) return rawData;
-    const filterGoals = (goals: typeof rawData.all) => goals.filter(g => g.business === forcedBusiness || g.business === "general");
+    const filterGoals = (goals: typeof rawData.all) => goals.filter(g => g.business === forcedBusiness);
     const filteredAll = filterGoals(rawData.all);
     const countStatuses = (goals: typeof rawData.all) => ({
       total: goals.length,

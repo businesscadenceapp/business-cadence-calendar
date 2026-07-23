@@ -502,7 +502,7 @@ export default function Goals() {
   // Filter goals by active business from sidebar switcher
   const activeDbSlug = activeBusiness === "chiro" ? "chiropractic" : activeBusiness === "crossfit" ? "crossfit" : null;
   const filteredGoals = activeDbSlug
-    ? goalsData.filter(g => g.business === activeDbSlug || g.business === "general")
+    ? goalsData.filter(g => g.business === activeDbSlug)
     : goalsData;
 
   const annualGoals = filteredGoals.filter(g => g.period === "annual");
