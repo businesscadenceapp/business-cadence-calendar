@@ -796,4 +796,4 @@
 - [x] Add logo upload step to Onboarding.tsx (step 3, right after business name/industry)
 - [x] Update BusinessSelector cards to show uploaded logo image when logoUrl is present, fallback to hardcoded logo
 - [x] Update Settings page to allow logo change after onboarding
-- [ ] Checkpoint and deploy
+- [x] Checkpoint and deploy

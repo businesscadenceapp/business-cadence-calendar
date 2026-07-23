@@ -453,7 +453,7 @@ export default function AppShell({ children }: AppShellProps) {
           {/* Switch Business button — desktop, only for multi-business owners */}
           {showSwitchBusiness && (
             <div className="px-3 pb-2 flex-shrink-0">
-              <SwitchBusinessButton onClick={() => setSwitcherOpen(true)} />
+              <SwitchBusinessButton onClick={() => navigate("/select-business")} />
             </div>
           )}
 
@@ -680,7 +680,7 @@ export default function AppShell({ children }: AppShellProps) {
           onClose={() => setMoreOpen(false)}
           onSignOut={handleSignOut}
           showSwitchBusiness={showSwitchBusiness}
-          onSwitchBusiness={() => setSwitcherOpen(true)}
+          onSwitchBusiness={() => navigate("/select-business")}
           onGoToSelector={() => navigate("/select-business")}
         />
       )}
