@@ -1,0 +1,336 @@
+/**
+ * BusinessSelector — post-login screen showing swipeable business cards.
+ *
+ * Shown after login for owners and co-owners who have access to multiple
+ * businesses. Tapping a card sets that business as active and navigates
+ * to the dashboard.
+ *
+ * Single-business users are redirected directly to /app/board and never
+ * see this screen.
+ */
+
+import { useState, useRef, useEffect } from "react";
+import { useLocation } from "wouter";
+import { usePerson } from "@/contexts/PersonContext";
+import { useActiveBusiness } from "@/components/BusinessSwitcher";
+import type { BusinessKey } from "@/lib/calendarData";
+import { BUSINESSES } from "@/lib/calendarData";
+
+// ─── Business card data ───────────────────────────────────────────────────────
+
+interface BusinessCard {
+  key: BusinessKey;
+  name: string;
+  shortName: string;
+  tagline: string;
+  logoSrc: string;
+  logoAlt: string;
+  accentColor: string;
+  bgGradient: string;
+  logoStyle?: React.CSSProperties;
+}
+
+const BUSINESS_CARDS: Record<BusinessKey, BusinessCard> = {
+  crossfit: {
+    key: "crossfit",
+    name: "Evolved CrossFit",
+    shortName: "Evolved CrossFit",
+    tagline: "Fitness · Community · Performance",
+    logoSrc: "/manus-storage/ecf-logo_e3510d26.png",
+    logoAlt: "Evolved CrossFit",
+    accentColor: "#F59E0B",
+    bgGradient: "linear-gradient(135deg, #1a1200 0%, #2d1f00 40%, #1a1200 100%)",
+    logoStyle: {
+      // White logo on dark amber bg
+      filter: "invert(1) brightness(1.0)",
+    },
+  },
+  chiro: {
+    key: "chiro",
+    name: "New Beginnings Chiropractic",
+    shortName: "New Beginnings Chiropractic",
+    tagline: "Health · Healing · Wellness",
+    logoSrc: "/manus-storage/nbc-rhino-logo_5f0c5664.png",
+    logoAlt: "New Beginnings Chiropractic",
+    accentColor: "#10B981",
+    bgGradient: "linear-gradient(135deg, #001a0f 0%, #002d1a 40%, #001a0f 100%)",
+    logoStyle: {
+      // White logo on dark green bg
+      filter: "invert(1) brightness(1.0)",
+    },
+  },
+};
+
+// ─── BusinessSelector ─────────────────────────────────────────────────────────
+
+export default function BusinessSelector() {
+  const [, navigate] = useLocation();
+  const { person } = usePerson();
+  const { setActiveBusiness, available } = useActiveBusiness(person?.businessScope);
+
+  // Active card index for swipe/scroll
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStartX, setDragStartX] = useState(0);
+  const [dragOffset, setDragOffset] = useState(0);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Filter to only the businesses this user can access
+  const cards = available
+    .map(key => BUSINESS_CARDS[key])
+    .filter(Boolean) as BusinessCard[];
+
+  // If only one business available, skip selector and go straight in
+  useEffect(() => {
+    if (!person) {
+      navigate("/login");
+      return;
+    }
+    if (cards.length === 1) {
+      setActiveBusiness(cards[0].key);
+      const role = person.role;
+      if (role === "employee") {
+        navigate("/app/team");
+      } else {
+        navigate("/app/board");
+      }
+    }
+  }, [person, cards.length]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handleSelect = (card: BusinessCard) => {
+    setActiveBusiness(card.key);
+    const role = person?.role;
+    if (role === "employee") {
+      navigate("/app/team");
+    } else {
+      navigate("/app/board");
+    }
+  };
+
+  // ── Touch / mouse drag for swipe ──────────────────────────────────────────
+
+  const handlePointerDown = (e: React.PointerEvent) => {
+    setIsDragging(true);
+    setDragStartX(e.clientX);
+    setDragOffset(0);
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+  };
+
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (!isDragging) return;
+    setDragOffset(e.clientX - dragStartX);
+  };
+
+  const handlePointerUp = () => {
+    if (!isDragging) return;
+    setIsDragging(false);
+    const threshold = 80;
+    if (dragOffset < -threshold && activeIndex < cards.length - 1) {
+      setActiveIndex(i => i + 1);
+    } else if (dragOffset > threshold && activeIndex > 0) {
+      setActiveIndex(i => i - 1);
+    }
+    setDragOffset(0);
+  };
+
+  if (!person || cards.length === 0) return null;
+
+  const activeCard = cards[activeIndex];
+
+  return (
+    <div
+      className="min-h-screen flex flex-col items-center justify-center overflow-hidden"
+      style={{
+        background: "linear-gradient(160deg, #0A1929 0%, #0F2440 50%, #0A1929 100%)",
+        fontFamily: "'Inter', sans-serif",
+      }}
+    >
+      {/* Header */}
+      <div className="text-center mb-8 px-4">
+        <p
+          className="text-[11px] font-bold uppercase tracking-[0.2em] mb-3"
+          style={{ color: "rgba(94,234,212,0.7)" }}
+        >
+          BusinessCadence
+        </p>
+        <h1
+          className="text-2xl sm:text-3xl font-bold text-white mb-2"
+          style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+        >
+          Welcome back, {person.name.split(" ")[0]}
+        </h1>
+        <p className="text-sm" style={{ color: "rgba(255,255,255,0.45)" }}>
+          {cards.length > 1 ? "Select a business to get started" : "Loading your dashboard…"}
+        </p>
+      </div>
+
+      {/* Card carousel */}
+      <div
+        ref={containerRef}
+        className="relative w-full flex items-center justify-center"
+        style={{ height: "420px", touchAction: "pan-y" }}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerLeave={handlePointerUp}
+      >
+        {cards.map((card, i) => {
+          const offset = i - activeIndex;
+          const isDragActive = isDragging && Math.abs(dragOffset) > 5;
+
+          // Position: active card is centered, others are offset left/right
+          const baseX = offset * 320;
+          const x = baseX + (isDragActive ? dragOffset : 0);
+          const scale = offset === 0 ? 1 : 0.85;
+          const opacity = Math.abs(offset) > 1 ? 0 : offset === 0 ? 1 : 0.55;
+          const zIndex = offset === 0 ? 10 : 5;
+
+          return (
+            <div
+              key={card.key}
+              onClick={() => {
+                if (Math.abs(dragOffset) > 10) return; // ignore tap after drag
+                if (offset === 0) {
+                  handleSelect(card);
+                } else if (offset < 0) {
+                  setActiveIndex(i => Math.max(0, i - 1));
+                } else {
+                  setActiveIndex(i => Math.min(cards.length - 1, i + 1));
+                }
+              }}
+              style={{
+                position: "absolute",
+                width: "280px",
+                height: "380px",
+                transform: `translateX(${x}px) scale(${scale})`,
+                opacity,
+                zIndex,
+                transition: isDragActive ? "none" : "transform 320ms cubic-bezier(0.23,1,0.32,1), opacity 280ms ease-out",
+                cursor: offset === 0 ? "pointer" : "pointer",
+                borderRadius: "24px",
+                overflow: "hidden",
+                boxShadow: offset === 0
+                  ? `0 32px 80px rgba(0,0,0,0.6), 0 0 0 1px ${card.accentColor}30, 0 0 60px ${card.accentColor}15`
+                  : "0 16px 40px rgba(0,0,0,0.4)",
+              }}
+            >
+              {/* Card background */}
+              <div
+                className="absolute inset-0"
+                style={{ background: card.bgGradient }}
+              />
+
+              {/* Accent glow top */}
+              <div
+                className="absolute inset-x-0 top-0 h-1"
+                style={{ backgroundColor: card.accentColor, opacity: 0.9 }}
+              />
+
+              {/* Logo area */}
+              <div
+                className="absolute inset-x-0 flex items-center justify-center"
+                style={{ top: "40px", height: "200px" }}
+              >
+                <img
+                  src={card.logoSrc}
+                  alt={card.logoAlt}
+                  draggable={false}
+                  style={{
+                    maxWidth: "220px",
+                    maxHeight: "180px",
+                    objectFit: "contain",
+                    userSelect: "none",
+                    ...card.logoStyle,
+                  }}
+                />
+              </div>
+
+              {/* Card content */}
+              <div
+                className="absolute inset-x-0 bottom-0 flex flex-col items-center text-center px-6 pb-8"
+              >
+                <div
+                  className="w-full h-px mb-5"
+                  style={{ backgroundColor: `${card.accentColor}30` }}
+                />
+                <h2
+                  className="text-base font-bold text-white mb-1 leading-tight"
+                  style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+                >
+                  {card.shortName}
+                </h2>
+                <p
+                  className="text-[11px] mb-5"
+                  style={{ color: "rgba(255,255,255,0.45)" }}
+                >
+                  {card.tagline}
+                </p>
+
+                {/* Enter button — only on active card */}
+                {offset === 0 && (
+                  <button
+                    className="w-full py-3 rounded-xl text-sm font-bold transition-all active:scale-[0.97]"
+                    style={{
+                      backgroundColor: card.accentColor,
+                      color: "#0A1929",
+                      boxShadow: `0 4px 20px ${card.accentColor}40`,
+                    }}
+                    onClick={e => {
+                      e.stopPropagation();
+                      handleSelect(card);
+                    }}
+                  >
+                    Enter Dashboard →
+                  </button>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Dot indicators */}
+      {cards.length > 1 && (
+        <div className="flex items-center gap-2 mt-6">
+          {cards.map((card, i) => (
+            <button
+              key={card.key}
+              onClick={() => setActiveIndex(i)}
+              className="transition-all duration-300"
+              style={{
+                width: i === activeIndex ? "24px" : "8px",
+                height: "8px",
+                borderRadius: "4px",
+                backgroundColor: i === activeIndex ? cards[activeIndex].accentColor : "rgba(255,255,255,0.2)",
+              }}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* Swipe hint */}
+      {cards.length > 1 && (
+        <p
+          className="mt-4 text-[11px]"
+          style={{ color: "rgba(255,255,255,0.25)" }}
+        >
+          Swipe or tap to switch
+        </p>
+      )}
+
+      {/* Sign out link */}
+      <button
+        className="mt-10 text-xs transition-colors"
+        style={{ color: "rgba(255,255,255,0.25)" }}
+        onMouseEnter={e => (e.currentTarget.style.color = "#F87171")}
+        onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.25)")}
+        onClick={() => {
+          try { localStorage.removeItem("bcc_person_v1"); } catch { /* ignore */ }
+          navigate("/login");
+        }}
+      >
+        Sign out
+      </button>
+    </div>
+  );
+}

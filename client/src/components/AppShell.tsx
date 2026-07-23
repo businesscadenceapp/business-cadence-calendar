@@ -120,6 +120,7 @@ function MoreSheet({
   onSignOut,
   onSwitchBusiness,
   showSwitchBusiness,
+  onGoToSelector,
 }: {
   items: NavItem[];
   activePath: string;
@@ -128,6 +129,7 @@ function MoreSheet({
   onSignOut: () => void;
   onSwitchBusiness?: () => void;
   showSwitchBusiness?: boolean;
+  onGoToSelector?: () => void;
 }) {
   const roleLabel = person
     ? person.role === "coowner" ? "Co-owner"
@@ -201,6 +203,22 @@ function MoreSheet({
             );
           })}
 
+          {/* All Businesses — back to selector for owners/co-owners */}
+          {showSwitchBusiness && onGoToSelector && (
+            <button
+              onClick={() => { onClose(); onGoToSelector(); }}
+              className="flex items-center gap-2 w-full px-4 py-3 rounded-xl text-sm font-semibold transition-all active:scale-[0.98]"
+              style={{
+                backgroundColor: "rgba(94,234,212,0.08)",
+                border: "1px solid rgba(94,234,212,0.2)",
+                color: "#5EEAD4",
+                fontFamily: "'Space Grotesk', sans-serif",
+              }}
+            >
+              <span className="text-xl w-7 text-center">←</span>
+              All Businesses
+            </button>
+          )}
           {/* Switch Business — only for multi-business owners/co-owners */}
           {showSwitchBusiness && onSwitchBusiness && (
             <SwitchBusinessButton onClick={() => { onClose(); onSwitchBusiness(); }} compact />
@@ -329,9 +347,20 @@ export default function AppShell({ children }: AppShellProps) {
             </div>
           </div>
 
-          {/* Active business badge — shown for owners/co-owners */}
+          {/* Active business badge + back-to-selector — shown for owners/co-owners */}
           {isOwnerOrCoOwner && (
-            <div className="px-3 pt-3 pb-1 flex-shrink-0">
+            <div className="px-3 pt-3 pb-1 flex-shrink-0 flex flex-col gap-1.5">
+              <button
+                onClick={() => navigate("/select-business")}
+                className="flex items-center gap-1.5 text-[10px] font-semibold transition-colors w-fit"
+                style={{ color: "rgba(255,255,255,0.35)" }}
+                onMouseEnter={e => (e.currentTarget.style.color = "#5EEAD4")}
+                onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.35)")}
+                title="Back to business selector"
+              >
+                <span style={{ fontSize: "10px" }}>←</span>
+                All Businesses
+              </button>
               <ActiveBusinessBadge businessKey={activeBusiness} />
             </div>
           )}
@@ -652,6 +681,7 @@ export default function AppShell({ children }: AppShellProps) {
           onSignOut={handleSignOut}
           showSwitchBusiness={showSwitchBusiness}
           onSwitchBusiness={() => setSwitcherOpen(true)}
+          onGoToSelector={() => navigate("/select-business")}
         />
       )}
 

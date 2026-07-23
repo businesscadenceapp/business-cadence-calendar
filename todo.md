@@ -760,3 +760,12 @@
 - [x] Goals: strict filter — only show goals matching active business slug exactly (no general/both bleed)
 - [x] KPIs: strict filter — only show KPI categories/entries for active business (already strict via businessSlug query param)
 - [x] Reports (Quarterly/Goals tabs): strict filter for goals shown (no general bleed)
+
+## Business Selector Screen (Phase N)
+- [x] Upload ECF wordmark logo and NBC rhino-in-heart logo to /manus-storage/
+- [x] Build BusinessSelector.tsx page — full-screen post-login swipeable business cards
+- [x] Add /select-business route to App.tsx
+- [x] Update ClientLogin.tsx to redirect owners/co-owners to /select-business after login
+- [x] Update AppShell.tsx sidebar to show "← All Businesses" back button for owners/co-owners
+- [x] Update BUSINESSES constant in calendarData.ts to include logo paths
+- [ ] Checkpoint and deploy

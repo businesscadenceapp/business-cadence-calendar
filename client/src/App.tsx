@@ -26,6 +26,7 @@ import BoardArchive from "@/pages/BoardArchive";
 import TeamBoardArchive from "@/pages/TeamBoardArchive";
 import ForgotPassword from "@/pages/ForgotPassword";
 import ResetPassword from "@/pages/ResetPassword";
+import BusinessSelector from "@/pages/BusinessSelector";
 
 // Wrapper that applies PasswordGate + AppShell to any page component
 function Protected({ component: Component }: { component: React.ComponentType }) {
@@ -48,6 +49,7 @@ function Router() {
       <Route path={"/accept-invite"} component={AcceptInvite} />
       <Route path={"/forgot-password"} component={ForgotPassword} />
       <Route path={"/reset-password"} component={ResetPassword} />
+      <Route path={"/select-business"} component={BusinessSelector} />
 
       {/* Protected app routes — more specific paths MUST come before less specific ones */}
       <Route path={"/app/team/calendar"}>

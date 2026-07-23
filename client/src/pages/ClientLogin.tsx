@@ -50,9 +50,14 @@ export default function ClientLogin() {
           return;
         }
         if (role === "coowner") {
-          navigate("/app/board");
+          // Co-owners go to business selector if they have multiple businesses,
+          // otherwise straight to the board
+          const scope = data.person.businessScope;
+          const hasBoth = !scope || scope === "all" || scope.includes(",");
+          navigate(hasBoth ? "/select-business" : "/app/board");
           return;
         }
+        // Owner: check onboarding status first
         try {
           const resp = await fetch(
             `/api/trpc/onboarding.getStatus?input=${encodeURIComponent(JSON.stringify({ json: { accountId } }))}`,
@@ -60,9 +65,14 @@ export default function ClientLogin() {
           );
           const json = await resp.json();
           const complete = json?.result?.data?.json?.complete ?? false;
-          navigate(complete ? "/app/board" : "/onboarding");
+          if (!complete) {
+            navigate("/onboarding");
+          } else {
+            // Owners always go to business selector
+            navigate("/select-business");
+          }
         } catch {
-          navigate("/app/board");
+          navigate("/select-business");
         }
       } else {
         setPassword("");
