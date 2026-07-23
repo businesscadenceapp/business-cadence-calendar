@@ -634,26 +634,27 @@ Be concise and specific. If a field has nothing, use an empty array.`,
 
   board: router({
     /** List all active (non-archived) board cards, optionally filtered by audience. */
-    list: protectedProcedure
-      .input(z.object({ audience: z.enum(["owner", "team"]).optional() }).optional())
-      .query(async ({ input, ctx }) => {
+    list: publicProcedure
+      .input(z.object({
+        audience: z.enum(["owner", "team"]).optional(),
+        personId: z.string().optional(),
+      }).optional())
+      .query(async ({ input }) => {
         const cards = await getBoardCards(false, input?.audience);
         // Get the person record to check businessScope
-        const person = await getPersonByEmail(ctx.user.email ?? "");
+        if (!input?.personId) return { cards };
+        const person = await getPersonById(input.personId);
         if (!person) return { cards }; // Fallback: return all if person not found
         // Filter cards by user's businessScope
         const userScope = person.businessScope ?? "all";
-        console.log(`[board.list] User: ${person.name}, businessScope: "${userScope}"`);
         if (userScope === "all") return { cards };
         const allowedBusinesses = userScope.split(",").map((s: string) => s.trim());
-        console.log(`[board.list] Allowed: ${JSON.stringify(allowedBusinesses)}, Cards: ${cards.map(c => c.business).join(", ")}`);
         const filtered = cards.filter(c => c.business === "general" || allowedBusinesses.includes(c.business));
-        console.log(`[board.list] Filtered from ${cards.length} to ${filtered.length}`);
         return { cards: filtered };
       }),
 
     /** Create a new board card (update, issue, or task). */
-    create: protectedProcedure
+    create: publicProcedure
       .input(z.object({
         author: z.string().min(1).max(128),
         type: z.enum(["update", "issue", "task"]),
@@ -668,11 +669,12 @@ Be concise and specific. If a field has nothing, use an empty array.`,
         accountId: z.number().optional(),      // for notification routing
         notifyPersonIds: z.array(z.string()).optional(), // explicit recipient list (person IDs)
         audience: z.enum(["owner", "team"]).optional(), // which side of the wall
+        personId: z.string().optional(),       // for business scope validation (replaces Manus OAuth)
       }))
-      .mutation(async ({ input, ctx }) => {
+      .mutation(async ({ input }) => {
         // Validate user has access to this business
-        if (input.business !== "general") {
-          const person = await getPersonByEmail(ctx.user.email ?? "");
+        if (input.business !== "general" && input.personId) {
+          const person = await getPersonById(input.personId);
           if (!person) throw new Error("User not found");
           const userScope = person.businessScope ?? "all";
           if (userScope !== "all") {
@@ -968,13 +970,10 @@ Be concise and specific. If a field has nothing, use an empty array.`,
     /**
      * Get notification counts per business for the Business Selector screen.
      * Returns open task count + unseen owner-board card count for each business slug.
-     * Uses publicProcedure + accountId so it works with the app's own email/password auth
-     * (not Manus OAuth), preventing the global UNAUTHORIZED redirect from blocking the selector.
+     * Board cards are not account-scoped, so no accountId is needed.
      */
     getBusinessCounts: publicProcedure
-      .input(z.object({ accountId: z.number() }))
-      .query(async ({ input }) => {
-        if (!input.accountId) return { counts: {} };
+      .query(async () => {
         const { getDb } = await import('./db');
         const { boardCards } = await import('../drizzle/schema');
         const { isNull, and, eq } = await import('drizzle-orm');

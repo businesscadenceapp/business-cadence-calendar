@@ -1221,7 +1221,7 @@ export default function Board() {
     return labels;
   }, [dbBusinesses]);
 
-  const { data, refetch, isLoading } = trpc.board.list.useQuery({ audience: "owner" }, {
+  const { data, refetch, isLoading } = trpc.board.list.useQuery({ audience: "owner", personId: person?.id }, {
     refetchInterval: 15_000,
   });
 

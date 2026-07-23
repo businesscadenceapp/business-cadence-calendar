@@ -634,7 +634,7 @@ const MEETING_TYPE_LABELS: Record<string, { label: string; icon: string; color: 
 };
 
 function BoardIssuesForMeeting({ meetingType, dateMs }: { meetingType: "daily_huddle" | "weekly_meeting" | "quarterly_review"; dateMs: number }) {
-  const { data: boardData } = trpc.board.list.useQuery();
+  const { data: boardData } = trpc.board.list.useQuery({});
   const dayStart = new Date(dateMs); dayStart.setHours(0, 0, 0, 0);
   const dayEnd   = new Date(dateMs); dayEnd.setHours(23, 59, 59, 999);
 

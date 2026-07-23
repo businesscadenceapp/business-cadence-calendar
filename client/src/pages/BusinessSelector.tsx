@@ -161,14 +161,10 @@ export default function BusinessSelector() {
   const [dragOffset, setDragOffset] = useState(0);
 
   // Fetch per-business notification counts (polls every 30s)
-  // Uses publicProcedure + accountId to avoid Manus OAuth requirement
-  const { data: countsData } = trpc.board.getBusinessCounts.useQuery(
-    { accountId: person?.accountId ?? 0 },
-    {
-      refetchInterval: 30_000,
-      enabled: !!person?.accountId,
-    }
-  );
+  const { data: countsData } = trpc.board.getBusinessCounts.useQuery(undefined, {
+    refetchInterval: 30_000,
+    enabled: !!person,
+  });
   const counts = countsData?.counts ?? {};
 
   // Filter to only the businesses this user can access
@@ -209,7 +205,6 @@ export default function BusinessSelector() {
     setIsDragging(true);
     setDragStartX(e.clientX);
     setDragOffset(0);
-    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
   };
 
   const handlePointerMove = (e: React.PointerEvent) => {

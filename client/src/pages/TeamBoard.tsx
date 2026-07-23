@@ -775,7 +775,7 @@ export default function TeamBoard() {
 
   // Fetch team-side board cards
   const { data, refetch, isLoading } = trpc.board.list.useQuery(
-    { audience: "team" },
+    { audience: "team", personId: person?.id },
     { refetchInterval: 15_000 }
   );
 

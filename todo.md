@@ -775,3 +775,12 @@
 - [x] Display notification badge (counter) in top-right of each business card on BusinessSelector
 - [x] Badge shows combined count of open tasks + unseen board messages for that business
 - [x] Checkpoint and deploy
+
+## Fix: Business Selector can't enter + counters missing
+- [x] Fix board.getBusinessCounts: remove accountId requirement, don't short-circuit on accountId=0
+- [x] Fix board.getBusinessCounts enabled check: use person presence instead of accountId
+- [x] Fix board.list: change from protectedProcedure to publicProcedure with personId input
+- [x] Fix board.create: change from protectedProcedure to publicProcedure with personId input
+- [x] Remove setPointerCapture from carousel to prevent click-swallowing
+- [x] Fix DB: update Matt and Lynn accountId from 0 to 3
+- [ ] Checkpoint and deploy
