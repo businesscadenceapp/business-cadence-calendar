@@ -1611,6 +1611,7 @@ Be concise and specific. If a field has nothing, use an empty array.`,
         name: z.string().min(1).optional(),
         icon: z.string().optional(),
         color: z.string().optional(),
+        logoUrl: z.string().optional(),
         sortOrder: z.number().optional(),
         isActive: z.boolean().optional(),
       }))
@@ -1618,6 +1619,23 @@ Be concise and specific. If a field has nothing, use an empty array.`,
         const { id, ...data } = input;
         await updateBusiness(id, data);
         return { success: true };
+      }),
+
+    /** Upload a logo image for a business — stores in S3 and updates logoUrl. */
+    uploadLogo: publicProcedure
+      .input(z.object({
+        businessId: z.number(),
+        base64Data: z.string(),        // base64-encoded image bytes
+        mimeType: z.string(),           // e.g. "image/png"
+        fileName: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const ext = input.mimeType.split("/")[1]?.replace("jpeg", "jpg") ?? "png";
+        const key = `business-logos/${input.businessId}/${Date.now()}.${ext}`;
+        const buffer = Buffer.from(input.base64Data, "base64");
+        const { url } = await storagePut(key, buffer, input.mimeType);
+        await updateBusiness(input.businessId, { logoUrl: url });
+        return { key, url };
       }),
   }),
 

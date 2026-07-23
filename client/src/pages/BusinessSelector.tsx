@@ -167,9 +167,27 @@ export default function BusinessSelector() {
   });
   const counts = countsData?.counts ?? {};
 
-  // Filter to only the businesses this user can access
+  // Fetch DB businesses to get uploaded logoUrl values
+  const accountId = Number(typeof window !== "undefined" ? localStorage.getItem("bcc_account_id") ?? "0" : "0");
+  const { data: dbBusinesses } = trpc.business.list.useQuery(
+    { accountId },
+    { enabled: accountId > 0 }
+  );
+
+  // Build a map from slug -> logoUrl for quick lookup
+  const dbLogoMap = (dbBusinesses ?? []).reduce<Record<string, string>>((acc, biz) => {
+    if (biz.logoUrl) acc[biz.slug] = biz.logoUrl;
+    return acc;
+  }, {});
+
+  // Filter to only the businesses this user can access, merging DB logo if available
   const cards = available
-    .map(key => BUSINESS_CARDS[key])
+    .map(key => {
+      const base = BUSINESS_CARDS[key];
+      if (!base) return null;
+      const dbLogo = dbLogoMap[base.dbSlug];
+      return dbLogo ? { ...base, logoSrc: dbLogo, logoStyle: undefined } : base;
+    })
     .filter(Boolean) as BusinessCard[];
 
   // If only one business available, skip selector and go straight in

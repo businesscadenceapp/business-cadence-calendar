@@ -787,4 +787,13 @@
 
 ## UX Improvement: Switch Business Modal
 - [x] When clicking a business in the "Switch Business" modal, navigate to /select-business instead of just switching the active business
+- [x] Checkpoint and deploy
+
+## Logo Upload in Onboarding
+- [x] Add logoUrl column to businesses table in drizzle/schema.ts
+- [x] Run pnpm db:push to migrate the schema
+- [x] Add business.uploadLogo tRPC procedure that accepts a base64 image, stores it in S3, and updates the business logoUrl
+- [x] Add logo upload step to Onboarding.tsx (step 3, right after business name/industry)
+- [x] Update BusinessSelector cards to show uploaded logo image when logoUrl is present, fallback to hardcoded logo
+- [x] Update Settings page to allow logo change after onboarding
 - [ ] Checkpoint and deploy

@@ -3,7 +3,7 @@
  * Dark navy theme: #0F2440 bg, #5EEAD4 teal accent, white text
  */
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { Link } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
@@ -277,6 +277,181 @@ function AgendaEditor({ biz, mt, savedItems, onSaveRequest }: {
   );
 }
 
+// ─── Business Logo Section ───────────────────────────────────────────────────
+
+interface BizLogoItem {
+  key: string;
+  id: number;
+  label: string;
+  color: string;
+  icon: string;
+  logoUrl: string | null;
+}
+
+function BusinessLogoSection({
+  businesses,
+  accountId,
+}: {
+  businesses: BizLogoItem[];
+  accountId: number;
+}) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [selectedBizId, setSelectedBizId] = useState<number | null>(null);
+  const [preview, setPreview] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const utils = trpc.useUtils();
+
+  const uploadLogo = trpc.business.uploadLogo.useMutation({
+    onSuccess: () => {
+      utils.business.list.invalidate();
+      setPreview(null);
+      setSelectedBizId(null);
+    },
+    onError: (err) => {
+      toast.error("Failed to upload logo: " + err.message);
+    },
+  });
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 4 * 1024 * 1024) {
+      toast.error("Logo must be under 4 MB");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const result = ev.target?.result as string;
+      setPreview(result);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleUpload = async () => {
+    if (!preview || !selectedBizId) return;
+    const [header, base64Data] = preview.split(",");
+    const mimeType = header.match(/data:(.*);base64/)?.[1] ?? "image/png";
+    setUploading(true);
+    try {
+      await uploadLogo.mutateAsync({ businessId: selectedBizId, base64Data, mimeType });
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
+  return (
+    <div
+      className="mx-4 sm:mx-6 mb-8 rounded-2xl p-5"
+      style={{ backgroundColor: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}
+    >
+      <div className="flex items-center gap-3 mb-4">
+        <div
+          className="w-8 h-8 rounded-lg flex items-center justify-center text-sm"
+          style={{ backgroundColor: "rgba(94,234,212,0.15)", border: "1px solid rgba(94,234,212,0.3)" }}
+        >
+          🖼️
+        </div>
+        <div>
+          <h2 className="text-sm font-bold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+            Business Logo
+          </h2>
+          <p className="text-[11px] mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>
+            Upload a logo for each business. It appears on your selector card when you log in.
+          </p>
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-3">
+        {businesses.map((biz) => (
+          <div
+            key={biz.key}
+            className="flex items-center gap-4 rounded-xl px-4 py-3"
+            style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)" }}
+          >
+            <div
+              className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden"
+              style={{ backgroundColor: "rgba(255,255,255,0.08)", border: `1px solid ${biz.color}40` }}
+            >
+              {biz.logoUrl ? (
+                <img src={biz.logoUrl} alt={biz.label} className="w-full h-full object-contain p-1" />
+              ) : (
+                <span className="text-xl">{biz.icon}</span>
+              )}
+            </div>
+
+            <div className="flex-1 min-w-0">
+              <p className="text-[13px] font-semibold text-white truncate" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+                {biz.label}
+              </p>
+              <p className="text-[11px]" style={{ color: "rgba(255,255,255,0.4)" }}>
+                {biz.logoUrl ? "Logo uploaded" : "No logo yet"}
+              </p>
+            </div>
+
+            <button
+              onClick={() => {
+                setSelectedBizId(biz.id);
+                setPreview(null);
+                setTimeout(() => fileInputRef.current?.click(), 50);
+              }}
+              className="px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all hover:opacity-80 active:scale-[0.97]"
+              style={{ backgroundColor: `${biz.color}25`, color: biz.color, border: `1px solid ${biz.color}40` }}
+            >
+              {biz.logoUrl ? "Change" : "Upload"}
+            </button>
+          </div>
+        ))}
+      </div>
+
+      {preview && selectedBizId && (
+        <div
+          className="mt-4 rounded-xl p-4 flex items-center gap-4"
+          style={{ backgroundColor: "rgba(94,234,212,0.06)", border: "1px solid rgba(94,234,212,0.2)" }}
+        >
+          <img
+            src={preview}
+            alt="Preview"
+            className="w-16 h-16 rounded-xl object-contain"
+            style={{ backgroundColor: "rgba(255,255,255,0.08)" }}
+          />
+          <div className="flex-1">
+            <p className="text-[12px] font-semibold text-white mb-1">Logo preview</p>
+            <p className="text-[11px]" style={{ color: "rgba(255,255,255,0.4)" }}>
+              {businesses.find(b => b.id === selectedBizId)?.label}
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={() => { setPreview(null); setSelectedBizId(null); if (fileInputRef.current) fileInputRef.current.value = ""; }}
+              className="px-3 py-1.5 rounded-lg text-[11px] font-semibold"
+              style={{ backgroundColor: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.6)" }}
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleUpload}
+              disabled={uploading}
+              className="px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all hover:opacity-90 active:scale-[0.97] disabled:opacity-40"
+              style={{ backgroundColor: "#5EEAD4", color: "#0A1929" }}
+            >
+              {uploading ? "Uploading…" : "Save Logo"}
+            </button>
+          </div>
+        </div>
+      )}
+
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={handleFileChange}
+      />
+    </div>
+  );
+}
+
 // ─── Main Settings Page ───────────────────────────────────────────────────────
 export default function Settings() {
   const { person } = usePerson();
@@ -304,6 +479,8 @@ export default function Settings() {
     label: b.name,
     color: b.color,
     icon: b.icon,
+    logoUrl: b.logoUrl ?? null,
+    id: b.id,
   }));
 
   const [selectedBiz, setSelectedBiz] = useState<DbBusiness>("");
@@ -490,6 +667,14 @@ export default function Settings() {
 
       {(person?.role === "owner" || person?.role === "coowner") && (
         <ReportQuestionsPanel accountId={accountId ?? 0} businesses={visibleBusinesses} />
+      )}
+
+      {/* ── Business Logo ──────────────────────────────────────────────────── */}
+      {(person?.role === "owner" || person?.role === "coowner") && (
+        <BusinessLogoSection
+          businesses={visibleBusinesses}
+          accountId={accountId ?? 0}
+        />
       )}
 
       {/* ── Team Calendar Visibility ──────────────────────────────────────── */}

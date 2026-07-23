@@ -981,7 +981,7 @@ export async function createBusiness(data: Omit<InsertBusiness, "id" | "createdA
   return biz;
 }
 
-export async function updateBusiness(id: number, data: Partial<Pick<Business, "name" | "slug" | "icon" | "color" | "sortOrder" | "isActive">>): Promise<void> {
+export async function updateBusiness(id: number, data: Partial<Pick<Business, "name" | "slug" | "icon" | "color" | "logoUrl" | "sortOrder" | "isActive">>): Promise<void> {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   await db.update(businesses).set(data).where(eq(businesses.id, id));

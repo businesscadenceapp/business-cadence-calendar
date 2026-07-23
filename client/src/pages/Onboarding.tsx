@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import {
@@ -44,6 +44,10 @@ interface EmployeeDraft {
 interface OnboardingData {
   businessName: string;
   industry: IndustryType;
+  // Logo
+  logoBase64: string;   // base64-encoded image data (without data: prefix)
+  logoMimeType: string; // e.g. "image/png"
+  logoPreviewUrl: string; // local object URL for preview
   ownerCount: number;
   employeeCount: number;
   workDays: number[];
@@ -85,7 +89,7 @@ interface OnboardingData {
 
 const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const DAY_FULL = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-const TOTAL_STEPS = 13;
+const TOTAL_STEPS = 14;
 
 // ─── Shared styles ────────────────────────────────────────────────────────────
 
@@ -1515,6 +1519,132 @@ function StepDone({ businessName, invitesSent, coOwnerName, onEnter }: { busines
   );
 }
 
+// ─── Step 2b: Logo Upload ────────────────────────────────────────────────────
+
+function StepLogoUpload({
+  data,
+  onChange,
+  onNext,
+  onBack,
+}: {
+  data: Pick<OnboardingData, "businessName" | "logoBase64" | "logoMimeType" | "logoPreviewUrl">;
+  onChange: (u: Partial<OnboardingData>) => void;
+  onNext: () => void;
+  onBack: () => void;
+}) {
+  const [isDragging, setIsDragging] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const handleFile = (file: File) => {
+    if (!file.type.startsWith("image/")) return;
+    if (file.size > 5 * 1024 * 1024) {
+      alert("Logo must be under 5 MB");
+      return;
+    }
+    const previewUrl = URL.createObjectURL(file);
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const result = e.target?.result as string;
+      const base64 = result.split(",")[1] ?? "";
+      onChange({ logoBase64: base64, logoMimeType: file.type, logoPreviewUrl: previewUrl });
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files[0];
+    if (file) handleFile(file);
+  };
+
+  const handleRemove = () => {
+    if (data.logoPreviewUrl) URL.revokeObjectURL(data.logoPreviewUrl);
+    onChange({ logoBase64: "", logoMimeType: "", logoPreviewUrl: "" });
+  };
+
+  return (
+    <div>
+      <StepHeader
+        title="Add your business logo"
+        subtitle="This will appear on your business card in the app. You can change it later in Settings."
+      />
+      <div className="flex flex-col items-center gap-5">
+        {/* Drop zone / preview */}
+        {data.logoPreviewUrl ? (
+          <div className="relative">
+            <div
+              className="w-36 h-36 rounded-2xl overflow-hidden flex items-center justify-center"
+              style={{ backgroundColor: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)" }}
+            >
+              <img src={data.logoPreviewUrl} alt="Logo preview" className="w-full h-full object-contain p-2" />
+            </div>
+            <button
+              onClick={handleRemove}
+              className="absolute -top-2 -right-2 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold"
+              style={{ backgroundColor: "#EF4444", color: "white" }}
+            >
+              ✕
+            </button>
+          </div>
+        ) : (
+          <div
+            onClick={() => inputRef.current?.click()}
+            onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+            onDragLeave={() => setIsDragging(false)}
+            onDrop={handleDrop}
+            className="w-full max-w-xs h-40 rounded-2xl flex flex-col items-center justify-center gap-3 cursor-pointer transition-all"
+            style={{
+              backgroundColor: isDragging ? "rgba(94,234,212,0.12)" : "rgba(255,255,255,0.04)",
+              border: `2px dashed ${isDragging ? "#5EEAD4" : "rgba(255,255,255,0.15)"}`,
+            }}
+          >
+            <span className="text-4xl">🖼️</span>
+            <div className="text-center">
+              <p className="text-sm font-semibold" style={{ color: isDragging ? "#5EEAD4" : "rgba(255,255,255,0.6)" }}>
+                Drop your logo here
+              </p>
+              <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.3)" }}>or click to browse · PNG, JPG, SVG · max 5 MB</p>
+            </div>
+          </div>
+        )}
+
+        <input
+          ref={inputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }}
+        />
+
+        {data.logoPreviewUrl && (
+          <button
+            onClick={() => inputRef.current?.click()}
+            className="text-sm transition-colors"
+            style={{ color: "rgba(255,255,255,0.4)" }}
+            onMouseEnter={e => (e.currentTarget.style.color = "#5EEAD4")}
+            onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.4)")}
+          >
+            Choose a different image
+          </button>
+        )}
+
+        <TipBox>
+          A square or circular logo works best. Your logo will be displayed on a dark background on the business selector card.
+        </TipBox>
+      </div>
+      <NavButtons
+        onBack={onBack}
+        onNext={onNext}
+        canProceed={true}
+        nextLabel={data.logoBase64 ? "Continue →" : "Continue →"}
+        onSkip={onNext}
+        skipLabel="Skip — add later"
+      />
+    </div>
+  );
+}
+
 // ─── Main Onboarding Component ────────────────────────────────────────────────
 
 export default function Onboarding() {
@@ -1528,6 +1658,9 @@ export default function Onboarding() {
   const [data, setData] = useState<OnboardingData>({
     businessName: "",
     industry: "healthcare",
+    logoBase64: "",
+    logoMimeType: "",
+    logoPreviewUrl: "",
     ownerCount: 2,
     employeeCount: 3,
     workDays: [1, 2, 3, 4, 5],
@@ -1549,6 +1682,7 @@ export default function Onboarding() {
 
   const saveOnboarding = trpc.onboarding.save.useMutation();
   const createBusiness = trpc.business.create.useMutation();
+  const uploadLogo = trpc.business.uploadLogo.useMutation();
   const createGoal = trpc.goals.create.useMutation();
   const seedKpis = trpc.kpi.seedDefaults.useMutation();
   const invitePerson = trpc.person.invite.useMutation();
@@ -1601,8 +1735,9 @@ export default function Onboarding() {
       const kpiSlug = data.businessName.trim().toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "").slice(0, 60) || "business";
       const iconMap: Record<string, string> = { healthcare: "🏥", fitness: "💪", realestate: "🏠", restaurant: "🍕", retail: "🛍️", professional: "💼", construction: "🔨", salon: "✂️", other: "🏢" };
       const colorMap: Record<string, string> = { healthcare: "#10B981", fitness: "#F59E0B", realestate: "#2563EB", restaurant: "#E11D48", retail: "#7C3AED", professional: "#0D9488", construction: "#D97706", salon: "#EC4899", other: "#64748B" };
+      let createdBusinessId: number | null = null;
       try {
-        await createBusiness.mutateAsync({
+        const biz = await createBusiness.mutateAsync({
           accountId,
           name: data.businessName.trim(),
           slug,
@@ -1610,7 +1745,19 @@ export default function Onboarding() {
           color: colorMap[data.industry] ?? "#64748B",
           sortOrder: 0,
         });
+        createdBusinessId = biz?.id ?? null;
       } catch { /* non-fatal */ }
+
+      // 2b. Upload logo if provided
+      if (createdBusinessId && data.logoBase64 && data.logoMimeType) {
+        try {
+          await uploadLogo.mutateAsync({
+            businessId: createdBusinessId,
+            base64Data: data.logoBase64,
+            mimeType: data.logoMimeType,
+          });
+        } catch { /* non-fatal */ }
+      }
 
       // 3. Save goals
       for (const goal of data.goals) {
@@ -1725,14 +1872,17 @@ export default function Onboarding() {
           {step === 0 && <StepWelcome onNext={next} />}
           {/* Step 1: Co-owner invite — first thing after welcome */}
           {step === 1 && <StepCoOwnerInvite data={data} onChange={update} onNext={next} onBack={back} />}
-          {/* Steps 2–8: existing business setup flow (shifted +1) */}
+          {/* Step 2: Business basics (name + industry) */}
           {step === 2 && <StepBusinessBasics data={data} onChange={update} onNext={next} onBack={back} />}
-          {step === 3 && <StepTeamSize data={data} onChange={update} onNext={next} onBack={back} />}
-          {step === 4 && <StepWorkSchedule data={data} onChange={update} onNext={next} onBack={back} />}
-          {step === 5 && <MeetingCadenceStep data={data} onChange={update} onNext={next} onBack={back} />}
-          {step === 6 && <StepGoals data={data} onChange={update} onNext={next} onBack={back} />}
-          {step === 7 && <StepKPIs data={data} onChange={update} onNext={next} onBack={back} />}
-          {step === 8 && (
+          {/* Step 3: Logo upload — right after business name so they can brand the card */}
+          {step === 3 && <StepLogoUpload data={data} onChange={update} onNext={next} onBack={back} />}
+          {/* Steps 4–: existing business setup flow (shifted +1) */}
+          {step === 4 && <StepTeamSize data={data} onChange={update} onNext={next} onBack={back} />}
+          {step === 5 && <StepWorkSchedule data={data} onChange={update} onNext={next} onBack={back} />}
+          {step === 6 && <MeetingCadenceStep data={data} onChange={update} onNext={next} onBack={back} />}
+          {step === 7 && <StepGoals data={data} onChange={update} onNext={next} onBack={back} />}
+          {step === 8 && <StepKPIs data={data} onChange={update} onNext={next} onBack={back} />}
+          {step === 9 && (
             <StepEmployeeInvites
               data={data}
               onChange={update}
@@ -1741,9 +1891,9 @@ export default function Onboarding() {
               businessName={data.businessName}
             />
           )}
-          {/* Step 9: Business hours — new step after employee invites */}
-          {step === 9 && <StepBusinessHours data={data} onChange={update} onNext={next} onBack={back} />}
-          {step === 10 && (
+          {/* Step 10: Business hours */}
+          {step === 10 && <StepBusinessHours data={data} onChange={update} onNext={next} onBack={back} />}
+          {step === 11 && (
             <StepPreview
               data={data}
               onConfirm={handleConfirm}
@@ -1751,7 +1901,7 @@ export default function Onboarding() {
               isLoading={saveOnboarding.isPending}
             />
           )}
-          {step === 11 && (
+          {step === 12 && (
             <StepDone
               businessName={data.businessName}
               invitesSent={invitesSent}

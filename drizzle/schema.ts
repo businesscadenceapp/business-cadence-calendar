@@ -444,6 +444,7 @@ export const businesses = mysqlTable("businesses", {
   slug: varchar("slug", { length: 64 }).notNull(),
   icon: varchar("icon", { length: 8 }).default("🏢").notNull(),
   color: varchar("color", { length: 16 }).default("#64748B").notNull(),
+  logoUrl: text("logoUrl"),  // S3 URL for business logo (optional)
   sortOrder: int("sortOrder").default(0).notNull(),
   isActive: boolean("isActive").default(true).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
