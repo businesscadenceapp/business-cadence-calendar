@@ -1,0 +1,17 @@
+{
+  "expo": {
+    "name": "Business Cadence Command Center",
+    "slug": "business-cadence-command-center",
+    "version": "1.0.0",
+    "ios": {
+      "bundleIdentifier": "com.businesscadence.calendar",
+      "buildNumber": "1"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "754d5923-9cd2-402d-8f5a-6ecf9490985f"
+      }
+    },
+    "owner": "businesscadence.dev"
+  }
+}

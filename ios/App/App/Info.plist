@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-        <string>BusinessCadence</string>
+        <string>Business Cadence Command Center</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -47,8 +47,5 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
-	<!-- Microphone permission — required for meeting audio recording -->
-	<key>NSMicrophoneUsageDescription</key>
-	<string>BusinessCadence uses the microphone to record meeting audio, which is then transcribed into meeting minutes using AI.</string>
 </dict>
 </plist>
