@@ -859,3 +859,15 @@
 - [x] If user has no businesses yet (new account), route to onboarding instead of showing empty selector
 - [x] Test account (test@businesscadence.com) should start with onboardingComplete=false and no businesses
 - [x] Checkpoint and deploy
+
+## Rebuild: Board Page — Card-Navigation Model (Premium UX)
+- [x] Home card: "Your Business, In Sync" with Tasks/Updates/Issues/Archive tiles
+- [x] Card transitions: slide-in from right when tapping a category, slide back on back chevron
+- [x] Tasks sub-card: filtered view of task posts with assign/complete actions
+- [x] Updates sub-card: filtered view of update posts
+- [x] Issues sub-card: filtered view of issue posts
+- [x] Archive sub-card: resolved/completed posts
+- [x] Post to Board: bottom sheet modal (not inline form) with same fields
+- [x] Visual language matches Business Selector: dark cards, accent glow, Space Grotesk headings
+- [x] Micro-interactions: button press scale, card entrance animations, staggered reveals
+- [x] Responsive: works beautifully on mobile and desktop
