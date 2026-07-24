@@ -289,8 +289,8 @@ const FEATURES = [
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
       </svg>
     ),
-    title: "Meeting Cadence Calendar",
-    body: "A full-year visual calendar showing exactly when each meeting type happens — daily check-ins, weekly reviews, monthly financials, and quarterly strategy sessions. No guesswork, no missed meetings.",
+    title: "Meeting Cadence Command Center",
+    body: "A full-year visual schedule showing exactly when each meeting type happens — daily check-ins, weekly reviews, monthly financials, and quarterly strategy sessions. No guesswork, no missed meetings.",
   },
   {
     icon: (

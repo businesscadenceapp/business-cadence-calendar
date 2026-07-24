@@ -822,4 +822,33 @@
 - [x] Restructured KPI row: name field is now full-width on its own row with the remove button
 - [x] Unit and frequency are on a second row, both with proper flex sizing
 - [x] No more truncation on narrow screens
-- [ ] Checkpoint and deploy
+- [x] Checkpoint and deploy
+
+## Rename: Calendar → Command Center
+- [x] Onboarding: "Build My Calendar →" → "Build My Command Center →"
+- [x] Onboarding: "Building your calendar…" → "Building your command center…"
+- [x] Onboarding: "Open My Calendar →" → "Open My Command Center →"
+- [x] Onboarding: "Calendar Preview — Next 3 Months" → "Schedule Preview — Next 3 Months"
+- [x] AppShell: Owner nav label "Calendar" → "Command Center"
+- [x] AppShell: Employee nav label "Calendar" → "Schedule"
+- [x] Home.tsx: Page heading "Calendar" → "Command Center"
+- [x] TeamCalendar.tsx: Page heading "Team Calendar" → "Team Schedule"
+- [x] Settings.tsx: "Back to Calendar" → "Back to Command Center"
+- [x] Settings.tsx: "Team Calendar Visibility" → "Team Schedule Visibility"
+- [x] ManageSchedule.tsx: "← Back to Calendar" → "← Back to Command Center"
+- [x] EmployeeSetup.tsx: "← Back to Calendar" → "← Back to Schedule"
+- [x] Landing.tsx: "Meeting Cadence Calendar" → "Meeting Cadence Command Center"
+- [x] Checkpoint and deploy
+
+## Fix: Business Hours Step Copy
+- [x] StepWorkSchedule subtitle: removed "no meetings on days you're closed" — now says "We'll use this as a default for your meeting schedule. You can schedule meetings on any day."
+
+## Fix: Post-Onboarding Routing
+- [x] After onboarding completes, "Open My Command Center →" now routes to /select-business instead of /app
+
+## Feature: + Add Business Card on Selector Screen
+- [x] Added a dashed "+ Add Business" card as the last swipeable card in the BusinessSelector carousel
+- [x] Card shows "+" icon, "Add a Business" heading, and "Run multiple businesses from one command center" tagline
+- [x] "+ Add Business" button on the active card shows a "coming soon" toast
+- [x] Dot indicators updated to include the Add Business card dot
+- [x] Checkpoint and deploy

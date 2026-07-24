@@ -567,7 +567,7 @@ export default function Settings() {
           <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
             <path d="M9 2L4 7L9 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
-          Back to Calendar
+          Back to Command Center
         </Link>
         <div className="flex items-center gap-2.5">
           <div style={{
@@ -687,10 +687,10 @@ export default function Settings() {
             <span className="text-xl">📅</span>
             <div>
               <h2 className="text-sm font-bold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-                Team Calendar Visibility
+                Team Schedule Visibility
               </h2>
               <p className="text-[11px] mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>
-                Choose which meeting types appear on the Team Calendar. Employees only see the types you enable.
+                Choose which meeting types appear on the Team Schedule. Employees only see the types you enable.
               </p>
             </div>
           </div>
@@ -735,7 +735,7 @@ export default function Settings() {
             className="w-full py-2.5 rounded-xl text-sm font-bold transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-40"
             style={{ backgroundColor: "#5EEAD4", color: "#0A1929", fontFamily: "'Space Grotesk', sans-serif" }}
           >
-            {updateTeamCal.isPending ? "Saving…" : "Save Team Calendar Settings"}
+            {updateTeamCal.isPending ? "Saving…" : "Save Team Schedule Settings"}
           </button>
         </div>
       )}

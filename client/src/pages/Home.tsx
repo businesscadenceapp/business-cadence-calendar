@@ -861,7 +861,7 @@ export default function Home() {
             </svg>
           </button>
           <span className="text-base">📅</span>
-          <h1 className="text-sm font-bold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Calendar</h1>
+          <h1 className="text-sm font-bold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Command Center</h1>
           <span className="text-xs font-mono font-bold ml-1" style={{ color: "rgba(255,255,255,0.3)", fontFamily: "'JetBrains Mono', monospace" }}>{viewYear}</span>
         </div>
         <div className="hidden md:flex items-center gap-3">

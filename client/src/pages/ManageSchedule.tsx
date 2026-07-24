@@ -412,7 +412,7 @@ export default function ManageSchedule() {
               onMouseEnter={e => (e.currentTarget.style.color = "#5EEAD4")}
               onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.4)")}
             >
-              ← Back to Calendar
+              ← Back to Command Center
             </button>
             <span style={{ color: "rgba(255,255,255,0.15)" }}>|</span>
             <div className="flex items-center gap-2">

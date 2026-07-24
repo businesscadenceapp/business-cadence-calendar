@@ -58,14 +58,14 @@ const OWNER_NAV: NavItem[] = [
   { path: "/app/goals",    label: "Goals",    icon: "🎯", activeColor: "#5EEAD4" },
   { path: "/app/kpi",      label: "KPIs",     icon: "📈", activeColor: "#5EEAD4" },
   { path: "/app/reports",  label: "Reports",  icon: "📊", activeColor: "#5EEAD4" },
-  { path: "/app/calendar", label: "Calendar", icon: "📅", activeColor: "#5EEAD4" },
+  { path: "/app/calendar", label: "Command Center", icon: "📅", activeColor: "#5EEAD4" },
   { path: "/app/settings", label: "Settings", icon: "⚙️", activeColor: "#5EEAD4" },
   { path: "/app/admin",    label: "Admin",    icon: "🔑", activeColor: "#F87171" },
 ];
 
 const EMPLOYEE_NAV: NavItem[] = [
   { path: "/app/team",          label: "My Board",  icon: "👥", activeColor: "#A78BFA" },
-  { path: "/app/team/calendar", label: "Calendar",  icon: "📅", activeColor: "#5EEAD4" },
+  { path: "/app/team/calendar", label: "Schedule",  icon: "📅", activeColor: "#5EEAD4" },
   { path: "/app/kpi",           label: "KPIs",      icon: "📈", activeColor: "#5EEAD4" },
   { path: "/app/checkin",       label: "Check-in",  icon: "✅", activeColor: "#5EEAD4" },
 ];

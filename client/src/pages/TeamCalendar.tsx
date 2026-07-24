@@ -338,7 +338,7 @@ export default function TeamCalendar() {
             className="text-sm font-bold text-white"
             style={{ fontFamily: "'Space Grotesk', sans-serif" }}
           >
-            Team Calendar
+            Team Schedule
           </h1>
           <span
             className="text-xs font-mono font-bold ml-1"

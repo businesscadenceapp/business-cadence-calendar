@@ -254,7 +254,7 @@ export default function EmployeeSetup() {
             className="text-sm transition-colors"
             style={{ color: "rgba(255,255,255,0.4)" }}
           >
-            ← Back to Calendar
+            ← Back to Schedule
           </Link>
           <span style={{ color: "rgba(255,255,255,0.15)" }}>|</span>
           <div className="flex items-center gap-2">

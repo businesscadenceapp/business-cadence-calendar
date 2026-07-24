@@ -16,6 +16,7 @@ import { usePerson } from "@/contexts/PersonContext";
 import { useActiveBusiness } from "@/components/BusinessSwitcher";
 import { trpc } from "@/lib/trpc";
 import type { BusinessKey } from "@/lib/calendarData";
+import { toast } from "sonner";
 
 // ─── Business card data ───────────────────────────────────────────────────────
 
@@ -302,7 +303,7 @@ export default function BusinessSelector() {
                 } else if (offset < 0) {
                   setActiveIndex(i => Math.max(0, i - 1));
                 } else {
-                  setActiveIndex(i => Math.min(cards.length - 1, i + 1));
+                  setActiveIndex(i => Math.min(cards.length, i + 1));
                 }
               }}
               style={{
@@ -396,39 +397,142 @@ export default function BusinessSelector() {
             </div>
           );
         })}
+
+        {/* + Add Business card */}
+        {(() => {
+          const addOffset = cards.length - activeIndex;
+          const isDragActive = isDragging && Math.abs(dragOffset) > 5;
+          const baseX = addOffset * 320;
+          const x = baseX + (isDragActive ? dragOffset : 0);
+          const scale = addOffset === 0 ? 1 : 0.85;
+          const opacity = Math.abs(addOffset) > 1 ? 0 : addOffset === 0 ? 1 : 0.55;
+          const zIndex = addOffset === 0 ? 10 : 5;
+          return (
+            <div
+              key="add-business"
+              onClick={() => {
+                if (Math.abs(dragOffset) > 10) return;
+                if (addOffset === 0) {
+                  toast.info("Add Business coming soon! You'll be able to onboard a second business from here.");
+                } else if (addOffset < 0) {
+                  setActiveIndex(i => Math.max(0, i - 1));
+                } else {
+                  setActiveIndex(cards.length);
+                }
+              }}
+              style={{
+                position: "absolute",
+                width: "280px",
+                height: "380px",
+                transform: `translateX(${x}px) scale(${scale})`,
+                opacity,
+                zIndex,
+                transition: isDragActive ? "none" : "transform 320ms cubic-bezier(0.23,1,0.32,1), opacity 280ms ease-out",
+                cursor: "pointer",
+                borderRadius: "24px",
+                overflow: "hidden",
+                boxShadow: addOffset === 0
+                  ? "0 32px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.1)"
+                  : "0 16px 40px rgba(0,0,0,0.4)",
+                background: "rgba(255,255,255,0.03)",
+                border: "2px dashed rgba(255,255,255,0.15)",
+              }}
+            >
+              {/* Inner content */}
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-5 px-8">
+                {/* Plus icon circle */}
+                <div
+                  className="flex items-center justify-center rounded-full"
+                  style={{
+                    width: "72px",
+                    height: "72px",
+                    backgroundColor: "rgba(255,255,255,0.06)",
+                    border: "2px dashed rgba(255,255,255,0.2)",
+                  }}
+                >
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="2" strokeLinecap="round">
+                    <line x1="12" y1="5" x2="12" y2="19" />
+                    <line x1="5" y1="12" x2="19" y2="12" />
+                  </svg>
+                </div>
+                <div className="text-center">
+                  <h2
+                    className="text-base font-bold mb-1"
+                    style={{ color: "rgba(255,255,255,0.7)", fontFamily: "'Space Grotesk', sans-serif" }}
+                  >
+                    Add a Business
+                  </h2>
+                  <p
+                    className="text-[11px] leading-relaxed"
+                    style={{ color: "rgba(255,255,255,0.3)" }}
+                  >
+                    Run multiple businesses from one command center
+                  </p>
+                </div>
+                {addOffset === 0 && (
+                  <button
+                    className="w-full py-3 rounded-xl text-sm font-bold transition-all active:scale-[0.97]"
+                    style={{
+                      backgroundColor: "rgba(255,255,255,0.1)",
+                      border: "1px solid rgba(255,255,255,0.2)",
+                      color: "rgba(255,255,255,0.8)",
+                    }}
+                    onClick={e => {
+                      e.stopPropagation();
+                      toast.info("Add Business coming soon! You'll be able to onboard a second business from here.");
+                    }}
+                  >
+                    + Add Business
+                  </button>
+                )}
+              </div>
+            </div>
+          );
+        })()}
       </div>
 
-      {/* Dot indicators */}
-      {cards.length > 1 && (
-        <div className="flex items-center gap-2 mt-6">
-          {cards.map((card, i) => {
-            const cardCounts = counts[card.dbSlug] ?? { total: 0 };
-            return (
-              <button
-                key={card.key}
-                onClick={() => setActiveIndex(i)}
-                className="relative transition-all duration-300"
-                style={{
-                  width: i === activeIndex ? "24px" : "8px",
-                  height: "8px",
-                  borderRadius: "4px",
-                  backgroundColor: i === activeIndex
-                    ? cards[activeIndex].accentColor
-                    : "rgba(255,255,255,0.2)",
-                }}
-              >
-                {/* Small dot indicator on inactive dots if they have notifications */}
-                {i !== activeIndex && cardCounts.total > 0 && (
-                  <span
-                    className="absolute -top-1 -right-1 w-2 h-2 rounded-full"
-                    style={{ backgroundColor: "#EF4444" }}
-                  />
-                )}
-              </button>
-            );
-          })}
-        </div>
-      )}
+      {/* Dot indicators — includes the Add Business dot */}
+      <div className="flex items-center gap-2 mt-6">
+        {cards.map((card, i) => {
+          const cardCounts = counts[card.dbSlug] ?? { total: 0 };
+          return (
+            <button
+              key={card.key}
+              onClick={() => setActiveIndex(i)}
+              className="relative transition-all duration-300"
+              style={{
+                width: i === activeIndex ? "24px" : "8px",
+                height: "8px",
+                borderRadius: "4px",
+                backgroundColor: i === activeIndex
+                  ? cards[activeIndex].accentColor
+                  : "rgba(255,255,255,0.2)",
+              }}
+            >
+              {/* Small dot indicator on inactive dots if they have notifications */}
+              {i !== activeIndex && cardCounts.total > 0 && (
+                <span
+                  className="absolute -top-1 -right-1 w-2 h-2 rounded-full"
+                  style={{ backgroundColor: "#EF4444" }}
+                />
+              )}
+            </button>
+          );
+        })}
+        {/* Add Business dot */}
+        <button
+          onClick={() => setActiveIndex(cards.length)}
+          className="relative transition-all duration-300"
+          style={{
+            width: activeIndex === cards.length ? "24px" : "8px",
+            height: "8px",
+            borderRadius: "4px",
+            backgroundColor: activeIndex === cards.length
+              ? "rgba(255,255,255,0.5)"
+              : "rgba(255,255,255,0.15)",
+          }}
+        />
+      </div>
 
       {/* Swipe hint */}
       {cards.length > 1 && (

@@ -428,7 +428,7 @@ function StepWorkSchedule({
     <div>
       <StepHeader
         title="What days do you operate?"
-        subtitle="We'll only schedule meetings on your work days — no meetings on days you're closed."
+        subtitle="We'll use this as a default for your meeting schedule. You can schedule meetings on any day."
       />
       <div className="flex flex-col gap-5">
         <div className="flex gap-2 flex-wrap">
@@ -1395,7 +1395,7 @@ function MiniCalendarPreview({ data }: { data: OnboardingData }) {
     <div className="flex flex-col gap-3">
       <div className="flex items-center justify-between">
         <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "rgba(255,255,255,0.4)" }}>
-          Calendar Preview — Next 3 Months
+          Schedule Preview — Next 3 Months
         </p>
         <div className="flex gap-1.5 flex-wrap justify-end">
           {Object.entries(countByType).map(([type, count]) => {
@@ -1525,7 +1525,7 @@ function StepPreview({
             className="flex-1 py-2.5 rounded-xl text-sm font-bold transition-all active:scale-[0.98] disabled:opacity-50"
             style={{ background: "linear-gradient(135deg, #5EEAD4, #2DD4BF)", color: "#0F2440" }}
           >
-            {isLoading ? "Building your calendar…" : "Build My Calendar →"}
+            {isLoading ? "Building your command center…" : "Build My Command Center →"}
           </button>
         </div>
       </div>
@@ -1571,7 +1571,7 @@ function StepDone({ businessName, invitesSent, coOwnerName, onEnter }: { busines
         className="mt-2 px-10 py-3 rounded-xl font-bold text-base transition-all hover:opacity-90 active:scale-[0.98]"
         style={{ background: "linear-gradient(135deg, #5EEAD4, #2DD4BF)", color: "#0F2440" }}
       >
-        Open My Calendar →
+        Open My Command Center →
       </button>
     </div>
   );
@@ -1892,7 +1892,7 @@ export default function Onboarding() {
     if (accountId) {
       try { localStorage.setItem("bcc_onboarding_done_" + accountId, "1"); } catch { /* ignore */ }
     }
-    navigate("/app");
+    navigate("/select-business");
   };
 
   const progressPercent = step === 0 ? 0 : Math.round((step / (TOTAL_STEPS - 1)) * 100);
