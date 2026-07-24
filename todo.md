@@ -809,4 +809,11 @@
 ## Fix: Meeting Rhythm Setup — Allow All 7 Days
 - [x] Update MeetingCadenceStep to show all 7 days (Mon-Sun) for all meetings, not just work days
 - [x] Owners can now schedule meetings on days the business isn't open
+- [x] Checkpoint and deploy
+
+## Fix: Custom Goals Missing Save Button
+- [x] Add a "Save Goal" confirm button to custom goal cards in onboarding Goals step
+- [x] Save Goal button only activates when goal label has content
+- [x] Cancel button dismisses the pending goal entry
+- [x] Enter key confirms, Escape key cancels
 - [ ] Checkpoint and deploy

@@ -721,11 +721,19 @@ function StepGoals({
     onChange({ goals: data.goals.filter((_, i) => i !== idx) });
   };
 
+  const [pendingGoal, setPendingGoal] = useState<{ label: string; metric: string; unit: string; targetValue: string; period: "quarterly" | "annual" } | null>(null);
+
   const addBlank = () => {
-    onChange({
-      goals: [...data.goals, { label: "", metric: "", unit: "", targetValue: "", period: "quarterly" }],
-    });
+    setPendingGoal({ label: "", metric: "", unit: "", targetValue: "", period: "quarterly" });
   };
+
+  const confirmPendingGoal = () => {
+    if (!pendingGoal || !pendingGoal.label.trim()) return;
+    onChange({ goals: [...data.goals, pendingGoal] });
+    setPendingGoal(null);
+  };
+
+  const cancelPendingGoal = () => setPendingGoal(null);
 
   return (
     <div>
@@ -824,13 +832,72 @@ function StepGoals({
           </div>
         )}
 
-        <button
-          onClick={addBlank}
-          className="text-sm font-medium transition-colors text-left"
-          style={{ color: "#5EEAD4" }}
-        >
-          + Add custom goal
-        </button>
+        {/* Pending custom goal entry */}
+        {pendingGoal && (
+          <div className="rounded-xl p-3 flex flex-col gap-2"
+            style={{ backgroundColor: "rgba(94,234,212,0.06)", border: "1px solid rgba(94,234,212,0.25)" }}>
+            <p className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: "#5EEAD4" }}>New custom goal</p>
+            <div className="flex items-center gap-2">
+              <input
+                autoFocus
+                style={{ ...inputStyle, flex: 1 }}
+                value={pendingGoal.label}
+                onChange={e => setPendingGoal(g => g ? { ...g, label: e.target.value } : g)}
+                placeholder="Goal name (e.g. Grow new patients)"
+                onKeyDown={e => { if (e.key === "Enter") confirmPendingGoal(); if (e.key === "Escape") cancelPendingGoal(); }}
+              />
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              <input
+                style={inputStyle}
+                value={pendingGoal.metric}
+                onChange={e => setPendingGoal(g => g ? { ...g, metric: e.target.value } : g)}
+                placeholder="Metric (e.g. New patients/month)"
+              />
+              <input
+                style={inputStyle}
+                value={pendingGoal.targetValue}
+                onChange={e => setPendingGoal(g => g ? { ...g, targetValue: e.target.value } : g)}
+                placeholder="Target (e.g. 30)"
+              />
+              <select
+                style={selectStyle}
+                value={pendingGoal.period}
+                onChange={e => setPendingGoal(g => g ? { ...g, period: e.target.value as "quarterly" | "annual" } : g)}
+              >
+                <option value="quarterly" style={{ backgroundColor: "#0F2440" }}>Quarterly</option>
+                <option value="annual" style={{ backgroundColor: "#0F2440" }}>Annual</option>
+              </select>
+            </div>
+            <div className="flex gap-2 mt-1">
+              <button
+                onClick={confirmPendingGoal}
+                disabled={!pendingGoal.label.trim()}
+                className="text-sm font-semibold px-4 py-1.5 rounded-lg transition-all"
+                style={{
+                  backgroundColor: pendingGoal.label.trim() ? "#5EEAD4" : "rgba(94,234,212,0.2)",
+                  color: pendingGoal.label.trim() ? "#0F2440" : "rgba(255,255,255,0.3)",
+                  cursor: pendingGoal.label.trim() ? "pointer" : "not-allowed",
+                }}
+              >Save Goal</button>
+              <button
+                onClick={cancelPendingGoal}
+                className="text-sm px-3 py-1.5 rounded-lg transition-colors"
+                style={{ color: "rgba(255,255,255,0.4)" }}
+              >Cancel</button>
+            </div>
+          </div>
+        )}
+
+        {!pendingGoal && (
+          <button
+            onClick={addBlank}
+            className="text-sm font-medium transition-colors text-left"
+            style={{ color: "#5EEAD4" }}
+          >
+            + Add custom goal
+          </button>
+        )}
 
         <TipBox>
           Goals show up in your Quarterly Offsite agenda automatically. You can always add more goals from the Goals page.
