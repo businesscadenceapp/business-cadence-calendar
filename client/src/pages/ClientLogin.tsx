@@ -42,22 +42,18 @@ export default function ClientLogin() {
           localStorage.setItem("bcc_auth_v1", "granted");
         } catch { /* ignore */ }
         toast.success(`Welcome back, ${data.person.name}!`);
-        // Check onboarding status — co-owners and employees skip onboarding
+        // Route based on role:
+        // - Employees go straight to the team schedule (no business selector)
+        // - Owners & co-owners: check onboarding first, then always land on
+        //   the Business Selector — it's the app home screen where they see
+        //   notification badges and choose which business to enter.
         const accountId = data.person.accountId;
         const role = data.person.role;
         if (role === "employee") {
           navigate("/app/team");
           return;
         }
-        if (role === "coowner") {
-          // Co-owners go to business selector if they have multiple businesses,
-          // otherwise straight to the board
-          const scope = data.person.businessScope;
-          const hasBoth = !scope || scope === "all" || scope.includes(",");
-          navigate(hasBoth ? "/select-business" : "/app/board");
-          return;
-        }
-        // Owner: check onboarding status first
+        // Owner or co-owner: check onboarding status
         try {
           const resp = await fetch(
             `/api/trpc/onboarding.getStatus?input=${encodeURIComponent(JSON.stringify({ json: { accountId } }))}`,
@@ -68,7 +64,7 @@ export default function ClientLogin() {
           if (!complete) {
             navigate("/onboarding");
           } else {
-            // Owners always go to business selector
+            // Business Selector is the default home screen for all owners/co-owners
             navigate("/select-business");
           }
         } catch {
