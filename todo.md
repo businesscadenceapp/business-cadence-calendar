@@ -816,4 +816,10 @@
 - [x] Save Goal button only activates when goal label has content
 - [x] Cancel button dismisses the pending goal entry
 - [x] Enter key confirms, Escape key cancels
+- [x] Checkpoint and deploy
+
+## Fix: KPI Fields Truncating on Mobile
+- [x] Restructured KPI row: name field is now full-width on its own row with the remove button
+- [x] Unit and frequency are on a second row, both with proper flex sizing
+- [x] No more truncation on narrow screens
 - [ ] Checkpoint and deploy

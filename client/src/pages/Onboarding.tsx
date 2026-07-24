@@ -983,18 +983,29 @@ function StepKPIs({
             {data.kpis.map((kpi, idx) => (
               <div key={idx} className="rounded-xl p-3"
                 style={{ backgroundColor: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)" }}>
+                {/* Row 1: KPI name (full width) */}
                 <div className="flex items-center gap-2 mb-2">
                   <input
-                    style={{ ...inputStyle, flex: 1 }}
+                    style={{ ...inputStyle, flex: 1, minWidth: 0 }}
                     value={kpi.name}
                     onChange={e => updateKpi(idx, { name: e.target.value })}
                     placeholder="KPI name (e.g. New Patients)"
                   />
+                  <button
+                    onClick={() => removeKpi(idx)}
+                    className="text-lg leading-none flex-shrink-0 transition-colors"
+                    style={{ color: "rgba(255,255,255,0.25)" }}
+                    onMouseEnter={e => (e.currentTarget.style.color = "#F87171")}
+                    onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.25)")}
+                  >×</button>
+                </div>
+                {/* Row 2: Unit + Frequency */}
+                <div className="flex items-center gap-2">
                   <input
-                    style={{ ...inputStyle, width: "70px" }}
+                    style={{ ...inputStyle, flex: 1, minWidth: 0 }}
                     value={kpi.unit}
                     onChange={e => updateKpi(idx, { unit: e.target.value })}
-                    placeholder="Unit"
+                    placeholder="Unit (e.g. patients, $, %)"
                   />
                   <select
                     style={{ ...selectStyle, flexShrink: 0 }}
@@ -1004,13 +1015,6 @@ function StepKPIs({
                     <option value="weekly" style={{ backgroundColor: "#0F2440" }}>Weekly</option>
                     <option value="monthly" style={{ backgroundColor: "#0F2440" }}>Monthly</option>
                   </select>
-                  <button
-                    onClick={() => removeKpi(idx)}
-                    className="text-lg leading-none flex-shrink-0 transition-colors"
-                    style={{ color: "rgba(255,255,255,0.25)" }}
-                    onMouseEnter={e => (e.currentTarget.style.color = "#F87171")}
-                    onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.25)")}
-                  >×</button>
                 </div>
                 {kpi.description && (
                   <p className="text-xs" style={{ color: "rgba(255,255,255,0.35)" }}>{kpi.description}</p>
