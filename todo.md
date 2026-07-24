@@ -852,3 +852,10 @@
 - [x] "+ Add Business" button on the active card shows a "coming soon" toast
 - [x] Dot indicators updated to include the Add Business card dot
 - [x] Checkpoint and deploy
+
+## Fix: Business Selector — Dynamic Businesses (Not Hardcoded ECF/NBC)
+- [x] BusinessSelector should load businesses from the logged-in user's own account (DB-driven)
+- [x] Remove hardcoded BUSINESS_CARDS constant as the source of truth for what shows on the selector
+- [x] If user has no businesses yet (new account), route to onboarding instead of showing empty selector
+- [x] Test account (test@businesscadence.com) should start with onboardingComplete=false and no businesses
+- [x] Checkpoint and deploy

@@ -2,68 +2,30 @@
  * BusinessSelector — post-login screen showing swipeable business cards.
  *
  * Shown after login for owners and co-owners who have access to multiple
- * businesses. Each card shows a live notification badge (open tasks +
- * unseen board messages) in the top-right corner so you can triage before
- * entering a workspace.
+ * businesses. Each card is built dynamically from the account's businesses
+ * table — no hardcoded business data. Each card shows a live notification
+ * badge (open tasks + unseen board messages) in the top-right corner so
+ * you can triage before entering a workspace.
  *
- * Single-business users are redirected directly to /app/board and never
- * see this screen.
+ * If the account has no businesses yet, the user is redirected to /onboarding.
  */
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { usePerson } from "@/contexts/PersonContext";
-import { useActiveBusiness } from "@/components/BusinessSwitcher";
 import { trpc } from "@/lib/trpc";
-import type { BusinessKey } from "@/lib/calendarData";
 import { toast } from "sonner";
 
-// ─── Business card data ───────────────────────────────────────────────────────
+// ─── Dynamic business card shape ─────────────────────────────────────────────
 
-interface BusinessCard {
-  key: BusinessKey;
-  /** DB slug used in board_cards.business column */
-  dbSlug: string;
+interface DynamicCard {
+  id: number;
+  slug: string;
   name: string;
-  shortName: string;
-  tagline: string;
-  logoSrc: string;
-  logoAlt: string;
-  accentColor: string;
-  bgGradient: string;
-  logoStyle?: React.CSSProperties;
+  icon: string;
+  color: string;
+  logoUrl: string | null;
 }
-
-const BUSINESS_CARDS: Record<BusinessKey, BusinessCard> = {
-  crossfit: {
-    key: "crossfit",
-    dbSlug: "crossfit",
-    name: "Evolved CrossFit",
-    shortName: "Evolved CrossFit",
-    tagline: "Fitness · Community · Performance",
-    logoSrc: "/manus-storage/ecf-logo_e3510d26.png",
-    logoAlt: "Evolved CrossFit",
-    accentColor: "#F59E0B",
-    bgGradient: "linear-gradient(135deg, #1a1200 0%, #2d1f00 40%, #1a1200 100%)",
-    logoStyle: {
-      filter: "invert(1) brightness(1.0)",
-    },
-  },
-  chiro: {
-    key: "chiro",
-    dbSlug: "chiropractic",
-    name: "New Beginnings Chiropractic",
-    shortName: "New Beginnings Chiropractic",
-    tagline: "Health · Healing · Wellness",
-    logoSrc: "/manus-storage/nbc-rhino-logo_5f0c5664.png",
-    logoAlt: "New Beginnings Chiropractic",
-    accentColor: "#10B981",
-    bgGradient: "linear-gradient(135deg, #001a0f 0%, #002d1a 40%, #001a0f 100%)",
-    logoStyle: {
-      filter: "invert(1) brightness(1.0)",
-    },
-  },
-};
 
 // ─── Notification badge ───────────────────────────────────────────────────────
 
@@ -153,13 +115,22 @@ function NotificationBadge({ tasks, unseen, accentColor }: BadgeProps) {
 export default function BusinessSelector() {
   const [, navigate] = useLocation();
   const { person } = usePerson();
-  const { setActiveBusiness, available } = useActiveBusiness(person?.businessScope);
 
   // Active card index for swipe/scroll
   const [activeIndex, setActiveIndex] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [dragStartX, setDragStartX] = useState(0);
   const [dragOffset, setDragOffset] = useState(0);
+
+  const accountId = Number(
+    typeof window !== "undefined" ? localStorage.getItem("bcc_account_id") ?? "0" : "0"
+  );
+
+  // Load businesses from DB for this account
+  const { data: dbBusinesses, isLoading: bizLoading } = trpc.business.list.useQuery(
+    { accountId },
+    { enabled: accountId > 0 }
+  );
 
   // Fetch per-business notification counts (polls every 30s)
   const { data: countsData } = trpc.board.getBusinessCounts.useQuery(undefined, {
@@ -168,37 +139,34 @@ export default function BusinessSelector() {
   });
   const counts = countsData?.counts ?? {};
 
-  // Fetch DB businesses to get uploaded logoUrl values
-  const accountId = Number(typeof window !== "undefined" ? localStorage.getItem("bcc_account_id") ?? "0" : "0");
-  const { data: dbBusinesses } = trpc.business.list.useQuery(
-    { accountId },
-    { enabled: accountId > 0 }
-  );
+  // Build dynamic cards from DB businesses
+  const cards: DynamicCard[] = (dbBusinesses ?? []).map(biz => ({
+    id: biz.id,
+    slug: biz.slug,
+    name: biz.name,
+    icon: biz.icon ?? "🏢",
+    color: biz.color ?? "#64748B",
+    logoUrl: biz.logoUrl ?? null,
+  }));
 
-  // Build a map from slug -> logoUrl for quick lookup
-  const dbLogoMap = (dbBusinesses ?? []).reduce<Record<string, string>>((acc, biz) => {
-    if (biz.logoUrl) acc[biz.slug] = biz.logoUrl;
-    return acc;
-  }, {});
-
-  // Filter to only the businesses this user can access, merging DB logo if available
-  const cards = available
-    .map(key => {
-      const base = BUSINESS_CARDS[key];
-      if (!base) return null;
-      const dbLogo = dbLogoMap[base.dbSlug];
-      return dbLogo ? { ...base, logoSrc: dbLogo, logoStyle: undefined } : base;
-    })
-    .filter(Boolean) as BusinessCard[];
-
-  // If only one business available, skip selector and go straight in
+  // Redirect logic
   useEffect(() => {
     if (!person) {
       navigate("/login");
       return;
     }
+    if (bizLoading) return;
+
+    // No businesses → go to onboarding
+    if (cards.length === 0) {
+      navigate("/onboarding");
+      return;
+    }
+
+    // Single business → skip selector, go straight to the right page
     if (cards.length === 1) {
-      setActiveBusiness(cards[0].key);
+      localStorage.setItem("bcc_active_business_slug", cards[0].slug);
+      localStorage.setItem("bcc_active_business_id", String(cards[0].id));
       const role = person.role;
       if (role === "employee") {
         navigate("/app/team");
@@ -206,10 +174,13 @@ export default function BusinessSelector() {
         navigate("/app/board");
       }
     }
-  }, [person, cards.length]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [person, bizLoading, cards.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const handleSelect = (card: BusinessCard) => {
-    setActiveBusiness(card.key);
+  const handleSelect = (card: DynamicCard) => {
+    localStorage.setItem("bcc_active_business_slug", card.slug);
+    localStorage.setItem("bcc_active_business_id", String(card.id));
+    // Keep legacy key in sync for pages that still use it
+    localStorage.setItem("bcc_active_business", card.slug === "chiropractic" ? "chiro" : card.slug);
     const role = person?.role;
     if (role === "employee") {
       navigate("/app/team");
@@ -235,7 +206,8 @@ export default function BusinessSelector() {
     if (!isDragging) return;
     setIsDragging(false);
     const threshold = 80;
-    if (dragOffset < -threshold && activeIndex < cards.length - 1) {
+    const totalCards = cards.length + 1; // +1 for Add Business
+    if (dragOffset < -threshold && activeIndex < totalCards - 1) {
       setActiveIndex(i => i + 1);
     } else if (dragOffset > threshold && activeIndex > 0) {
       setActiveIndex(i => i - 1);
@@ -243,7 +215,24 @@ export default function BusinessSelector() {
     setDragOffset(0);
   };
 
-  if (!person || cards.length === 0) return null;
+  if (!person || bizLoading) {
+    return (
+      <div
+        className="min-h-screen flex items-center justify-center"
+        style={{ background: "linear-gradient(160deg, #0A1929 0%, #0F2440 50%, #0A1929 100%)" }}
+      >
+        <div className="flex flex-col items-center gap-3">
+          <div
+            className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin"
+            style={{ borderColor: "rgba(94,234,212,0.4)", borderTopColor: "transparent" }}
+          />
+          <p className="text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>Loading…</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (cards.length === 0) return null; // redirect handled in useEffect
 
   return (
     <div
@@ -281,6 +270,7 @@ export default function BusinessSelector() {
         onPointerUp={handlePointerUp}
         onPointerLeave={handlePointerUp}
       >
+        {/* Business cards */}
         {cards.map((card, i) => {
           const offset = i - activeIndex;
           const isDragActive = isDragging && Math.abs(dragOffset) > 5;
@@ -291,11 +281,15 @@ export default function BusinessSelector() {
           const opacity = Math.abs(offset) > 1 ? 0 : offset === 0 ? 1 : 0.55;
           const zIndex = offset === 0 ? 10 : 5;
 
-          const cardCounts = counts[card.dbSlug] ?? { tasks: 0, unseen: 0, total: 0 };
+          const cardCounts = counts[card.slug] ?? { tasks: 0, unseen: 0, total: 0 };
+
+          // Generate a gradient from the card's accent color
+          const hex = card.color;
+          const bgGradient = `linear-gradient(135deg, #0A1929 0%, ${hex}22 40%, #0A1929 100%)`;
 
           return (
             <div
-              key={card.key}
+              key={card.id}
               onClick={() => {
                 if (Math.abs(dragOffset) > 10) return;
                 if (offset === 0) {
@@ -318,62 +312,76 @@ export default function BusinessSelector() {
                 borderRadius: "24px",
                 overflow: "hidden",
                 boxShadow: offset === 0
-                  ? `0 32px 80px rgba(0,0,0,0.6), 0 0 0 1px ${card.accentColor}30, 0 0 60px ${card.accentColor}15`
+                  ? `0 32px 80px rgba(0,0,0,0.6), 0 0 0 1px ${card.color}30, 0 0 60px ${card.color}15`
                   : "0 16px 40px rgba(0,0,0,0.4)",
               }}
             >
               {/* Card background */}
-              <div className="absolute inset-0" style={{ background: card.bgGradient }} />
+              <div className="absolute inset-0" style={{ background: bgGradient }} />
 
               {/* Accent glow top */}
               <div
                 className="absolute inset-x-0 top-0 h-1"
-                style={{ backgroundColor: card.accentColor, opacity: 0.9 }}
+                style={{ backgroundColor: card.color, opacity: 0.9 }}
               />
 
               {/* Notification badge — top right */}
               <NotificationBadge
                 tasks={cardCounts.tasks}
                 unseen={cardCounts.unseen}
-                accentColor={card.accentColor}
+                accentColor={card.color}
               />
 
-              {/* Logo area */}
+              {/* Logo or icon area */}
               <div
                 className="absolute inset-x-0 flex items-center justify-center"
                 style={{ top: "40px", height: "200px" }}
               >
-                <img
-                  src={card.logoSrc}
-                  alt={card.logoAlt}
-                  draggable={false}
-                  style={{
-                    maxWidth: "220px",
-                    maxHeight: "180px",
-                    objectFit: "contain",
-                    userSelect: "none",
-                    ...card.logoStyle,
-                  }}
-                />
+                {card.logoUrl ? (
+                  <img
+                    src={card.logoUrl}
+                    alt={card.name}
+                    draggable={false}
+                    style={{
+                      maxWidth: "220px",
+                      maxHeight: "180px",
+                      objectFit: "contain",
+                      userSelect: "none",
+                    }}
+                  />
+                ) : (
+                  <div
+                    className="flex items-center justify-center rounded-2xl"
+                    style={{
+                      width: "100px",
+                      height: "100px",
+                      backgroundColor: `${card.color}20`,
+                      border: `2px solid ${card.color}40`,
+                      fontSize: "48px",
+                    }}
+                  >
+                    {card.icon}
+                  </div>
+                )}
               </div>
 
               {/* Card content */}
               <div className="absolute inset-x-0 bottom-0 flex flex-col items-center text-center px-6 pb-8">
                 <div
                   className="w-full h-px mb-5"
-                  style={{ backgroundColor: `${card.accentColor}30` }}
+                  style={{ backgroundColor: `${card.color}30` }}
                 />
                 <h2
                   className="text-base font-bold text-white mb-1 leading-tight"
                   style={{ fontFamily: "'Space Grotesk', sans-serif" }}
                 >
-                  {card.shortName}
+                  {card.name}
                 </h2>
                 <p
                   className="text-[11px] mb-5"
                   style={{ color: "rgba(255,255,255,0.45)" }}
                 >
-                  {card.tagline}
+                  {card.icon} {card.slug}
                 </p>
 
                 {/* Enter button — only on active card */}
@@ -381,9 +389,9 @@ export default function BusinessSelector() {
                   <button
                     className="w-full py-3 rounded-xl text-sm font-bold transition-all active:scale-[0.97]"
                     style={{
-                      backgroundColor: card.accentColor,
+                      backgroundColor: card.color,
                       color: "#0A1929",
-                      boxShadow: `0 4px 20px ${card.accentColor}40`,
+                      boxShadow: `0 4px 20px ${card.color}40`,
                     }}
                     onClick={e => {
                       e.stopPropagation();
@@ -494,10 +502,10 @@ export default function BusinessSelector() {
       {/* Dot indicators — includes the Add Business dot */}
       <div className="flex items-center gap-2 mt-6">
         {cards.map((card, i) => {
-          const cardCounts = counts[card.dbSlug] ?? { total: 0 };
+          const cardCounts = counts[card.slug] ?? { total: 0 };
           return (
             <button
-              key={card.key}
+              key={card.id}
               onClick={() => setActiveIndex(i)}
               className="relative transition-all duration-300"
               style={{
@@ -505,12 +513,12 @@ export default function BusinessSelector() {
                 height: "8px",
                 borderRadius: "4px",
                 backgroundColor: i === activeIndex
-                  ? cards[activeIndex].accentColor
+                  ? cards[activeIndex]?.color ?? "#5EEAD4"
                   : "rgba(255,255,255,0.2)",
               }}
             >
               {/* Small dot indicator on inactive dots if they have notifications */}
-              {i !== activeIndex && cardCounts.total > 0 && (
+              {i !== activeIndex && (cardCounts as any).total > 0 && (
                 <span
                   className="absolute -top-1 -right-1 w-2 h-2 rounded-full"
                   style={{ backgroundColor: "#EF4444" }}
@@ -535,7 +543,7 @@ export default function BusinessSelector() {
       </div>
 
       {/* Swipe hint */}
-      {cards.length > 1 && (
+      {cards.length > 0 && (
         <p
           className="mt-4 text-[11px]"
           style={{ color: "rgba(255,255,255,0.25)" }}
