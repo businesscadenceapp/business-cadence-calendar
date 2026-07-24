@@ -162,18 +162,8 @@ export default function BusinessSelector() {
       navigate("/onboarding");
       return;
     }
-
-    // Single business → skip selector, go straight to the right page
-    if (cards.length === 1) {
-      localStorage.setItem("bcc_active_business_slug", cards[0].slug);
-      localStorage.setItem("bcc_active_business_id", String(cards[0].id));
-      const role = person.role;
-      if (role === "employee") {
-        navigate("/app/team");
-      } else {
-        navigate("/app/board");
-      }
-    }
+    // Always show the selector — even with one business — so the user learns
+    // to tap their card and sees the "Add a Business" option.
   }, [person, bizLoading, cards.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSelect = (card: DynamicCard) => {
@@ -257,7 +247,7 @@ export default function BusinessSelector() {
           Welcome back, {person.name.split(" ")[0]}
         </h1>
         <p className="text-sm" style={{ color: "rgba(255,255,255,0.45)" }}>
-          {cards.length > 1 ? "Select a business to get started" : "Loading your dashboard…"}
+          {cards.length > 1 ? "Select a business to get started" : "Tap your business card to enter your dashboard"}
         </p>
       </div>
 
