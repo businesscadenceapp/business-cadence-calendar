@@ -804,4 +804,9 @@
 - [x] Fix TOTAL_STEPS constant (now 13 for steps 0-12)
 - [x] Fix register procedure insertId bug (accountId was always 0 for new signups)
 - [x] Create test account for user to walk through onboarding fresh
+- [x] Checkpoint and deploy
+
+## Fix: Meeting Rhythm Setup — Allow All 7 Days
+- [x] Update MeetingCadenceStep to show all 7 days (Mon-Sun) for all meetings, not just work days
+- [x] Owners can now schedule meetings on days the business isn't open
 - [ ] Checkpoint and deploy

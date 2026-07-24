@@ -483,7 +483,8 @@ function MeetingCadenceStep({
   };
 
   const prefs = data.meetingDayPrefs;
-  const allowedDays = data.workDays.length > 0 ? data.workDays : [1, 2, 3, 4, 5];
+  // Allow all 7 days for meetings — owners often meet on days the business isn't open
+  const allowedDays = [0, 1, 2, 3, 4, 5, 6];
 
   // Calculate annual meeting count
   const countMeetings = () => {
