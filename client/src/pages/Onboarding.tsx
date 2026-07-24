@@ -89,7 +89,7 @@ interface OnboardingData {
 
 const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const DAY_FULL = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-const TOTAL_STEPS = 14;
+const TOTAL_STEPS = 13;
 
 // ─── Shared styles ────────────────────────────────────────────────────────────
 
@@ -233,19 +233,20 @@ function StepCoOwnerInvite({
   onNext,
   onBack,
 }: {
-  data: Pick<OnboardingData, "coOwnerName" | "coOwnerEmail" | "coOwnerBusinesses">;
+  data: Pick<OnboardingData, "coOwnerName" | "coOwnerEmail" | "coOwnerBusinesses" | "businessName">;
   onChange: (u: Partial<OnboardingData>) => void;
   onNext: () => void;
   onBack: () => void;
 }) {
   const isValidEmail = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
   const canProceed = data.coOwnerName.trim().length > 0 && isValidEmail(data.coOwnerEmail.trim());
+  const displayBizName = data.businessName.trim() || "your business";
 
   return (
     <div>
       <StepHeader
         title="Invite your co-owner"
-        subtitle="BusinessCadence is built for two. Who are you running this business with?"
+        subtitle={`BusinessCadence is built for two. Who are you running ${displayBizName} with?`}
       />
       <div className="flex flex-col gap-5">
         <div>
@@ -270,37 +271,22 @@ function StepCoOwnerInvite({
             type="email"
           />
         </div>
-        <div>
-          <label className="block text-xs font-semibold uppercase tracking-wide mb-3"
-            style={{ color: "rgba(255,255,255,0.4)" }}>Which businesses should they access?</label>
-          <div className="flex flex-col gap-2">
-            {[{ slug: "chiro", label: "Chiropractic" }, { slug: "crossfit", label: "CrossFit" }].map(biz => (
-              <label key={biz.slug} className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={data.coOwnerBusinesses?.includes(biz.slug) ?? false}
-                  onChange={e => {
-                    const updated = e.target.checked
-                      ? [...(data.coOwnerBusinesses || []), biz.slug]
-                      : (data.coOwnerBusinesses || []).filter(s => s !== biz.slug);
-                    onChange({ coOwnerBusinesses: updated });
-                  }}
-                  className="w-4 h-4 rounded"
-                />
-                <span className="text-sm" style={{ color: "rgba(255,255,255,0.8)" }}>{biz.label}</span>
-              </label>
-            ))}
-          </div>
+        <div className="rounded-xl p-3 flex items-center gap-3"
+          style={{ backgroundColor: "rgba(94,234,212,0.06)", border: "1px solid rgba(94,234,212,0.15)" }}>
+          <span style={{ color: "#5EEAD4" }}>✓</span>
+          <span className="text-sm" style={{ color: "rgba(255,255,255,0.7)" }}>
+            They'll have full co-owner access to <strong style={{ color: "#5EEAD4" }}>{displayBizName}</strong>
+          </span>
         </div>
         <TipBox>
-          Your co-owner will receive an invite link to join BusinessCadence. They will have access to the businesses you select above.
+          Your co-owner will receive an invite link to join BusinessCadence. They'll be able to post tasks, view the board, and manage meetings alongside you.
         </TipBox>
       </div>
       <NavButtons
         onBack={onBack}
         onNext={onNext}
         canProceed={canProceed}
-        nextLabel="Send Invite & Continue →"
+        nextLabel="Continue →"
         onSkip={onNext}
         skipLabel="Skip — invite later"
       />
@@ -1870,18 +1856,23 @@ export default function Onboarding() {
         <div className="rounded-2xl p-8"
           style={{ backgroundColor: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", backdropFilter: "blur(8px)" }}>
           {step === 0 && <StepWelcome onNext={next} />}
-          {/* Step 1: Co-owner invite — first thing after welcome */}
-          {step === 1 && <StepCoOwnerInvite data={data} onChange={update} onNext={next} onBack={back} />}
-          {/* Step 2: Business basics (name + industry) */}
-          {step === 2 && <StepBusinessBasics data={data} onChange={update} onNext={next} onBack={back} />}
-          {/* Step 3: Logo upload — right after business name so they can brand the card */}
-          {step === 3 && <StepLogoUpload data={data} onChange={update} onNext={next} onBack={back} />}
-          {/* Steps 4–: existing business setup flow (shifted +1) */}
+          {/* Step 1: Business basics (name + industry) — first real step */}
+          {step === 1 && <StepBusinessBasics data={data} onChange={update} onNext={next} onBack={back} />}
+          {/* Step 2: Logo upload — right after naming the business */}
+          {step === 2 && <StepLogoUpload data={data} onChange={update} onNext={next} onBack={back} />}
+          {/* Step 3: Co-owner invite — now they know the business name */}
+          {step === 3 && <StepCoOwnerInvite data={data} onChange={update} onNext={next} onBack={back} />}
+          {/* Step 4: Team size */}
           {step === 4 && <StepTeamSize data={data} onChange={update} onNext={next} onBack={back} />}
+          {/* Step 5: Work schedule */}
           {step === 5 && <StepWorkSchedule data={data} onChange={update} onNext={next} onBack={back} />}
+          {/* Step 6: Meeting cadence */}
           {step === 6 && <MeetingCadenceStep data={data} onChange={update} onNext={next} onBack={back} />}
+          {/* Step 7: Goals */}
           {step === 7 && <StepGoals data={data} onChange={update} onNext={next} onBack={back} />}
+          {/* Step 8: KPIs */}
           {step === 8 && <StepKPIs data={data} onChange={update} onNext={next} onBack={back} />}
+          {/* Step 9: Employee invites */}
           {step === 9 && (
             <StepEmployeeInvites
               data={data}
@@ -1893,6 +1884,7 @@ export default function Onboarding() {
           )}
           {/* Step 10: Business hours */}
           {step === 10 && <StepBusinessHours data={data} onChange={update} onNext={next} onBack={back} />}
+          {/* Step 11: Review / Preview */}
           {step === 11 && (
             <StepPreview
               data={data}
@@ -1901,6 +1893,7 @@ export default function Onboarding() {
               isLoading={saveOnboarding.isPending}
             />
           )}
+          {/* Step 12: Done */}
           {step === 12 && (
             <StepDone
               businessName={data.businessName}

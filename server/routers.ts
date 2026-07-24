@@ -1419,7 +1419,9 @@ Be concise and specific. If a field has nothing, use an empty array.`,
             scope: "owner",
             displayName: input.name,
           });
-          resolvedAccountId = (result as any).insertId ?? 0;
+          // drizzle mysql2 returns [ResultSetHeader, ...] — insertId is on the first element
+          const insertId = (result as any)?.[0]?.insertId ?? (result as any)?.insertId ?? 0;
+          resolvedAccountId = Number(insertId);
         }
 
         const person = await createPerson({

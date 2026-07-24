@@ -797,3 +797,11 @@
 - [x] Update BusinessSelector cards to show uploaded logo image when logoUrl is present, fallback to hardcoded logo
 - [x] Update Settings page to allow logo change after onboarding
 - [x] Checkpoint and deploy
+
+## Fix Onboarding Flow Issues
+- [x] Move co-owner invite step AFTER business basics + logo (now step 4)
+- [x] Remove hardcoded "Chiropractic" / "CrossFit" checkboxes — now shows the business being created dynamically
+- [x] Fix TOTAL_STEPS constant (now 13 for steps 0-12)
+- [x] Fix register procedure insertId bug (accountId was always 0 for new signups)
+- [x] Create test account for user to walk through onboarding fresh
+- [ ] Checkpoint and deploy
