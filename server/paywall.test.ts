@@ -20,38 +20,44 @@ import {
 // ─── Tests ────────────────────────────────────────────────────────────────────
 
 describe("Paywall plan data", () => {
-  it("has exactly two plans: monthly and annual", () => {
+  it("has exactly two plans: core and core_team", () => {
     expect(PLANS).toHaveLength(2);
-    expect(PLANS.map((p) => p.id)).toEqual(["monthly", "annual"]);
+    expect(PLANS.map((p) => p.id)).toEqual(["core", "core_team"]);
   });
 
-  it("annual plan is marked as popular", () => {
-    const annual = PLANS.find((p) => p.id === "annual");
-    expect(annual?.popular).toBe(true);
+  it("core_team plan is marked as popular", () => {
+    const coreTeam = PLANS.find((p) => p.id === "core_team");
+    expect(coreTeam?.popular).toBe(true);
   });
 
-  it("monthly plan is not marked as popular", () => {
-    const monthly = PLANS.find((p) => p.id === "monthly");
-    expect(monthly?.popular).toBe(false);
+  it("core plan is not marked as popular", () => {
+    const core = PLANS.find((p) => p.id === "core");
+    expect(core?.popular).toBe(false);
   });
 
-  it("annual plan price is lower per month than monthly plan", () => {
-    // Annual: $179 / 12 = $14.92/mo vs Monthly: $29/mo
-    const annualMonthly = 179 / 12;
-    const monthly = 29;
-    expect(annualMonthly).toBeLessThan(monthly);
+  it("core plan price is $79/month", () => {
+    const core = PLANS.find((p) => p.id === "core");
+    expect(core?.price).toBe("$79");
+    expect(core?.period).toBe("/ month");
   });
 
-  it("annual plan shows per-month and original price", () => {
-    const annual = PLANS.find((p) => p.id === "annual");
-    expect(annual?.perMonth).toBeTruthy();
-    expect(annual?.original).toBeTruthy();
+  it("core_team plan price is $99/month", () => {
+    const coreTeam = PLANS.find((p) => p.id === "core_team");
+    expect(coreTeam?.price).toBe("$99");
+    expect(coreTeam?.period).toBe("/ month");
   });
 
-  it("monthly plan has no per-month or original price fields", () => {
-    const monthly = PLANS.find((p) => p.id === "monthly");
-    expect(monthly?.perMonth).toBeNull();
-    expect(monthly?.original).toBeNull();
+  it("core_team plan costs more than core plan", () => {
+    const core = PLANS.find((p) => p.id === "core")!;
+    const coreTeam = PLANS.find((p) => p.id === "core_team")!;
+    expect(coreTeam.annualCents).toBeGreaterThan(core.annualCents);
+  });
+
+  it("both plans have valid RevenueCat product IDs", () => {
+    PLANS.forEach((p) => {
+      expect(p.productId.trim().length).toBeGreaterThan(0);
+      expect(p.productId).toMatch(/^bc_/);
+    });
   });
 });
 
@@ -60,20 +66,16 @@ describe("Paywall feature list", () => {
     expect(FEATURES.length).toBeGreaterThanOrEqual(4);
   });
 
-  it("includes the calendar feature", () => {
-    expect(FEATURES.some((f) => f.toLowerCase().includes("calendar"))).toBe(true);
+  it("includes meeting cadence", () => {
+    expect(FEATURES.some((f) => f.toLowerCase().includes("meeting"))).toBe(true);
   });
 
-  it("includes the AI summaries feature", () => {
-    expect(FEATURES.some((f) => f.toLowerCase().includes("ai"))).toBe(true);
+  it("includes partner access callout", () => {
+    expect(FEATURES.some((f) => f.toLowerCase().includes("partner"))).toBe(true);
   });
 
-  it("includes the Owner Board feature", () => {
-    expect(FEATURES.some((f) => f.toLowerCase().includes("owner board"))).toBe(true);
-  });
-
-  it("includes KPI tracking", () => {
-    expect(FEATURES.some((f) => f.toLowerCase().includes("kpi"))).toBe(true);
+  it("includes KPI or goal tracking", () => {
+    expect(FEATURES.some((f) => f.toLowerCase().includes("kpi") || f.toLowerCase().includes("goal"))).toBe(true);
   });
 
   it("all feature strings are non-empty", () => {
@@ -103,34 +105,22 @@ describe("Subscription onboarding steps", () => {
 });
 
 describe("Subscription helper functions", () => {
-  it("getTrialSubtext returns annual text for annual plan", () => {
-    const text = getTrialSubtext("annual");
-    expect(text).toContain("$179");
+  it("getTrialSubtext returns core_team text for core_team plan", () => {
+    const text = getTrialSubtext("core_team");
+    expect(text).toContain("$99");
     expect(text).toContain("Cancel anytime");
+    expect(text).toContain("14-day");
   });
 
-  it("getTrialSubtext returns monthly text for monthly plan", () => {
-    const text = getTrialSubtext("monthly");
-    expect(text).toContain("$29");
+  it("getTrialSubtext returns core text for core plan", () => {
+    const text = getTrialSubtext("core");
+    expect(text).toContain("$79");
     expect(text).toContain("Cancel anytime");
+    expect(text).toContain("14-day");
   });
 
-  it("annualSavingsPercent returns ~49% savings", () => {
+  it("annualSavingsPercent returns 0 for month-only plans", () => {
     const pct = annualSavingsPercent();
-    // $179 vs $348 = ~48.6% savings, rounds to 49
-    expect(pct).toBeGreaterThanOrEqual(48);
-    expect(pct).toBeLessThanOrEqual(50);
-  });
-
-  it("annual plan has lower annual cost than 12x monthly", () => {
-    const annual = PLANS.find((p) => p.id === "annual")!;
-    const monthly = PLANS.find((p) => p.id === "monthly")!;
-    expect(annual.annualCents).toBeLessThan(monthly.annualCents);
-  });
-
-  it("all plans have non-empty productId strings", () => {
-    PLANS.forEach((p) => {
-      expect(p.productId.trim().length).toBeGreaterThan(0);
-    });
+    expect(pct).toBe(0);
   });
 });

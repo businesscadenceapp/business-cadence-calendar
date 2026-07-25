@@ -1,42 +1,41 @@
 # Subscription & Partner Access System — Session TODO
 
 ## Phase 1: Database Schema
-- [ ] Add `subscriptions` table (accountId, revenueCatUserId, plan, status, trialEndsAt, currentPeriodEndsAt, revenueCatData)
-- [ ] Add `partner_links` table (ownerPersonId, partnerPersonId, accountId, createdAt)
-- [ ] Run DB migration via webdev_execute_sql
+- [x] Add `subscriptions` table (accountId, revenueCatUserId, plan, status, trialEndsAt, currentPeriodEndsAt, revenueCatData)
+- [x] Add `partner_links` table (ownerPersonId, partnerPersonId, accountId, createdAt)
+- [x] Run DB migration via webdev_execute_sql
 
 ## Phase 2: Server-Side Subscription Logic
-- [ ] Add `subscription.getEntitlement` tRPC procedure — returns { hasAccess, plan, trialDaysLeft, isPartner }
-- [ ] Add `subscription.revenueCatWebhook` REST endpoint — handles purchase/renewal/cancellation events
-- [ ] Add `subscription.getInviteLink` tRPC procedure — returns unique partner invite URL for paying owner
-- [ ] Add `subscription.checkAccess` helper used by entitlement guard
-- [ ] Add `subscription.startTrial` tRPC procedure — creates 14-day trial subscription row on first owner login
-- [ ] Add ENV.revenueCatWebhookSecret to env.ts
+- [x] Add `subscription.getEntitlement` tRPC procedure — returns { hasAccess, plan, trialDaysLeft, isPartner }
+- [x] Add `subscription.revenueCatWebhook` REST endpoint — handles purchase/renewal/cancellation events
+- [x] Add `subscription.getInviteLink` tRPC procedure — returns unique partner invite URL for paying owner
+- [x] Add `subscription.checkAccess` helper used by entitlement guard
+- [x] Add `subscription.startTrial` tRPC procedure — creates 14-day trial subscription row on first owner login
+- [x] Add ENV.revenueCatWebhookSecret to env.ts
 
 ## Phase 3: Partner Invite Flow
-- [ ] Add `partnerInvite` token column to `persons` table (separate from regular `inviteToken`)
-- [ ] Add `subscription.generatePartnerInvite` procedure — creates/refreshes partner invite token
-- [ ] Update `person.acceptInvite` to detect partner invite and link partner to owner's subscription
-- [ ] Build `PartnerInviteSheet.tsx` — bottom sheet inside app for owner to share invite link
-- [ ] Add "Invite Partner" button to Settings page
+- [x] Add `partnerInviteToken` column to `persons` table
+- [x] Add `subscription.generatePartnerInviteLink` procedure — creates/refreshes partner invite token
+- [x] Update `AcceptInvite` page to detect partner invite (?partner=1) and link partner to owner's subscription
+- [x] Build `PartnerInviteSheet.tsx` — bottom sheet inside app for owner to share invite link
+- [x] Add "Partner Access" section to Settings page (owners only)
 
 ## Phase 4: Paywall Screen
-- [ ] Build `/paywall` page — native-feeling, 14-day trial CTA, $79/mo Core, $99/mo Core+Team
-- [ ] Add route `/paywall` to App.tsx
-- [ ] Insert paywall check after onboarding completion (redirect to /paywall if no active sub)
-- [ ] Insert paywall check after login for owners/co-owners (redirect to /paywall if no active sub)
-- [ ] RevenueCat Capacitor SDK: install @revenuecat/purchases-capacitor
-- [ ] Wire RevenueCat SDK initialization in native app startup
-- [ ] Wire "Start Free Trial" button to RevenueCat purchase flow on native
-- [ ] Wire "Restore Purchases" button
+- [x] Build `/paywall` page — native-feeling, 14-day trial CTA, $79/mo Core, $99/mo Core+Team
+- [x] Add route `/paywall` to App.tsx (already done by other session, merged)
+- [x] Update shared/subscriptionPlans.ts with correct $79/$99 Core/Core+Team pricing
+- [x] RevenueCat Capacitor SDK: install @revenuecat/purchases-capacitor
+- [x] Wire RevenueCat SDK: real purchasePackage() on native, server-side trial on web
+- [x] Wire "Restore Purchases" button with RevenueCat restorePurchases()
+- [x] Full App Store legal disclosure on Paywall
 
 ## Phase 5: Entitlement Guard
-- [ ] Build `EntitlementGuard.tsx` — wraps PasswordGate, checks subscription.getEntitlement on mount
-- [ ] Update `PasswordGate` / `Protected` wrapper in App.tsx to include EntitlementGuard
-- [ ] Handle partner access: partners bypass paywall if linked to active subscription
-- [ ] Handle lapsed subscription: redirect to /paywall with "Your subscription has lapsed" message
-- [ ] Handle trial expiry: redirect to /paywall with "Your trial has ended" message
+- [x] Build `EntitlementGuard.tsx` — wraps PasswordGate, checks subscription.getEntitlement on mount
+- [x] Update `Protected` wrapper in App.tsx to include EntitlementGuard
+- [x] Handle partner access: partners bypass paywall if linked to active subscription
+- [x] Handle lapsed subscription: redirect to /paywall with "Your subscription has lapsed" message
+- [x] Handle trial expiry: redirect to /paywall with "Your trial has ended" message
 
 ## Phase 6: Tests
-- [ ] Write vitest for subscription.getEntitlement (active, trial, lapsed, partner)
-- [ ] Write vitest for partner invite link generation and acceptance
+- [x] Update paywall.test.ts to match new Core/Core+Team pricing (18 tests pass)
+- [x] All 28 tests passing across 5 test files

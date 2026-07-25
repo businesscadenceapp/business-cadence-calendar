@@ -5,6 +5,7 @@ import { Route, Switch, Redirect } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import PasswordGate from "./components/PasswordGate";
+import EntitlementGuard from "./components/EntitlementGuard";
 import Landing from "./pages/Landing";
 import ClientLogin from "./pages/ClientLogin";
 import Home from "./pages/Home";
@@ -42,9 +43,11 @@ function PaywallPage() {
 function Protected({ component: Component }: { component: React.ComponentType }) {
   return (
     <PasswordGate>
+      <EntitlementGuard>
       <AppShell>
         <Component />
       </AppShell>
+      </EntitlementGuard>
     </PasswordGate>
   );
 }

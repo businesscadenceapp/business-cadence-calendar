@@ -12,6 +12,7 @@ import { MEETING_TYPES, BUSINESSES } from "@/lib/calendarData";
 import { usePerson } from "@/contexts/PersonContext";
 import { personScopeToBusinessSelection } from "@/lib/businessScope";
 import type { MeetingType, BusinessKey } from "@/lib/calendarData";
+import PartnerInviteSheet from "@/components/PartnerInviteSheet";
 
 const BIZ_MAP: Record<BusinessKey, "chiropractic" | "crossfit"> = {
   chiro: "chiropractic",
@@ -661,6 +662,11 @@ export default function Settings() {
         </div>
       </div>
 
+      {/* ── Partner Access ─────────────────────────────────────────────────── */}
+      {person?.role === "owner" && (
+        <PartnerAccessSection />
+      )}
+
       {(person?.role === "owner" || person?.role === "coowner") && (
         <EmployeeInvitePanel accountId={accountId ?? 0} />
       )}
@@ -1043,5 +1049,66 @@ function ReportQuestionsPanel({ accountId, businesses }: { accountId: number; bu
       </div>
 
     </div>
+  );
+}
+
+// ─── Partner Access Section ───────────────────────────────────────────────────
+/**
+ * Shown only to owners. Lets them open the PartnerInviteSheet to generate
+ * and share a partner invite link with their co-owner.
+ */
+function PartnerAccessSection() {
+  const [sheetOpen, setSheetOpen] = useState(false);
+
+  return (
+    <>
+      <div
+        className="mx-4 sm:mx-6 mb-8 rounded-2xl p-5"
+        style={{ backgroundColor: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}
+      >
+        <div className="flex items-center gap-3 mb-4">
+          <div
+            className="w-8 h-8 rounded-lg flex items-center justify-center text-sm"
+            style={{ backgroundColor: "rgba(94,234,212,0.15)", border: "1px solid rgba(94,234,212,0.3)" }}
+          >
+            👥
+          </div>
+          <div>
+            <h2 className="text-sm font-bold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+              Partner Access
+            </h2>
+            <p className="text-[11px] mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>
+              Invite your business partner to join with full access — no extra charge.
+            </p>
+          </div>
+        </div>
+
+        <div
+          className="rounded-xl p-4 mb-4"
+          style={{ backgroundColor: "rgba(94,234,212,0.06)", border: "1px solid rgba(94,234,212,0.15)" }}
+        >
+          <p className="text-[12px]" style={{ color: "rgba(255,255,255,0.65)" }}>
+            <span className="font-semibold text-white">One subscription covers both of you.</span>{" "}
+            Your partner downloads the app free, taps your invite link, creates an account, and gets
+            full access — they never see a paywall.
+          </p>
+        </div>
+
+        <button
+          onClick={() => setSheetOpen(true)}
+          className="w-full py-3 rounded-xl text-[13px] font-bold transition-all active:scale-[0.98] hover:opacity-90"
+          style={{
+            background: "linear-gradient(135deg, rgba(94,234,212,0.2), rgba(45,212,191,0.15))",
+            border: "1px solid rgba(94,234,212,0.35)",
+            color: "#5EEAD4",
+            fontFamily: "'Space Grotesk', sans-serif",
+          }}
+        >
+          Generate Partner Invite Link →
+        </button>
+      </div>
+
+      <PartnerInviteSheet open={sheetOpen} onClose={() => setSheetOpen(false)} />
+    </>
   );
 }

@@ -50,6 +50,7 @@ export default function AcceptInvite() {
       : (!inviteData || !inviteData.valid)
   ));
 
+  // ─── Regular employee invite acceptance ──────────────────────────────────────
   const accept = trpc.person.acceptInvite.useMutation({
     onSuccess: (data) => {
       setIsLoading(false);
@@ -60,18 +61,9 @@ export default function AcceptInvite() {
           localStorage.setItem("bcc_auth_v1", "granted");
         } catch { /* ignore */ }
 
-        if (isPartnerInvite && partnerInviteData?.valid) {
-          // Link this person to the owner's subscription server-side
-          linkPartner.mutate({
-            ownerPersonId: partnerInviteData.ownerPersonId!,
-            partnerPersonId: (data.person as any).id,
-            accountId: partnerInviteData.accountId!,
-          });
-        } else {
-          toast.success(`Welcome, ${data.person.name}! Your account is ready.`);
-          const role = (data.person as any).role;
-          navigate(role === "employee" ? "/app/team" : "/app/board");
-        }
+        toast.success(`Welcome, ${data.person.name}! Your account is ready.`);
+        const role = (data.person as any).role;
+        navigate(role === "employee" ? "/app/team" : "/app/board");
       } else {
         const reason = (data as any).reason;
         if (reason === "already_accepted") {
@@ -88,20 +80,35 @@ export default function AcceptInvite() {
     },
   });
 
-  const linkPartner = trpc.subscription.linkPartner.useMutation({
+  // ─── Partner invite acceptance (atomic server-side) ───────────────────────────
+  const acceptPartner = trpc.subscription.acceptPartnerInvite.useMutation({
     onSuccess: (data) => {
-      if (data.success) {
+      setIsLoading(false);
+      if (data.success && data.person) {
+        setPerson(data.person as any);
+        try {
+          localStorage.setItem("bcc_account_id", String(data.person.accountId));
+          localStorage.setItem("bcc_auth_v1", "granted");
+        } catch { /* ignore */ }
         toast.success("Welcome! You now have full access to BusinessCadence.");
         navigate("/app/board");
       } else {
-        toast.error("Could not link your account. Please contact support.");
-        navigate("/app/board");
+        const reason = (data as any).reason;
+        if (reason === "already_accepted") {
+          toast.error("This invite has already been used. Please sign in instead.");
+          navigate("/login");
+        } else if (reason === "invalid_token") {
+          toast.error("This partner invite link is invalid or has expired.");
+        } else if (reason === "partner_not_found") {
+          toast.error("Your account was not found. Please ask your partner to re-send the invite.");
+        } else {
+          toast.error("Could not activate your account. Please try again.");
+        }
       }
     },
     onError: () => {
-      // Even if linking fails, let them in — they can retry
-      toast.error("Account linked but subscription check failed. Please restart the app.");
-      navigate("/app/board");
+      setIsLoading(false);
+      toast.error("Something went wrong. Please try again.");
     },
   });
 
@@ -116,7 +123,11 @@ export default function AcceptInvite() {
       return;
     }
     setIsLoading(true);
-    accept.mutate({ token, password });
+    if (isPartnerInvite) {
+      acceptPartner.mutate({ token, password });
+    } else {
+      accept.mutate({ token, password });
+    }
   };
 
   return (

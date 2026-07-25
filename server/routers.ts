@@ -1879,6 +1879,66 @@ Keep the tone warm but professional. This summary will be saved under this speci
       }),
 
     /**
+     * Atomic partner invite acceptance — validates the partner invite token,
+     * sets the partner's password, marks the invite accepted, and creates the
+     * partner_link row — all in one server-side call.
+     *
+     * This replaces the two-step client flow (acceptInvite + linkPartner) for
+     * partner invites, ensuring the partner link is always created before the
+     * client navigates into the app.
+     */
+    acceptPartnerInvite: publicProcedure
+      .input(z.object({
+        /** The partnerInviteToken from the URL (?token=...) */
+        token: z.string(),
+        password: z.string().min(8),
+      }))
+      .mutation(async ({ input }) => {
+        const db = await getDb();
+        if (!db) return { success: false as const, reason: "db_unavailable" as const };
+
+        // 1. Resolve the partner invite token to the owner person
+        const [owner] = await db.select().from(personsTable)
+          .where(eq(personsTable.partnerInviteToken, input.token))
+          .limit(1);
+        if (!owner) return { success: false as const, reason: "invalid_token" as const };
+
+        // 2. Find the invited partner person — they must have been pre-created
+        //    with the same partnerInviteToken stored on their own row.
+        //    Fall back to looking up by inviteToken (regular invite flow).
+        const partnerByInviteToken = await getPersonByInviteToken(input.token);
+        if (!partnerByInviteToken) {
+          return { success: false as const, reason: "partner_not_found" as const };
+        }
+        if (partnerByInviteToken.inviteAccepted) {
+          return { success: false as const, reason: "already_accepted" as const };
+        }
+
+        // 3. Hash password and mark invite accepted
+        const passwordHash = await bcrypt.hash(input.password, 10);
+        await updatePerson(partnerByInviteToken.id, {
+          passwordHash,
+          inviteAccepted: true,
+          inviteToken: null,
+        });
+
+        // 4. Create the partner link (idempotent upsert)
+        await createPartnerLink(owner.accountId, owner.id, partnerByInviteToken.id);
+
+        return {
+          success: true as const,
+          person: {
+            id: partnerByInviteToken.id,
+            name: partnerByInviteToken.name,
+            email: partnerByInviteToken.email,
+            role: partnerByInviteToken.role,
+            businessScope: partnerByInviteToken.businessScope,
+            accountId: partnerByInviteToken.accountId,
+          },
+        };
+      }),
+
+    /**
      * Check if a person is a linked partner (i.e., access is derived from owner's sub).
      */
     getPartnerLink: publicProcedure
