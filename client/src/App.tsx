@@ -30,6 +30,13 @@ import BusinessSelector from "@/pages/BusinessSelector";
 import AppWelcome from "@/pages/AppWelcome";
 import { isNativeApp, hasSeenWelcome } from "@/lib/platform";
 import { Capacitor } from "@capacitor/core";
+import Paywall from "@/pages/Paywall";
+import SubscriptionOnboarding from "@/pages/SubscriptionOnboarding";
+
+// Wrapper so Paywall (which has optional custom props) works as a wouter route component
+function PaywallPage() {
+  return <Paywall dismissible />;
+}
 
 // Wrapper that applies PasswordGate + AppShell to any page component
 function Protected({ component: Component }: { component: React.ComponentType }) {
@@ -94,6 +101,8 @@ function Router() {
       <Route path={"/welcome"} component={AppWelcome} />
       <Route path={"/login"} component={ClientLogin} />
       <Route path={"/onboarding"} component={Onboarding} />
+      <Route path={"/subscribe-intro"} component={SubscriptionOnboarding} />
+      <Route path={"/paywall"} component={PaywallPage} />
       <Route path={"/accept-invite"} component={AcceptInvite} />
       <Route path={"/forgot-password"} component={ForgotPassword} />
       <Route path={"/reset-password"} component={ResetPassword} />
