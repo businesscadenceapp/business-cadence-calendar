@@ -40,6 +40,9 @@ pnpm install --no-frozen-lockfile
 echo "=== Building web app ==="
 pnpm build
 
+echo "=== Vendoring voice-recorder SPM package ==="
+node scripts/sync-voice-recorder.mjs
+
 echo "=== Syncing Capacitor ==="
 npx cap sync ios --no-open
 

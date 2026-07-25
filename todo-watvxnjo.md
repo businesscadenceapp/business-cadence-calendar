@@ -35,4 +35,8 @@
 
 ## Delivery
 - [x] Write NATIVE_BUILD.md with step-by-step iOS/Android build + store submission instructions
-- [ ] Final delivery message
+- [x] Final delivery message
+
+## Follow-up: Xcode Cloud pipeline (user already has Apple Developer account + GitHub + Xcode Cloud from Mac session)
+- [x] Add voice-recorder vendoring step to ios/App/ci_scripts/ci_post_clone.sh so Xcode Cloud builds include VoiceRecorderSPM sources
+- [ ] Checkpoint so the CI fix syncs to GitHub / Xcode Cloud
