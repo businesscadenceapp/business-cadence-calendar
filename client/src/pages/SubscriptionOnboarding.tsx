@@ -4,10 +4,10 @@
  * before asking for payment.
  *
  * Flow:
- *   Step 0: Emotional hook — "Running a business with someone you love…"
- *   Step 1: The problem — "Business talk bleeds into everything"
- *   Step 2: The solution — "Four meetings. One rhythm."
- *   Step 3: The promise — "Your relationship stays protected"
+ *   Step 0: For Co-Preneurs — "Running a business with someone you love…"
+ *   Step 1: The Problem    — "Business talk bleeds into everything"
+ *   Step 2: The Solution   — "Your business has a place to live…"
+ *   Step 3: The Promise    — "Your business stays in the boardroom…"
  *   → Paywall
  *
  * This component is intentionally lightweight — no API calls, no form inputs.
@@ -30,6 +30,7 @@ interface OnboardingStep {
 }
 
 const STEPS: OnboardingStep[] = [
+  // Step 0 — Hook
   {
     badge: ONBOARDING_STEP_BADGES[0],
     headline: (
@@ -48,6 +49,7 @@ const STEPS: OnboardingStep[] = [
     ),
     accentColor: "#5EEAD4",
   },
+  // Step 1 — The Problem
   {
     badge: ONBOARDING_STEP_BADGES[1],
     headline: (
@@ -66,53 +68,27 @@ const STEPS: OnboardingStep[] = [
     ),
     accentColor: "#F43F5E",
   },
+  // Step 2 — The Solution (moon card)
   {
     badge: ONBOARDING_STEP_BADGES[2],
-    headline: (
-      <>
-        Four meetings.{" "}
-        <span className="text-[#5EEAD4]">One unbreakable rhythm.</span>
-      </>
-    ),
-    body: "A daily huddle, a weekly review, a monthly finance check, and a quarterly offsite. BusinessCadence builds this calendar for you and keeps both of you on the same page — automatically.",
-    icon: (
-      <svg className="w-14 h-14 text-[#5EEAD4]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <rect x="3" y="4" width="18" height="18" rx="2" strokeWidth={1.3} strokeLinecap="round" />
-        <line x1="3" y1="9" x2="21" y2="9" strokeWidth={1.3} />
-        <line x1="8" y1="2" x2="8" y2="6" strokeWidth={1.3} strokeLinecap="round" />
-        <line x1="16" y1="2" x2="16" y2="6" strokeWidth={1.3} strokeLinecap="round" />
-        <circle cx="8" cy="14" r="1.2" fill="currentColor" stroke="none" />
-        <circle cx="12" cy="14" r="1.2" fill="currentColor" stroke="none" />
-        <circle cx="16" cy="14" r="1.2" fill="currentColor" stroke="none" />
-        <circle cx="8" cy="18" r="1.2" fill="currentColor" stroke="none" />
-        <circle cx="12" cy="18" r="1.2" fill="currentColor" stroke="none" />
-      </svg>
-    ),
-    accentColor: "#5EEAD4",
-  },
-  {
-    badge: ONBOARDING_STEP_BADGES[3],
     headline: (
       <>
         Your business has a place to live.{" "}
         <span className="text-[#5EEAD4]">Your relationship has room to breathe.</span>
       </>
     ),
-    body: "Drop ideas into the shared hub the moment they hit you — no interrupting your partner. Set your business hours so notifications only arrive when you're in work mode. Turn on Sleep Mode and the business goes quiet for both of you.",
+    body: "Drop ideas into the shared hub the moment they hit you — no interrupting your partner. Set your business hours so notifications only arrive when you're in work mode. You choose when business mode goes quiet and you can focus the two of you.",
     icon: (
       <svg className="w-14 h-14 text-[#5EEAD4]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        {/* Crescent moon */}
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.3} d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />
-        {/* Stars */}
-        <line x1="19" y1="3" x2="19" y2="3.01" strokeLinecap="round" strokeWidth={2.5} />
-        <line x1="22" y1="6" x2="22" y2="6.01" strokeLinecap="round" strokeWidth={2.5} />
-        <line x1="20" y1="7" x2="20" y2="7.01" strokeLinecap="round" strokeWidth={2.5} />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.3}
+          d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />
       </svg>
     ),
     accentColor: "#5EEAD4",
   },
+  // Step 3 — The Promise
   {
-    badge: ONBOARDING_STEP_BADGES[4],
+    badge: ONBOARDING_STEP_BADGES[3],
     headline: (
       <>
         Your business stays in the boardroom.{" "}
@@ -132,13 +108,7 @@ const STEPS: OnboardingStep[] = [
 
 // ─── Progress dots ─────────────────────────────────────────────────────────────
 
-function ProgressDots({
-  total,
-  current,
-}: {
-  total: number;
-  current: number;
-}) {
+function ProgressDots({ total, current }: { total: number; current: number }) {
   return (
     <div className="flex items-center gap-2">
       {Array.from({ length: total }).map((_, i) => (
@@ -148,8 +118,7 @@ function ProgressDots({
           style={{
             width: i === current ? 24 : 8,
             height: 8,
-            backgroundColor:
-              i === current ? "#5EEAD4" : "rgba(255,255,255,0.18)",
+            backgroundColor: i === current ? "#5EEAD4" : "rgba(255,255,255,0.18)",
           }}
         />
       ))}
@@ -171,7 +140,6 @@ export default function SubscriptionOnboarding() {
   const goNext = useCallback(() => {
     if (isAnimating) return;
     if (step >= totalSteps - 1) {
-      // Last step → go to paywall
       navigate("/paywall");
       return;
     }
@@ -193,9 +161,7 @@ export default function SubscriptionOnboarding() {
     }, 220);
   }, [step, isAnimating]);
 
-  const handleSkip = () => {
-    navigate("/paywall");
-  };
+  const handleSkip = () => navigate("/paywall");
 
   const handleTouchStart = (e: React.TouchEvent) => {
     setTouchStart(e.touches[0].clientX);
@@ -302,20 +268,15 @@ export default function SubscriptionOnboarding() {
 
       {/* Bottom bar: dots + CTA */}
       <div className="relative z-10 w-full px-8 pb-8 max-w-md mx-auto">
-        {/* Progress dots */}
         <div className="flex justify-center mb-6">
           <ProgressDots total={totalSteps} current={step} />
         </div>
-
-        {/* Primary CTA */}
         <button
           onClick={goNext}
           className="w-full bg-gradient-to-r from-[#5EEAD4] to-[#0D9488] text-[#0A1628] font-bold text-lg py-4 px-8 rounded-2xl transition-all duration-200 active:scale-[0.97] shadow-lg shadow-[#5EEAD4]/20"
         >
           {isLastStep ? "See Plans →" : "Next →"}
         </button>
-
-        {/* Back link */}
         {step > 0 && (
           <button
             onClick={goPrev}

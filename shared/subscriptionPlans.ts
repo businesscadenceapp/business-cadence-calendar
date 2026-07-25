@@ -58,7 +58,6 @@ export const ONBOARDING_STEP_BADGES = [
   "For Co-Preneurs",
   "The Problem",
   "The Solution",
-  "Sleep Mode",
   "The Promise",
 ] as const;
 
