@@ -1,7 +1,7 @@
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
-import { Route, Switch } from "wouter";
+import { Route, Switch, Redirect } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import PasswordGate from "./components/PasswordGate";
@@ -27,6 +27,8 @@ import TeamBoardArchive from "@/pages/TeamBoardArchive";
 import ForgotPassword from "@/pages/ForgotPassword";
 import ResetPassword from "@/pages/ResetPassword";
 import BusinessSelector from "@/pages/BusinessSelector";
+import AppWelcome from "@/pages/AppWelcome";
+import { isNativeApp, hasSeenWelcome } from "@/lib/platform";
 
 // Wrapper that applies PasswordGate + AppShell to any page component
 function Protected({ component: Component }: { component: React.ComponentType }) {
@@ -39,11 +41,36 @@ function Protected({ component: Component }: { component: React.ComponentType })
   );
 }
 
+/**
+ * NativeHome — When running in Capacitor, the "/" route should NOT show
+ * the marketing Landing page. Instead:
+ * - If user hasn't seen the welcome intro → show AppWelcome
+ * - If they have → redirect to /login (or /select-business if logged in)
+ */
+function NativeHome() {
+  if (!hasSeenWelcome()) {
+    return <AppWelcome />;
+  }
+  // Check if user is already logged in
+  const authFlag = localStorage.getItem("bcc_auth_v1");
+  if (authFlag === "granted") {
+    return <Redirect to="/select-business" />;
+  }
+  return <Redirect to="/login" />;
+}
+
 function Router() {
+  const native = isNativeApp();
+
   return (
     <Switch>
+      {/* Root route: marketing site on web, native welcome on mobile */}
+      <Route path={"/"}>
+        {native ? <NativeHome /> : <Landing />}
+      </Route>
+
       {/* Public routes */}
-      <Route path={"/"} component={Landing} />
+      <Route path={"/welcome"} component={AppWelcome} />
       <Route path={"/login"} component={ClientLogin} />
       <Route path={"/onboarding"} component={Onboarding} />
       <Route path={"/accept-invite"} component={AcceptInvite} />

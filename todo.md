@@ -871,3 +871,17 @@
 - [x] Visual language matches Business Selector: dark cards, accent glow, Space Grotesk headings
 - [x] Micro-interactions: button press scale, card entrance animations, staggered reveals
 - [x] Responsive: works beautifully on mobile and desktop
+
+## Mobile App Welcome Experience (Copreneur-Focused)
+
+- [x] Create Capacitor platform detection utility (isNativeApp())
+- [x] Build animated welcome/intro cards for first-time app users (copreneur messaging)
+- [x] Card 1: "Running a business with someone you love is one of the hardest things you'll ever do."
+- [x] Card 2: "Most tools help you manage tasks. This one helps you stay connected."
+- [x] Card 3: "Business Cadence was built for the conversations that keep everything together."
+- [x] Card 4: "Let's build a rhythm that works for both of you." + Get Started button
+- [x] Implement mobile-specific routing: native app skips Landing page, shows welcome on first open
+- [x] Store "has seen welcome" flag in localStorage so it only shows once
+- [x] After welcome, route to login (or business selector if already logged in)
+- [x] Native-feeling transitions between welcome cards (swipe or tap)
+- [ ] Save checkpoint and push to GitHub (triggers Xcode Cloud build automatically)
