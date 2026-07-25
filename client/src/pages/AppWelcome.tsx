@@ -63,19 +63,14 @@ const CARDS: WelcomeCard[] = [
     subtext: "One partner subscribes. The other downloads free and gets full access — always. We believe the couple is the unit, not the individual.",
     icon: (
       <svg className="w-16 h-16 text-[#5EEAD4]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        {/* Dollar bill outline */}
-        <rect x="2" y="6" width="20" height="12" rx="1.5" strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.2} />
-        {/* Center circle */}
-        <circle cx="12" cy="12" r="2.5" strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.2} />
-        {/* Dollar sign vertical bar */}
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.2} d="M12 9.5v1M12 13.5v1" />
-        {/* Corner decorative circles (like real bill rosettes) */}
-        <circle cx="5.5" cy="9.5" r="1" strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.2} />
-        <circle cx="18.5" cy="9.5" r="1" strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.2} />
-        <circle cx="5.5" cy="14.5" r="1" strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.2} />
-        <circle cx="18.5" cy="14.5" r="1" strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.2} />
-        {/* Dollar sign curves */}
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.2} d="M10.5 10.5c0-.83.67-1 1.5-1s1.5.17 1.5 1-.67 1-1.5 1-1.5.17-1.5 1 .67 1 1.5 1 1.5-.17 1.5-1" />
+        {/* Outer bill rectangle */}
+        <rect x="1" y="5" width="22" height="14" rx="1.5" strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.2} />
+        {/* Inner wavy/dashed border to suggest bill detail */}
+        <rect x="3" y="7" width="18" height="10" rx="0.8" strokeLinecap="round" strokeLinejoin="round" strokeWidth={0.8} strokeDasharray="1.5 1" />
+        {/* Dollar sign — vertical bar through center */}
+        <line x1="12" y1="9" x2="12" y2="15" strokeLinecap="round" strokeWidth={1.2} />
+        {/* Dollar sign — top arc (open C shape facing right) */}
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.2} d="M14 10c-.5-.7-1.2-1-2-1s-2 .4-2 1.5.9 1.3 2 1.5 2 .6 2 1.5-1 1.5-2 1.5-1.5-.3-2-1" />
       </svg>
     ),
   },
@@ -233,20 +228,42 @@ export default function AppWelcome() {
       </div>
 
       {/* Bottom area: dots + next button */}
-      <div className="w-full px-8 pb-8 flex items-center justify-between max-w-md">
-        <DotIndicator total={totalSteps} current={currentCard} />
+      <div className="w-full px-8 pb-6 max-w-md shrink-0">
+        {/* Dot indicator centered */}
+        <div className="flex justify-center mb-4">
+          <DotIndicator total={totalSteps} current={currentCard} />
+        </div>
+        {/* Back / Next row */}
+        <div className="flex items-center justify-between min-h-[44px]">
+          {/* Back button — shown on all cards except the first */}
+          {currentCard > 0 ? (
+            <button
+              onClick={goPrev}
+              className="flex items-center gap-2 text-white/40 hover:text-white/70 font-medium text-sm py-2 px-4 rounded-lg hover:bg-white/5 transition-colors active:scale-[0.97]"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
+              </svg>
+              Back
+            </button>
+          ) : (
+            <div className="w-20" />
+          )}
 
-        {currentCard < CARDS.length && (
-          <button
-            onClick={goNext}
-            className="flex items-center gap-2 text-[#5EEAD4] font-medium text-sm py-2 px-4 rounded-lg hover:bg-white/5 transition-colors active:scale-[0.97]"
-          >
-            Next
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
-        )}
+          {currentCard < CARDS.length ? (
+            <button
+              onClick={goNext}
+              className="flex items-center gap-2 text-[#5EEAD4] font-medium text-sm py-2 px-4 rounded-lg hover:bg-white/5 transition-colors active:scale-[0.97]"
+            >
+              Next
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          ) : (
+            <div className="w-20" />
+          )}
+        </div>
       </div>
     </div>
   );
