@@ -63,3 +63,17 @@
 - [x] Install @revenuecat/purchases-capacitor (fix build error from subscription task fast-forward)
 - [x] Add new shield-heart welcome card: "Capture every idea. Protect your relationship." (card 4, between chat-bubble and pricing cards)
 - [x] Checkpoint and push to GitHub (triggers Xcode Cloud build)
+
+## Post-Subscribe Flow Redesign
+- [x] Replace shield-heart card with crescent moon card — THE SOLUTION badge, new wording, no stars
+- [x] Remove /welcome flow entirely — single onboarding path via /subscribe-intro
+- [x] Restructure onboarding to 4 clean story-arc cards (remove calendar card)
+- [x] Fix MOST POPULAR badge overlapping plan name on paywall
+- [x] Build SetupChoice, InvitePartnerSetup, WaitingForPartner pages
+- [ ] Redesign post-subscribe flow: invite-first, native iPhone feel (remove SetupChoice)
+- [ ] Paywall routes directly to InvitePartnerSetup after subscribing
+- [ ] Rebuild InvitePartnerSetup as full-bleed native screen (business name + partner email)
+- [ ] Rebuild WaitingForPartner with native mobile design
+- [x] Redesign post-subscribe flow: invite-first, native iPhone feel (remove SetupChoice)
+- [x] Paywall routes directly to InvitePartnerSetup after subscribing
+- [x] InvitePartnerSetup: added business name field, removed back-to-setup-choice, added self-setup escape hatch

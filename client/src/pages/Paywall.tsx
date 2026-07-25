@@ -6,7 +6,7 @@
  *   Core + Team  $49/mo  or $39/mo (annual, billed $468/yr)
  *
  * Annual is the default selection. A billing toggle switches between monthly/annual.
- * After subscribing, routes to /setup-choice (not /app/board).
+ * After subscribing, routes to /invite-partner-setup.
  */
 
 import { useState } from "react";
@@ -142,7 +142,7 @@ export default function Paywall({ dismissible, onSubscribe, onDismiss }: Paywall
       if (onSubscribe) {
         onSubscribe(selectedPlan);
       } else {
-        navigate("/setup-choice");
+        navigate("/invite-partner-setup");
       }
     },
     onError: (err) => {
@@ -177,7 +177,7 @@ export default function Paywall({ dismissible, onSubscribe, onDismiss }: Paywall
           if (onSubscribe) {
             onSubscribe(selectedPlan);
           } else {
-            navigate("/setup-choice");
+            navigate("/invite-partner-setup");
           }
         }, 1500);
       } catch (err: any) {

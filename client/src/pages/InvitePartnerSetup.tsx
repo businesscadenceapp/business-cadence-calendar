@@ -10,11 +10,11 @@ import { trpc } from "@/lib/trpc";
 import { usePerson } from "@/contexts/PersonContext";
 import { toast } from "sonner";
 import { BrandIcon } from "@/components/BrandLogo";
-import { ArrowLeft } from "lucide-react";
 
 export default function InvitePartnerSetup() {
   const [, navigate] = useLocation();
   const { person } = usePerson();
+  const [businessName, setBusinessName] = useState("");
   const [partnerName, setPartnerName] = useState("");
   const [partnerEmail, setPartnerEmail] = useState("");
   const [isSending, setIsSending] = useState(false);
@@ -49,6 +49,7 @@ export default function InvitePartnerSetup() {
   const sendInviteEmail = trpc.subscription.sendPartnerSetupInviteEmail.useMutation();
 
   const handleSend = () => {
+    if (!businessName.trim()) { toast.error("Please enter your business name."); return; }
     if (!partnerName.trim()) { toast.error("Please enter your partner's name."); return; }
     if (!partnerEmail.trim() || !partnerEmail.includes("@")) { toast.error("Please enter a valid email address."); return; }
     if (!person?.id || !person?.accountId) { toast.error("Please sign in first."); navigate("/login"); return; }
@@ -84,14 +85,14 @@ export default function InvitePartnerSetup() {
         />
       </div>
 
-      {/* Header */}
-      <div className="relative z-10 flex items-center px-5 pt-4 pb-2">
-        <button
-          onClick={() => navigate("/setup-choice")}
-          className="w-9 h-9 flex items-center justify-center rounded-full bg-white/6 border border-white/10 transition-colors active:bg-white/12"
-        >
-          <ArrowLeft className="w-4 h-4 text-white/60" />
-        </button>
+      {/* Brand header */}
+      <div className="relative z-10 flex justify-center pt-6 pb-2">
+        <div className="flex items-center gap-2">
+          <BrandIcon size={28} variant="teal" />
+          <span className="text-white/50 text-sm font-medium">
+            Business<span className="text-[#5EEAD4]">Cadence</span>
+          </span>
+        </div>
       </div>
 
       {/* Content */}
@@ -112,14 +113,34 @@ export default function InvitePartnerSetup() {
         </div>
 
         <h1 className="text-[26px] font-bold text-white leading-tight tracking-tight mb-3">
-          Invite your partner
+          Let's set up your workspace
         </h1>
         <p className="text-white/45 text-sm leading-relaxed max-w-xs mb-8">
-          They'll receive a link to set up your business profile. You'll both get full access once it's done.
+          Tell us your business name, then invite your partner to complete the setup together.
         </p>
 
         {/* Form */}
         <div className="w-full max-w-xs flex flex-col gap-4">
+          <div className="flex flex-col gap-1.5 text-left">
+            <label className="text-xs font-semibold text-white/40 uppercase tracking-wider">
+              Business Name
+            </label>
+            <input
+              type="text"
+              value={businessName}
+              onChange={(e) => setBusinessName(e.target.value)}
+              placeholder="e.g. Maple Street Bakery"
+              autoComplete="organization"
+              className="w-full rounded-xl px-4 py-3.5 text-white text-base placeholder-white/20 focus:outline-none transition-all"
+              style={{
+                background: "rgba(255,255,255,0.06)",
+                border: "1.5px solid rgba(255,255,255,0.10)",
+              }}
+              onFocus={(e) => (e.target.style.borderColor = "rgba(94,234,212,0.5)")}
+              onBlur={(e) => (e.target.style.borderColor = "rgba(255,255,255,0.10)")}
+            />
+          </div>
+
           <div className="flex flex-col gap-1.5 text-left">
             <label className="text-xs font-semibold text-white/40 uppercase tracking-wider">
               Partner's Name
@@ -166,7 +187,7 @@ export default function InvitePartnerSetup() {
       <div className="relative z-10 px-6 pb-8 max-w-md mx-auto w-full">
         <button
           onClick={handleSend}
-          disabled={isSending || !partnerName.trim() || !partnerEmail.trim()}
+          disabled={isSending || !businessName.trim() || !partnerName.trim() || !partnerEmail.trim()}
           className="w-full py-4 rounded-2xl font-bold text-[#0A1628] text-base transition-all duration-200 active:scale-[0.97] disabled:opacity-50"
           style={{
             background: "linear-gradient(135deg, #5EEAD4 0%, #0D9488 100%)",
@@ -175,9 +196,12 @@ export default function InvitePartnerSetup() {
         >
           {isSending ? "Sending…" : "Send Invite →"}
         </button>
-        <p className="text-white/20 text-xs text-center mt-3">
-          Your partner will receive an email with a setup link
-        </p>
+        <button
+          onClick={() => navigate("/onboarding")}
+          className="w-full py-3 text-white/30 text-sm text-center mt-2 hover:text-white/50 transition-colors"
+        >
+          I'll set it up myself instead
+        </button>
       </div>
     </div>
   );
