@@ -58,3 +58,8 @@
 - [x] Remove voice-recorder vendoring step from ci_post_clone.sh and package.json cap:sync script
 - [x] Remove server/_core/voiceTranscription.ts (no remaining imports)
 - [x] Run tests (10/10 pass), typecheck (0 errors), checkpoint and push to GitHub
+
+## Welcome Cards Update (new session continuation)
+- [x] Install @revenuecat/purchases-capacitor (fix build error from subscription task fast-forward)
+- [x] Add new shield-heart welcome card: "Capture every idea. Protect your relationship." (card 4, between chat-bubble and pricing cards)
+- [x] Checkpoint and push to GitHub (triggers Xcode Cloud build)

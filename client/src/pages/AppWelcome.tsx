@@ -59,6 +59,18 @@ const CARDS: WelcomeCard[] = [
     ),
   },
   {
+    headline: "Capture every idea. Protect your relationship.",
+    subtext: "Drop a thought into the hub the moment it hits you — no interrupting your partner. Set business hours so notifications only arrive when you're in work mode. Sleep Mode keeps the business quiet until you're ready.",
+    icon: (
+      <svg className="w-16 h-16 text-[#5EEAD4]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        {/* Shield outline */}
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.2} d="M12 2L4 6v6c0 5.25 3.5 10.15 8 11.35C16.5 22.15 20 17.25 20 12V6l-8-4z" />
+        {/* Small heart inside the shield */}
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.2} d="M9.5 10.5a2 2 0 013 0 2 2 0 013 0c0 2-3 4-3 4s-3-2-3-4z" />
+      </svg>
+    ),
+  },
+  {
     headline: "One subscription. Both of you. No double billing.",
     subtext: "One partner subscribes. The other downloads free and gets full access — always. We believe the couple is the unit, not the individual.",
     icon: (
