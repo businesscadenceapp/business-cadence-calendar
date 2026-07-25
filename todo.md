@@ -886,3 +886,5 @@
 - [x] Native-feeling transitions between welcome cards (swipe or tap)
 - [x] Save checkpoint and push to GitHub (triggers Xcode Cloud build automatically)
 - [x] Change music note icon on welcome card 4 to single outline note (matching heart style)
+- [x] Card 4: Change back to double eighth note in outline style (two notes becoming one, distinct from Apple Music)
+- [x] Card 2: Change people icon to wrench ("most tools")

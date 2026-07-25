@@ -11,29 +11,55 @@ import { useLocation } from "wouter";
 import { markWelcomeSeen } from "@/lib/platform";
 // Single outline music note icon matching the heart style on card 1
 function MusicNoteIcon() {
+  // Double eighth note with double beams (♬) — outline style
+  // "Two notes becoming one" — distinct from Apple Music's filled/horizontal style
   return (
     <svg className="w-16 h-16 text-[#5EEAD4]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      {/* Single note head (oval) */}
+      {/* Left note head */}
       <ellipse
-        cx="9" cy="17.5"
-        rx="3.5" ry="2.5"
+        cx="7" cy="18"
+        rx="2.8" ry="2"
         strokeWidth={1.2}
         strokeLinecap="round"
         strokeLinejoin="round"
+        transform="rotate(-10, 7, 18)"
       />
-      {/* Stem */}
+      {/* Right note head */}
+      <ellipse
+        cx="17" cy="16.5"
+        rx="2.8" ry="2"
+        strokeWidth={1.2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        transform="rotate(-10, 17, 16.5)"
+      />
+      {/* Left stem */}
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
         strokeWidth={1.2}
-        d="M12.5 17.5V5"
+        d="M9.8 17V4.5"
       />
-      {/* Flag */}
+      {/* Right stem */}
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
         strokeWidth={1.2}
-        d="M12.5 5c2 1 4 2.5 4 5"
+        d="M19.8 15.5V3"
+      />
+      {/* Top beam */}
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={1.8}
+        d="M9.8 4.5L19.8 3"
+      />
+      {/* Second beam (below the first) */}
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={1.8}
+        d="M9.8 7.5L19.8 6"
       />
     </svg>
   );
@@ -62,7 +88,8 @@ const CARDS: WelcomeCard[] = [
     subtext: "Because the relationship matters more than the to-do list.",
     icon: (
       <svg className="w-16 h-16 text-[#5EEAD4]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+        {/* Wrench — "most tools" */}
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.2} d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z" />
       </svg>
     ),
   },
