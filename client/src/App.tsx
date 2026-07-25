@@ -31,6 +31,9 @@ import BusinessSelector from "@/pages/BusinessSelector";
 import { Capacitor } from "@capacitor/core";
 import Paywall from "@/pages/Paywall";
 import SubscriptionOnboarding from "@/pages/SubscriptionOnboarding";
+import SetupChoice from "@/pages/SetupChoice";
+import InvitePartnerSetup from "@/pages/InvitePartnerSetup";
+import WaitingForPartner from "@/pages/WaitingForPartner";
 
 // Wrapper so Paywall (which has optional custom props) works as a wouter route component
 function PaywallPage() {
@@ -100,6 +103,9 @@ function Router() {
       <Route path={"/subscribe-intro"} component={SubscriptionOnboarding} />
       <Route path={"/paywall"} component={PaywallPage} />
       <Route path={"/accept-invite"} component={AcceptInvite} />
+      <Route path={"/setup-choice"} component={SetupChoice} />
+      <Route path={"/invite-partner-setup"} component={InvitePartnerSetup} />
+      <Route path={"/waiting-for-partner"} component={WaitingForPartner} />
       <Route path={"/forgot-password"} component={ForgotPassword} />
       <Route path={"/reset-password"} component={ResetPassword} />
       <Route path={"/select-business"} component={BusinessSelector} />

@@ -7,39 +7,30 @@
  * - server/paywall.test.ts (vitest coverage)
  *
  * Plans:
- *   Core         $79/mo  — owners only, all cadence meetings
- *   Core + Team  $99/mo  — owners + unlimited team employees
+ *   Core         $39/mo  or $29/mo (annual) — owners only
+ *   Core + Team  $49/mo  or $39/mo (annual) — owners + team
  *
  * RevenueCat product IDs must match App Store Connect / Google Play Console.
  */
+
+export type BillingPeriod = "monthly" | "annual";
+
 export const SUBSCRIPTION_PLANS = [
   {
     id: "core" as const,
     label: "Core",
-    description: "Owners only — all cadence meetings & board",
-    price: "$79",
-    period: "/ month",
-    perMonth: null as string | null,
-    original: null as string | null,
+    description: "Both owners — all cadence meetings & board",
+    monthly: { price: "$39", period: "/ month", productId: "bc_core_monthly", annualCents: 39 * 12 * 100 },
+    annual:  { price: "$29", period: "/ month", productId: "bc_core_annual",  annualCents: 29 * 12 * 100, savingsLabel: "Save $120/yr" },
     popular: false,
-    /** RevenueCat / App Store product identifier */
-    productId: "bc_core_monthly",
-    /** Annual equivalent cost in USD cents (for analytics) */
-    annualCents: 79 * 12 * 100,
   },
   {
     id: "core_team" as const,
     label: "Core + Team",
     description: "Everything in Core, plus unlimited team employees",
-    price: "$99",
-    period: "/ month",
-    perMonth: null as string | null,
-    original: null as string | null,
+    monthly: { price: "$49", period: "/ month", productId: "bc_core_team_monthly", annualCents: 49 * 12 * 100 },
+    annual:  { price: "$39", period: "/ month", productId: "bc_core_team_annual",  annualCents: 39 * 12 * 100, savingsLabel: "Save $120/yr" },
     popular: true,
-    /** RevenueCat / App Store product identifier */
-    productId: "bc_core_team_monthly",
-    /** Annual equivalent cost in USD cents */
-    annualCents: 99 * 12 * 100,
   },
 ] as const;
 
@@ -67,9 +58,9 @@ export const ONBOARDING_STEP_BADGES = [
  */
 export function getTrialSubtext(planId: PlanId): string {
   if (planId === "core_team") {
-    return "Then $99/mo · Cancel anytime · 14-day free trial";
+    return "Then $49/mo or $39/mo billed annually · Cancel anytime";
   }
-  return "Then $79/mo · Cancel anytime · 14-day free trial";
+  return "Then $39/mo or $29/mo billed annually · Cancel anytime";
 }
 
 /**

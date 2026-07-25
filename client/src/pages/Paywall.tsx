@@ -1,17 +1,12 @@
 /**
- * Paywall — Full-screen subscription offer shown after onboarding setup.
+ * Paywall — Full-screen subscription offer shown after onboarding intro.
  *
- * Design goals:
- * - Native-feeling, not like a website
- * - 14-day free trial CTA prominent
- * - Core ($79/mo) and Core + Team ($99/mo) plans
- * - Apple/Google handles payment natively via RevenueCat
- * - All required App Store legal disclosures present
- * - Partners bypass this screen entirely (handled by EntitlementGuard)
+ * Plans:
+ *   Core         $39/mo  or $29/mo (annual, billed $348/yr)
+ *   Core + Team  $49/mo  or $39/mo (annual, billed $468/yr)
  *
- * RevenueCat integration:
- *   - On native (iOS/Android): calls Purchases.purchasePackage() via @revenuecat/purchases-capacitor
- *   - On web (dev/preview): calls trpc.subscription.startTrial to simulate a purchase
+ * Annual is the default selection. A billing toggle switches between monthly/annual.
+ * After subscribing, routes to /setup-choice (not /app/board).
  */
 
 import { useState } from "react";
@@ -27,18 +22,24 @@ import {
   PAYWALL_FEATURES as FEATURES,
   getTrialSubtext,
   type PlanId,
+  type BillingPeriod,
 } from "@shared/subscriptionPlans";
 
-// ─── Sub-components ───────────────────────────────────────────────────────────
+// ─── Plan Card ────────────────────────────────────────────────────────────────
 function PlanCard({
   plan,
+  billing,
   selected,
   onSelect,
 }: {
   plan: (typeof PLANS)[number];
+  billing: BillingPeriod;
   selected: boolean;
   onSelect: () => void;
 }) {
+  const pricing = billing === "annual" ? plan.annual : plan.monthly;
+  const savingsLabel = billing === "annual" ? plan.annual.savingsLabel : null;
+
   return (
     <button
       onClick={onSelect}
@@ -58,17 +59,19 @@ function PlanCard({
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
             <span className="text-white font-bold text-base">{plan.label}</span>
-            {plan.perMonth && (
+            {savingsLabel && (
               <span className="text-[#5EEAD4] text-xs font-semibold bg-[#5EEAD4]/10 px-2 py-0.5 rounded-full">
-                {plan.perMonth}
+                {savingsLabel}
               </span>
             )}
           </div>
           <div className="flex items-baseline gap-1.5">
-            <span className="text-white/90 font-bold text-2xl">{plan.price}</span>
-            <span className="text-white/40 text-sm">{plan.period}</span>
-            {plan.original && (
-              <span className="text-white/30 text-xs line-through ml-1">{plan.original}</span>
+            <span className="text-white/90 font-bold text-2xl">{pricing.price}</span>
+            <span className="text-white/40 text-sm">{pricing.period}</span>
+            {billing === "annual" && (
+              <span className="text-white/30 text-xs ml-1">
+                billed ${parseInt(pricing.price.replace("$", "")) * 12}/yr
+              </span>
             )}
           </div>
           <p className="text-white/45 text-xs mt-1">{plan.description}</p>
@@ -88,13 +91,38 @@ function PlanCard({
   );
 }
 
+// ─── Billing Toggle ───────────────────────────────────────────────────────────
+function BillingToggle({
+  billing,
+  onChange,
+}: {
+  billing: BillingPeriod;
+  onChange: (b: BillingPeriod) => void;
+}) {
+  return (
+    <div className="flex items-center gap-1 p-1 rounded-xl bg-white/6 border border-white/10 mb-6">
+      {(["monthly", "annual"] as BillingPeriod[]).map((b) => (
+        <button
+          key={b}
+          onClick={() => onChange(b)}
+          className={[
+            "flex-1 py-2 px-3 rounded-lg text-sm font-semibold transition-all duration-200",
+            billing === b
+              ? "bg-[#5EEAD4] text-[#0A1628]"
+              : "text-white/45 hover:text-white/70",
+          ].join(" ")}
+        >
+          {b === "monthly" ? "Monthly" : "Annual · Save $120"}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 // ─── Main component ───────────────────────────────────────────────────────────
 interface PaywallProps {
-  /** When true, shows an X button to dismiss (e.g. from Settings). */
   dismissible?: boolean;
-  /** Called when the user completes a purchase. */
   onSubscribe?: (plan: PlanId) => void;
-  /** Called when the user taps the dismiss button. */
   onDismiss?: () => void;
 }
 
@@ -104,9 +132,9 @@ export default function Paywall({ dismissible, onSubscribe, onDismiss }: Paywall
   const [selectedPlan, setSelectedPlan] = useState<PlanId>(
     PLANS.find((p) => p.popular)?.id ?? PLANS[0].id
   );
+  const [billing, setBilling] = useState<BillingPeriod>("annual");
   const [isLoading, setIsLoading] = useState(false);
 
-  // ─── tRPC mutations ───────────────────────────────────────────────────────
   const startTrial = trpc.subscription.startTrial.useMutation({
     onSuccess: () => {
       setIsLoading(false);
@@ -114,7 +142,7 @@ export default function Paywall({ dismissible, onSubscribe, onDismiss }: Paywall
       if (onSubscribe) {
         onSubscribe(selectedPlan);
       } else {
-        navigate("/app/board");
+        navigate("/setup-choice");
       }
     },
     onError: (err) => {
@@ -123,48 +151,42 @@ export default function Paywall({ dismissible, onSubscribe, onDismiss }: Paywall
     },
   });
 
-  // ─── Handlers ─────────────────────────────────────────────────────────────
   const handleSubscribe = async () => {
     setIsLoading(true);
 
     if (Capacitor.isNativePlatform()) {
-      // Native: use RevenueCat Purchases SDK
       try {
         const { Purchases } = await import("@revenuecat/purchases-capacitor");
         const offerings = await Purchases.getOfferings();
         const current = offerings.current;
         if (!current) throw new Error("No offerings available. Please try again later.");
 
-        // Find the matching package by product ID
         const planData = PLANS.find((p) => p.id === selectedPlan);
+        const productId = billing === "annual" ? planData?.annual.productId : planData?.monthly.productId;
         const pkg =
           current.availablePackages.find(
-            (p: any) => p.product?.identifier === planData?.productId
+            (p: any) => p.product?.identifier === productId
           ) ?? current.availablePackages[0];
 
         if (!pkg) throw new Error("Plan not available in your region.");
 
         await Purchases.purchasePackage({ aPackage: pkg });
-        // RevenueCat webhook will update the subscription server-side.
-        // Give the webhook a moment to process, then navigate.
         setTimeout(() => {
           setIsLoading(false);
           toast.success("Welcome to BusinessCadence!");
           if (onSubscribe) {
             onSubscribe(selectedPlan);
           } else {
-            navigate("/app/board");
+            navigate("/setup-choice");
           }
         }, 1500);
       } catch (err: any) {
         setIsLoading(false);
-        // Error code 1 = user cancelled — silent
         if (err?.code !== "1" && err?.code !== 1) {
           toast.error(err?.message || "Purchase failed. Please try again.");
         }
       }
     } else {
-      // Web / dev: start a server-side 14-day trial
       if (!person) {
         setIsLoading(false);
         toast.error("Please sign in first.");
@@ -176,11 +198,8 @@ export default function Paywall({ dismissible, onSubscribe, onDismiss }: Paywall
   };
 
   const handleDismiss = () => {
-    if (onDismiss) {
-      onDismiss();
-    } else {
-      navigate(-1 as any);
-    }
+    if (onDismiss) onDismiss();
+    else navigate(-1 as any);
   };
 
   const handleRestorePurchases = async () => {
@@ -198,7 +217,6 @@ export default function Paywall({ dismissible, onSubscribe, onDismiss }: Paywall
     }
   };
 
-  const selectedPlanData = PLANS.find((p) => p.id === selectedPlan)!;
   const trialSubtext = getTrialSubtext(selectedPlan);
 
   return (
@@ -218,15 +236,11 @@ export default function Paywall({ dismissible, onSubscribe, onDismiss }: Paywall
           backgroundSize: "48px 48px",
         }}
       />
-      {/* Top gradient glow */}
       <div
         className="absolute top-0 left-0 right-0 h-64 pointer-events-none"
-        style={{
-          background:
-            "linear-gradient(180deg, rgba(94,234,212,0.08) 0%, transparent 100%)",
-        }}
+        style={{ background: "linear-gradient(180deg, rgba(94,234,212,0.08) 0%, transparent 100%)" }}
       />
-      {/* Dismiss button */}
+
       {dismissible && (
         <button
           onClick={handleDismiss}
@@ -236,38 +250,46 @@ export default function Paywall({ dismissible, onSubscribe, onDismiss }: Paywall
           <X className="w-4 h-4 text-white/60" />
         </button>
       )}
-      {/* Scrollable content */}
+
       <div className="flex-1 overflow-y-auto">
         <div className="flex flex-col items-center px-6 pt-10 pb-8 max-w-md mx-auto">
-          {/* Brand mark */}
+          {/* Brand */}
           <div className="mb-6 flex items-center gap-2">
             <BrandIcon size={32} />
             <span className="text-white font-bold text-lg tracking-tight">
               Business<span className="text-[#5EEAD4]">Cadence</span>
             </span>
           </div>
+
           {/* Headline */}
-          <div className="text-center mb-6">
+          <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-white leading-tight tracking-tight mb-3">
               Run Your Business.{" "}
               <span className="text-[#5EEAD4]">Protect Your Life.</span>
             </h1>
             <p className="text-white/55 text-base leading-relaxed">
-              Unlock the full BusinessCadence operating system for co-preneurs.
-              Start your 14-day free trial — cancel anytime.
+              Start your 14-day free trial — no charge until it ends.
             </p>
           </div>
+
+          {/* Billing toggle */}
+          <div className="w-full">
+            <BillingToggle billing={billing} onChange={setBilling} />
+          </div>
+
           {/* Plan cards */}
           <div className="w-full flex flex-col gap-4 mb-6">
             {PLANS.map((plan) => (
               <PlanCard
                 key={plan.id}
                 plan={plan}
+                billing={billing}
                 selected={selectedPlan === plan.id}
                 onSelect={() => setSelectedPlan(plan.id)}
               />
             ))}
           </div>
+
           {/* Feature list */}
           <div className="w-full flex flex-col gap-3 mb-8">
             {FEATURES.map((feat) => (
@@ -279,7 +301,8 @@ export default function Paywall({ dismissible, onSubscribe, onDismiss }: Paywall
               </div>
             ))}
           </div>
-          {/* CTA button */}
+
+          {/* CTA */}
           <button
             onClick={handleSubscribe}
             disabled={isLoading}
@@ -297,37 +320,27 @@ export default function Paywall({ dismissible, onSubscribe, onDismiss }: Paywall
               "Start 14-Day Free Trial"
             )}
           </button>
-          {/* Sub-CTA text */}
+
           <p className="text-white/35 text-xs text-center mb-4">{trialSubtext}</p>
-          {/* Restore Purchases */}
+
           <button
             onClick={handleRestorePurchases}
             className="text-white/30 text-xs underline underline-offset-2 hover:text-white/50 transition-colors mb-6"
           >
             Restore Purchases
           </button>
-          {/* App Store legal disclosure */}
+
           <p className="text-white/20 text-[10px] text-center leading-relaxed max-w-xs">
             Payment will be charged to your Apple ID / Google Play account at
             confirmation of purchase. Subscription automatically renews unless
             auto-renew is turned off at least 24 hours before the end of the
             current period. You can manage subscriptions in your Account
             Settings after purchase.{" "}
-            <a
-              href="https://businesscadence.com/privacy"
-              className="underline"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
+            <a href="https://businesscadence.com/privacy" className="underline" target="_blank" rel="noopener noreferrer">
               Privacy Policy
             </a>{" "}
             ·{" "}
-            <a
-              href="https://businesscadence.com/terms"
-              className="underline"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
+            <a href="https://businesscadence.com/terms" className="underline" target="_blank" rel="noopener noreferrer">
               Terms of Use
             </a>
           </p>

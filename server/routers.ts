@@ -92,7 +92,7 @@ import { appUsers } from "../drizzle/schema";
 import { eq } from "drizzle-orm";
 import { storagePut } from "./storage";
 import { nanoid } from "nanoid";
-import { sendPasswordResetEmail } from "./email";
+import { sendPasswordResetEmail, sendPartnerSetupInviteEmail } from "./email";
 
 const meetingTypeSchema = z.enum(["daily", "weekly", "monthly", "quarterly"]);
 
@@ -1970,6 +1970,22 @@ Keep the tone warm but professional. This summary will be saved under this speci
           currentPeriodEndsAt,
         });
         return { success: true, subscription: sub };
+      }),
+
+    /**
+     * Send a partner setup invite email — used when the subscriber wants their
+     * partner to complete the business profile on their behalf.
+     */
+    sendPartnerSetupInviteEmail: publicProcedure
+      .input(z.object({
+        toEmail: z.string().email(),
+        toName: z.string(),
+        inviteUrl: z.string().url(),
+        fromName: z.string(),
+      }))
+      .mutation(async ({ input }) => {
+        const ok = await sendPartnerSetupInviteEmail(input);
+        return { success: ok };
       }),
   }),
 });
