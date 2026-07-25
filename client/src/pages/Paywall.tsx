@@ -280,13 +280,14 @@ export default function Paywall({ dismissible, onSubscribe, onDismiss }: Paywall
           {/* Plan cards */}
           <div className="w-full flex flex-col gap-4 mb-6">
             {PLANS.map((plan) => (
+              <div key={plan.id} className={plan.popular ? "mt-4" : ""}>
               <PlanCard
-                key={plan.id}
                 plan={plan}
                 billing={billing}
                 selected={selectedPlan === plan.id}
                 onSelect={() => setSelectedPlan(plan.id)}
               />
+              </div>
             ))}
           </div>
 
