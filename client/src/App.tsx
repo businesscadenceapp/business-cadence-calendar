@@ -29,6 +29,7 @@ import ResetPassword from "@/pages/ResetPassword";
 import BusinessSelector from "@/pages/BusinessSelector";
 import AppWelcome from "@/pages/AppWelcome";
 import { isNativeApp, hasSeenWelcome } from "@/lib/platform";
+import { Capacitor } from "@capacitor/core";
 
 // Wrapper that applies PasswordGate + AppShell to any page component
 function Protected({ component: Component }: { component: React.ComponentType }) {
@@ -39,6 +40,26 @@ function Protected({ component: Component }: { component: React.ComponentType })
       </AppShell>
     </PasswordGate>
   );
+}
+
+/**
+ * Detect if running as a native Capacitor app.
+ * Uses multiple signals for reliability:
+ * 1. Capacitor.isNativePlatform() — primary check
+ * 2. URL is capacitor:// or file:// — fallback for when bridge initializes late
+ * 3. No window.location.hostname (file-served) — extra fallback
+ */
+function detectNative(): boolean {
+  try {
+    if (Capacitor.isNativePlatform()) return true;
+    const protocol = window.location.protocol;
+    if (protocol === "capacitor:" || protocol === "file:") return true;
+    // Capacitor iOS serves from localhost with a specific port pattern
+    if (window.location.hostname === "localhost" && window.location.port === "") return false;
+    return false;
+  } catch {
+    return false;
+  }
 }
 
 /**
@@ -60,7 +81,7 @@ function NativeHome() {
 }
 
 function Router() {
-  const native = isNativeApp();
+  const native = detectNative();
 
   return (
     <Switch>

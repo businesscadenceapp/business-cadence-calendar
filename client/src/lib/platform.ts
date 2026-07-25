@@ -19,10 +19,15 @@ export function getPlatform(): "ios" | "android" | "web" {
   return Capacitor.getPlatform() as "ios" | "android" | "web";
 }
 
+// Increment this version when you want to force the welcome screen to show again
+// (e.g. after a major update with new onboarding content)
+const WELCOME_VERSION = "v2";
+const WELCOME_KEY = `bcc_welcome_seen_${WELCOME_VERSION}`;
+
 /** Check if the user has seen the welcome intro (persisted per device) */
 export function hasSeenWelcome(): boolean {
   try {
-    return localStorage.getItem("bcc_welcome_seen") === "true";
+    return localStorage.getItem(WELCOME_KEY) === "true";
   } catch {
     return false;
   }
@@ -31,7 +36,7 @@ export function hasSeenWelcome(): boolean {
 /** Mark the welcome intro as seen */
 export function markWelcomeSeen(): void {
   try {
-    localStorage.setItem("bcc_welcome_seen", "true");
+    localStorage.setItem(WELCOME_KEY, "true");
   } catch {
     // ignore storage errors
   }
