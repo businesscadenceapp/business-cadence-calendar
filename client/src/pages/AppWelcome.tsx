@@ -9,7 +9,35 @@
 import { useState, useCallback } from "react";
 import { useLocation } from "wouter";
 import { markWelcomeSeen } from "@/lib/platform";
-import { BrandIcon } from "@/components/BrandLogo";
+// Single outline music note icon matching the heart style on card 1
+function MusicNoteIcon() {
+  return (
+    <svg className="w-16 h-16 text-[#5EEAD4]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      {/* Single note head (oval) */}
+      <ellipse
+        cx="9" cy="17.5"
+        rx="3.5" ry="2.5"
+        strokeWidth={1.2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      {/* Stem */}
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={1.2}
+        d="M12.5 17.5V5"
+      />
+      {/* Flag */}
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={1.2}
+        d="M12.5 5c2 1 4 2.5 4 5"
+      />
+    </svg>
+  );
+}
 
 // ─── Card Data ────────────────────────────────────────────────────────────────
 
@@ -177,8 +205,8 @@ export default function AppWelcome() {
           ) : (
             /* Final CTA card */
             <>
-              <div className="mb-8">
-                <BrandIcon size={80} />
+              <div className="mb-8 p-6 rounded-full bg-white/5 border border-white/10">
+                <MusicNoteIcon />
               </div>
 
               <h1 className="text-2xl sm:text-3xl font-bold text-white leading-snug mb-4">
