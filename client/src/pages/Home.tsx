@@ -9,8 +9,6 @@ import { Link } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { usePerson } from "@/contexts/PersonContext";
 import { personScopeToBusinessSelection, type BusinessSelection } from "@/lib/businessScope";
-import { RecordMeeting } from "@/components/RecordMeeting";
-
 import {
   generateCalendar,
   buildCalendarFromSchedule,
@@ -607,15 +605,6 @@ function MeetingSection({
         )}
       </div>
 
-      <div className="px-3 pb-4">
-        <RecordMeeting
-          dateKey={dateKey}
-          meetingType={type as "daily" | "weekly" | "monthly" | "quarterly"}
-          agendaItems={effectiveBlocks.flatMap(block =>
-            block.items.map(item => `${BUSINESSES[block.business as keyof typeof BUSINESSES]?.shortName ?? block.business}: ${item}`)
-          )}
-        />
-      </div>
     </div>
   );
 }

@@ -39,4 +39,22 @@
 
 ## Follow-up: Xcode Cloud pipeline (user already has Apple Developer account + GitHub + Xcode Cloud from Mac session)
 - [x] Add voice-recorder vendoring step to ios/App/ci_scripts/ci_post_clone.sh so Xcode Cloud builds include VoiceRecorderSPM sources
-- [ ] Checkpoint so the CI fix syncs to GitHub / Xcode Cloud
+- [x] Checkpoint so the CI fix syncs to GitHub / Xcode Cloud (cc735946)
+
+## Follow-up: Push latest code to user's GitHub repo (triggers Xcode Cloud build 13)
+- [x] Identified GitHub repo: businesscadenceapp/business-cadence-calendar
+- [x] Pushed latest checkpoint (cc735946) to GitHub (8362484..cc73594 main -> main)
+- [x] Confirm Xcode Cloud build 13 starts and passes; watch for VoiceRecorderSPM compile result
+
+## Remove Meeting Recording Feature (user decision)
+- [x] Audit all recording-related files (client, server, DB, native)
+- [x] Remove RecordMeeting.tsx component and useAudioRecorder.ts hook
+- [x] Remove recording display/playback from meeting detail UI in calendar
+- [x] Remove server recording routes (meeting.recording.upload, meeting.recording.get)
+- [x] Remove DB helpers for meeting_recordings and drop the table (0 rows, confirmed empty)
+- [x] Remove capacitor-voice-recorder npm package
+- [x] Remove VoiceRecorderSPM iOS vendored package and Xcode project references
+- [x] Remove iOS NSMicrophoneUsageDescription and Android RECORD_AUDIO permission
+- [x] Remove voice-recorder vendoring step from ci_post_clone.sh and package.json cap:sync script
+- [x] Remove server/_core/voiceTranscription.ts (no remaining imports)
+- [x] Run tests (10/10 pass), typecheck (0 errors), checkpoint and push to GitHub
