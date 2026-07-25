@@ -1,0 +1,1 @@
+ALTER TABLE `persons` ADD `partnerInviteToken` varchar(128);

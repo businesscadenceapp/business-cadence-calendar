@@ -133,6 +133,9 @@ importers:
       '@radix-ui/react-tooltip':
         specifier: ^1.2.8
         version: 1.2.8(@types/react-dom@19.2.1(@types/react@19.2.1))(@types/react@19.2.1)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
+      '@revenuecat/purchases-capacitor':
+        specifier: ^13.2.4
+        version: 13.2.4(@capacitor/core@8.4.1)
       '@tanstack/react-query':
         specifier: ^5.90.2
         version: 5.101.2(react@19.2.1)
@@ -2802,6 +2805,14 @@ packages:
     peerDependenciesMeta:
       '@types/react':
         optional: true
+
+  '@revenuecat/purchases-capacitor@13.2.4':
+    resolution: {integrity: sha512-0ql1SBLYq3ldh+I8zsUU2bx1ml59s8rlt2wXYydzXTVj0/OJ12ntHAh3n95d9a+Iuwt89kZ6uTWTwu4LvzE+UA==}
+    peerDependencies:
+      '@capacitor/core': '>=8.0.0'
+
+  '@revenuecat/purchases-typescript-internal-esm@18.22.2':
+    resolution: {integrity: sha512-JdMGKUX4n/WWIxN1WjcwL8VsECQCtYW7X9iYO/YBqEqFnBPKqbOK3O/QX+Tu53JA881Jo/Y8wvPiK4EoNJmQmg==}
 
   '@rolldown/pluginutils@1.0.0-beta.38':
     resolution: {integrity: sha512-N/ICGKleNhA5nc9XXQG/kkKHJ7S55u0x0XUJbbkmdCnFuoRkM1Il12q9q0eX19+M7KKUEPw/daUPIRnxhcxAIw==}
@@ -12660,6 +12671,13 @@ snapshots:
       react-native: 0.86.0(@babel/core@7.28.4)(@types/react@19.2.1)(react@19.2.1)
     optionalDependencies:
       '@types/react': 19.2.1
+
+  '@revenuecat/purchases-capacitor@13.2.4(@capacitor/core@8.4.1)':
+    dependencies:
+      '@capacitor/core': 8.4.1
+      '@revenuecat/purchases-typescript-internal-esm': 18.22.2
+
+  '@revenuecat/purchases-typescript-internal-esm@18.22.2': {}
 
   '@rolldown/pluginutils@1.0.0-beta.38': {}
 

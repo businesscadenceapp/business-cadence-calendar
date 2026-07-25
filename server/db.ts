@@ -1,6 +1,6 @@
 import { eq, and, desc, inArray, asc } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, meetingLogs, agendaItems, MeetingLog, AgendaItem, boardCards, agendaTemplates, type BoardCard, type InsertBoardCard, waitlistEmails, businessProfiles, type BusinessProfile, closedPeriods, type ClosedPeriod, meetingScheduleOverrides, employees, employeeMetrics, weeklyReports, weeklyReportEntries, type Employee, type EmployeeMetric, type WeeklyReport, type WeeklyReportEntry, goals, type Goal, type InsertGoal, notifications, type Notification, businessHours, type BusinessHours } from "../drizzle/schema";
+import { InsertUser, users, meetingLogs, agendaItems, MeetingLog, AgendaItem, boardCards, agendaTemplates, type BoardCard, type InsertBoardCard, waitlistEmails, businessProfiles, type BusinessProfile, closedPeriods, type ClosedPeriod, meetingScheduleOverrides, employees, employeeMetrics, weeklyReports, weeklyReportEntries, type Employee, type EmployeeMetric, type WeeklyReport, type WeeklyReportEntry, goals, type Goal, type InsertGoal, notifications, type Notification, businessHours, type BusinessHours, subscriptions, type Subscription, type InsertSubscription, partnerLinks, type PartnerLink } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -1166,4 +1166,123 @@ export async function setDnd(accountId: number, active: boolean): Promise<boolea
   await getBusinessHours(accountId);
   await db.update(businessHours).set({ manualDndActive: active }).where(eq(businessHours.accountId, accountId));
   return active;
+}
+
+// ─── Subscription helpers ────────────────────────────────────────────────────
+
+/** Get the subscription row for an account (or null if none exists). */
+export async function getSubscription(accountId: number): Promise<Subscription | null> {
+  const db = await getDb();
+  if (!db) return null;
+  const [row] = await db.select().from(subscriptions).where(eq(subscriptions.accountId, accountId)).limit(1);
+  return row ?? null;
+}
+
+/** Create or update the subscription row for an account. */
+export async function upsertSubscription(data: InsertSubscription): Promise<Subscription> {
+  const db = await getDb();
+  if (!db) throw new Error("DB unavailable");
+  await db.insert(subscriptions).values(data).onDuplicateKeyUpdate({
+    set: {
+      ownerPersonId: data.ownerPersonId,
+      revenueCatUserId: data.revenueCatUserId ?? null,
+      revenueCatProductId: data.revenueCatProductId ?? null,
+      plan: data.plan,
+      status: data.status,
+      trialEndsAt: data.trialEndsAt ?? null,
+      currentPeriodEndsAt: data.currentPeriodEndsAt ?? null,
+      revenueCatData: data.revenueCatData ?? null,
+    },
+  });
+  const [row] = await db.select().from(subscriptions).where(eq(subscriptions.accountId, data.accountId)).limit(1);
+  return row!;
+}
+
+/** Start a 14-day free trial for an account. No-op if subscription already exists. */
+export async function startTrial(accountId: number, ownerPersonId: string): Promise<Subscription> {
+  const existing = await getSubscription(accountId);
+  if (existing) return existing;
+  const trialEndsAt = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000);
+  return upsertSubscription({
+    accountId,
+    ownerPersonId,
+    plan: "core",
+    status: "trialing",
+    trialEndsAt,
+    currentPeriodEndsAt: trialEndsAt,
+  });
+}
+
+/**
+ * Check whether an account has active access.
+ * Returns { hasAccess, reason } where reason is one of:
+ *   "active" | "trialing" | "partner" | "no_subscription" | "trial_expired" | "lapsed"
+ */
+export async function checkSubscriptionAccess(
+  accountId: number,
+  personId: string,
+): Promise<{ hasAccess: boolean; reason: string; plan: string | null; trialDaysLeft: number | null }> {
+  const db = await getDb();
+  if (!db) return { hasAccess: false, reason: "db_unavailable", plan: null, trialDaysLeft: null };
+
+  // Check if this person is a linked partner — if so, access is derived from owner's subscription
+  const [partnerRow] = await db.select().from(partnerLinks).where(eq(partnerLinks.partnerPersonId, personId)).limit(1);
+  if (partnerRow) {
+    // Partner's access is tied to the owner's subscription
+    const ownerSub = await getSubscription(partnerRow.accountId);
+    if (!ownerSub) return { hasAccess: false, reason: "no_subscription", plan: null, trialDaysLeft: null };
+    const now = new Date();
+    if (ownerSub.status === "trialing") {
+      if (ownerSub.trialEndsAt && ownerSub.trialEndsAt > now) {
+        const daysLeft = Math.ceil((ownerSub.trialEndsAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+        return { hasAccess: true, reason: "partner_trialing", plan: ownerSub.plan, trialDaysLeft: daysLeft };
+      }
+      return { hasAccess: false, reason: "trial_expired", plan: ownerSub.plan, trialDaysLeft: 0 };
+    }
+    if (ownerSub.status === "active" || ownerSub.status === "cancelled") {
+      const stillActive = !ownerSub.currentPeriodEndsAt || ownerSub.currentPeriodEndsAt > now;
+      return { hasAccess: stillActive, reason: stillActive ? "partner_active" : "lapsed", plan: ownerSub.plan, trialDaysLeft: null };
+    }
+    return { hasAccess: false, reason: "lapsed", plan: ownerSub.plan, trialDaysLeft: null };
+  }
+
+  // Not a partner — check the account's own subscription
+  const sub = await getSubscription(accountId);
+  if (!sub) return { hasAccess: false, reason: "no_subscription", plan: null, trialDaysLeft: null };
+
+  const now = new Date();
+  if (sub.status === "trialing") {
+    if (sub.trialEndsAt && sub.trialEndsAt > now) {
+      const daysLeft = Math.ceil((sub.trialEndsAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+      return { hasAccess: true, reason: "trialing", plan: sub.plan, trialDaysLeft: daysLeft };
+    }
+    return { hasAccess: false, reason: "trial_expired", plan: sub.plan, trialDaysLeft: 0 };
+  }
+  if (sub.status === "active" || sub.status === "cancelled") {
+    const stillActive = !sub.currentPeriodEndsAt || sub.currentPeriodEndsAt > now;
+    return { hasAccess: stillActive, reason: stillActive ? "active" : "lapsed", plan: sub.plan, trialDaysLeft: null };
+  }
+  return { hasAccess: false, reason: "lapsed", plan: sub.plan, trialDaysLeft: null };
+}
+
+// ─── Partner link helpers ─────────────────────────────────────────────────────
+
+/** Get the partner link for a partner person (if any). */
+export async function getPartnerLink(partnerPersonId: string): Promise<PartnerLink | null> {
+  const db = await getDb();
+  if (!db) return null;
+  const [row] = await db.select().from(partnerLinks).where(eq(partnerLinks.partnerPersonId, partnerPersonId)).limit(1);
+  return row ?? null;
+}
+
+/** Create a partner link between an owner and their co-owner. */
+export async function createPartnerLink(accountId: number, ownerPersonId: string, partnerPersonId: string): Promise<PartnerLink> {
+  const db = await getDb();
+  if (!db) throw new Error("DB unavailable");
+  // Upsert: if partner already linked, update owner reference
+  await db.insert(partnerLinks).values({ accountId, ownerPersonId, partnerPersonId }).onDuplicateKeyUpdate({
+    set: { ownerPersonId, accountId },
+  });
+  const [row] = await db.select().from(partnerLinks).where(eq(partnerLinks.partnerPersonId, partnerPersonId)).limit(1);
+  return row!;
 }

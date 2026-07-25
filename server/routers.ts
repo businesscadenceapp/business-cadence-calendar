@@ -74,6 +74,16 @@ import {
   toggleDnd,
   setDnd,
 } from "./db";
+import {
+  getSubscription,
+  upsertSubscription,
+  startTrial,
+  checkSubscriptionAccess,
+  getPartnerLink,
+  createPartnerLink,
+} from "./db";
+import { persons as personsTable } from "../drizzle/schema";
+import { partnerLinks as partnerLinksTable } from "../drizzle/schema";
 import { generateMeetingSchedule } from "../shared/calendarEngine";
 import { notifyOwner } from "./_core/notification";
 import bcrypt from "bcryptjs";
@@ -1764,6 +1774,142 @@ Keep the tone warm but professional. This summary will be saved under this speci
           nextStartTime,
           settings,
         };
+      }),
+  }),
+
+  /** Subscription management — entitlement checks, trial start, partner invite. */
+  subscription: router({
+    /**
+     * Start a 14-day free trial for the current account.
+     * Called automatically after onboarding completion for the owner.
+     * No-op if a subscription already exists.
+     */
+    startTrial: publicProcedure
+      .input(z.object({ accountId: z.number(), personId: z.string() }))
+      .mutation(async ({ input }) => {
+        const sub = await startTrial(input.accountId, input.personId);
+        return { success: true, subscription: sub };
+      }),
+
+    /**
+     * Check whether the given person has active access.
+     * Called on every app open by EntitlementGuard.
+     * Returns { hasAccess, reason, plan, trialDaysLeft, isPartner }.
+     */
+    getEntitlement: publicProcedure
+      .input(z.object({ accountId: z.number(), personId: z.string() }))
+      .query(async ({ input }) => {
+        const result = await checkSubscriptionAccess(input.accountId, input.personId);
+        const isPartner = result.reason.startsWith("partner_");
+        return { ...result, isPartner };
+      }),
+
+    /**
+     * Get the current subscription row for an account.
+     * Used by the paywall and settings screens.
+     */
+    getSubscription: publicProcedure
+      .input(z.object({ accountId: z.number() }))
+      .query(async ({ input }) => {
+        const sub = await getSubscription(input.accountId);
+        return { subscription: sub };
+      }),
+
+    /**
+     * Generate (or regenerate) a unique partner invite link for the paying owner.
+     * The link is: <origin>/accept-invite?token=<partnerInviteToken>&partner=1
+     * The token is stored on the person row (reuses inviteToken field with partner flag).
+     * Only owners can call this.
+     */
+    generatePartnerInviteLink: publicProcedure
+      .input(z.object({
+        accountId: z.number(),
+        ownerPersonId: z.string(),
+        origin: z.string(),
+      }))
+      .mutation(async ({ input }) => {
+        // Verify this person is an owner
+        const db = await getDb();
+        if (!db) throw new Error("DB unavailable");
+        const [owner] = await db.select().from(personsTable).where(eq(personsTable.id, input.ownerPersonId)).limit(1);
+        if (!owner || (owner.role !== "owner" && owner.role !== "coowner")) {
+          throw new Error("Only owners can generate partner invite links.");
+        }
+        // Generate a new token and store it as a special partner invite token
+        const token = nanoid(32);
+        // Store the partner invite token in the dedicated partnerInviteToken field
+        await db.update(personsTable).set({ partnerInviteToken: token }).where(eq(personsTable.id, input.ownerPersonId));
+        const inviteUrl = `${input.origin}/accept-invite?token=${token}&partner=1`;
+        return { success: true, inviteUrl, token };
+      }),
+
+    /**
+     * Look up a partner invite token — returns the owner's name and validity.
+     * Used by AcceptInvite page when ?partner=1 is in the URL.
+     */
+    lookupPartnerInvite: publicProcedure
+      .input(z.object({ token: z.string() }))
+      .query(async ({ input }) => {
+        const db = await getDb();
+        if (!db) return { valid: false as const, reason: "db_unavailable" as const, ownerName: null, accountId: null, ownerPersonId: null };
+        const [owner] = await db.select().from(personsTable).where(eq(personsTable.partnerInviteToken, input.token)).limit(1);
+        if (!owner) return { valid: false as const, reason: "not_found" as const, ownerName: null, accountId: null, ownerPersonId: null };
+        return {
+          valid: true as const,
+          ownerName: owner.name,
+          accountId: owner.accountId,
+          ownerPersonId: owner.id,
+        };
+      }),
+
+    /**
+     * Accept a partner invite — links the new person to the owner's subscription.
+     * Called from AcceptInvite page when ?partner=1 is in the URL.
+     * The partner gets access without going through RevenueCat.
+     */
+    linkPartner: publicProcedure
+      .input(z.object({
+        ownerPersonId: z.string(),
+        partnerPersonId: z.string(),
+        accountId: z.number(),
+      }))
+      .mutation(async ({ input }) => {
+        const link = await createPartnerLink(input.accountId, input.ownerPersonId, input.partnerPersonId);
+        return { success: true, link };
+      }),
+
+    /**
+     * Check if a person is a linked partner (i.e., access is derived from owner's sub).
+     */
+    getPartnerLink: publicProcedure
+      .input(z.object({ personId: z.string() }))
+      .query(async ({ input }) => {
+        const link = await getPartnerLink(input.personId);
+        return { link };
+      }),
+
+    /**
+     * Manually mark a subscription as active (for testing / admin override).
+     * In production this is handled by the RevenueCat webhook.
+     */
+    adminActivate: publicProcedure
+      .input(z.object({
+        accountId: z.number(),
+        ownerPersonId: z.string(),
+        plan: z.enum(["core", "core_team"]),
+        daysFromNow: z.number().default(30),
+      }))
+      .mutation(async ({ input }) => {
+        const currentPeriodEndsAt = new Date(Date.now() + input.daysFromNow * 24 * 60 * 60 * 1000);
+        const sub = await upsertSubscription({
+          accountId: input.accountId,
+          ownerPersonId: input.ownerPersonId,
+          plan: input.plan,
+          status: "active",
+          trialEndsAt: null,
+          currentPeriodEndsAt,
+        });
+        return { success: true, subscription: sub };
       }),
   }),
 });

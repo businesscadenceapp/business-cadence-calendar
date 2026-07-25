@@ -225,6 +225,20 @@
       "when": 1784999759612,
       "tag": "0031_condemned_hellfire_club",
       "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "5",
+      "when": 1785002095732,
+      "tag": "0032_moaning_wong",
+      "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "5",
+      "when": 1785002357334,
+      "tag": "0033_nice_paladin",
+      "breakpoints": true
     }
   ]
 }
