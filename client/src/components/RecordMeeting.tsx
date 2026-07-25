@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { trpc } from "@/lib/trpc";
+import { useAudioRecorder } from "@/hooks/useAudioRecorder";
 import { Mic, Square, Loader2, ChevronDown, ChevronUp, CheckCircle2, AlertCircle, Clock } from "lucide-react";
 
 interface RecordMeetingProps {
@@ -34,10 +35,8 @@ export function RecordMeeting({ dateKey, meetingType, agendaItems }: RecordMeeti
   const [transcript, setTranscript] = useState("");
   const [notesExpanded, setNotesExpanded] = useState(true);
 
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const chunksRef = useRef<Blob[]>([]);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const streamRef = useRef<MediaStream | null>(null);
+  const recorder = useAudioRecorder();
 
   // Fetch existing recording for this meeting
   const { data: existingData, refetch: refetchRecording } = trpc.recording.get.useQuery(
@@ -91,77 +90,38 @@ export function RecordMeeting({ dateKey, meetingType, agendaItems }: RecordMeeti
     setErrorMsg("");
     setParsedNotes(null);
     setTranscript("");
-    chunksRef.current = [];
 
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      streamRef.current = stream;
-
-      // Prefer webm/opus; fall back to whatever the browser supports
-      const mimeType = MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
-        ? "audio/webm;codecs=opus"
-        : MediaRecorder.isTypeSupported("audio/webm")
-        ? "audio/webm"
-        : "";
-
-      const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
-      mediaRecorderRef.current = recorder;
-
-      recorder.ondataavailable = (e) => {
-        if (e.data.size > 0) chunksRef.current.push(e.data);
-      };
-
-      recorder.onstop = async () => {
-        stream.getTracks().forEach(t => t.stop());
-        streamRef.current = null;
-
-        const blob = new Blob(chunksRef.current, { type: mimeType || "audio/webm" });
-
-        // Check 16MB limit
-        if (blob.size > 16 * 1024 * 1024) {
-          setState("error");
-          setErrorMsg("Recording is too large (max 16 MB). Please record a shorter meeting.");
-          return;
-        }
-
-        setState("uploading");
-
-        // Convert to base64
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          const base64 = (reader.result as string).split(",")[1];
-          processMutation.mutate({
-            dateKey,
-            meetingType,
-            audioBase64: base64,
-            mimeType: mimeType || "audio/webm",
-            agendaItems,
-          });
-        };
-        reader.readAsDataURL(blob);
-      };
-
-      recorder.start(1000); // collect chunks every second
+      await recorder.start();
       setState("recording");
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
-      if (msg.includes("Permission") || msg.includes("NotAllowed")) {
-        setErrorMsg("Microphone access denied. Please allow microphone access in your browser settings.");
+      if (msg.includes("Permission") || msg.includes("NotAllowed") || msg.includes("denied")) {
+        setErrorMsg("Microphone access denied. Please allow microphone access in your settings.");
       } else {
         setErrorMsg(`Could not start recording: ${msg}`);
       }
       setState("error");
     }
-  }, [dateKey, meetingType, agendaItems, processMutation]);
+  }, [recorder]);
 
-  const stopRecording = useCallback(() => {
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
-      mediaRecorderRef.current.stop();
+  const stopRecording = useCallback(async () => {
+    setState("uploading");
+    try {
+      const result = await recorder.stop();
+      processMutation.mutate({
+        dateKey,
+        meetingType,
+        audioBase64: result.base64,
+        mimeType: result.mimeType,
+        agendaItems,
+      });
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      setState("error");
+      setErrorMsg(msg);
     }
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach(t => t.stop());
-    }
-  }, []);
+  }, [recorder, dateKey, meetingType, agendaItems, processMutation]);
 
   const resetRecording = useCallback(() => {
     setState("idle");

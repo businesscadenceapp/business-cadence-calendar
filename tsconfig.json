@@ -8,7 +8,8 @@
     "node_modules",
     "build",
     "dist",
-    "**/*.test.ts"
+    "**/*.test.ts",
+    "client/src/expo-entry.tsx"
   ],
   "compilerOptions": {
     "incremental": true,
@@ -39,6 +40,5 @@
         "./shared/*"
       ]
     }
-  },
-  "extends": "expo/tsconfig.base"
+  }
 }
