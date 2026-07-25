@@ -884,4 +884,4 @@
 - [x] Store "has seen welcome" flag in localStorage so it only shows once
 - [x] After welcome, route to login (or business selector if already logged in)
 - [x] Native-feeling transitions between welcome cards (swipe or tap)
-- [ ] Save checkpoint and push to GitHub (triggers Xcode Cloud build automatically)
+- [x] Save checkpoint and push to GitHub (triggers Xcode Cloud build automatically)
