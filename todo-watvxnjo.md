@@ -24,11 +24,15 @@
 - [x] RecordMeeting.tsx: use capacitor-voice-recorder on native platform (useAudioRecorder hook, platform-aware)
 - [x] Mic permissions: Android RECORD_AUDIO + iOS NSMicrophoneUsageDescription
 - [x] iOS SPM fix implemented: vendored VoiceRecorderSPM local Swift package (plugin ships CocoaPods-only), registered in Xcode project, wired into cap:sync script
-- [ ] iOS build verification of VoiceRecorderSPM (requires macOS/Xcode — cannot run in this Linux sandbox; user must build in Xcode and report errors if any)
+- [ ] iOS build verification of VoiceRecorderSPM — BLOCKED: requires macOS/Xcode, unavailable in this Linux sandbox. Handed off to user via NATIVE_BUILD.md (structural validation done: pbxproj balanced, package layout mirrors official @capacitor SPM plugins). Remains open until user confirms a successful Xcode build.
 - [x] Sync native projects (cap sync — 7 plugins on both platforms)
 
 ## Verification
-- [ ] Screenshot all pages at mobile viewport (375x812)
-- [ ] Run vitest suite
-- [ ] TypeScript check
-- [ ] Save checkpoint
+- [x] Screenshot all pages at mobile viewport (375x812) — 9 pages + interactive views audited, board/calendar re-verified after changes
+- [x] Run vitest suite (10/10 pass)
+- [x] TypeScript check (clean)
+- [x] Save checkpoint (e5f841a0, auto-published)
+
+## Delivery
+- [x] Write NATIVE_BUILD.md with step-by-step iOS/Android build + store submission instructions
+- [ ] Final delivery message
