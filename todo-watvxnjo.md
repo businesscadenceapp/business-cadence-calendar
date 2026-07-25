@@ -24,7 +24,7 @@
 - [x] RecordMeeting.tsx: use capacitor-voice-recorder on native platform (useAudioRecorder hook, platform-aware)
 - [x] Mic permissions: Android RECORD_AUDIO + iOS NSMicrophoneUsageDescription
 - [x] iOS SPM fix implemented: vendored VoiceRecorderSPM local Swift package (plugin ships CocoaPods-only), registered in Xcode project, wired into cap:sync script
-- [ ] iOS build verification of VoiceRecorderSPM — BLOCKED: requires macOS/Xcode, unavailable in this Linux sandbox. Handed off to user via NATIVE_BUILD.md (structural validation done: pbxproj balanced, package layout mirrors official @capacitor SPM plugins). Remains open until user confirms a successful Xcode build.
+- [x] iOS build verification of VoiceRecorderSPM — RESOLVED: VoiceRecorderSPM and capacitor-voice-recorder removed entirely (recording feature removed per user decision). No longer needed.
 - [x] Sync native projects (cap sync — 7 plugins on both platforms)
 
 ## Verification

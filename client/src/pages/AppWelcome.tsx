@@ -58,6 +58,27 @@ const CARDS: WelcomeCard[] = [
       </svg>
     ),
   },
+  {
+    headline: "One subscription. Both of you. No double billing.",
+    subtext: "One partner subscribes. The other downloads free and gets full access — always. We believe the couple is the unit, not the individual.",
+    icon: (
+      <svg className="w-16 h-16 text-[#5EEAD4]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        {/* Dollar bill outline */}
+        <rect x="2" y="6" width="20" height="12" rx="1.5" strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.2} />
+        {/* Center circle */}
+        <circle cx="12" cy="12" r="2.5" strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.2} />
+        {/* Dollar sign vertical bar */}
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.2} d="M12 9.5v1M12 13.5v1" />
+        {/* Corner decorative circles (like real bill rosettes) */}
+        <circle cx="5.5" cy="9.5" r="1" strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.2} />
+        <circle cx="18.5" cy="9.5" r="1" strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.2} />
+        <circle cx="5.5" cy="14.5" r="1" strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.2} />
+        <circle cx="18.5" cy="14.5" r="1" strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.2} />
+        {/* Dollar sign curves */}
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.2} d="M10.5 10.5c0-.83.67-1 1.5-1s1.5.17 1.5 1-.67 1-1.5 1-1.5.17-1.5 1 .67 1 1.5 1 1.5-.17 1.5-1" />
+      </svg>
+    ),
+  },
 ];
 
 // ─── Dot Indicator ────────────────────────────────────────────────────────────
