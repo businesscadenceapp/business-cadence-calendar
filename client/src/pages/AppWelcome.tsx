@@ -11,55 +11,13 @@ import { useLocation } from "wouter";
 import { markWelcomeSeen } from "@/lib/platform";
 // Single outline music note icon matching the heart style on card 1
 function MusicNoteIcon() {
-  // Double eighth note with double beams (♬)
-  // Filled note heads + thin stems/beams — reads as a real music note
-  // Angled beam distinguishes from Apple Music's horizontal style
+  // Outline version of the single eighth note from the app icon
   return (
-    <svg className="w-16 h-16 text-[#5EEAD4]" fill="currentColor" stroke="currentColor" viewBox="0 0 24 24">
-      {/* Shift entire note left by 1.5 to center in circle */}
-      <g transform="translate(-1.5, 0)">
-        {/* Left note head — filled */}
-        <ellipse
-          cx="7" cy="18"
-          rx="2.5" ry="1.8"
-          transform="rotate(-15, 7, 18)"
-        />
-        {/* Right note head — filled */}
-        <ellipse
-          cx="17" cy="16.5"
-          rx="2.5" ry="1.8"
-          transform="rotate(-15, 17, 16.5)"
-        />
-        {/* Left stem */}
-        <path
-          fill="none"
-          strokeLinecap="round"
-          strokeWidth={1.2}
-          d="M9.3 17.5V5"
-        />
-        {/* Right stem */}
-        <path
-          fill="none"
-          strokeLinecap="round"
-          strokeWidth={1.2}
-          d="M19.3 16V3.5"
-        />
-        {/* Top beam */}
-        <path
-          fill="none"
-          strokeLinecap="round"
-          strokeWidth={1.5}
-          d="M9.3 5L19.3 3.5"
-        />
-        {/* Second beam */}
-        <path
-          fill="none"
-          strokeLinecap="round"
-          strokeWidth={1.5}
-          d="M9.3 7.8L19.3 6.3"
-        />
-      </g>
-    </svg>
+    <img
+      src="/manus-storage/note-outline-teal_1f2b64e9.png"
+      alt="Music note"
+      className="w-14 h-14 object-contain"
+    />
   );
 }
 
