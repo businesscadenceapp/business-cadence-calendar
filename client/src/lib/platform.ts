@@ -21,7 +21,7 @@ export function getPlatform(): "ios" | "android" | "web" {
 
 // Increment this version when you want to force the welcome screen to show again
 // (e.g. after a major update with new onboarding content)
-const WELCOME_VERSION = "v2";
+const WELCOME_VERSION = "v3";
 const WELCOME_KEY = `bcc_welcome_seen_${WELCOME_VERSION}`;
 
 /** Check if the user has seen the welcome intro (persisted per device) */
