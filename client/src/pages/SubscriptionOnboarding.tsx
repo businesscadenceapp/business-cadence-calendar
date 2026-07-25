@@ -94,6 +94,27 @@ const STEPS: OnboardingStep[] = [
     badge: ONBOARDING_STEP_BADGES[3],
     headline: (
       <>
+        Your business has a place to live.{" "}
+        <span className="text-[#5EEAD4]">Your relationship has room to breathe.</span>
+      </>
+    ),
+    body: "Drop ideas into the shared hub the moment they hit you — no interrupting your partner. Set your business hours so notifications only arrive when you're in work mode. Turn on Sleep Mode and the business goes quiet for both of you.",
+    icon: (
+      <svg className="w-14 h-14 text-[#5EEAD4]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        {/* Crescent moon */}
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.3} d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />
+        {/* Stars */}
+        <line x1="19" y1="3" x2="19" y2="3.01" strokeLinecap="round" strokeWidth={2.5} />
+        <line x1="22" y1="6" x2="22" y2="6.01" strokeLinecap="round" strokeWidth={2.5} />
+        <line x1="20" y1="7" x2="20" y2="7.01" strokeLinecap="round" strokeWidth={2.5} />
+      </svg>
+    ),
+    accentColor: "#5EEAD4",
+  },
+  {
+    badge: ONBOARDING_STEP_BADGES[4],
+    headline: (
+      <>
         Your business stays in the boardroom.{" "}
         <span className="text-[#5EEAD4]">Your relationship stays protected.</span>
       </>

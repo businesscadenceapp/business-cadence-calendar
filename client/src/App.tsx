@@ -28,8 +28,6 @@ import TeamBoardArchive from "@/pages/TeamBoardArchive";
 import ForgotPassword from "@/pages/ForgotPassword";
 import ResetPassword from "@/pages/ResetPassword";
 import BusinessSelector from "@/pages/BusinessSelector";
-import AppWelcome from "@/pages/AppWelcome";
-import { isNativeApp, hasSeenWelcome } from "@/lib/platform";
 import { Capacitor } from "@capacitor/core";
 import Paywall from "@/pages/Paywall";
 import SubscriptionOnboarding from "@/pages/SubscriptionOnboarding";
@@ -75,19 +73,15 @@ function detectNative(): boolean {
 /**
  * NativeHome — When running in Capacitor, the "/" route should NOT show
  * the marketing Landing page. Instead:
- * - If user hasn't seen the welcome intro → show AppWelcome
- * - If they have → redirect to /login (or /select-business if logged in)
+ * - Route to /subscribe-intro (handles first-time onboarding + paywall)
+ * - If already logged in → redirect to /select-business
  */
 function NativeHome() {
-  if (!hasSeenWelcome()) {
-    return <AppWelcome />;
-  }
-  // Check if user is already logged in
   const authFlag = localStorage.getItem("bcc_auth_v1");
   if (authFlag === "granted") {
     return <Redirect to="/select-business" />;
   }
-  return <Redirect to="/login" />;
+  return <Redirect to="/subscribe-intro" />;
 }
 
 function Router() {
@@ -101,7 +95,6 @@ function Router() {
       </Route>
 
       {/* Public routes */}
-      <Route path={"/welcome"} component={AppWelcome} />
       <Route path={"/login"} component={ClientLogin} />
       <Route path={"/onboarding"} component={Onboarding} />
       <Route path={"/subscribe-intro"} component={SubscriptionOnboarding} />
