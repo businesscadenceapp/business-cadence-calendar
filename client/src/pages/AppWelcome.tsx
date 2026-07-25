@@ -59,14 +59,16 @@ const CARDS: WelcomeCard[] = [
     ),
   },
   {
-    headline: "Capture every idea. Protect your relationship.",
-    subtext: "Drop a thought into the hub the moment it hits you — no interrupting your partner. Set business hours so notifications only arrive when you're in work mode. Sleep Mode keeps the business quiet until you're ready.",
+    headline: "Your business has a place to live. Your relationship has room to breathe.",
+    subtext: "Drop ideas into the shared hub the moment they hit you — no interrupting your partner. Set your business hours so notifications only arrive when you're in work mode. Turn on Sleep Mode and the business goes quiet for both of you.",
     icon: (
       <svg className="w-16 h-16 text-[#5EEAD4]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        {/* Shield outline */}
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.2} d="M12 2L4 6v6c0 5.25 3.5 10.15 8 11.35C16.5 22.15 20 17.25 20 12V6l-8-4z" />
-        {/* Small heart inside the shield */}
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.2} d="M9.5 10.5a2 2 0 013 0 2 2 0 013 0c0 2-3 4-3 4s-3-2-3-4z" />
+        {/* Crescent moon */}
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.2} d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />
+        {/* Stars */}
+        <line x1="19" y1="3" x2="19" y2="3.01" strokeLinecap="round" strokeWidth={2} />
+        <line x1="22" y1="6" x2="22" y2="6.01" strokeLinecap="round" strokeWidth={2} />
+        <line x1="20" y1="7" x2="20" y2="7.01" strokeLinecap="round" strokeWidth={2} />
       </svg>
     ),
   },
