@@ -1782,6 +1782,7 @@ export default function Onboarding() {
   const seedKpis = trpc.kpi.seedDefaults.useMutation();
   const invitePerson = trpc.person.invite.useMutation();
   const saveBusinessHours = trpc.businessHours.updateSettings.useMutation();
+  const startTrialMutation = trpc.subscription.startTrial.useMutation();
 
   const update = useCallback((updates: Partial<OnboardingData>) => {
     setData(prev => {
@@ -1936,6 +1937,18 @@ export default function Onboarding() {
             localStorage.setItem("bcc_profile_deferred_" + accountId, "1");
           }
         } catch { /* ignore */ }
+      }
+
+      // Safety net for native app: if the user subscribed via RevenueCat but
+      // the webhook hasn't fired yet, the DB has no subscription row.
+      // Call startTrial here so EntitlementGuard won't bounce them back to
+      // /subscribe-intro after onboarding completes.
+      if (accountId) {
+        try {
+          const personRaw = localStorage.getItem("bcc_person_v1");
+          const personId = personRaw ? (JSON.parse(personRaw) as { id?: string }).id ?? "" : "";
+          await startTrialMutation.mutateAsync({ accountId, personId });
+        } catch { /* non-fatal — trial may already exist or webhook may have fired */ }
       }
 
       // If this is a partner completing setup via invite, notify the owner

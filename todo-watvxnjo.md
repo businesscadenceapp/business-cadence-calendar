@@ -83,3 +83,8 @@
 - [x] Add sandbox preview mode with sample data to WaitingForPartner screen
 - [x] Make 14-day free trial the paywall headline
 - [x] Verify, run tests, checkpoint, push to GitHub (0551068 → github main, triggers Xcode Cloud)
+
+## Bug: "Explore the app" loops back to beginning
+- [x] Diagnose: EntitlementGuard bounces no_subscription users back to /subscribe-intro; WaitingForPartner was routing to /app/board before onboarding/trial was set up
+- [x] Fix (product decision: onboarding-first): WaitingForPartner CTA changed to "Set up my business →" → /onboarding (quick mode). handleConfirm calls startTrial as safety net so DB has trial row before /app/board is reached. After quick onboarding completes, user lands on /select-business → /app/board with valid entitlement.
+- [ ] Verify, run tests, checkpoint, push to GitHub

@@ -264,14 +264,14 @@ export default function WaitingForPartner() {
       <div className="relative z-10 px-6 pb-8 pt-6 flex flex-col gap-3 max-w-md mx-auto w-full flex-shrink-0">
         {/* Explore the app */}
         <button
-          onClick={() => navigate("/app/board")}
+          onClick={() => navigate("/onboarding")}
           className="w-full py-4 rounded-2xl font-bold text-[#0A1628] text-base transition-all duration-200 active:scale-[0.97]"
           style={{
             background: "linear-gradient(135deg, #5EEAD4 0%, #0D9488 100%)",
             boxShadow: "0 4px 24px rgba(94,234,212,0.22)",
           }}
         >
-          Explore the app →
+          Set up my business →
         </button>
 
         {/* Escape hatch */}
