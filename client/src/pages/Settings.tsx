@@ -1059,6 +1059,14 @@ function ReportQuestionsPanel({ accountId, businesses }: { accountId: number; bu
  */
 function PartnerAccessSection() {
   const [sheetOpen, setSheetOpen] = useState(false);
+  const { person } = usePerson();
+  const accountId = person?.accountId ?? 0;
+  const { data: bizList = [] } = trpc.business.list.useQuery(
+    { accountId },
+    { enabled: accountId > 0, staleTime: 60_000 }
+  );
+  // Use the first business name as the personalization hint for the invite CTA
+  const firstBusinessName = bizList[0]?.name ?? undefined;
 
   return (
     <>
@@ -1108,7 +1116,7 @@ function PartnerAccessSection() {
         </button>
       </div>
 
-      <PartnerInviteSheet open={sheetOpen} onClose={() => setSheetOpen(false)} />
+      <PartnerInviteSheet open={sheetOpen} onClose={() => setSheetOpen(false)} businessName={firstBusinessName} />
     </>
   );
 }

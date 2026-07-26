@@ -357,6 +357,8 @@ export const persons = mysqlTable("persons", {
   passwordResetExpiry: timestamp("passwordResetExpiry"),
   /** One-time token the owner generates to invite their partner (co-owner) to share their subscription. */
   partnerInviteToken: varchar("partnerInviteToken", { length: 128 }),
+  /** Business name stored alongside the partner invite token so the intro screen can personalize the CTA. */
+  partnerInviteBusinessName: varchar("partnerInviteBusinessName", { length: 256 }),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
@@ -479,7 +481,7 @@ export const notifications = mysqlTable("notifications", {
   id: int("id").autoincrement().primaryKey(),
   accountId: int("accountId").notNull(),
   recipientPersonId: varchar("recipientPersonId", { length: 64 }).notNull(),
-  type: mysqlEnum("type", ["task_assigned", "task_done_pending", "task_confirmed", "new_update", "new_issue", "overdue_task"]).notNull(),
+  type: mysqlEnum("type", ["task_assigned", "task_done_pending", "task_confirmed", "new_update", "new_issue", "overdue_task", "partner_joined"]).notNull(),
   title: varchar("title", { length: 256 }).notNull(),
   body: varchar("body", { length: 512 }).notNull(),
   linkTo: varchar("linkTo", { length: 256 }).default("/app/board").notNull(),

@@ -58,6 +58,7 @@ export default function InvitePartnerSetup() {
       accountId: person.accountId,
       ownerPersonId: person.id,
       origin: window.location.origin,
+      businessName: businessName.trim() || undefined,
     });
   };
 

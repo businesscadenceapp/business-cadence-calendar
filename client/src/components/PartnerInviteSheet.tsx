@@ -18,9 +18,11 @@ import { Capacitor } from "@capacitor/core";
 interface PartnerInviteSheetProps {
   open: boolean;
   onClose: () => void;
+  /** Optional business name to embed in the invite token for a personalized CTA on the intro screen. */
+  businessName?: string;
 }
 
-export default function PartnerInviteSheet({ open, onClose }: PartnerInviteSheetProps) {
+export default function PartnerInviteSheet({ open, onClose, businessName }: PartnerInviteSheetProps) {
   const { person } = usePerson();
   const [inviteUrl, setInviteUrl] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
@@ -43,6 +45,7 @@ export default function PartnerInviteSheet({ open, onClose }: PartnerInviteSheet
       accountId: person.accountId,
       ownerPersonId: person.id,
       origin,
+      businessName: businessName || undefined,
     });
   };
 

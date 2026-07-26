@@ -1826,6 +1826,7 @@ Keep the tone warm but professional. This summary will be saved under this speci
         accountId: z.number(),
         ownerPersonId: z.string(),
         origin: z.string(),
+        businessName: z.string().optional(),
       }))
       .mutation(async ({ input }) => {
         // Verify this person is an owner
@@ -1837,9 +1838,13 @@ Keep the tone warm but professional. This summary will be saved under this speci
         }
         // Generate a new token and store it as a special partner invite token
         const token = nanoid(32);
-        // Store the partner invite token in the dedicated partnerInviteToken field
-        await db.update(personsTable).set({ partnerInviteToken: token }).where(eq(personsTable.id, input.ownerPersonId));
-        const inviteUrl = `${input.origin}/accept-invite?token=${token}&partner=1`;
+        // Store the partner invite token + business name so the intro screen can personalize the CTA
+        await db.update(personsTable).set({
+          partnerInviteToken: token,
+          partnerInviteBusinessName: input.businessName ?? null,
+        }).where(eq(personsTable.id, input.ownerPersonId));
+        // Route partner to /subscribe-intro so they see the 4-card onboarding before account creation
+        const inviteUrl = `${input.origin}/subscribe-intro?token=${token}&partner=1`;
         return { success: true, inviteUrl, token };
       }),
 
@@ -1851,12 +1856,13 @@ Keep the tone warm but professional. This summary will be saved under this speci
       .input(z.object({ token: z.string() }))
       .query(async ({ input }) => {
         const db = await getDb();
-        if (!db) return { valid: false as const, reason: "db_unavailable" as const, ownerName: null, accountId: null, ownerPersonId: null };
+        if (!db) return { valid: false as const, reason: "db_unavailable" as const, ownerName: null, businessName: null, accountId: null, ownerPersonId: null };
         const [owner] = await db.select().from(personsTable).where(eq(personsTable.partnerInviteToken, input.token)).limit(1);
-        if (!owner) return { valid: false as const, reason: "not_found" as const, ownerName: null, accountId: null, ownerPersonId: null };
+        if (!owner) return { valid: false as const, reason: "not_found" as const, ownerName: null, businessName: null, accountId: null, ownerPersonId: null };
         return {
           valid: true as const,
           ownerName: owner.name,
+          businessName: owner.partnerInviteBusinessName ?? null,
           accountId: owner.accountId,
           ownerPersonId: owner.id,
         };
@@ -1986,6 +1992,42 @@ Keep the tone warm but professional. This summary will be saved under this speci
       .mutation(async ({ input }) => {
         const ok = await sendPartnerSetupInviteEmail(input);
         return { success: ok };
+      }),
+
+    /**
+     * Notify the owner that their partner has completed setup.
+     * Called from the /onboarding page when a partner finishes the business profile.
+     * Creates an in-app notification for the owner person.
+     */
+    notifyPartnerJoined: publicProcedure
+      .input(z.object({
+        /** The partnerInviteToken from the URL — used to look up the owner */
+        token: z.string(),
+        /** The partner's display name (for the notification body) */
+        partnerName: z.string(),
+      }))
+      .mutation(async ({ input }) => {
+        const db = await getDb();
+        if (!db) return { success: false as const, reason: "db_unavailable" as const };
+        // Resolve the token to the owner
+        const [owner] = await db.select().from(personsTable)
+          .where(eq(personsTable.partnerInviteToken, input.token))
+          .limit(1);
+        if (!owner) return { success: false as const, reason: "invalid_token" as const };
+        // Create in-app notification for the owner
+        await createNotification({
+          accountId: owner.accountId,
+          recipientPersonId: owner.id,
+          type: "partner_joined",
+          title: "Your partner has joined! 🎉",
+          body: `${input.partnerName} has completed setup. You both now have full access to BusinessCadence.`,
+          linkTo: "/app/board",
+        });
+        // Clear the invite token so it can't be reused
+        await db.update(personsTable)
+          .set({ partnerInviteToken: null, partnerInviteBusinessName: null })
+          .where(eq(personsTable.id, owner.id));
+        return { success: true as const };
       }),
   }),
 });

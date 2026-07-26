@@ -3,21 +3,24 @@
  * paywall. It builds emotional buy-in and explains the value proposition
  * before asking for payment.
  *
- * Flow:
+ * Flow (normal):
  *   Step 0: For Co-Preneurs — "Running a business with someone you love…"
  *   Step 1: The Problem    — "Business talk bleeds into everything"
  *   Step 2: The Solution   — "Your business has a place to live…"
  *   Step 3: The Promise    — "Your business stays in the boardroom…"
  *   → Paywall
  *
- * This component is intentionally lightweight — no API calls, no form inputs.
- * It's a pure marketing/emotional onboarding experience.
+ * Flow (partner invite — ?token=...&partner=1):
+ *   Same 4 cards, but final CTA says "Join [Business Name] →"
+ *   → /partner-register?token=... (account creation / sign-in)
+ *   → /onboarding (business profile setup)
  */
 
 import { useState, useCallback } from "react";
 import { useLocation } from "wouter";
 import { BrandIcon } from "@/components/BrandLogo";
 import { ONBOARDING_STEP_BADGES } from "@shared/subscriptionPlans";
+import { trpc } from "@/lib/trpc";
 
 // ─── Step data ────────────────────────────────────────────────────────────────
 
@@ -135,12 +138,33 @@ export default function SubscriptionOnboarding() {
   const [direction, setDirection] = useState<"forward" | "back">("forward");
   const [touchStart, setTouchStart] = useState<number | null>(null);
 
+  // ─── Partner invite detection ────────────────────────────────────────────────
+  // Read query params once (stable — no re-render side effects)
+  const params = new URLSearchParams(window.location.search);
+  const partnerToken = params.get("token") ?? "";
+  const isPartnerInvite = params.get("partner") === "1" && !!partnerToken;
+
+  const { data: partnerInviteData } = trpc.subscription.lookupPartnerInvite.useQuery(
+    { token: partnerToken },
+    { enabled: isPartnerInvite, retry: false, staleTime: 60_000 }
+  );
+
+  // Business name for the personalized CTA — prefer stored businessName, fall back to owner name
+  const businessName: string | null = partnerInviteData?.valid
+    ? (partnerInviteData.businessName ?? partnerInviteData.ownerName ?? null)
+    : null;
+
   const totalSteps = STEPS.length;
 
   const goNext = useCallback(() => {
     if (isAnimating) return;
     if (step >= totalSteps - 1) {
-      navigate("/paywall");
+      if (isPartnerInvite) {
+        // Partner flow: route to account creation / sign-in before onboarding
+        navigate(`/partner-register?token=${encodeURIComponent(partnerToken)}`);
+      } else {
+        navigate("/paywall");
+      }
       return;
     }
     setDirection("forward");
@@ -149,7 +173,7 @@ export default function SubscriptionOnboarding() {
       setStep((s) => s + 1);
       setIsAnimating(false);
     }, 220);
-  }, [step, totalSteps, isAnimating, navigate]);
+  }, [step, totalSteps, isAnimating, navigate, isPartnerInvite, partnerToken]);
 
   const goPrev = useCallback(() => {
     if (isAnimating || step === 0) return;
@@ -161,7 +185,13 @@ export default function SubscriptionOnboarding() {
     }, 220);
   }, [step, isAnimating]);
 
-  const handleSkip = () => navigate("/paywall");
+  const handleSkip = () => {
+    if (isPartnerInvite) {
+      navigate(`/partner-register?token=${encodeURIComponent(partnerToken)}`);
+    } else {
+      navigate("/paywall");
+    }
+  };
 
   const handleTouchStart = (e: React.TouchEvent) => {
     setTouchStart(e.touches[0].clientX);
@@ -185,6 +215,11 @@ export default function SubscriptionOnboarding() {
       ? "-translate-x-5 opacity-0"
       : "translate-x-5 opacity-0"
     : "translate-x-0 opacity-100";
+
+  // Derive the CTA label for the final card
+  const finalCtaLabel = isPartnerInvite
+    ? `Join ${businessName ?? "Your Business"} →`
+    : "See Plans →";
 
   return (
     <div
@@ -221,6 +256,28 @@ export default function SubscriptionOnboarding() {
           Skip
         </button>
       </div>
+
+      {/* Partner invite context banner — shown only on partner invite flow */}
+      {isPartnerInvite && partnerInviteData?.valid && (
+        <div className="relative z-10 flex justify-center px-6 pt-2">
+          <div
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold"
+            style={{
+              backgroundColor: "rgba(94,234,212,0.10)",
+              border: "1px solid rgba(94,234,212,0.22)",
+              color: "#5EEAD4",
+            }}
+          >
+            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            {partnerInviteData.ownerName
+              ? `${partnerInviteData.ownerName} invited you to join`
+              : "You've been invited to join"}
+          </div>
+        </div>
+      )}
 
       {/* Main content */}
       <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-8 w-full max-w-md mx-auto">
@@ -275,7 +332,7 @@ export default function SubscriptionOnboarding() {
           onClick={goNext}
           className="w-full bg-gradient-to-r from-[#5EEAD4] to-[#0D9488] text-[#0A1628] font-bold text-lg py-4 px-8 rounded-2xl transition-all duration-200 active:scale-[0.97] shadow-lg shadow-[#5EEAD4]/20"
         >
-          {isLastStep ? "See Plans →" : "Next →"}
+          {isLastStep ? finalCtaLabel : "Next →"}
         </button>
         {step > 0 && (
           <button

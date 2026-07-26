@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef } from "react";
-import { useLocation } from "wouter";
+import { useLocation, useSearch } from "wouter";
 import { trpc } from "@/lib/trpc";
 import {
   INDUSTRY_TYPES,
@@ -1738,6 +1738,14 @@ export default function Onboarding() {
     employees: [],
   });
 
+  // ─── Partner invite context ────────────────────────────────────────────────
+  const searchString = useSearch();
+  const searchParams = new URLSearchParams(searchString);
+  const partnerToken = searchParams.get("partnerToken") ?? "";
+  const isPartnerFlow = !!partnerToken;
+
+  const notifyPartnerJoined = trpc.subscription.notifyPartnerJoined.useMutation();
+
   const saveOnboarding = trpc.onboarding.save.useMutation();
   const createBusiness = trpc.business.create.useMutation();
   const uploadLogo = trpc.business.uploadLogo.useMutation();
@@ -1883,6 +1891,18 @@ export default function Onboarding() {
       } catch { /* non-fatal */ }
 
       next(); // go to Done
+
+      // If this is a partner completing setup via invite, notify the owner
+      if (isPartnerFlow && partnerToken) {
+        const partnerName = data.businessName.trim()
+          ? (localStorage.getItem("bcc_person_v1")
+              ? (JSON.parse(localStorage.getItem("bcc_person_v1")!) as { name?: string }).name ?? "Your partner"
+              : "Your partner")
+          : "Your partner";
+        try {
+          await notifyPartnerJoined.mutateAsync({ token: partnerToken, partnerName });
+        } catch { /* non-blocking — don't fail onboarding if notification fails */ }
+      }
     } catch (err) {
       console.error("Onboarding save failed:", err);
     }

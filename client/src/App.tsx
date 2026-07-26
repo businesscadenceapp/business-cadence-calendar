@@ -33,6 +33,7 @@ import Paywall from "@/pages/Paywall";
 import SubscriptionOnboarding from "@/pages/SubscriptionOnboarding";
 import InvitePartnerSetup from "@/pages/InvitePartnerSetup";
 import WaitingForPartner from "@/pages/WaitingForPartner";
+import PartnerRegister from "@/pages/PartnerRegister";
 
 // Wrapper so Paywall (which has optional custom props) works as a wouter route component
 function PaywallPage() {
@@ -104,6 +105,7 @@ function Router() {
       <Route path={"/accept-invite"} component={AcceptInvite} />
       <Route path={"/invite-partner-setup"} component={InvitePartnerSetup} />
       <Route path={"/waiting-for-partner"} component={WaitingForPartner} />
+      <Route path={"/partner-register"} component={PartnerRegister} />
       <Route path={"/forgot-password"} component={ForgotPassword} />
       <Route path={"/reset-password"} component={ResetPassword} />
       <Route path={"/select-business"} component={BusinessSelector} />
