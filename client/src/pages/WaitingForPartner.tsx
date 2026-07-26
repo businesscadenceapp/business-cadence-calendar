@@ -263,7 +263,6 @@ export default function WaitingForPartner() {
 
       {/* Bottom actions */}
       <div className="relative z-10 px-6 pb-8 pt-6 flex flex-col gap-3 max-w-md mx-auto w-full flex-shrink-0">
-        {/* Explore the app */}
       <button
         onClick={() => navigate(`/setup?bizName=${encodeURIComponent(bizName)}&partnerSent=1&partnerName=${encodeURIComponent(partnerName)}`)}
         className="w-full py-4 rounded-2xl font-bold text-[#0A1628] text-base transition-all duration-200 active:scale-[0.97]"
@@ -275,17 +274,20 @@ export default function WaitingForPartner() {
         Set up my business →
       </button>
 
-        {/* Escape hatch */}
+      {/* Tour — scroll the sample previews, no real data written */}
       <button
-        onClick={() => navigate(`/setup?bizName=${encodeURIComponent(bizName)}&partnerSent=1&partnerName=${encodeURIComponent(partnerName)}`)}
+        onClick={() => navigate("/demo")}
         className="w-full py-3.5 rounded-2xl font-semibold text-white/60 text-sm transition-all duration-200 active:scale-[0.97]"
         style={{
           background: "rgba(255,255,255,0.05)",
           border: "1.5px solid rgba(255,255,255,0.10)",
         }}
       >
-        Complete business profile myself
+        Take a tour →
       </button>
+      <p className="text-center text-[10px] mt-2" style={{ color: "rgba(255,255,255,0.25)" }}>
+        Explore a live demo with sample data — no setup needed
+      </p>
       </div>
     </div>
   );

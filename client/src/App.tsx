@@ -37,6 +37,7 @@ import WaitingForPartner from "@/pages/WaitingForPartner";
 import PartnerRegister from "@/pages/PartnerRegister";
 import { TourProvider } from "@/contexts/TourContext";
 import TourOverlay from "@/components/TourOverlay";
+import DemoBoard from "@/pages/DemoBoard";
 
 // Wrapper so Paywall (which has optional custom props) works as a wouter route component
 function PaywallPage() {
@@ -114,6 +115,7 @@ function Router() {
       <Route path={"/forgot-password"} component={ForgotPassword} />
       <Route path={"/reset-password"} component={ResetPassword} />
       <Route path={"/select-business"} component={BusinessSelector} />
+      <Route path={"/demo"} component={DemoBoard} />
 
       {/* Protected app routes — more specific paths MUST come before less specific ones */}
       <Route path={"/app/team/calendar"}>

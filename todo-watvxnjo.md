@@ -98,7 +98,10 @@
 - [x] Run tests (41/41 pass), checkpoint, push to GitHub
 
 ## Native App UI Rebuild (user feedback: screens look like website, not app)
-- [ ] SubscriptionOnboarding: remove logo/name header, remove Next button, swipe-only dots navigation, full-screen native feel
-- [ ] ClientLogin: remove card wrapper, remove Back to homepage, remove Join waitlist, full dark native styling
 - [x] SubscriptionOnboarding: remove logo/name header, remove Next button, swipe-only dots navigation, full-screen native feel
 - [x] ClientLogin: remove card wrapper, remove Back to homepage, remove Join waitlist, full dark native styling
+
+## Demo Tour Mode (sandbox preview with sample data)
+- [x] Create DemoBoard.tsx — standalone /demo route with sample tasks/updates/issues, DEMO MODE banner, disabled writes
+- [x] Wire "Take a tour →" button in WaitingForPartner to navigate to /demo
+- [x] Run tests (41/41 pass), checkpoint, push to GitHub
