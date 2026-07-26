@@ -88,3 +88,11 @@
 - [x] Diagnose: EntitlementGuard bounces no_subscription users back to /subscribe-intro; WaitingForPartner was routing to /app/board before onboarding/trial was set up
 - [x] Fix (product decision: onboarding-first): WaitingForPartner CTA changed to "Set up my business →" → /onboarding (quick mode). handleConfirm calls startTrial as safety net so DB has trial row before /app/board is reached. After quick onboarding completes, user lands on /select-business → /app/board with valid entitlement.
 - [x] Verify, run tests, checkpoint (a0485f2e), push to GitHub
+
+## Onboarding: full-screen swipeable card stack (UX redesign)
+- [x] Remove welcome splash — start directly on first data card
+- [x] Skip business name card if already collected; skip partner invite card if already sent
+- [x] Each card fills the screen, slides in from right / out to left on completion
+- [x] Cards: industry picker → business hours → (optional) partner invite → done
+- [x] Wire /setup route to new SwipeOnboarding component; update WaitingForPartner + InvitePartnerSetup to route there with params
+- [x] Run tests (41/41 pass), checkpoint, push to GitHub

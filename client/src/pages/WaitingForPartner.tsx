@@ -123,6 +123,7 @@ export default function WaitingForPartner() {
   const params = new URLSearchParams(window.location.search);
   const partnerName = params.get("name") ?? "your partner";
   const partnerEmail = params.get("email") ?? "";
+  const bizName = params.get("bizName") ?? "";
 
   const previews = [
     { key: "board", node: <BoardPreview /> },
@@ -263,28 +264,28 @@ export default function WaitingForPartner() {
       {/* Bottom actions */}
       <div className="relative z-10 px-6 pb-8 pt-6 flex flex-col gap-3 max-w-md mx-auto w-full flex-shrink-0">
         {/* Explore the app */}
-        <button
-          onClick={() => navigate("/onboarding")}
-          className="w-full py-4 rounded-2xl font-bold text-[#0A1628] text-base transition-all duration-200 active:scale-[0.97]"
-          style={{
-            background: "linear-gradient(135deg, #5EEAD4 0%, #0D9488 100%)",
-            boxShadow: "0 4px 24px rgba(94,234,212,0.22)",
-          }}
-        >
-          Set up my business →
-        </button>
+      <button
+        onClick={() => navigate(`/setup?bizName=${encodeURIComponent(bizName)}&partnerSent=1&partnerName=${encodeURIComponent(partnerName)}`)}
+        className="w-full py-4 rounded-2xl font-bold text-[#0A1628] text-base transition-all duration-200 active:scale-[0.97]"
+        style={{
+          background: "linear-gradient(135deg, #5EEAD4 0%, #0D9488 100%)",
+          boxShadow: "0 4px 24px rgba(94,234,212,0.22)",
+        }}
+      >
+        Set up my business →
+      </button>
 
         {/* Escape hatch */}
-        <button
-          onClick={() => navigate("/onboarding")}
-          className="w-full py-3.5 rounded-2xl font-semibold text-white/60 text-sm transition-all duration-200 active:scale-[0.97]"
-          style={{
-            background: "rgba(255,255,255,0.05)",
-            border: "1.5px solid rgba(255,255,255,0.10)",
-          }}
-        >
-          Complete business profile myself
-        </button>
+      <button
+        onClick={() => navigate(`/setup?bizName=${encodeURIComponent(bizName)}&partnerSent=1&partnerName=${encodeURIComponent(partnerName)}`)}
+        className="w-full py-3.5 rounded-2xl font-semibold text-white/60 text-sm transition-all duration-200 active:scale-[0.97]"
+        style={{
+          background: "rgba(255,255,255,0.05)",
+          border: "1.5px solid rgba(255,255,255,0.10)",
+        }}
+      >
+        Complete business profile myself
+      </button>
       </div>
     </div>
   );

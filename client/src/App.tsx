@@ -12,6 +12,7 @@ import Home from "./pages/Home";
 import Board from "./pages/Board";
 import Settings from "./pages/Settings";
 import Onboarding from "./pages/Onboarding";
+import SwipeOnboarding from "./pages/SwipeOnboarding";
 import ManageSchedule from "./pages/ManageSchedule";
 import EmployeeSetup from "./pages/EmployeeSetup";
 import WeeklyReports from "@/pages/WeeklyReports";
@@ -103,6 +104,7 @@ function Router() {
       {/* Public routes */}
       <Route path={"/login"} component={ClientLogin} />
       <Route path={"/onboarding"} component={Onboarding} />
+      <Route path={"/setup"} component={SwipeOnboarding} />
       <Route path={"/subscribe-intro"} component={SubscriptionOnboarding} />
       <Route path={"/paywall"} component={PaywallPage} />
       <Route path={"/accept-invite"} component={AcceptInvite} />

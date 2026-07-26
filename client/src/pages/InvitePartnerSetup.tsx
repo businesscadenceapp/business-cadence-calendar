@@ -38,7 +38,7 @@ export default function InvitePartnerSetup() {
         // Email failed but link was generated — still proceed
       }
       setIsSending(false);
-      navigate(`/waiting-for-partner?name=${encodeURIComponent(partnerName)}&email=${encodeURIComponent(partnerEmail)}`);
+      navigate(`/waiting-for-partner?name=${encodeURIComponent(partnerName)}&email=${encodeURIComponent(partnerEmail)}&bizName=${encodeURIComponent(businessName.trim())}`);
     },
     onError: (err) => {
       setIsSending(false);
@@ -198,7 +198,7 @@ export default function InvitePartnerSetup() {
           {isSending ? "Sending…" : "Send Invite →"}
         </button>
         <button
-          onClick={() => navigate("/onboarding")}
+          onClick={() => navigate(`/setup?bizName=${encodeURIComponent(businessName.trim())}`)}
           className="w-full py-3 text-white/30 text-sm text-center mt-2 hover:text-white/50 transition-colors"
         >
           I'll set it up myself instead
