@@ -241,14 +241,8 @@ export default function SubscriptionOnboarding() {
         }}
       />
 
-      {/* Top bar: logo + skip */}
-      <div className="relative z-10 flex items-center justify-between px-6 pt-4">
-        <div className="flex items-center gap-2">
-          <BrandIcon size={32} variant="teal" />
-          <span className="text-white/60 text-sm font-medium">
-            Business<span className="text-[#5EEAD4]">Cadence</span>
-          </span>
-        </div>
+      {/* Skip — top-right only, no logo */}
+      <div className="relative z-10 flex items-center justify-end px-6 pt-4">
         <button
           onClick={handleSkip}
           className="text-sm text-white/35 hover:text-white/60 transition-colors py-2 px-3"
@@ -328,19 +322,18 @@ export default function SubscriptionOnboarding() {
         <div className="flex justify-center mb-6">
           <ProgressDots total={totalSteps} current={step} />
         </div>
-        <button
-          onClick={goNext}
-          className="w-full bg-gradient-to-r from-[#5EEAD4] to-[#0D9488] text-[#0A1628] font-bold text-lg py-4 px-8 rounded-2xl transition-all duration-200 active:scale-[0.97] shadow-lg shadow-[#5EEAD4]/20"
-        >
-          {isLastStep ? finalCtaLabel : "Next →"}
-        </button>
-        {step > 0 && (
+        {/* On the last step show the CTA button; on earlier steps just show a swipe hint */}
+        {isLastStep ? (
           <button
-            onClick={goPrev}
-            className="w-full mt-3 text-white/30 text-sm hover:text-white/50 transition-colors py-2"
+            onClick={goNext}
+            className="w-full bg-gradient-to-r from-[#5EEAD4] to-[#0D9488] text-[#0A1628] font-bold text-lg py-4 px-8 rounded-2xl transition-all duration-200 active:scale-[0.97] shadow-lg shadow-[#5EEAD4]/20"
           >
-            ← Back
+            {finalCtaLabel}
           </button>
+        ) : (
+          <p className="text-center text-xs" style={{ color: "rgba(255,255,255,0.22)" }}>
+            Swipe to continue
+          </p>
         )}
       </div>
     </div>

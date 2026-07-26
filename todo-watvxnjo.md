@@ -96,3 +96,9 @@
 - [x] Cards: industry picker → business hours → (optional) partner invite → done
 - [x] Wire /setup route to new SwipeOnboarding component; update WaitingForPartner + InvitePartnerSetup to route there with params
 - [x] Run tests (41/41 pass), checkpoint, push to GitHub
+
+## Native App UI Rebuild (user feedback: screens look like website, not app)
+- [ ] SubscriptionOnboarding: remove logo/name header, remove Next button, swipe-only dots navigation, full-screen native feel
+- [ ] ClientLogin: remove card wrapper, remove Back to homepage, remove Join waitlist, full dark native styling
+- [x] SubscriptionOnboarding: remove logo/name header, remove Next button, swipe-only dots navigation, full-screen native feel
+- [x] ClientLogin: remove card wrapper, remove Back to homepage, remove Join waitlist, full dark native styling
