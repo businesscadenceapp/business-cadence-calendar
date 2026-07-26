@@ -33,6 +33,8 @@ import Paywall from "@/pages/Paywall";
 import SubscriptionOnboarding from "@/pages/SubscriptionOnboarding";
 import InvitePartnerSetup from "@/pages/InvitePartnerSetup";
 import WaitingForPartner from "@/pages/WaitingForPartner";
+import { TourProvider } from "@/contexts/TourContext";
+import TourOverlay from "@/components/TourOverlay";
 
 // Wrapper so Paywall (which has optional custom props) works as a wouter route component
 function PaywallPage() {
@@ -46,6 +48,7 @@ function Protected({ component: Component }: { component: React.ComponentType })
       <EntitlementGuard>
       <AppShell>
         <Component />
+        <TourOverlay />
       </AppShell>
       </EntitlementGuard>
     </PasswordGate>
@@ -166,10 +169,12 @@ function App() {
   return (
     <ErrorBoundary>
       <ThemeProvider defaultTheme="dark">
+        <TourProvider>
         <TooltipProvider>
           <Toaster />
           <Router />
         </TooltipProvider>
+        </TourProvider>
       </ThemeProvider>
     </ErrorBoundary>
   );

@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { usePerson } from "@/contexts/PersonContext";
 import { useIdentity } from "@/components/AppShell";
 import { useActiveBusiness } from "@/components/BusinessSwitcher";
+import { useTour, TOUR_STORAGE_KEY, TOUR_PENDING_KEY } from "@/contexts/TourContext";
 
 type Author = string;
 type CardType = "update" | "issue" | "task";
@@ -1010,6 +1011,21 @@ export default function Board() {
   const [activeView, setActiveView] = useState<CategoryKey | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [showCompleted, setShowCompleted] = useState(false);
+  const { replay, registerRef, active: tourActive } = useTour();
+
+  // Start the tour on first Board visit after onboarding
+  useEffect(() => {
+    const pending = localStorage.getItem(TOUR_PENDING_KEY);
+    const completed = localStorage.getItem(TOUR_STORAGE_KEY);
+    // Show tour if: explicit replay request from Settings, OR first-ever Board visit
+    if (pending === "1" || !completed) {
+      const t = setTimeout(() => {
+        localStorage.removeItem(TOUR_PENDING_KEY);
+        replay(); // replay() clears completion key and sets active=true
+      }, 800);
+      return () => clearTimeout(t);
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const accountId = person?.accountId ?? (() => {
     const stored = localStorage.getItem("bcc_account_id");
@@ -1295,6 +1311,8 @@ export default function Board() {
 
       {/* Floating Action Button */}
       <button
+        ref={(el) => registerRef("tour-hub", el)}
+        data-tour="tour-hub"
         onClick={() => setSheetOpen(true)}
         className="fixed bottom-6 right-6 w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-bold transition-all active:scale-[0.9] hover:scale-[1.05] z-40"
         style={{

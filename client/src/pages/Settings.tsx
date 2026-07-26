@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect, useMemo, useRef } from "react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -13,6 +13,7 @@ import { usePerson } from "@/contexts/PersonContext";
 import { personScopeToBusinessSelection } from "@/lib/businessScope";
 import type { MeetingType, BusinessKey } from "@/lib/calendarData";
 import PartnerInviteSheet from "@/components/PartnerInviteSheet";
+import { useTour, TOUR_PENDING_KEY } from "@/contexts/TourContext";
 
 const BIZ_MAP: Record<BusinessKey, "chiropractic" | "crossfit"> = {
   chiro: "chiropractic",
@@ -460,6 +461,8 @@ export default function Settings() {
     const stored = localStorage.getItem("bcc_account_id");
     return stored ? parseInt(stored, 10) : undefined;
   })();
+  const { replay } = useTour();
+  const [, navigate] = useLocation();
 
   const { data: dbBusinesses = [] } = trpc.business.list.useQuery(
     { accountId: accountId ?? 0 },
@@ -584,6 +587,42 @@ export default function Settings() {
           </div>
         </div>
       </div>
+
+      {/* ── App Tour ─────────────────────────────────────────────────────────── */}
+      <div
+        className="mx-4 sm:mx-6 mt-6 mb-2 rounded-2xl px-5 py-4 flex items-center justify-between gap-4"
+        style={{ backgroundColor: "rgba(94,234,212,0.05)", border: "1px solid rgba(94,234,212,0.15)" }}
+      >
+        <div className="flex items-center gap-3 min-w-0">
+          <div style={{
+            width: 36, height: 36, borderRadius: "10px", flexShrink: 0,
+            background: "linear-gradient(135deg, rgba(94,234,212,0.2) 0%, rgba(94,234,212,0.08) 100%)",
+            border: "1px solid rgba(94,234,212,0.3)",
+            display: "flex", alignItems: "center", justifyContent: "center", fontSize: "17px",
+          }}>🗺️</div>
+          <div className="min-w-0">
+            <p className="text-[13px] font-bold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>App Tour</p>
+            <p className="text-[11px]" style={{ color: "rgba(255,255,255,0.4)" }}>Replay the feature walkthrough</p>
+          </div>
+        </div>
+        <button
+          onClick={() => {
+            // Set a pending flag and navigate to Board — Board will auto-start the tour
+            localStorage.setItem(TOUR_PENDING_KEY, "1");
+            navigate("/app/board");
+          }}
+          className="flex-shrink-0 px-4 py-2 rounded-xl text-[12px] font-bold transition-all active:scale-[0.97]"
+          style={{
+            background: "linear-gradient(135deg, rgba(94,234,212,0.2) 0%, rgba(94,234,212,0.1) 100%)",
+            border: "1px solid rgba(94,234,212,0.35)",
+            color: "#5EEAD4",
+            fontFamily: "'Space Grotesk', sans-serif",
+          }}
+        >
+          Replay tour →
+        </button>
+      </div>
+
       <div className="relative z-10 max-w-4xl mx-auto px-4 py-6">
 
         <div className="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-6">

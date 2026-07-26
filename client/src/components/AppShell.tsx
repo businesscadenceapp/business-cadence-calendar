@@ -23,6 +23,7 @@ import {
   SwitchBusinessButton,
   BusinessSwitcherModal,
 } from "@/components/BusinessSwitcher";
+import { useTour } from "@/contexts/TourContext";
 
 // ─── Identity Context ─────────────────────────────────────────────────────────
 
@@ -258,6 +259,7 @@ export default function AppShell({ children }: AppShellProps) {
   const { person, setPerson } = usePerson();
   const [moreOpen, setMoreOpen] = useState(false);
   const [switcherOpen, setSwitcherOpen] = useState(false);
+  const { registerRef } = useTour();
 
   const activePath = location === "/app" ? "/app/board" : location;
 
@@ -429,6 +431,11 @@ export default function AppShell({ children }: AppShellProps) {
                     <Link
                       key={item.path}
                       href={item.path}
+                      ref={(el: HTMLAnchorElement | null) => {
+                        if (item.path === "/app/calendar") registerRef("tour-calendar", el);
+                        if (item.path === "/app/goals") registerRef("tour-goals", el);
+                      }}
+                      data-tour={item.path === "/app/calendar" ? "tour-calendar" : item.path === "/app/goals" ? "tour-goals" : undefined}
                       className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-semibold transition-all duration-150"
                       style={{
                         backgroundColor: isActive ? "rgba(94,234,212,0.12)" : "transparent",
@@ -480,6 +487,8 @@ export default function AppShell({ children }: AppShellProps) {
                 {/* DND toggle — owners and co-owners only */}
                 {isOwnerOrCoOwner && (
                   <button
+                    ref={(el) => registerRef("tour-sleep", el)}
+                    data-tour="tour-sleep"
                     onClick={handleDndToggle}
                     className="flex-shrink-0 w-7 h-7 rounded-lg flex items-center justify-center transition-all active:scale-95"
                     style={{
@@ -583,6 +592,8 @@ export default function AppShell({ children }: AppShellProps) {
             <div className="flex items-center gap-2 flex-shrink-0">
               {person && isOwnerOrCoOwner && (
                 <button
+                  ref={(el) => registerRef("tour-sleep", el)}
+                  data-tour="tour-sleep"
                   onClick={handleDndToggle}
                   className="w-8 h-8 rounded-lg flex items-center justify-center transition-all active:scale-95"
                   style={{
@@ -632,6 +643,11 @@ export default function AppShell({ children }: AppShellProps) {
                 <Link
                   key={item.path}
                   href={item.path}
+                  ref={(el: HTMLAnchorElement | null) => {
+                    if (item.path === "/app/calendar") registerRef("tour-calendar", el);
+                    if (item.path === "/app/goals") registerRef("tour-goals", el);
+                  }}
+                  data-tour={item.path === "/app/calendar" ? "tour-calendar" : item.path === "/app/goals" ? "tour-goals" : undefined}
                   className="relative flex-1 flex flex-col items-center justify-center gap-0.5 transition-all duration-150 active:scale-95"
                   style={{ color: isActive ? "#5EEAD4" : "rgba(255,255,255,0.35)" }}
                 >
