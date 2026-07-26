@@ -24,7 +24,7 @@
 - [x] Detect `?partnerToken=...` query param
 - [x] On completion (`handleConfirm`), call `subscription.notifyPartnerJoined` to notify the owner
 - [x] After completion, navigate to `/select-business` (same as normal flow)
-- [ ] Pre-fill `businessName` from the token lookup data (deferred — partner enters their own business name in onboarding)
+- [x] Pre-fill `businessName` from the token lookup data — calls `lookupPartnerInvite` when `partnerToken` is present, pre-fills the businessName field if the token carries one (owner set it during invite generation)
 
 ## Frontend — InvitePartnerSetup
 - [x] Pass `businessName` field to `generatePartnerInviteLink` mutation

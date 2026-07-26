@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { useLocation, useSearch } from "wouter";
 import { trpc } from "@/lib/trpc";
 import {
@@ -1745,6 +1745,20 @@ export default function Onboarding() {
   const isPartnerFlow = !!partnerToken;
 
   const notifyPartnerJoined = trpc.subscription.notifyPartnerJoined.useMutation();
+
+  // Pre-fill businessName from the partner invite token when entering via invite
+  const { data: partnerInviteData } = trpc.subscription.lookupPartnerInvite.useQuery(
+    { token: partnerToken },
+    { enabled: isPartnerFlow, retry: false, staleTime: 5 * 60_000 }
+  );
+  useEffect(() => {
+    if (isPartnerFlow && partnerInviteData?.valid && partnerInviteData.businessName) {
+      setData(prev => ({
+        ...prev,
+        businessName: prev.businessName || partnerInviteData.businessName!,
+      }));
+    }
+  }, [isPartnerFlow, partnerInviteData]);
 
   const saveOnboarding = trpc.onboarding.save.useMutation();
   const createBusiness = trpc.business.create.useMutation();
