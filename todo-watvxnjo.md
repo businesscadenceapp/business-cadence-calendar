@@ -82,4 +82,4 @@
 - [x] Add deferred "Complete your profile" prompt on Board for goals/KPIs/industry/team
 - [x] Add sandbox preview mode with sample data to WaitingForPartner screen
 - [x] Make 14-day free trial the paywall headline
-- [ ] Verify, run tests, checkpoint, push to GitHub
+- [x] Verify, run tests, checkpoint, push to GitHub (0551068 → github main, triggers Xcode Cloud)
