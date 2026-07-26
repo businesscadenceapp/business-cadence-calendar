@@ -105,3 +105,7 @@
 - [x] Create DemoBoard.tsx — standalone /demo route with sample tasks/updates/issues, DEMO MODE banner, disabled writes
 - [x] Wire "Take a tour →" button in WaitingForPartner to navigate to /demo
 - [x] Run tests (41/41 pass), checkpoint, push to GitHub
+## Board Grid Redesign (user feedback)
+- [ ] Make Needs Attention a 4th tile in 2x2 grid (exclamation icon, same style as others)
+- [ ] Compress hero section so full Board home fits on screen without scrolling
+- [ ] Apply same fix to DemoBoard

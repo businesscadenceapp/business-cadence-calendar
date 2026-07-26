@@ -879,6 +879,7 @@ function AddCardForm({ currentUser, onAdded, allowedBusinesses, defaultBusiness,
 // ─── Category Tile (Home Card) ───────────────────────────────────────────────
 
 type CategoryKey = "tasks" | "updates" | "issues" | "archive";
+type TileKey = CategoryKey | "needs_attention";
 
 const CATEGORIES: { key: CategoryKey; label: string; icon: string; gradient: string; border: string; glow: string; textColor: string; countBg: string }[] = [
   { key: "tasks", label: "Tasks", icon: "☑", gradient: "linear-gradient(135deg, rgba(124,58,237,0.15) 0%, rgba(124,58,237,0.06) 100%)", border: "rgba(124,58,237,0.3)", glow: "rgba(124,58,237,0.12)", textColor: "#C4B5FD", countBg: "rgba(124,58,237,0.25)" },
@@ -887,7 +888,20 @@ const CATEGORIES: { key: CategoryKey; label: string; icon: string; gradient: str
   { key: "archive", label: "Archive", icon: "🗂", gradient: "linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%)", border: "rgba(255,255,255,0.12)", glow: "rgba(255,255,255,0.04)", textColor: "rgba(255,255,255,0.6)", countBg: "rgba(255,255,255,0.08)" },
 ];
 
-function CategoryTile({ cat, count, onClick, delay }: { cat: typeof CATEGORIES[0]; count: number; onClick: () => void; delay: number }) {
+// Needs Attention tile — shown as 4th tile replacing Archive in the 2×2 grid
+const NEEDS_ATTENTION_META = {
+  key: "needs_attention" as const,
+  label: "Needs Attention",
+  icon: "❗",
+  gradient: "linear-gradient(135deg, rgba(251,191,36,0.18) 0%, rgba(251,191,36,0.07) 100%)",
+  border: "rgba(251,191,36,0.38)",
+  glow: "rgba(251,191,36,0.14)",
+  textColor: "#FDE68A",
+  countBg: "rgba(251,191,36,0.28)",
+};
+
+type TileMeta = { key: string; label: string; icon: string; gradient: string; border: string; glow: string; textColor: string; countBg: string };
+function CategoryTile({ cat, count, onClick, delay }: { cat: TileMeta; count: number; onClick: () => void; delay: number }) {
   return (
     <button
       onClick={onClick}
@@ -1249,7 +1263,7 @@ export default function Board() {
     >
       {/* Hero */}
       <div
-        className="flex-shrink-0 px-5 pt-8 pb-6"
+        className="flex-shrink-0 px-5 pt-4 pb-4"
         style={{
           background: "linear-gradient(160deg, #0D2035 0%, #0F2440 40%, #0D1F38 100%)",
           position: "relative",
@@ -1260,7 +1274,7 @@ export default function Board() {
         <div style={{ position: "absolute", top: "-60px", right: "-60px", width: "240px", height: "240px", background: "radial-gradient(circle, rgba(94,234,212,0.06) 0%, transparent 70%)", pointerEvents: "none" }} />
         <div style={{ position: "absolute", bottom: "-40px", left: "-40px", width: "180px", height: "180px", background: "radial-gradient(circle, rgba(124,58,237,0.05) 0%, transparent 70%)", pointerEvents: "none" }} />
 
-        <div className="flex items-center gap-2.5 mb-3">
+        <div className="flex items-center gap-2.5 mb-2">
           <div style={{
             width: 36, height: 36, borderRadius: "12px",
             background: "linear-gradient(135deg, rgba(94,234,212,0.2) 0%, rgba(94,234,212,0.08) 100%)",
@@ -1271,17 +1285,17 @@ export default function Board() {
           <span className="text-[11px] font-bold uppercase tracking-[0.15em]" style={{ color: "#5EEAD4", fontFamily: "'Space Grotesk', sans-serif" }}>Command Center</span>
         </div>
 
-        <h1 className="text-[26px] font-black text-white leading-tight mb-1.5" style={{ fontFamily: "'Space Grotesk', sans-serif", letterSpacing: "-0.02em" }}>
+        <h1 className="text-[22px] font-black text-white leading-tight mb-1" style={{ fontFamily: "'Space Grotesk', sans-serif", letterSpacing: "-0.02em" }}>
           Your Business,<br />
           <span style={{ background: "linear-gradient(90deg, #5EEAD4, #A78BFA)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>In Sync.</span>
         </h1>
-        <p className="text-[13px]" style={{ color: "rgba(255,255,255,0.45)", lineHeight: "1.5" }}>
+        <p className="text-[12px]" style={{ color: "rgba(255,255,255,0.45)", lineHeight: "1.4" }}>
           Real-time updates between owners — no more missed conversations.
         </p>
       </div>
 
       {/* Category Tiles Grid */}
-      <div className="flex-1 px-5 py-5">
+      <div className="flex-1 px-5 py-3">
         {/* Complete your profile prompt (quick onboarding deferred full setup) */}
         {profileDeferred && (
           <div
@@ -1329,38 +1343,29 @@ export default function Board() {
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-3">
-            {CATEGORIES.map((cat, i) => (
+            {CATEGORIES.filter(c => c.key !== "archive").map((cat, i) => (
               <CategoryTile
                 key={cat.key}
                 cat={cat}
                 count={counts[cat.key]}
-                onClick={() => cat.key === "archive" ? (window.location.href = "/app/board/archive") : setActiveView(cat.key)}
+                onClick={() => setActiveView(cat.key)}
                 delay={i * 60}
               />
             ))}
+            {/* 4th tile: Needs Attention */}
+            <CategoryTile
+              cat={NEEDS_ATTENTION_META as unknown as TileMeta}
+              count={(counts.tasks ?? 0) + (counts.issues ?? 0)}
+              onClick={() => {
+                // Navigate to tasks if there are tasks, otherwise issues
+                if ((counts.tasks ?? 0) > 0) setActiveView("tasks");
+                else if ((counts.issues ?? 0) > 0) setActiveView("issues");
+              }}
+              delay={3 * 60}
+            />
           </div>
         )}
 
-        {/* Quick summary below tiles */}
-        {!isLoading && (counts.tasks > 0 || counts.issues > 0) && (
-          <div className="mt-5 rounded-2xl p-4" style={{ backgroundColor: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
-            <p className="text-[11px] font-medium mb-2" style={{ color: "rgba(255,255,255,0.5)", fontFamily: "'Space Grotesk', sans-serif" }}>Needs attention</p>
-            <div className="flex flex-col gap-1.5">
-              {counts.tasks > 0 && (
-                <button onClick={() => setActiveView("tasks")} className="flex items-center gap-2 text-left w-full py-1.5 px-2 rounded-lg transition-all hover:bg-white/[0.03] active:scale-[0.98]">
-                  <span className="text-[13px]">☑</span>
-                  <span className="text-[12px] text-white/70">{openTasks.length} open task{openTasks.length !== 1 ? "s" : ""}{donePendingTasks.length > 0 ? `, ${donePendingTasks.length} awaiting confirmation` : ""}</span>
-                </button>
-              )}
-              {counts.issues > 0 && (
-                <button onClick={() => setActiveView("issues")} className="flex items-center gap-2 text-left w-full py-1.5 px-2 rounded-lg transition-all hover:bg-white/[0.03] active:scale-[0.98]">
-                  <span className="text-[13px]">🔥</span>
-                  <span className="text-[12px] text-white/70">{issues.length} issue{issues.length !== 1 ? "s" : ""} to discuss</span>
-                </button>
-              )}
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Floating Action Button */}

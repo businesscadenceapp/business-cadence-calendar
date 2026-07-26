@@ -158,7 +158,8 @@ function DemoCardItem({ card }: { card: DemoCard }) {
 }
 
 // ─── Category Tile ────────────────────────────────────────────────────────────
-function DemoCategoryTile({ cat, count, onClick, delay }: { cat: typeof CATEGORIES[0]; count: number; onClick: () => void; delay: number }) {
+type DemoTileMeta = { key: string; label: string; icon: string; gradient: string; border: string; glow: string; textColor: string };
+function DemoCategoryTile({ cat, count, onClick, delay }: { cat: DemoTileMeta; count: number; onClick: () => void; delay: number }) {
   return (
     <button
       onClick={onClick}
@@ -234,7 +235,7 @@ export default function DemoBoard() {
         <>
           {/* Hero */}
           <div
-            className="flex-shrink-0 px-5 pt-8 pb-6"
+            className="flex-shrink-0 px-5 pt-4 pb-4"
             style={{
               background: "linear-gradient(160deg, #0D2035 0%, #0F2440 40%, #0D1F38 100%)",
               position: "relative",
@@ -242,40 +243,32 @@ export default function DemoBoard() {
             }}
           >
             <div style={{ position: "absolute", top: "-60px", right: "-60px", width: "240px", height: "240px", background: "radial-gradient(circle, rgba(94,234,212,0.06) 0%, transparent 70%)", pointerEvents: "none" }} />
-            <div className="flex items-center gap-2.5 mb-3">
+            <div className="flex items-center gap-2.5 mb-2">
               <div style={{ width: 36, height: 36, borderRadius: "12px", background: "linear-gradient(135deg, rgba(94,234,212,0.2) 0%, rgba(94,234,212,0.08) 100%)", border: "1px solid rgba(94,234,212,0.3)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "18px" }}>⚡</div>
               <span className="text-[11px] font-bold uppercase tracking-[0.15em]" style={{ color: "#5EEAD4", fontFamily: "'Space Grotesk', sans-serif" }}>Command Center</span>
             </div>
-            <h1 className="text-[26px] font-black text-white leading-tight mb-1.5" style={{ fontFamily: "'Space Grotesk', sans-serif", letterSpacing: "-0.02em" }}>
+            <h1 className="text-[22px] font-black text-white leading-tight mb-1" style={{ fontFamily: "'Space Grotesk', sans-serif", letterSpacing: "-0.02em" }}>
               Your Business,<br />
               <span style={{ background: "linear-gradient(90deg, #5EEAD4, #A78BFA)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>In Sync.</span>
             </h1>
-            <p className="text-[13px]" style={{ color: "rgba(255,255,255,0.45)", lineHeight: "1.5" }}>
+            <p className="text-[12px]" style={{ color: "rgba(255,255,255,0.45)", lineHeight: "1.4" }}>
               Real-time updates between owners — no more missed conversations.
             </p>
           </div>
 
           {/* Tiles */}
-          <div className="flex-1 px-5 py-5">
-            <div className="grid grid-cols-2 gap-3 mb-5">
+          <div className="flex-1 px-5 py-3">
+            <div className="grid grid-cols-2 gap-3">
               {CATEGORIES.map((cat, i) => (
                 <DemoCategoryTile key={cat.key} cat={cat} count={counts[cat.key]} onClick={() => setActiveView(cat.key)} delay={i * 60} />
               ))}
-            </div>
-
-            {/* Needs attention */}
-            <div className="rounded-2xl p-4" style={{ backgroundColor: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
-              <p className="text-[11px] font-medium mb-2" style={{ color: "rgba(255,255,255,0.5)", fontFamily: "'Space Grotesk', sans-serif" }}>Needs attention</p>
-              <div className="flex flex-col gap-1.5">
-                <button onClick={() => setActiveView("tasks")} className="flex items-center gap-2 text-left w-full py-1.5 px-2 rounded-lg transition-all hover:bg-white/[0.03] active:scale-[0.98]">
-                  <span className="text-[13px]">☑</span>
-                  <span className="text-[12px] text-white/70">2 open tasks, 1 awaiting confirmation</span>
-                </button>
-                <button onClick={() => setActiveView("issues")} className="flex items-center gap-2 text-left w-full py-1.5 px-2 rounded-lg transition-all hover:bg-white/[0.03] active:scale-[0.98]">
-                  <span className="text-[13px]">🔥</span>
-                  <span className="text-[12px] text-white/70">2 issues to discuss</span>
-                </button>
-              </div>
+              {/* 4th tile: Needs Attention */}
+              <DemoCategoryTile
+                cat={{ key: "needs_attention", label: "Needs Attention", icon: "❗", gradient: "linear-gradient(135deg, rgba(251,191,36,0.18) 0%, rgba(251,191,36,0.07) 100%)", border: "rgba(251,191,36,0.38)", glow: "rgba(251,191,36,0.14)", textColor: "#FDE68A" }}
+                count={counts.tasks + counts.issues}
+                onClick={() => setActiveView("tasks")}
+                delay={3 * 60}
+              />
             </div>
           </div>
 
