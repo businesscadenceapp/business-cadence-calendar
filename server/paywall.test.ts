@@ -35,28 +35,40 @@ describe("Paywall plan data", () => {
     expect(core?.popular).toBe(false);
   });
 
-  it("core plan price is $79/month", () => {
-    const core = PLANS.find((p) => p.id === "core");
-    expect(core?.price).toBe("$79");
-    expect(core?.period).toBe("/ month");
+  it("core plan is $39/mo monthly and $29/mo annual", () => {
+    const core = PLANS.find((p) => p.id === "core")!;
+    expect(core.monthly.price).toBe("$39");
+    expect(core.annual.price).toBe("$29");
+    expect(core.monthly.period).toBe("/ month");
+    expect(core.annual.period).toBe("/ month");
   });
 
-  it("core_team plan price is $99/month", () => {
-    const coreTeam = PLANS.find((p) => p.id === "core_team");
-    expect(coreTeam?.price).toBe("$99");
-    expect(coreTeam?.period).toBe("/ month");
+  it("core_team plan is $49/mo monthly and $39/mo annual", () => {
+    const coreTeam = PLANS.find((p) => p.id === "core_team")!;
+    expect(coreTeam.monthly.price).toBe("$49");
+    expect(coreTeam.annual.price).toBe("$39");
+  });
+
+  it("annual billing totals are correct ($348 core, $468 core_team)", () => {
+    const core = PLANS.find((p) => p.id === "core")!;
+    const coreTeam = PLANS.find((p) => p.id === "core_team")!;
+    expect(core.annual.annualCents).toBe(348 * 100);
+    expect(coreTeam.annual.annualCents).toBe(468 * 100);
   });
 
   it("core_team plan costs more than core plan", () => {
     const core = PLANS.find((p) => p.id === "core")!;
     const coreTeam = PLANS.find((p) => p.id === "core_team")!;
-    expect(coreTeam.annualCents).toBeGreaterThan(core.annualCents);
+    expect(coreTeam.monthly.annualCents).toBeGreaterThan(core.monthly.annualCents);
+    expect(coreTeam.annual.annualCents).toBeGreaterThan(core.annual.annualCents);
   });
 
-  it("both plans have valid RevenueCat product IDs", () => {
+  it("all billing options have valid RevenueCat product IDs", () => {
     PLANS.forEach((p) => {
-      expect(p.productId.trim().length).toBeGreaterThan(0);
-      expect(p.productId).toMatch(/^bc_/);
+      for (const opt of [p.monthly, p.annual]) {
+        expect(opt.productId.trim().length).toBeGreaterThan(0);
+        expect(opt.productId).toMatch(/^bc_/);
+      }
     });
   });
 });
@@ -107,16 +119,16 @@ describe("Subscription onboarding steps", () => {
 describe("Subscription helper functions", () => {
   it("getTrialSubtext returns core_team text for core_team plan", () => {
     const text = getTrialSubtext("core_team");
-    expect(text).toContain("$99");
+    expect(text).toContain("$49");
+    expect(text).toContain("$39");
     expect(text).toContain("Cancel anytime");
-    expect(text).toContain("14-day");
   });
 
   it("getTrialSubtext returns core text for core plan", () => {
     const text = getTrialSubtext("core");
-    expect(text).toContain("$79");
+    expect(text).toContain("$39");
+    expect(text).toContain("$29");
     expect(text).toContain("Cancel anytime");
-    expect(text).toContain("14-day");
   });
 
   it("annualSavingsPercent returns 0 for month-only plans", () => {

@@ -70,10 +70,16 @@
 - [x] Restructure onboarding to 4 clean story-arc cards (remove calendar card)
 - [x] Fix MOST POPULAR badge overlapping plan name on paywall
 - [x] Build SetupChoice, InvitePartnerSetup, WaitingForPartner pages
-- [ ] Redesign post-subscribe flow: invite-first, native iPhone feel (remove SetupChoice)
-- [ ] Paywall routes directly to InvitePartnerSetup after subscribing
-- [ ] Rebuild InvitePartnerSetup as full-bleed native screen (business name + partner email)
-- [ ] Rebuild WaitingForPartner with native mobile design
+- [x] Rebuild InvitePartnerSetup as full-bleed native screen (business name + partner email)
+- [x] Rebuild WaitingForPartner with native mobile design
 - [x] Redesign post-subscribe flow: invite-first, native iPhone feel (remove SetupChoice)
 - [x] Paywall routes directly to InvitePartnerSetup after subscribing
 - [x] InvitePartnerSetup: added business name field, removed back-to-setup-choice, added self-setup escape hatch
+- [x] Create app storyboard PDF walkthrough
+
+## Onboarding Friction Reduction (from user critique)
+- [x] Cut business onboarding to 3 essential steps (business name, timezone/hours, invite partner)
+- [x] Add deferred "Complete your profile" prompt on Board for goals/KPIs/industry/team
+- [x] Add sandbox preview mode with sample data to WaitingForPartner screen
+- [x] Make 14-day free trial the paywall headline
+- [ ] Verify, run tests, checkpoint, push to GitHub

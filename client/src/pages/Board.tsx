@@ -1012,6 +1012,7 @@ export default function Board() {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [showCompleted, setShowCompleted] = useState(false);
   const { replay, registerRef, active: tourActive } = useTour();
+  const [profileDeferred, setProfileDeferred] = useState(false);
 
   // Start the tour on first Board visit after onboarding
   useEffect(() => {
@@ -1031,6 +1032,21 @@ export default function Board() {
     const stored = localStorage.getItem("bcc_account_id");
     return stored ? parseInt(stored, 10) : undefined;
   })();
+
+  // Quick onboarding defers goals/KPIs/meeting setup — surface a prompt to finish
+  useEffect(() => {
+    if (!accountId) return;
+    try {
+      setProfileDeferred(localStorage.getItem("bcc_profile_deferred_" + accountId) === "1");
+    } catch { /* ignore */ }
+  }, [accountId]);
+
+  const dismissProfilePrompt = () => {
+    if (accountId) {
+      try { localStorage.removeItem("bcc_profile_deferred_" + accountId); } catch { /* ignore */ }
+    }
+    setProfileDeferred(false);
+  };
 
   const { data: dbBusinesses = [] } = trpc.business.list.useQuery(
     { accountId: accountId ?? 0 },
@@ -1266,6 +1282,44 @@ export default function Board() {
 
       {/* Category Tiles Grid */}
       <div className="flex-1 px-5 py-5">
+        {/* Complete your profile prompt (quick onboarding deferred full setup) */}
+        {profileDeferred && (
+          <div
+            className="mb-4 rounded-2xl p-4 relative overflow-hidden"
+            style={{
+              background: "linear-gradient(135deg, rgba(94,234,212,0.12), rgba(56,189,248,0.08))",
+              border: "1px solid rgba(94,234,212,0.3)",
+            }}
+          >
+            <button
+              onClick={dismissProfilePrompt}
+              aria-label="Dismiss"
+              className="absolute top-2.5 right-2.5 w-7 h-7 rounded-full flex items-center justify-center text-sm transition-all active:scale-95"
+              style={{ color: "rgba(255,255,255,0.4)", backgroundColor: "rgba(255,255,255,0.06)" }}
+            >✕</button>
+            <div className="flex items-start gap-3 pr-8">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl flex-shrink-0"
+                style={{ backgroundColor: "rgba(94,234,212,0.15)", border: "1px solid rgba(94,234,212,0.3)" }}>
+                🎯
+              </div>
+              <div>
+                <p className="text-[14px] font-bold text-white mb-0.5" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+                  Complete your business profile
+                </p>
+                <p className="text-[12px] mb-2.5" style={{ color: "rgba(255,255,255,0.55)", lineHeight: "1.5" }}>
+                  Add your goals, KPIs, and meeting rhythm — about 3 more minutes.
+                </p>
+                <button
+                  onClick={() => { window.location.href = "/onboarding?full=1"; }}
+                  className="px-4 py-2 rounded-xl text-[12px] font-bold transition-all active:scale-[0.97]"
+                  style={{ background: "linear-gradient(135deg, #5EEAD4, #2DD4BF)", color: "#0F2440" }}
+                >
+                  Finish Setup →
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
         {isLoading ? (
           <div className="flex items-center justify-center h-40">
             <div className="flex flex-col items-center gap-3">

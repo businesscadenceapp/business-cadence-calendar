@@ -263,12 +263,15 @@ export default function Paywall({ dismissible, onSubscribe, onDismiss }: Paywall
 
           {/* Headline */}
           <div className="text-center mb-8">
+            <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-white/35 mb-2">
+              Run your business. Protect your life.
+            </p>
             <h1 className="text-3xl font-bold text-white leading-tight tracking-tight mb-3">
-              Run Your Business.{" "}
-              <span className="text-[#5EEAD4]">Protect Your Life.</span>
+              Try free for{" "}
+              <span className="text-[#5EEAD4]">14 days</span>
             </h1>
             <p className="text-white/55 text-base leading-relaxed">
-              Start your 14-day free trial — no charge until it ends.
+              Full access to everything. Cancel anytime — no charge until your trial ends.
             </p>
           </div>
 
