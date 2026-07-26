@@ -725,46 +725,46 @@ interface CardProps {
 }
 
 function renderCard(index: number, p: CardProps) {
-  switch (index) {
-    case p.industryCardIdx:
-      return (
-        <IndustryCard
-          value={p.industry}
-          onChange={p.setIndustry}
-          onNext={() => p.handleIndustryNext(p.industry)}
-          step={index}
-          total={p.CARD_COUNT}
-        />
-      );
-    case p.hoursCardIdx:
-      return (
-        <HoursCard
-          workDays={p.workDays}
-          startTime={p.startTime}
-          endTime={p.endTime}
-          onWorkDaysChange={p.setWorkDays}
-          onStartChange={p.setStartTime}
-          onEndChange={p.setEndTime}
-          onNext={p.handleHoursNext}
-          step={index}
-          total={p.CARD_COUNT}
-        />
-      );
-    case p.inviteCardIdx:
-      return !p.partnerAlreadySent ? (
-        <InviteCard
-          partnerName={p.partnerName}
-          partnerEmail={p.partnerEmail}
-          onPartnerNameChange={p.setPartnerName}
-          onPartnerEmailChange={p.setPartnerEmail}
-          onNext={p.handleInviteNext}
-          onSkip={p.handleInviteSkip}
-          isLoading={p.isSaving}
-          step={index}
-          total={p.CARD_COUNT}
-        />
-      ) : null;
-    default:
-      return null;
+  if (index === p.industryCardIdx) {
+    return (
+      <IndustryCard
+        value={p.industry}
+        onChange={p.setIndustry}
+        onNext={() => p.handleIndustryNext(p.industry)}
+        step={index}
+        total={p.CARD_COUNT}
+      />
+    );
   }
+  if (index === p.hoursCardIdx) {
+    return (
+      <HoursCard
+        workDays={p.workDays}
+        startTime={p.startTime}
+        endTime={p.endTime}
+        onWorkDaysChange={p.setWorkDays}
+        onStartChange={p.setStartTime}
+        onEndChange={p.setEndTime}
+        onNext={p.handleHoursNext}
+        step={index}
+        total={p.CARD_COUNT}
+      />
+    );
+  }
+  if (index === p.inviteCardIdx && !p.partnerAlreadySent) {
+    return (
+      <InviteCard
+        partnerName={p.partnerName}
+        partnerEmail={p.partnerEmail}
+        onPartnerNameChange={p.setPartnerName}
+        onPartnerEmailChange={p.setPartnerEmail}
+        onNext={p.handleInviteNext}
+        onSkip={p.handleInviteSkip}
+        isLoading={p.isSaving}
+        step={index}
+        total={p.CARD_COUNT}
+      />
+    );
+  }
+  return null;
 }
