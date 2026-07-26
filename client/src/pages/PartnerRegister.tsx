@@ -13,7 +13,7 @@
  * After onboarding completes, the partner link is created and the owner is notified.
  */
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { usePerson } from "@/contexts/PersonContext";
@@ -24,10 +24,17 @@ type Mode = "register" | "login";
 
 export default function PartnerRegister() {
   const [, navigate] = useLocation();
-  const { setPerson } = usePerson();
+  const { person, setPerson } = usePerson();
 
   const params = new URLSearchParams(window.location.search);
   const partnerToken = params.get("token") ?? "";
+
+  // ─── Already logged in? Skip straight to onboarding ─────────────────────────
+  useEffect(() => {
+    if (person && partnerToken) {
+      navigate(`/onboarding?partnerToken=${encodeURIComponent(partnerToken)}`);
+    }
+  }, [person, partnerToken, navigate]);
 
   // ─── Token lookup ────────────────────────────────────────────────────────────
   const { data: inviteData, isLoading: tokenLoading } = trpc.subscription.lookupPartnerInvite.useQuery(
