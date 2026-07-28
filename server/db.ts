@@ -195,6 +195,7 @@ export async function createBoardCard(
     scheduledDate?: number;
     updateDate?: number;
     audience?: "owner" | "team";
+    priority?: "high" | "medium" | "low";
   }
 ): Promise<BoardCard> {
   const db = await getDb();

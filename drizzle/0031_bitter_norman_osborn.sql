@@ -1,0 +1,1 @@
+ALTER TABLE `board_cards` ADD `priority` enum('high','medium','low') DEFAULT 'medium';

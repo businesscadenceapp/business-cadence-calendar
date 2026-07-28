@@ -91,6 +91,8 @@ export const boardCards = mysqlTable("board_cards", {
   audience: mysqlEnum("audience", ["owner", "team"]).notNull().default("owner"),
   // Attachments — JSON array of { key: string, url: string, name: string, mimeType: string, sizeBytes: number }
   attachmentsJson: text("attachmentsJson"), // JSON: Array<{ key, url, name, mimeType, sizeBytes }>
+  // Priority — applies to tasks, issues, and needs_attention cards
+  priority: mysqlEnum("priority", ["high", "medium", "low"]).default("medium"),
   // Legacy seen/archive fields (updates + issues)
   seenAt: timestamp("seenAt"),
   seenBy: varchar("seenBy", { length: 128 }),

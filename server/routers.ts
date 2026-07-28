@@ -670,6 +670,7 @@ Be concise and specific. If a field has nothing, use an empty array.`,
         notifyPersonIds: z.array(z.string()).optional(), // explicit recipient list (person IDs)
         audience: z.enum(["owner", "team"]).optional(), // which side of the wall
         personId: z.string().optional(),       // for business scope validation (replaces Manus OAuth)
+        priority: z.enum(["high", "medium", "low"]).optional(), // card priority level
       }))
       .mutation(async ({ input }) => {
         // Validate user has access to this business
@@ -684,7 +685,7 @@ Be concise and specific. If a field has nothing, use an empty array.`,
             }
           }
         }
-        const card = await createBoardCard({ ...input, audience: input.audience ?? "owner" });
+        const card = await createBoardCard({ ...input, audience: input.audience ?? "owner", priority: input.priority ?? "medium" });
         // Generate notifications for relevant recipients
         if (input.accountId) {
           const allPersons = await getPersonsByAccount(input.accountId);

@@ -51,6 +51,8 @@ function timeAgo(date: Date): string {
   return `${days}d ago`;
 }
 
+type Priority = "high" | "medium" | "low";
+
 type Card = {
   id: number;
   author: Author;
@@ -69,6 +71,23 @@ type Card = {
   audience: "owner" | "team" | null;
   attachmentsJson: string | null;
   createdAt: Date;
+  priority: Priority | null;
+};
+
+const PRIORITY_ORDER: Record<Priority, number> = { high: 0, medium: 1, low: 2 };
+
+function sortByPriority(cards: Card[]): Card[] {
+  return [...cards].sort((a, b) => {
+    const pa = PRIORITY_ORDER[a.priority ?? "medium"];
+    const pb = PRIORITY_ORDER[b.priority ?? "medium"];
+    return pa - pb;
+  });
+}
+
+const PRIORITY_BADGE: Record<Priority, { label: string; bg: string; text: string; border: string }> = {
+  high:   { label: "High",   bg: "rgba(225,29,72,0.15)",   text: "#FDA4AF", border: "rgba(225,29,72,0.3)" },
+  medium: { label: "Medium", bg: "rgba(217,119,6,0.15)",   text: "#FCD34D", border: "rgba(217,119,6,0.3)" },
+  low:    { label: "Low",    bg: "rgba(94,234,212,0.1)",   text: "#5EEAD4", border: "rgba(94,234,212,0.2)" },
 };
 
 // ─── Card Comments ──────────────────────────────────────────────────────────────
@@ -418,6 +437,16 @@ function TaskCard({ card, currentUser, accountId, onMarkDone, onConfirmDone, onD
                     {isOverdue ? "⚠️" : "📅"} {isOverdue ? "Overdue" : "Due"} {dueLabel}
                   </span>
                 )}
+                {(() => {
+                  const p = (card.priority ?? "medium") as Priority;
+                  const pb = PRIORITY_BADGE[p];
+                  return (
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+                      style={{ backgroundColor: pb.bg, color: pb.text, border: `1px solid ${pb.border}`, fontFamily: "'Space Grotesk', sans-serif" }}>
+                      {p === "high" ? "🔴" : p === "medium" ? "🟡" : "🟢"} {pb.label}
+                    </span>
+                  );
+                })()}
               </div>
               <p className="text-[13px] text-white leading-relaxed">{card.content}</p>
             </div>
@@ -593,6 +622,7 @@ function AddCardForm({ currentUser, onAdded, allowedBusinesses, defaultBusiness,
   const [meetingType, setMeetingType] = useState<"daily_huddle" | "weekly_meeting" | "quarterly_review" | null>(null);
   const [scheduledDate, setScheduledDate] = useState("");
   const [notifyPersonIds, setNotifyPersonIds] = useState<string[]>([]);
+  const [priority, setPriority] = useState<Priority>("medium");
   const [pendingAttachments, setPendingAttachments] = useState<Array<{ key: string; url: string; name: string; mimeType: string; sizeBytes: number }>>([]);
   const [uploadingFile, setUploadingFile] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -631,7 +661,7 @@ function AddCardForm({ currentUser, onAdded, allowedBusinesses, defaultBusiness,
   const createCard = trpc.board.create.useMutation({
     onSuccess: () => {
       setContent(""); setAssignedTo(null); setDueDate(""); setUpdateDate("");
-      setMeetingType(null); setScheduledDate(""); setNotifyPersonIds([]); setPendingAttachments([]);
+      setMeetingType(null); setScheduledDate(""); setNotifyPersonIds([]); setPriority("medium"); setPendingAttachments([]);
       onAdded();
       toast.success("Posted to the board");
     },
@@ -674,6 +704,7 @@ function AddCardForm({ currentUser, onAdded, allowedBusinesses, defaultBusiness,
       ...(accountId ? { accountId } : {}),
       ...((type === "update" || type === "issue") && notifyPersonIds.length > 0 ? { notifyPersonIds } : {}),
       ...(pendingAttachments.length > 0 ? { attachmentsJson: JSON.stringify(pendingAttachments) } : {}),
+      priority,
     });
   };
 
@@ -802,6 +833,26 @@ function AddCardForm({ currentUser, onAdded, allowedBusinesses, defaultBusiness,
         style={{ ...inputStyle, lineHeight: "1.6" }}
         onFocus={e => (e.target.style.borderColor = "rgba(255,255,255,0.25)")} onBlur={e => (e.target.style.borderColor = "rgba(255,255,255,0.12)")}
         onKeyDown={e => { if ((e.ctrlKey || e.metaKey) && e.key === "Enter") { e.preventDefault(); handleSubmit(); } }} />
+
+      {/* Priority selector — tasks and issues only */}
+      {(type === "task" || type === "issue") && (
+        <div className="flex flex-col gap-1.5">
+          <p className="text-[10px] uppercase tracking-wider font-medium" style={{ color: "rgba(255,255,255,0.4)", fontFamily: "'Space Grotesk', sans-serif" }}>Priority</p>
+          <div className="flex gap-2">
+            {(["high", "medium", "low"] as Priority[]).map(p => {
+              const pb = PRIORITY_BADGE[p];
+              const isActive = priority === p;
+              return (
+                <button key={p} type="button" onClick={() => setPriority(p)}
+                  className="flex-1 py-2 rounded-lg text-[11px] font-bold transition-all active:scale-[0.97]"
+                  style={{ backgroundColor: isActive ? pb.bg : "rgba(255,255,255,0.03)", border: `1.5px solid ${isActive ? pb.border : "rgba(255,255,255,0.08)"}`, color: isActive ? pb.text : "rgba(255,255,255,0.4)", fontFamily: "'Space Grotesk', sans-serif" }}>
+                  {p === "high" ? "🔴" : p === "medium" ? "🟡" : "🟢"} {pb.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Attachment picker */}
       <div className="flex flex-col gap-2">
@@ -1075,7 +1126,7 @@ export default function Board() {
     : allCards.filter(c => c.business === filterBusiness || c.business === "general");
 
   const updates = filtered.filter(c => c.type === "update" && !c.archivedAt);
-  const issues = filtered.filter(c => c.type === "issue" && !c.archivedAt);
+  const issues = sortByPriority(filtered.filter(c => c.type === "issue" && !c.archivedAt));
   const openTasks = filtered.filter(c => c.type === "task" && !c.archivedAt && !c.completedAt);
   const donePendingTasks = filtered.filter(c => c.type === "task" && !c.archivedAt && c.completedAt && !c.confirmedAt);
   const completedTasks = filtered.filter(c => c.type === "task" && c.archivedAt && c.confirmedAt);
