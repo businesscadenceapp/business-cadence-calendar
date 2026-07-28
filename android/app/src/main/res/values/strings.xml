@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Business Cadence Command Center</string>
+    <string name="title_activity_main">Business Cadence Command Center</string>
+    <string name="package_name">com.businesscadence.calendar</string>
+    <string name="custom_url_scheme">com.businesscadence.calendar</string>
+</resources>

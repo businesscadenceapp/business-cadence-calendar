@@ -23,6 +23,7 @@ import {
   SwitchBusinessButton,
   BusinessSwitcherModal,
 } from "@/components/BusinessSwitcher";
+import { useTour } from "@/contexts/TourContext";
 
 // ─── Identity Context ─────────────────────────────────────────────────────────
 
@@ -258,6 +259,7 @@ export default function AppShell({ children }: AppShellProps) {
   const { person, setPerson } = usePerson();
   const [moreOpen, setMoreOpen] = useState(false);
   const [switcherOpen, setSwitcherOpen] = useState(false);
+  const { registerRef } = useTour();
 
   const activePath = location === "/app" ? "/app/board" : location;
 
@@ -429,6 +431,11 @@ export default function AppShell({ children }: AppShellProps) {
                     <Link
                       key={item.path}
                       href={item.path}
+                      ref={(el: HTMLAnchorElement | null) => {
+                        if (item.path === "/app/calendar") registerRef("tour-calendar", el);
+                        if (item.path === "/app/goals") registerRef("tour-goals", el);
+                      }}
+                      data-tour={item.path === "/app/calendar" ? "tour-calendar" : item.path === "/app/goals" ? "tour-goals" : undefined}
                       className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-semibold transition-all duration-150"
                       style={{
                         backgroundColor: isActive ? "rgba(94,234,212,0.12)" : "transparent",
@@ -480,6 +487,8 @@ export default function AppShell({ children }: AppShellProps) {
                 {/* DND toggle — owners and co-owners only */}
                 {isOwnerOrCoOwner && (
                   <button
+                    ref={(el) => registerRef("tour-sleep", el)}
+                    data-tour="tour-sleep"
                     onClick={handleDndToggle}
                     className="flex-shrink-0 w-7 h-7 rounded-lg flex items-center justify-center transition-all active:scale-95"
                     style={{
@@ -530,7 +539,7 @@ export default function AppShell({ children }: AppShellProps) {
             }}
           >
             {/* Left: brand icon + active business name (compact) */}
-            <div className="flex items-center gap-2 flex-shrink-0">
+            <div className="flex items-center gap-2 min-w-0 flex-shrink">
               <BrandIcon size={28} variant="teal" className="flex-shrink-0" />
               {isOwnerOrCoOwner && (
                 <ActiveBusinessBadge businessKey={activeBusiness} compact />
@@ -540,7 +549,7 @@ export default function AppShell({ children }: AppShellProps) {
             {/* Owner/Team pill toggle — owners and co-owners only, mobile — centred in remaining space */}
             {isOwnerOrCoOwner && (
               <div
-                className="flex rounded-xl overflow-hidden mx-2 flex-1"
+                className="flex rounded-xl overflow-hidden mx-2 flex-1 min-w-0"
                 style={{
                   backgroundColor: "rgba(255,255,255,0.06)",
                   border: "1px solid rgba(255,255,255,0.12)",
@@ -549,7 +558,7 @@ export default function AppShell({ children }: AppShellProps) {
               >
                 <Link
                   href="/app/board"
-                  className="flex-1 flex items-center justify-center gap-1.5 py-2 text-[12px] font-bold transition-all"
+                  className="flex-1 min-w-0 flex items-center justify-center gap-1 px-2 py-2 text-[11px] font-bold transition-all whitespace-nowrap"
                   style={{
                     backgroundColor: !activePath.startsWith("/app/team") ? "rgba(94,234,212,0.2)" : "transparent",
                     color: !activePath.startsWith("/app/team") ? "#5EEAD4" : "rgba(255,255,255,0.4)",
@@ -558,12 +567,13 @@ export default function AppShell({ children }: AppShellProps) {
                     minHeight: "36px",
                   }}
                 >
-                  <span>👔</span><span>Owner</span>
+                  <span className="flex-shrink-0">👔</span>
+                  <span className="hidden min-[390px]:inline">Owner</span>
                 </Link>
                 <div style={{ width: "1px", backgroundColor: "rgba(255,255,255,0.1)", flexShrink: 0 }} />
                 <Link
                   href="/app/team"
-                  className="flex-1 flex items-center justify-center gap-1.5 py-2 text-[12px] font-bold transition-all"
+                  className="flex-1 min-w-0 flex items-center justify-center gap-1 px-2 py-2 text-[11px] font-bold transition-all whitespace-nowrap"
                   style={{
                     backgroundColor: activePath.startsWith("/app/team") ? "rgba(167,139,250,0.2)" : "transparent",
                     color: activePath.startsWith("/app/team") ? "#A78BFA" : "rgba(255,255,255,0.4)",
@@ -572,7 +582,8 @@ export default function AppShell({ children }: AppShellProps) {
                     minHeight: "36px",
                   }}
                 >
-                  <span>👥</span><span>Team</span>
+                  <span className="flex-shrink-0">👥</span>
+                  <span className="hidden min-[390px]:inline">Team</span>
                 </Link>
               </div>
             )}
@@ -581,6 +592,8 @@ export default function AppShell({ children }: AppShellProps) {
             <div className="flex items-center gap-2 flex-shrink-0">
               {person && isOwnerOrCoOwner && (
                 <button
+                  ref={(el) => registerRef("tour-sleep", el)}
+                  data-tour="tour-sleep"
                   onClick={handleDndToggle}
                   className="w-8 h-8 rounded-lg flex items-center justify-center transition-all active:scale-95"
                   style={{
@@ -630,6 +643,11 @@ export default function AppShell({ children }: AppShellProps) {
                 <Link
                   key={item.path}
                   href={item.path}
+                  ref={(el: HTMLAnchorElement | null) => {
+                    if (item.path === "/app/calendar") registerRef("tour-calendar", el);
+                    if (item.path === "/app/goals") registerRef("tour-goals", el);
+                  }}
+                  data-tour={item.path === "/app/calendar" ? "tour-calendar" : item.path === "/app/goals" ? "tour-goals" : undefined}
                   className="relative flex-1 flex flex-col items-center justify-center gap-0.5 transition-all duration-150 active:scale-95"
                   style={{ color: isActive ? "#5EEAD4" : "rgba(255,255,255,0.35)" }}
                 >

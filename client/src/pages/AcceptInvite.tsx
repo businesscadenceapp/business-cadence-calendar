@@ -1,15 +1,18 @@
 /**
- * AcceptInvite — Employee invite acceptance page.
+ * AcceptInvite — Handles both employee invites and partner (co-owner) invites.
  * Reached via /accept-invite?token=<token>
- * Employee sets their own password and is immediately logged in.
+ * - Employee invite: sets password, gets access to Team Board
+ * - Partner invite (?partner=1): sets password, gets linked to owner's subscription,
+ *   bypasses paywall entirely — access is granted server-side.
  * Dark navy theme: #0F2440 bg, #5EEAD4 teal accent, white text
  */
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { usePerson } from "@/contexts/PersonContext";
 import { toast } from "sonner";
+import { Users } from "lucide-react";
 
 export default function AcceptInvite() {
   const [, navigate] = useLocation();
@@ -17,16 +20,37 @@ export default function AcceptInvite() {
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [partnerName, setPartnerName] = useState<string | null>(null);
 
   const token = new URLSearchParams(window.location.search).get("token") ?? "";
+  const isPartnerInvite = new URLSearchParams(window.location.search).get("partner") === "1";
 
+  // For regular employee invites
   const { data: inviteData, isLoading: tokenLoading } = trpc.person.lookupInvite.useQuery(
     { token },
-    { enabled: !!token, retry: false }
+    { enabled: !!token && !isPartnerInvite, retry: false }
   );
 
-  const tokenError = !token || (!tokenLoading && (!inviteData || !inviteData.valid));
+  // For partner invites — look up the owner by their partnerInviteToken
+  const { data: partnerInviteData, isLoading: partnerTokenLoading } = trpc.subscription.lookupPartnerInvite.useQuery(
+    { token },
+    { enabled: !!token && isPartnerInvite, retry: false }
+  );
 
+  useEffect(() => {
+    if (isPartnerInvite && partnerInviteData?.valid && partnerInviteData.ownerName) {
+      setPartnerName(partnerInviteData.ownerName);
+    }
+  }, [isPartnerInvite, partnerInviteData]);
+
+  const tokenLoading_ = isPartnerInvite ? partnerTokenLoading : tokenLoading;
+  const tokenError = !token || (!tokenLoading_ && (
+    isPartnerInvite
+      ? (!partnerInviteData || !partnerInviteData.valid)
+      : (!inviteData || !inviteData.valid)
+  ));
+
+  // ─── Regular employee invite acceptance ──────────────────────────────────────
   const accept = trpc.person.acceptInvite.useMutation({
     onSuccess: (data) => {
       setIsLoading(false);
@@ -36,8 +60,8 @@ export default function AcceptInvite() {
           localStorage.setItem("bcc_account_id", String(data.person.accountId));
           localStorage.setItem("bcc_auth_v1", "granted");
         } catch { /* ignore */ }
+
         toast.success(`Welcome, ${data.person.name}! Your account is ready.`);
-        // Employees land on the Team Board; owners/co-owners go to the main board
         const role = (data.person as any).role;
         navigate(role === "employee" ? "/app/team" : "/app/board");
       } else {
@@ -47,6 +71,38 @@ export default function AcceptInvite() {
           navigate("/login");
         } else {
           toast.error("Invalid or expired invite link.");
+        }
+      }
+    },
+    onError: () => {
+      setIsLoading(false);
+      toast.error("Something went wrong. Please try again.");
+    },
+  });
+
+  // ─── Partner invite acceptance (atomic server-side) ───────────────────────────
+  const acceptPartner = trpc.subscription.acceptPartnerInvite.useMutation({
+    onSuccess: (data) => {
+      setIsLoading(false);
+      if (data.success && data.person) {
+        setPerson(data.person as any);
+        try {
+          localStorage.setItem("bcc_account_id", String(data.person.accountId));
+          localStorage.setItem("bcc_auth_v1", "granted");
+        } catch { /* ignore */ }
+        toast.success("Welcome! You now have full access to BusinessCadence.");
+        navigate("/app/board");
+      } else {
+        const reason = (data as any).reason;
+        if (reason === "already_accepted") {
+          toast.error("This invite has already been used. Please sign in instead.");
+          navigate("/login");
+        } else if (reason === "invalid_token") {
+          toast.error("This partner invite link is invalid or has expired.");
+        } else if (reason === "partner_not_found") {
+          toast.error("Your account was not found. Please ask your partner to re-send the invite.");
+        } else {
+          toast.error("Could not activate your account. Please try again.");
         }
       }
     },
@@ -67,7 +123,11 @@ export default function AcceptInvite() {
       return;
     }
     setIsLoading(true);
-    accept.mutate({ token, password });
+    if (isPartnerInvite) {
+      acceptPartner.mutate({ token, password });
+    } else {
+      accept.mutate({ token, password });
+    }
   };
 
   return (
@@ -114,7 +174,9 @@ export default function AcceptInvite() {
               Invalid Invite Link
             </h1>
             <p className="text-sm mb-6" style={{ color: "rgba(255,255,255,0.5)" }}>
-              This invite link is invalid or has already been used. Please contact your account owner for a new invite.
+              {isPartnerInvite
+                ? "This partner invite link is invalid or has expired. Ask your partner to generate a new one from their app."
+                : "This invite link is invalid or has already been used. Please contact your account owner for a new invite."}
             </p>
             <a
               href="/login"
@@ -127,17 +189,44 @@ export default function AcceptInvite() {
         ) : (
           <>
             <div className="text-center mb-8">
-              {/* Teal invite badge */}
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-4"
-                style={{ backgroundColor: "rgba(94,234,212,0.12)", border: "1px solid rgba(94,234,212,0.25)" }}>
-                <span className="text-xs font-semibold" style={{ color: "#5EEAD4" }}>✉ You've been invited</span>
-              </div>
-              <h1 className="text-3xl font-bold text-white mb-2" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-                {inviteData?.name ? `Welcome, ${inviteData.name}!` : "You're Invited!"}
-              </h1>
-              <p className="text-sm" style={{ color: "rgba(255,255,255,0.5)" }}>
-                Set your password to activate your BusinessCadence account.
-              </p>
+              {isPartnerInvite ? (
+                <>
+                  {/* Partner invite badge */}
+                  <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-4"
+                    style={{ backgroundColor: "rgba(94,234,212,0.12)", border: "1px solid rgba(94,234,212,0.25)" }}>
+                    <Users size={12} style={{ color: "#5EEAD4" }} />
+                    <span className="text-xs font-semibold" style={{ color: "#5EEAD4" }}>Partner Invite</span>
+                  </div>
+                  <h1 className="text-3xl font-bold text-white mb-2" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+                    {partnerName ? `${partnerName} invited you!` : "You're Invited!"}
+                  </h1>
+                  <p className="text-sm mb-2" style={{ color: "rgba(255,255,255,0.5)" }}>
+                    Set your password to join BusinessCadence as a co-owner.
+                  </p>
+                  <div
+                    className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg mt-1"
+                    style={{ backgroundColor: "rgba(94,234,212,0.08)", border: "1px solid rgba(94,234,212,0.2)" }}
+                  >
+                    <span className="text-xs" style={{ color: "rgba(94,234,212,0.9)" }}>
+                      ✓ Full access included — no payment required
+                    </span>
+                  </div>
+                </>
+              ) : (
+                <>
+                  {/* Employee invite badge */}
+                  <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-4"
+                    style={{ backgroundColor: "rgba(94,234,212,0.12)", border: "1px solid rgba(94,234,212,0.25)" }}>
+                    <span className="text-xs font-semibold" style={{ color: "#5EEAD4" }}>✉ You've been invited</span>
+                  </div>
+                  <h1 className="text-3xl font-bold text-white mb-2" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+                    {inviteData?.name ? `Welcome, ${inviteData.name}!` : "You're Invited!"}
+                  </h1>
+                  <p className="text-sm" style={{ color: "rgba(255,255,255,0.5)" }}>
+                    Set your password to activate your BusinessCadence account.
+                  </p>
+                </>
+              )}
             </div>
 
             <div

@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "07edca30-06b6-4be7-be45-a68d921e5435",
+  "id": "622b1568-782e-43fb-a265-af2982ff4ed1",
   "prevId": "e8e20f86-6ae5-462e-8933-147fdeb85cc3",
   "tables": {
     "agenda_items": {
@@ -342,14 +342,6 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
-        },
-        "priority": {
-          "name": "priority",
-          "type": "enum('high','medium','low')",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false,
-          "default": "'medium'"
         },
         "seenAt": {
           "name": "seenAt",
@@ -1370,90 +1362,6 @@
       "compositePrimaryKeys": {
         "meeting_logs_id": {
           "name": "meeting_logs_id",
-          "columns": [
-            "id"
-          ]
-        }
-      },
-      "uniqueConstraints": {},
-      "checkConstraint": {}
-    },
-    "meeting_recordings": {
-      "name": "meeting_recordings",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "int",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": true
-        },
-        "meetingLogId": {
-          "name": "meetingLogId",
-          "type": "int",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "audioKey": {
-          "name": "audioKey",
-          "type": "varchar(512)",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "transcript": {
-          "name": "transcript",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "aiNotes": {
-          "name": "aiNotes",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "processingStatus": {
-          "name": "processingStatus",
-          "type": "enum('pending','processing','done','error')",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "'pending'"
-        },
-        "errorMessage": {
-          "name": "errorMessage",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "createdAt": {
-          "name": "createdAt",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "(now())"
-        },
-        "updatedAt": {
-          "name": "updatedAt",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "onUpdate": true,
-          "default": "(now())"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {
-        "meeting_recordings_id": {
-          "name": "meeting_recordings_id",
           "columns": [
             "id"
           ]

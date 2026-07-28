@@ -222,6 +222,34 @@
     {
       "idx": 31,
       "version": "5",
+      "when": 1784999759612,
+      "tag": "0031_condemned_hellfire_club",
+      "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "5",
+      "when": 1785002095732,
+      "tag": "0032_moaning_wong",
+      "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "5",
+      "when": 1785002357334,
+      "tag": "0033_nice_paladin",
+      "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "5",
+      "when": 1785028383724,
+      "tag": "0034_partner_invite_business",
+      "breakpoints": true
+    },
+    {
+      "idx": 35,
+      "version": "5",
       "when": 1785270338184,
       "tag": "0031_bitter_norman_osborn",
       "breakpoints": true

@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { usePerson } from "@/contexts/PersonContext";
 import { useIdentity } from "@/components/AppShell";
 import { useActiveBusiness } from "@/components/BusinessSwitcher";
+import { useTour, TOUR_STORAGE_KEY, TOUR_PENDING_KEY } from "@/contexts/TourContext";
 
 type Author = string;
 type CardType = "update" | "issue" | "task";
@@ -929,6 +930,7 @@ function AddCardForm({ currentUser, onAdded, allowedBusinesses, defaultBusiness,
 // ─── Category Tile (Home Card) ───────────────────────────────────────────────
 
 type CategoryKey = "tasks" | "updates" | "issues" | "archive";
+type TileKey = CategoryKey | "needs_attention";
 
 const CATEGORIES: { key: CategoryKey; label: string; icon: string; gradient: string; border: string; glow: string; textColor: string; countBg: string }[] = [
   { key: "tasks", label: "Tasks", icon: "☑", gradient: "linear-gradient(135deg, rgba(124,58,237,0.15) 0%, rgba(124,58,237,0.06) 100%)", border: "rgba(124,58,237,0.3)", glow: "rgba(124,58,237,0.12)", textColor: "#C4B5FD", countBg: "rgba(124,58,237,0.25)" },
@@ -937,7 +939,20 @@ const CATEGORIES: { key: CategoryKey; label: string; icon: string; gradient: str
   { key: "archive", label: "Archive", icon: "🗂", gradient: "linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%)", border: "rgba(255,255,255,0.12)", glow: "rgba(255,255,255,0.04)", textColor: "rgba(255,255,255,0.6)", countBg: "rgba(255,255,255,0.08)" },
 ];
 
-function CategoryTile({ cat, count, onClick, delay }: { cat: typeof CATEGORIES[0]; count: number; onClick: () => void; delay: number }) {
+// Needs Attention tile — shown as 4th tile replacing Archive in the 2×2 grid
+const NEEDS_ATTENTION_META = {
+  key: "needs_attention" as const,
+  label: "Needs Attention",
+  icon: "❗",
+  gradient: "linear-gradient(135deg, rgba(251,191,36,0.18) 0%, rgba(251,191,36,0.07) 100%)",
+  border: "rgba(251,191,36,0.38)",
+  glow: "rgba(251,191,36,0.14)",
+  textColor: "#FDE68A",
+  countBg: "rgba(251,191,36,0.28)",
+};
+
+type TileMeta = { key: string; label: string; icon: string; gradient: string; border: string; glow: string; textColor: string; countBg: string };
+function CategoryTile({ cat, count, onClick, delay }: { cat: TileMeta; count: number; onClick: () => void; delay: number }) {
   return (
     <button
       onClick={onClick}
@@ -1061,11 +1076,42 @@ export default function Board() {
   const [activeView, setActiveView] = useState<CategoryKey | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [showCompleted, setShowCompleted] = useState(false);
+  const { replay, registerRef, active: tourActive } = useTour();
+  const [profileDeferred, setProfileDeferred] = useState(false);
+
+  // Start the tour on first Board visit after onboarding
+  useEffect(() => {
+    const pending = localStorage.getItem(TOUR_PENDING_KEY);
+    const completed = localStorage.getItem(TOUR_STORAGE_KEY);
+    // Show tour if: explicit replay request from Settings, OR first-ever Board visit
+    if (pending === "1" || !completed) {
+      const t = setTimeout(() => {
+        localStorage.removeItem(TOUR_PENDING_KEY);
+        replay(); // replay() clears completion key and sets active=true
+      }, 800);
+      return () => clearTimeout(t);
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const accountId = person?.accountId ?? (() => {
     const stored = localStorage.getItem("bcc_account_id");
     return stored ? parseInt(stored, 10) : undefined;
   })();
+
+  // Quick onboarding defers goals/KPIs/meeting setup — surface a prompt to finish
+  useEffect(() => {
+    if (!accountId) return;
+    try {
+      setProfileDeferred(localStorage.getItem("bcc_profile_deferred_" + accountId) === "1");
+    } catch { /* ignore */ }
+  }, [accountId]);
+
+  const dismissProfilePrompt = () => {
+    if (accountId) {
+      try { localStorage.removeItem("bcc_profile_deferred_" + accountId); } catch { /* ignore */ }
+    }
+    setProfileDeferred(false);
+  };
 
   const { data: dbBusinesses = [] } = trpc.business.list.useQuery(
     { accountId: accountId ?? 0 },
@@ -1268,7 +1314,7 @@ export default function Board() {
     >
       {/* Hero */}
       <div
-        className="flex-shrink-0 px-5 pt-8 pb-6"
+        className="flex-shrink-0 px-5 pt-4 pb-4"
         style={{
           background: "linear-gradient(160deg, #0D2035 0%, #0F2440 40%, #0D1F38 100%)",
           position: "relative",
@@ -1279,7 +1325,7 @@ export default function Board() {
         <div style={{ position: "absolute", top: "-60px", right: "-60px", width: "240px", height: "240px", background: "radial-gradient(circle, rgba(94,234,212,0.06) 0%, transparent 70%)", pointerEvents: "none" }} />
         <div style={{ position: "absolute", bottom: "-40px", left: "-40px", width: "180px", height: "180px", background: "radial-gradient(circle, rgba(124,58,237,0.05) 0%, transparent 70%)", pointerEvents: "none" }} />
 
-        <div className="flex items-center gap-2.5 mb-3">
+        <div className="flex items-center gap-2.5 mb-2">
           <div style={{
             width: 36, height: 36, borderRadius: "12px",
             background: "linear-gradient(135deg, rgba(94,234,212,0.2) 0%, rgba(94,234,212,0.08) 100%)",
@@ -1290,17 +1336,55 @@ export default function Board() {
           <span className="text-[11px] font-bold uppercase tracking-[0.15em]" style={{ color: "#5EEAD4", fontFamily: "'Space Grotesk', sans-serif" }}>Command Center</span>
         </div>
 
-        <h1 className="text-[26px] font-black text-white leading-tight mb-1.5" style={{ fontFamily: "'Space Grotesk', sans-serif", letterSpacing: "-0.02em" }}>
+        <h1 className="text-[22px] font-black text-white leading-tight mb-1" style={{ fontFamily: "'Space Grotesk', sans-serif", letterSpacing: "-0.02em" }}>
           Your Business,<br />
           <span style={{ background: "linear-gradient(90deg, #5EEAD4, #A78BFA)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>In Sync.</span>
         </h1>
-        <p className="text-[13px]" style={{ color: "rgba(255,255,255,0.45)", lineHeight: "1.5" }}>
+        <p className="text-[12px]" style={{ color: "rgba(255,255,255,0.45)", lineHeight: "1.4" }}>
           Real-time updates between owners — no more missed conversations.
         </p>
       </div>
 
       {/* Category Tiles Grid */}
-      <div className="flex-1 px-5 py-5">
+      <div className="flex-1 px-5 py-3">
+        {/* Complete your profile prompt (quick onboarding deferred full setup) */}
+        {profileDeferred && (
+          <div
+            className="mb-4 rounded-2xl p-4 relative overflow-hidden"
+            style={{
+              background: "linear-gradient(135deg, rgba(94,234,212,0.12), rgba(56,189,248,0.08))",
+              border: "1px solid rgba(94,234,212,0.3)",
+            }}
+          >
+            <button
+              onClick={dismissProfilePrompt}
+              aria-label="Dismiss"
+              className="absolute top-2.5 right-2.5 w-7 h-7 rounded-full flex items-center justify-center text-sm transition-all active:scale-95"
+              style={{ color: "rgba(255,255,255,0.4)", backgroundColor: "rgba(255,255,255,0.06)" }}
+            >✕</button>
+            <div className="flex items-start gap-3 pr-8">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl flex-shrink-0"
+                style={{ backgroundColor: "rgba(94,234,212,0.15)", border: "1px solid rgba(94,234,212,0.3)" }}>
+                🎯
+              </div>
+              <div>
+                <p className="text-[14px] font-bold text-white mb-0.5" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+                  Complete your business profile
+                </p>
+                <p className="text-[12px] mb-2.5" style={{ color: "rgba(255,255,255,0.55)", lineHeight: "1.5" }}>
+                  Add your goals, KPIs, and meeting rhythm — about 3 more minutes.
+                </p>
+                <button
+                  onClick={() => { window.location.href = "/onboarding?full=1"; }}
+                  className="px-4 py-2 rounded-xl text-[12px] font-bold transition-all active:scale-[0.97]"
+                  style={{ background: "linear-gradient(135deg, #5EEAD4, #2DD4BF)", color: "#0F2440" }}
+                >
+                  Finish Setup →
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
         {isLoading ? (
           <div className="flex items-center justify-center h-40">
             <div className="flex flex-col items-center gap-3">
@@ -1310,42 +1394,35 @@ export default function Board() {
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-3">
-            {CATEGORIES.map((cat, i) => (
+            {CATEGORIES.filter(c => c.key !== "archive").map((cat, i) => (
               <CategoryTile
                 key={cat.key}
                 cat={cat}
                 count={counts[cat.key]}
-                onClick={() => cat.key === "archive" ? (window.location.href = "/app/board/archive") : setActiveView(cat.key)}
+                onClick={() => setActiveView(cat.key)}
                 delay={i * 60}
               />
             ))}
+            {/* 4th tile: Needs Attention */}
+            <CategoryTile
+              cat={NEEDS_ATTENTION_META as unknown as TileMeta}
+              count={(counts.tasks ?? 0) + (counts.issues ?? 0)}
+              onClick={() => {
+                // Navigate to tasks if there are tasks, otherwise issues
+                if ((counts.tasks ?? 0) > 0) setActiveView("tasks");
+                else if ((counts.issues ?? 0) > 0) setActiveView("issues");
+              }}
+              delay={3 * 60}
+            />
           </div>
         )}
 
-        {/* Quick summary below tiles */}
-        {!isLoading && (counts.tasks > 0 || counts.issues > 0) && (
-          <div className="mt-5 rounded-2xl p-4" style={{ backgroundColor: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
-            <p className="text-[11px] font-medium mb-2" style={{ color: "rgba(255,255,255,0.5)", fontFamily: "'Space Grotesk', sans-serif" }}>Needs attention</p>
-            <div className="flex flex-col gap-1.5">
-              {counts.tasks > 0 && (
-                <button onClick={() => setActiveView("tasks")} className="flex items-center gap-2 text-left w-full py-1.5 px-2 rounded-lg transition-all hover:bg-white/[0.03] active:scale-[0.98]">
-                  <span className="text-[13px]">☑</span>
-                  <span className="text-[12px] text-white/70">{openTasks.length} open task{openTasks.length !== 1 ? "s" : ""}{donePendingTasks.length > 0 ? `, ${donePendingTasks.length} awaiting confirmation` : ""}</span>
-                </button>
-              )}
-              {counts.issues > 0 && (
-                <button onClick={() => setActiveView("issues")} className="flex items-center gap-2 text-left w-full py-1.5 px-2 rounded-lg transition-all hover:bg-white/[0.03] active:scale-[0.98]">
-                  <span className="text-[13px]">🔥</span>
-                  <span className="text-[12px] text-white/70">{issues.length} issue{issues.length !== 1 ? "s" : ""} to discuss</span>
-                </button>
-              )}
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Floating Action Button */}
       <button
+        ref={(el) => registerRef("tour-hub", el)}
+        data-tour="tour-hub"
         onClick={() => setSheetOpen(true)}
         className="fixed bottom-6 right-6 w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-bold transition-all active:scale-[0.9] hover:scale-[1.05] z-40"
         style={{

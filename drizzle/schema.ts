@@ -160,28 +160,6 @@ export type AppUser = typeof appUsers.$inferSelect;
 export type InsertAppUser = typeof appUsers.$inferInsert;
 
 /**
- * Stores meeting recordings, transcripts, and AI-generated notes.
- * Linked to a meeting_logs row by meetingLogId.
- * audioKey: S3 storage key for the raw audio file
- * transcript: full Whisper transcription text
- * aiNotes: AI-generated structured notes (JSON string with summary, actionItems, resolvedItems)
- */
-export const meetingRecordings = mysqlTable("meeting_recordings", {
-  id: int("id").autoincrement().primaryKey(),
-  meetingLogId: int("meetingLogId").notNull(),
-  audioKey: varchar("audioKey", { length: 512 }),
-  transcript: text("transcript"),
-  aiNotes: text("aiNotes"), // JSON: { summary: string, actionItems: string[], resolvedItems: string[], keyDecisions: string[] }
-  processingStatus: mysqlEnum("processingStatus", ["pending", "processing", "done", "error"]).default("pending").notNull(),
-  errorMessage: text("errorMessage"),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-});
-
-export type MeetingRecording = typeof meetingRecordings.$inferSelect;
-export type InsertMeetingRecording = typeof meetingRecordings.$inferInsert;
-
-/**
  * Business profile — created during onboarding for each app_user account.
  * Stores business info, work schedule, and meeting day preferences.
  * workDays: JSON array of day-of-week numbers (0=Sun, 1=Mon, ..., 6=Sat)
@@ -379,6 +357,10 @@ export const persons = mysqlTable("persons", {
   inviteAccepted: boolean("inviteAccepted").default(false).notNull(),
   passwordResetToken: varchar("passwordResetToken", { length: 128 }),
   passwordResetExpiry: timestamp("passwordResetExpiry"),
+  /** One-time token the owner generates to invite their partner (co-owner) to share their subscription. */
+  partnerInviteToken: varchar("partnerInviteToken", { length: 128 }),
+  /** Business name stored alongside the partner invite token so the intro screen can personalize the CTA. */
+  partnerInviteBusinessName: varchar("partnerInviteBusinessName", { length: 256 }),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
@@ -501,7 +483,7 @@ export const notifications = mysqlTable("notifications", {
   id: int("id").autoincrement().primaryKey(),
   accountId: int("accountId").notNull(),
   recipientPersonId: varchar("recipientPersonId", { length: 64 }).notNull(),
-  type: mysqlEnum("type", ["task_assigned", "task_done_pending", "task_confirmed", "new_update", "new_issue", "overdue_task"]).notNull(),
+  type: mysqlEnum("type", ["task_assigned", "task_done_pending", "task_confirmed", "new_update", "new_issue", "overdue_task", "partner_joined"]).notNull(),
   title: varchar("title", { length: 256 }).notNull(),
   body: varchar("body", { length: 512 }).notNull(),
   linkTo: varchar("linkTo", { length: 256 }).default("/app/board").notNull(),
@@ -550,3 +532,56 @@ export const teamCalendarSettings = mysqlTable("team_calendar_settings", {
 
 export type TeamCalendarSettings = typeof teamCalendarSettings.$inferSelect;
 export type InsertTeamCalendarSettings = typeof teamCalendarSettings.$inferInsert;
+
+/**
+ * Subscriptions — tracks RevenueCat subscription state per account.
+ * One row per account (upserted on each RevenueCat webhook event).
+ *
+ * plan:   "core"      = $79/mo — owners only
+ *         "core_team" = $99/mo — owners + team employees
+ * status: "trialing"  = within 14-day free trial
+ *         "active"    = paid subscription current
+ *         "lapsed"    = subscription cancelled or payment failed
+ *         "cancelled" = owner explicitly cancelled (access until period end)
+ *
+ * revenueCatUserId: the RevenueCat app_user_id (we use persons.id as the RC user ID)
+ * revenueCatData:   raw JSON from the latest RevenueCat webhook event (for debugging)
+ */
+export const subscriptions = mysqlTable("subscriptions", {
+  id: int("id").autoincrement().primaryKey(),
+  accountId: int("accountId").notNull().unique(), // references app_users.id — one sub per account
+  ownerPersonId: varchar("ownerPersonId", { length: 64 }).notNull(), // the person who purchased
+  revenueCatUserId: varchar("revenueCatUserId", { length: 256 }),    // RC app_user_id
+  revenueCatProductId: varchar("revenueCatProductId", { length: 256 }), // e.g. "bc_core_monthly"
+  plan: mysqlEnum("plan", ["core", "core_team"]).notNull().default("core"),
+  status: mysqlEnum("status", ["trialing", "active", "lapsed", "cancelled"]).notNull().default("trialing"),
+  trialEndsAt: timestamp("trialEndsAt"),           // null after trial converts
+  currentPeriodEndsAt: timestamp("currentPeriodEndsAt"), // next renewal / access end date
+  revenueCatData: text("revenueCatData"),          // JSON: latest RC webhook payload
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Subscription = typeof subscriptions.$inferSelect;
+export type InsertSubscription = typeof subscriptions.$inferInsert;
+
+/**
+ * Partner Links — maps a co-owner (partner) person to the paying owner's account.
+ * When a partner accepts a partner invite, a row is inserted here.
+ * The server checks this table to grant access without requiring the partner
+ * to have their own RevenueCat subscription.
+ *
+ * ownerPersonId:   the person who sent the invite (must be role=owner)
+ * partnerPersonId: the person who accepted the invite (role=coowner)
+ * accountId:       the shared app_users account both persons belong to
+ */
+export const partnerLinks = mysqlTable("partner_links", {
+  id: int("id").autoincrement().primaryKey(),
+  accountId: int("accountId").notNull(),                              // references app_users.id
+  ownerPersonId: varchar("ownerPersonId", { length: 64 }).notNull(), // references persons.id
+  partnerPersonId: varchar("partnerPersonId", { length: 64 }).notNull().unique(), // references persons.id
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type PartnerLink = typeof partnerLinks.$inferSelect;
+export type InsertPartnerLink = typeof partnerLinks.$inferInsert;

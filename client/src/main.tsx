@@ -8,6 +8,44 @@ import superjson from "superjson";
 import App from "./App";
 import { getLoginUrl } from "./const";
 import "./index.css";
+import { Capacitor } from "@capacitor/core";
+
+/**
+ * Initialize RevenueCat SDK on native platforms at app startup.
+ * Must run before any Paywall or restore-purchases flow.
+ *
+ * API keys:
+ *   iOS:     VITE_REVENUECAT_IOS_KEY     (set in Secrets)
+ *   Android: VITE_REVENUECAT_ANDROID_KEY (set in Secrets)
+ *
+ * The app user ID is set to the person's `id` (nanoid) so RevenueCat
+ * events can be matched to the correct person in the webhook handler.
+ * We initialize anonymously here (no user ID yet) and identify the user
+ * after login via Purchases.logIn() — see PersonContext.
+ */
+async function initRevenueCat() {
+  if (!Capacitor.isNativePlatform()) return;
+  try {
+    const { Purchases, LOG_LEVEL } = await import("@revenuecat/purchases-capacitor");
+    const platform = Capacitor.getPlatform();
+    const apiKey =
+      platform === "ios"
+        ? (import.meta.env.VITE_REVENUECAT_IOS_KEY ?? "")
+        : (import.meta.env.VITE_REVENUECAT_ANDROID_KEY ?? "");
+    if (!apiKey) {
+      console.warn("[RevenueCat] No API key configured for platform:", platform);
+      return;
+    }
+    await Purchases.setLogLevel({ level: LOG_LEVEL.WARN });
+    await Purchases.configure({ apiKey });
+    console.log("[RevenueCat] SDK initialized for platform:", platform);
+  } catch (err) {
+    console.error("[RevenueCat] SDK initialization failed:", err);
+  }
+}
+
+// Fire-and-forget — does not block rendering
+initRevenueCat();
 
 const queryClient = new QueryClient();
 

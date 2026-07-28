@@ -97,152 +97,85 @@ export default function ClientLogin() {
 
   return (
     <div
-      className="min-h-screen flex flex-col"
+      className="fixed inset-0 flex flex-col"
       style={{
-        background: "linear-gradient(160deg, #0F2440 0%, #1E3A5F 60%, #0D2D4A 100%)",
+        background: "linear-gradient(160deg, #0A1929 0%, #0F2440 60%, #0D2D4A 100%)",
         fontFamily: "'Inter', sans-serif",
+        paddingTop: "env(safe-area-inset-top)",
+        paddingBottom: "env(safe-area-inset-bottom)",
       }}
     >
-      {/* Nav */}
-      <nav className="w-full" style={{ borderBottom: "1px solid rgba(255,255,255,0.08)", backgroundColor: "rgba(15,36,64,0.95)" }}>
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-20">
-            <a href="/">
-              <img
-                src="/manus-storage/businesscadence-logo-final-clean_3f67cebb.webp"
-                alt="BusinessCadence"
-                height={80}
-                style={{
-                  height: 80,
-                  width: "auto",
-                  filter: "drop-shadow(0 2px 0px rgba(255,255,255,0.15)) drop-shadow(0 5px 10px rgba(0,0,0,0.40)) saturate(1.2) brightness(1.05)",
-                }}
-              />
-            </a>
-            <a href="/" className="text-sm transition-colors" style={{ color: "rgba(255,255,255,0.5)" }}
-              onMouseEnter={e => (e.currentTarget.style.color = "white")}
-              onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.5)")}
-            >
-              ← Back to homepage
-            </a>
-          </div>
-        </div>
-      </nav>
+      {/* Subtle ambient glow */}
+      <div className="absolute inset-0 pointer-events-none" style={{
+        background: "radial-gradient(ellipse 70% 40% at 50% 20%, rgba(94,234,212,0.06) 0%, transparent 70%)",
+      }} />
 
-      {/* Main */}
-      <div className="flex-1 flex items-center justify-center px-4 py-16">
-        <div className="w-full max-w-sm">
-
-          {/* Card */}
-          <div
-            className="rounded-2xl p-8"
-            style={{
-              backgroundColor: "rgba(255,255,255,0.05)",
-              border: "1px solid rgba(94,234,212,0.2)",
-              boxShadow: "0 24px 64px rgba(0,0,0,0.4), 0 4px 16px rgba(0,0,0,0.2), 0 0 0 1px rgba(94,234,212,0.08) inset",
-              backdropFilter: "blur(16px)",
-            }}
-          >
-            {/* Header */}
-            <div className="flex items-center gap-4 mb-7">
-              <BrandIcon size={64} variant="teal" />
-              <div>
-                <h2
-                  className="text-xl font-bold text-white"
-                  style={{ fontFamily: "'Space Grotesk', sans-serif" }}
-                >
-                  Sign In
-                </h2>
-                <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.5)" }}>
-                  Sign in with your BusinessCadence account
-                </p>
-              </div>
-            </div>
-
-            <form onSubmit={handleLogin} className="flex flex-col gap-4">
-              <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold text-white/70" htmlFor="email">Email</label>
-                <input
-                  ref={emailRef}
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  placeholder="your@email.com"
-                  autoComplete="email"
-                  className="w-full rounded-xl px-4 py-3 text-sm text-white placeholder-white/30 focus:outline-none transition-all"
-                  style={{
-                    backgroundColor: "rgba(255,255,255,0.08)",
-                    border: "1.5px solid rgba(255,255,255,0.15)",
-                  }}
-                  onFocus={e => (e.target.style.borderColor = "#5EEAD4")}
-                  onBlur={e => (e.target.style.borderColor = "rgba(255,255,255,0.15)")}
-                />
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <div className="flex items-center justify-between">
-                  <label className="text-xs font-semibold text-white/70" htmlFor="password">Password</label>
-                  <a href="/forgot-password" className="text-xs transition-colors" style={{ color: "rgba(94,234,212,0.7)" }}
-                    onMouseEnter={e => (e.currentTarget.style.color = "#5EEAD4")}
-                    onMouseLeave={e => (e.currentTarget.style.color = "rgba(94,234,212,0.7)")}
-                  >Forgot password?</a>
-                </div>
-                <input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
-                  placeholder="Your password"
-                  autoComplete="current-password"
-                  className={`w-full rounded-xl px-4 py-3 text-sm text-white placeholder-white/30 focus:outline-none transition-all ${shake ? "animate-[shake_0.5s_ease-in-out]" : ""}`}
-                  style={{
-                    backgroundColor: "rgba(255,255,255,0.08)",
-                    border: "1.5px solid rgba(255,255,255,0.15)",
-                  }}
-                  onFocus={e => (e.target.style.borderColor = "#5EEAD4")}
-                  onBlur={e => (e.target.style.borderColor = "rgba(255,255,255,0.15)")}
-                />
-              </div>
-              <button
-                type="submit"
-                disabled={isLoading || !email.trim() || !password.trim()}
-                className="w-full py-3.5 rounded-xl text-sm font-bold transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-40 mt-1"
-                style={{
-                  backgroundColor: "#5EEAD4",
-                  color: "#0F2440",
-                  boxShadow: "0 4px 16px rgba(94,234,212,0.25)",
-                }}
-              >
-                {isLoading ? "Signing in…" : "Sign In →"}
-              </button>
-
-              {/* Waitlist CTA for non-members */}
-              <div
-                className="mt-2 rounded-xl p-4 text-center"
-                style={{
-                  backgroundColor: "rgba(94,234,212,0.08)",
-                  border: "1px solid rgba(94,234,212,0.2)",
-                }}
-              >
-                <p className="text-xs font-medium mb-1" style={{ color: "#5EEAD4" }}>Not a member yet?</p>
-                <a
-                  href="/#waitlist"
-                  className="text-xs font-bold hover:underline"
-                  style={{ color: "#5EEAD4" }}
-                >
-                  Join the waitlist →
-                </a>
-                <p className="text-[10px] mt-1" style={{ color: "rgba(255,255,255,0.4)" }}>
-                  Access is by invitation only during our beta.
-                </p>
-              </div>
-            </form>
-          </div>
-
-          <p className="text-center text-xs mt-6" style={{ color: "rgba(255,255,255,0.3)" }}>
-            Private access — BusinessCadence clients only
+      {/* Content — centered vertically */}
+      <div className="relative z-10 flex-1 flex flex-col justify-center px-8 w-full max-w-sm mx-auto">
+        {/* Title */}
+        <div className="mb-10">
+          <h1 className="text-3xl font-bold text-white mb-2" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+            Welcome back
+          </h1>
+          <p className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>
+            Sign in to your BusinessCadence account
           </p>
         </div>
+
+        <form onSubmit={handleLogin} className="flex flex-col gap-5">
+          <div className="flex flex-col gap-2">
+            <label className="text-xs font-semibold uppercase tracking-wide" style={{ color: "rgba(255,255,255,0.4)" }} htmlFor="email">Email</label>
+            <input
+              ref={emailRef}
+              id="email"
+              type="email"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              placeholder="your@email.com"
+              autoComplete="email"
+              className="w-full rounded-2xl px-5 py-4 text-base text-white placeholder-white/25 focus:outline-none transition-all"
+              style={{
+                backgroundColor: "rgba(255,255,255,0.07)",
+                border: "1.5px solid rgba(255,255,255,0.12)",
+              }}
+              onFocus={e => (e.target.style.borderColor = "#5EEAD4")}
+              onBlur={e => (e.target.style.borderColor = "rgba(255,255,255,0.12)")}
+            />
+          </div>
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-semibold uppercase tracking-wide" style={{ color: "rgba(255,255,255,0.4)" }} htmlFor="password">Password</label>
+              <a href="/forgot-password" className="text-xs font-medium" style={{ color: "#5EEAD4" }}>Forgot?</a>
+            </div>
+            <input
+              id="password"
+              type="password"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              placeholder="••••••••"
+              autoComplete="current-password"
+              className={`w-full rounded-2xl px-5 py-4 text-base text-white placeholder-white/25 focus:outline-none transition-all ${shake ? "animate-[shake_0.5s_ease-in-out]" : ""}`}
+              style={{
+                backgroundColor: "rgba(255,255,255,0.07)",
+                border: "1.5px solid rgba(255,255,255,0.12)",
+              }}
+              onFocus={e => (e.target.style.borderColor = "#5EEAD4")}
+              onBlur={e => (e.target.style.borderColor = "rgba(255,255,255,0.12)")}
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={isLoading || !email.trim() || !password.trim()}
+            className="w-full py-4 rounded-2xl text-base font-bold transition-all active:scale-[0.97] disabled:opacity-40 mt-1"
+            style={{
+              background: "linear-gradient(135deg, #5EEAD4 0%, #0D9488 100%)",
+              color: "#0A1628",
+              boxShadow: "0 4px 24px rgba(94,234,212,0.22)",
+            }}
+          >
+            {isLoading ? "Signing in…" : "Sign In"}
+          </button>
+        </form>
       </div>
 
       <style>{`

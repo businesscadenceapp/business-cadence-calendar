@@ -5,12 +5,14 @@ import { Route, Switch, Redirect } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import PasswordGate from "./components/PasswordGate";
+import EntitlementGuard from "./components/EntitlementGuard";
 import Landing from "./pages/Landing";
 import ClientLogin from "./pages/ClientLogin";
 import Home from "./pages/Home";
 import Board from "./pages/Board";
 import Settings from "./pages/Settings";
 import Onboarding from "./pages/Onboarding";
+import SwipeOnboarding from "./pages/SwipeOnboarding";
 import ManageSchedule from "./pages/ManageSchedule";
 import EmployeeSetup from "./pages/EmployeeSetup";
 import WeeklyReports from "@/pages/WeeklyReports";
@@ -27,17 +29,31 @@ import TeamBoardArchive from "@/pages/TeamBoardArchive";
 import ForgotPassword from "@/pages/ForgotPassword";
 import ResetPassword from "@/pages/ResetPassword";
 import BusinessSelector from "@/pages/BusinessSelector";
-import AppWelcome from "@/pages/AppWelcome";
-import { isNativeApp, hasSeenWelcome } from "@/lib/platform";
 import { Capacitor } from "@capacitor/core";
+import Paywall from "@/pages/Paywall";
+import SubscriptionOnboarding from "@/pages/SubscriptionOnboarding";
+import InvitePartnerSetup from "@/pages/InvitePartnerSetup";
+import WaitingForPartner from "@/pages/WaitingForPartner";
+import PartnerRegister from "@/pages/PartnerRegister";
+import { TourProvider } from "@/contexts/TourContext";
+import TourOverlay from "@/components/TourOverlay";
+import DemoBoard from "@/pages/DemoBoard";
+
+// Wrapper so Paywall (which has optional custom props) works as a wouter route component
+function PaywallPage() {
+  return <Paywall dismissible />;
+}
 
 // Wrapper that applies PasswordGate + AppShell to any page component
 function Protected({ component: Component }: { component: React.ComponentType }) {
   return (
     <PasswordGate>
+      <EntitlementGuard>
       <AppShell>
         <Component />
+        <TourOverlay />
       </AppShell>
+      </EntitlementGuard>
     </PasswordGate>
   );
 }
@@ -65,19 +81,15 @@ function detectNative(): boolean {
 /**
  * NativeHome — When running in Capacitor, the "/" route should NOT show
  * the marketing Landing page. Instead:
- * - If user hasn't seen the welcome intro → show AppWelcome
- * - If they have → redirect to /login (or /select-business if logged in)
+ * - Route to /subscribe-intro (handles first-time onboarding + paywall)
+ * - If already logged in → redirect to /select-business
  */
 function NativeHome() {
-  if (!hasSeenWelcome()) {
-    return <AppWelcome />;
-  }
-  // Check if user is already logged in
   const authFlag = localStorage.getItem("bcc_auth_v1");
   if (authFlag === "granted") {
     return <Redirect to="/select-business" />;
   }
-  return <Redirect to="/login" />;
+  return <Redirect to="/subscribe-intro" />;
 }
 
 function Router() {
@@ -91,13 +103,19 @@ function Router() {
       </Route>
 
       {/* Public routes */}
-      <Route path={"/welcome"} component={AppWelcome} />
       <Route path={"/login"} component={ClientLogin} />
       <Route path={"/onboarding"} component={Onboarding} />
+      <Route path={"/setup"} component={SwipeOnboarding} />
+      <Route path={"/subscribe-intro"} component={SubscriptionOnboarding} />
+      <Route path={"/paywall"} component={PaywallPage} />
       <Route path={"/accept-invite"} component={AcceptInvite} />
+      <Route path={"/invite-partner-setup"} component={InvitePartnerSetup} />
+      <Route path={"/waiting-for-partner"} component={WaitingForPartner} />
+      <Route path={"/partner-register"} component={PartnerRegister} />
       <Route path={"/forgot-password"} component={ForgotPassword} />
       <Route path={"/reset-password"} component={ResetPassword} />
       <Route path={"/select-business"} component={BusinessSelector} />
+      <Route path={"/demo"} component={DemoBoard} />
 
       {/* Protected app routes — more specific paths MUST come before less specific ones */}
       <Route path={"/app/team/calendar"}>
@@ -157,10 +175,12 @@ function App() {
   return (
     <ErrorBoundary>
       <ThemeProvider defaultTheme="dark">
+        <TourProvider>
         <TooltipProvider>
           <Toaster />
           <Router />
         </TooltipProvider>
+        </TourProvider>
       </ThemeProvider>
     </ErrorBoundary>
   );

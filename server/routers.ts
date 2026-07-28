@@ -25,9 +25,6 @@ import {
   addWaitlistEmail,
   getWaitlistCount,
   getWaitlistEmails,
-  createMeetingRecording,
-  updateMeetingRecording,
-  getMeetingRecording,
   getBusinessProfile,
   upsertBusinessProfile,
   getClosedPeriods,
@@ -77,6 +74,16 @@ import {
   toggleDnd,
   setDnd,
 } from "./db";
+import {
+  getSubscription,
+  upsertSubscription,
+  startTrial,
+  checkSubscriptionAccess,
+  getPartnerLink,
+  createPartnerLink,
+} from "./db";
+import { persons as personsTable } from "../drizzle/schema";
+import { partnerLinks as partnerLinksTable } from "../drizzle/schema";
 import { generateMeetingSchedule } from "../shared/calendarEngine";
 import { notifyOwner } from "./_core/notification";
 import bcrypt from "bcryptjs";
@@ -84,9 +91,8 @@ import { getDb } from "./db";
 import { appUsers } from "../drizzle/schema";
 import { eq } from "drizzle-orm";
 import { storagePut } from "./storage";
-import { transcribeAudio } from "./_core/voiceTranscription";
 import { nanoid } from "nanoid";
-import { sendPasswordResetEmail } from "./email";
+import { sendPasswordResetEmail, sendPartnerSetupInviteEmail } from "./email";
 
 const meetingTypeSchema = z.enum(["daily", "weekly", "monthly", "quarterly"]);
 
@@ -348,117 +354,6 @@ Keep the tone warm but professional. This summary will be saved under this speci
         if (input.accountId < 0) return { emails: [] };
         const emails = await getWaitlistEmails();
         return { emails };
-      }),
-  }),
-
-  /** Meeting recording — upload audio, transcribe, and generate AI notes. */
-  recording: router({
-    /** Upload audio blob, transcribe via Whisper, generate AI notes, save to DB. */
-    process: publicProcedure
-      .input(z.object({
-        dateKey: z.string(),
-        meetingType: z.enum(["daily", "weekly", "monthly", "quarterly"]),
-        audioBase64: z.string(), // base64-encoded audio blob
-        mimeType: z.string().default("audio/webm"),
-        agendaItems: z.array(z.string()).optional(), // agenda item labels for context
-      }))
-      .mutation(async ({ input }) => {
-        // 1. Ensure meeting log exists
-        const log = await upsertMeetingLog(input.dateKey, input.meetingType, "");
-        if (!log) throw new Error("Could not create meeting log");
-
-        // 2. Decode base64 audio and upload to S3
-        const audioBuffer = Buffer.from(input.audioBase64, "base64");
-        const fileName = `recordings/${input.dateKey}-${input.meetingType}-${Date.now()}.webm`;
-        const { key: audioKey, url: audioUrl } = await storagePut(fileName, audioBuffer, input.mimeType);
-
-        // 3. Create recording row in DB
-        const recordingId = await createMeetingRecording(log.id, audioKey);
-        if (!recordingId) throw new Error("Could not create recording record");
-
-        // 4. Transcribe via Whisper
-        const fullAudioUrl = `${process.env.BUILT_IN_FORGE_API_URL?.replace('/v1', '') ?? ''}${audioUrl}`;
-        let transcript = "";
-        try {
-          const transcription = await transcribeAudio({ audioUrl: fullAudioUrl, language: "en" });
-          if ('error' in transcription) throw new Error(transcription.error);
-          transcript = transcription.text;
-        } catch (err) {
-          await updateMeetingRecording(recordingId, { processingStatus: "error", errorMessage: String(err) });
-          throw new Error(`Transcription failed: ${err}`);
-        }
-
-        // 5. Use LLM to extract structured notes from transcript
-        const agendaContext = input.agendaItems?.length
-          ? `\n\nThe meeting agenda included these items:\n${input.agendaItems.map((a, i) => `${i + 1}. ${a}`).join("\n")}`
-          : "";
-
-        let aiNotes = "";
-        try {
-          const llmResponse = await invokeLLM({
-            messages: [
-              {
-                role: "system",
-                content: `You are a meeting notes assistant for a small business. Extract structured notes from the meeting transcript. Return ONLY valid JSON with this exact structure:
-{
-  "summary": "2-3 sentence overview of what was discussed",
-  "actionItems": ["action item 1", "action item 2"],
-  "resolvedItems": ["resolved item 1"],
-  "keyDecisions": ["decision 1"]
-}
-Be concise and specific. If a field has nothing, use an empty array.`,
-              },
-              {
-                role: "user",
-                content: `Meeting transcript:${agendaContext}\n\n${transcript}`,
-              },
-            ],
-            response_format: {
-              type: "json_schema",
-              json_schema: {
-                name: "meeting_notes",
-                strict: true,
-                schema: {
-                  type: "object",
-                  properties: {
-                    summary: { type: "string" },
-                    actionItems: { type: "array", items: { type: "string" } },
-                    resolvedItems: { type: "array", items: { type: "string" } },
-                    keyDecisions: { type: "array", items: { type: "string" } },
-                  },
-                  required: ["summary", "actionItems", "resolvedItems", "keyDecisions"],
-                  additionalProperties: false,
-                },
-              },
-            },
-          });
-          const rawContent = llmResponse.choices[0].message.content;
-          aiNotes = typeof rawContent === "string" ? rawContent : JSON.stringify(rawContent ?? "");
-        } catch (err) {
-          // LLM failure is non-fatal — save transcript only
-          aiNotes = JSON.stringify({ summary: transcript.slice(0, 500), actionItems: [], resolvedItems: [], keyDecisions: [] });
-        }
-
-        // 6. Save transcript + AI notes to DB
-        await updateMeetingRecording(recordingId, { transcript, aiNotes, processingStatus: "done" });
-
-        // 7. Also save AI summary back to the meeting log for display in the calendar
-        const parsed = (() => { try { return JSON.parse(aiNotes); } catch { return null; } })();
-        if (parsed?.summary) {
-          await saveSummary(input.dateKey, input.meetingType, `[Recording Summary]\n${parsed.summary}\n\nAction Items:\n${(parsed.actionItems as string[]).map((a: string) => `• ${a}`).join("\n")}`);
-        }
-
-        return { success: true, recordingId, transcript, aiNotes };
-      }),
-
-    /** Get the latest recording for a meeting log. */
-    get: publicProcedure
-      .input(z.object({ dateKey: z.string(), meetingType: z.enum(["daily", "weekly", "monthly", "quarterly"]) }))
-      .query(async ({ input }) => {
-        const log = await getMeetingLog(input.dateKey, input.meetingType);
-        if (!log) return { recording: null };
-        const recording = await getMeetingRecording(log.id);
-        return { recording };
       }),
   }),
 
@@ -1880,6 +1775,260 @@ Be concise and specific. If a field has nothing, use an empty array.`,
           nextStartTime,
           settings,
         };
+      }),
+  }),
+
+  /** Subscription management — entitlement checks, trial start, partner invite. */
+  subscription: router({
+    /**
+     * Start a 14-day free trial for the current account.
+     * Called automatically after onboarding completion for the owner.
+     * No-op if a subscription already exists.
+     */
+    startTrial: publicProcedure
+      .input(z.object({ accountId: z.number(), personId: z.string() }))
+      .mutation(async ({ input }) => {
+        const sub = await startTrial(input.accountId, input.personId);
+        return { success: true, subscription: sub };
+      }),
+
+    /**
+     * Check whether the given person has active access.
+     * Called on every app open by EntitlementGuard.
+     * Returns { hasAccess, reason, plan, trialDaysLeft, isPartner }.
+     */
+    getEntitlement: publicProcedure
+      .input(z.object({ accountId: z.number(), personId: z.string() }))
+      .query(async ({ input }) => {
+        const result = await checkSubscriptionAccess(input.accountId, input.personId);
+        const isPartner = result.reason.startsWith("partner_");
+        return { ...result, isPartner };
+      }),
+
+    /**
+     * Get the current subscription row for an account.
+     * Used by the paywall and settings screens.
+     */
+    getSubscription: publicProcedure
+      .input(z.object({ accountId: z.number() }))
+      .query(async ({ input }) => {
+        const sub = await getSubscription(input.accountId);
+        return { subscription: sub };
+      }),
+
+    /**
+     * Generate (or regenerate) a unique partner invite link for the paying owner.
+     * The link is: <origin>/accept-invite?token=<partnerInviteToken>&partner=1
+     * The token is stored on the person row (reuses inviteToken field with partner flag).
+     * Only owners can call this.
+     */
+    generatePartnerInviteLink: publicProcedure
+      .input(z.object({
+        accountId: z.number(),
+        ownerPersonId: z.string(),
+        origin: z.string(),
+        businessName: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        // Verify this person is an owner
+        const db = await getDb();
+        if (!db) throw new Error("DB unavailable");
+        const [owner] = await db.select().from(personsTable).where(eq(personsTable.id, input.ownerPersonId)).limit(1);
+        if (!owner || (owner.role !== "owner" && owner.role !== "coowner")) {
+          throw new Error("Only owners can generate partner invite links.");
+        }
+        // Generate a new token and store it as a special partner invite token
+        const token = nanoid(32);
+        // Store the partner invite token + business name so the intro screen can personalize the CTA
+        await db.update(personsTable).set({
+          partnerInviteToken: token,
+          partnerInviteBusinessName: input.businessName ?? null,
+        }).where(eq(personsTable.id, input.ownerPersonId));
+        // Route partner to /subscribe-intro so they see the 4-card onboarding before account creation
+        const inviteUrl = `${input.origin}/subscribe-intro?token=${token}&partner=1`;
+        return { success: true, inviteUrl, token };
+      }),
+
+    /**
+     * Look up a partner invite token — returns the owner's name and validity.
+     * Used by AcceptInvite page when ?partner=1 is in the URL.
+     */
+    lookupPartnerInvite: publicProcedure
+      .input(z.object({ token: z.string() }))
+      .query(async ({ input }) => {
+        const db = await getDb();
+        if (!db) return { valid: false as const, reason: "db_unavailable" as const, ownerName: null, businessName: null, accountId: null, ownerPersonId: null };
+        const [owner] = await db.select().from(personsTable).where(eq(personsTable.partnerInviteToken, input.token)).limit(1);
+        if (!owner) return { valid: false as const, reason: "not_found" as const, ownerName: null, businessName: null, accountId: null, ownerPersonId: null };
+        return {
+          valid: true as const,
+          ownerName: owner.name,
+          businessName: owner.partnerInviteBusinessName ?? null,
+          accountId: owner.accountId,
+          ownerPersonId: owner.id,
+        };
+      }),
+
+    /**
+     * Accept a partner invite — links the new person to the owner's subscription.
+     * Called from AcceptInvite page when ?partner=1 is in the URL.
+     * The partner gets access without going through RevenueCat.
+     */
+    linkPartner: publicProcedure
+      .input(z.object({
+        ownerPersonId: z.string(),
+        partnerPersonId: z.string(),
+        accountId: z.number(),
+      }))
+      .mutation(async ({ input }) => {
+        const link = await createPartnerLink(input.accountId, input.ownerPersonId, input.partnerPersonId);
+        return { success: true, link };
+      }),
+
+    /**
+     * Atomic partner invite acceptance — validates the partner invite token,
+     * sets the partner's password, marks the invite accepted, and creates the
+     * partner_link row — all in one server-side call.
+     *
+     * This replaces the two-step client flow (acceptInvite + linkPartner) for
+     * partner invites, ensuring the partner link is always created before the
+     * client navigates into the app.
+     */
+    acceptPartnerInvite: publicProcedure
+      .input(z.object({
+        /** The partnerInviteToken from the URL (?token=...) */
+        token: z.string(),
+        password: z.string().min(8),
+      }))
+      .mutation(async ({ input }) => {
+        const db = await getDb();
+        if (!db) return { success: false as const, reason: "db_unavailable" as const };
+
+        // 1. Resolve the partner invite token to the owner person
+        const [owner] = await db.select().from(personsTable)
+          .where(eq(personsTable.partnerInviteToken, input.token))
+          .limit(1);
+        if (!owner) return { success: false as const, reason: "invalid_token" as const };
+
+        // 2. Find the invited partner person — they must have been pre-created
+        //    with the same partnerInviteToken stored on their own row.
+        //    Fall back to looking up by inviteToken (regular invite flow).
+        const partnerByInviteToken = await getPersonByInviteToken(input.token);
+        if (!partnerByInviteToken) {
+          return { success: false as const, reason: "partner_not_found" as const };
+        }
+        if (partnerByInviteToken.inviteAccepted) {
+          return { success: false as const, reason: "already_accepted" as const };
+        }
+
+        // 3. Hash password and mark invite accepted
+        const passwordHash = await bcrypt.hash(input.password, 10);
+        await updatePerson(partnerByInviteToken.id, {
+          passwordHash,
+          inviteAccepted: true,
+          inviteToken: null,
+        });
+
+        // 4. Create the partner link (idempotent upsert)
+        await createPartnerLink(owner.accountId, owner.id, partnerByInviteToken.id);
+
+        return {
+          success: true as const,
+          person: {
+            id: partnerByInviteToken.id,
+            name: partnerByInviteToken.name,
+            email: partnerByInviteToken.email,
+            role: partnerByInviteToken.role,
+            businessScope: partnerByInviteToken.businessScope,
+            accountId: partnerByInviteToken.accountId,
+          },
+        };
+      }),
+
+    /**
+     * Check if a person is a linked partner (i.e., access is derived from owner's sub).
+     */
+    getPartnerLink: publicProcedure
+      .input(z.object({ personId: z.string() }))
+      .query(async ({ input }) => {
+        const link = await getPartnerLink(input.personId);
+        return { link };
+      }),
+
+    /**
+     * Manually mark a subscription as active (for testing / admin override).
+     * In production this is handled by the RevenueCat webhook.
+     */
+    adminActivate: publicProcedure
+      .input(z.object({
+        accountId: z.number(),
+        ownerPersonId: z.string(),
+        plan: z.enum(["core", "core_team"]),
+        daysFromNow: z.number().default(30),
+      }))
+      .mutation(async ({ input }) => {
+        const currentPeriodEndsAt = new Date(Date.now() + input.daysFromNow * 24 * 60 * 60 * 1000);
+        const sub = await upsertSubscription({
+          accountId: input.accountId,
+          ownerPersonId: input.ownerPersonId,
+          plan: input.plan,
+          status: "active",
+          trialEndsAt: null,
+          currentPeriodEndsAt,
+        });
+        return { success: true, subscription: sub };
+      }),
+
+    /**
+     * Send a partner setup invite email — used when the subscriber wants their
+     * partner to complete the business profile on their behalf.
+     */
+    sendPartnerSetupInviteEmail: publicProcedure
+      .input(z.object({
+        toEmail: z.string().email(),
+        toName: z.string(),
+        inviteUrl: z.string().url(),
+        fromName: z.string(),
+      }))
+      .mutation(async ({ input }) => {
+        const ok = await sendPartnerSetupInviteEmail(input);
+        return { success: ok };
+      }),
+
+    /**
+     * Notify the owner that their partner has completed setup.
+     * Called from the /onboarding page when a partner finishes the business profile.
+     * Creates an in-app notification for the owner person.
+     */
+    notifyPartnerJoined: publicProcedure
+      .input(z.object({
+        /** The partnerInviteToken from the URL — used to look up the owner */
+        token: z.string(),
+        /** The partner's display name (for the notification body) */
+        partnerName: z.string(),
+      }))
+      .mutation(async ({ input }) => {
+        const db = await getDb();
+        if (!db) return { success: false as const, reason: "db_unavailable" as const };
+        // Resolve the token to the owner
+        const [owner] = await db.select().from(personsTable)
+          .where(eq(personsTable.partnerInviteToken, input.token))
+          .limit(1);
+        if (!owner) return { success: false as const, reason: "invalid_token" as const };
+        // Create in-app notification for the owner
+        await createNotification({
+          accountId: owner.accountId,
+          recipientPersonId: owner.id,
+          type: "partner_joined",
+          title: "Your partner has joined! 🎉",
+          body: `${input.partnerName} has completed setup. You both now have full access to BusinessCadence.`,
+          linkTo: "/app/board",
+        });
+        // Clear the invite token so it can't be reused
+        await db.update(personsTable)
+          .set({ partnerInviteToken: null, partnerInviteBusinessName: null })
+          .where(eq(personsTable.id, owner.id));
+        return { success: true as const };
       }),
   }),
 });

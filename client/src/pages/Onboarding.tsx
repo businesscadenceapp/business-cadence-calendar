@@ -1,5 +1,5 @@
-import { useState, useCallback, useRef } from "react";
-import { useLocation } from "wouter";
+import { useState, useCallback, useRef, useEffect } from "react";
+import { useLocation, useSearch } from "wouter";
 import { trpc } from "@/lib/trpc";
 import {
   INDUSTRY_TYPES,
@@ -183,7 +183,7 @@ function NavButtons({
 
 // ─── Step 1: Welcome ──────────────────────────────────────────────────────────
 
-function StepWelcome({ onNext }: { onNext: () => void }) {
+function StepWelcome({ onNext, quick }: { onNext: () => void; quick?: boolean }) {
   return (
     <div className="flex flex-col items-center text-center gap-6">
       <div className="w-20 h-20 rounded-2xl flex items-center justify-center text-4xl"
@@ -195,17 +195,25 @@ function StepWelcome({ onNext }: { onNext: () => void }) {
           Welcome to BusinessCadence
         </h1>
         <p className="text-lg max-w-md" style={{ color: "rgba(255,255,255,0.5)" }}>
-          Let's set up your business in about 5 minutes. We'll build your meeting rhythm,
-          set your goals, configure your KPIs, and get your team ready to go.
+          {quick
+            ? "Let's set up your business in about 2 minutes. Just three quick steps — everything else is pre-configured for your industry and easy to fine-tune later."
+            : "Let's set up your business in about 5 minutes. We'll build your meeting rhythm, set your goals, configure your KPIs, and get your team ready to go."}
         </p>
       </div>
-      <div className="grid grid-cols-2 gap-3 w-full max-w-sm mt-2">
-        {[
-          { icon: "📅", label: "Meeting cadence", sub: "Smart defaults for your industry" },
-          { icon: "🎯", label: "Business goals", sub: "Quarterly & annual targets" },
-          { icon: "📊", label: "KPI tracking", sub: "The numbers that matter most" },
-          { icon: "👥", label: "Team access", sub: "Invite employees right now" },
-        ].map(item => (
+      <div className={cn("grid gap-3 w-full max-w-sm mt-2", quick ? "grid-cols-1" : "grid-cols-2")}>
+        {(quick
+          ? [
+              { icon: "🏢", label: "1 · Name your business", sub: "And pick your industry" },
+              { icon: "🕐", label: "2 · Set business hours", sub: "So work stays inside work time" },
+              { icon: "💌", label: "3 · Invite your partner", sub: "BusinessCadence is built for two" },
+            ]
+          : [
+              { icon: "📅", label: "Meeting cadence", sub: "Smart defaults for your industry" },
+              { icon: "🎯", label: "Business goals", sub: "Quarterly & annual targets" },
+              { icon: "📊", label: "KPI tracking", sub: "The numbers that matter most" },
+              { icon: "👥", label: "Team access", sub: "Invite employees right now" },
+            ]
+        ).map(item => (
           <div key={item.label} className="rounded-xl p-3 text-left"
             style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
             <div className="text-xl mb-1">{item.icon}</div>
@@ -232,11 +240,15 @@ function StepCoOwnerInvite({
   onChange,
   onNext,
   onBack,
+  nextLabel = "Continue →",
+  isLoading = false,
 }: {
   data: Pick<OnboardingData, "coOwnerName" | "coOwnerEmail" | "coOwnerBusinesses" | "businessName">;
   onChange: (u: Partial<OnboardingData>) => void;
   onNext: () => void;
   onBack: () => void;
+  nextLabel?: string;
+  isLoading?: boolean;
 }) {
   const isValidEmail = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
   const canProceed = data.coOwnerName.trim().length > 0 && isValidEmail(data.coOwnerEmail.trim());
@@ -285,8 +297,8 @@ function StepCoOwnerInvite({
       <NavButtons
         onBack={onBack}
         onNext={onNext}
-        canProceed={canProceed}
-        nextLabel="Continue →"
+        canProceed={canProceed && !isLoading}
+        nextLabel={isLoading ? "Setting up…" : nextLabel}
         onSkip={onNext}
         skipLabel="Skip — invite later"
       />
@@ -1738,6 +1750,31 @@ export default function Onboarding() {
     employees: [],
   });
 
+  // ─── Partner invite context ────────────────────────────────────────────────
+  const searchString = useSearch();
+  const searchParams = new URLSearchParams(searchString);
+  const partnerToken = searchParams.get("partnerToken") ?? "";
+  const isPartnerFlow = !!partnerToken;
+  // Quick mode (default): 3 essential steps. Full mode via ?full=1 or the
+  // "Complete your profile" prompt on the Board.
+  const isFullFlow = searchParams.get("full") === "1";
+
+  const notifyPartnerJoined = trpc.subscription.notifyPartnerJoined.useMutation();
+
+  // Pre-fill businessName from the partner invite token when entering via invite
+  const { data: partnerInviteData } = trpc.subscription.lookupPartnerInvite.useQuery(
+    { token: partnerToken },
+    { enabled: isPartnerFlow, retry: false, staleTime: 5 * 60_000 }
+  );
+  useEffect(() => {
+    if (isPartnerFlow && partnerInviteData?.valid && partnerInviteData.businessName) {
+      setData(prev => ({
+        ...prev,
+        businessName: prev.businessName || partnerInviteData.businessName!,
+      }));
+    }
+  }, [isPartnerFlow, partnerInviteData]);
+
   const saveOnboarding = trpc.onboarding.save.useMutation();
   const createBusiness = trpc.business.create.useMutation();
   const uploadLogo = trpc.business.uploadLogo.useMutation();
@@ -1745,6 +1782,7 @@ export default function Onboarding() {
   const seedKpis = trpc.kpi.seedDefaults.useMutation();
   const invitePerson = trpc.person.invite.useMutation();
   const saveBusinessHours = trpc.businessHours.updateSettings.useMutation();
+  const startTrialMutation = trpc.subscription.startTrial.useMutation();
 
   const update = useCallback((updates: Partial<OnboardingData>) => {
     setData(prev => {
@@ -1760,6 +1798,11 @@ export default function Onboarding() {
 
   const next = () => setStep(s => s + 1);
   const back = () => setStep(s => Math.max(0, s - 1));
+
+  // Quick-flow step sequence: 0 Welcome → 1 Business basics → 2 Business hours
+  // → 3 Co-owner invite (Finish Setup, runs handleConfirm) → 4 Done
+  const QUICK_TOTAL = 5;
+  const totalSteps = isFullFlow ? TOTAL_STEPS : QUICK_TOTAL;
 
   const handleConfirm = async () => {
     try {
@@ -1883,6 +1926,42 @@ export default function Onboarding() {
       } catch { /* non-fatal */ }
 
       next(); // go to Done
+
+      // Quick mode defers goals/KPI tuning/meeting customization — flag it so
+      // the Board can prompt "Complete your profile". Full flow clears it.
+      if (accountId) {
+        try {
+          if (isFullFlow) {
+            localStorage.removeItem("bcc_profile_deferred_" + accountId);
+          } else {
+            localStorage.setItem("bcc_profile_deferred_" + accountId, "1");
+          }
+        } catch { /* ignore */ }
+      }
+
+      // Safety net for native app: if the user subscribed via RevenueCat but
+      // the webhook hasn't fired yet, the DB has no subscription row.
+      // Call startTrial here so EntitlementGuard won't bounce them back to
+      // /subscribe-intro after onboarding completes.
+      if (accountId) {
+        try {
+          const personRaw = localStorage.getItem("bcc_person_v1");
+          const personId = personRaw ? (JSON.parse(personRaw) as { id?: string }).id ?? "" : "";
+          await startTrialMutation.mutateAsync({ accountId, personId });
+        } catch { /* non-fatal — trial may already exist or webhook may have fired */ }
+      }
+
+      // If this is a partner completing setup via invite, notify the owner
+      if (isPartnerFlow && partnerToken) {
+        const partnerName = data.businessName.trim()
+          ? (localStorage.getItem("bcc_person_v1")
+              ? (JSON.parse(localStorage.getItem("bcc_person_v1")!) as { name?: string }).name ?? "Your partner"
+              : "Your partner")
+          : "Your partner";
+        try {
+          await notifyPartnerJoined.mutateAsync({ token: partnerToken, partnerName });
+        } catch { /* non-blocking — don't fail onboarding if notification fails */ }
+      }
     } catch (err) {
       console.error("Onboarding save failed:", err);
     }
@@ -1895,7 +1974,10 @@ export default function Onboarding() {
     navigate("/select-business");
   };
 
-  const progressPercent = step === 0 ? 0 : Math.round((step / (TOTAL_STEPS - 1)) * 100);
+  const progressPercent = step === 0 ? 0 : Math.round((step / (totalSteps - 1)) * 100);
+  const isConfirmPending =
+    saveOnboarding.isPending || createBusiness.isPending || seedKpis.isPending ||
+    invitePerson.isPending || saveBusinessHours.isPending;
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4"
@@ -1910,15 +1992,15 @@ export default function Onboarding() {
             </div>
             <span className="font-semibold text-sm" style={{ color: "rgba(255,255,255,0.7)" }}>BusinessCadence</span>
           </div>
-          {step > 0 && step < TOTAL_STEPS - 1 && (
+          {step > 0 && step < totalSteps - 1 && (
             <span className="text-xs" style={{ color: "rgba(255,255,255,0.35)" }}>
-              Step {step} of {TOTAL_STEPS - 2}
+              Step {step} of {totalSteps - 2}
             </span>
           )}
         </div>
 
         {/* Progress bar */}
-        {step > 0 && step < TOTAL_STEPS - 1 && (
+        {step > 0 && step < totalSteps - 1 && (
           <div className="mb-6">
             <Progress value={progressPercent} className="h-1.5" style={{ backgroundColor: "rgba(255,255,255,0.08)" }} />
           </div>
@@ -1927,6 +2009,33 @@ export default function Onboarding() {
         {/* Card */}
         <div className="rounded-2xl p-8"
           style={{ backgroundColor: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", backdropFilter: "blur(8px)" }}>
+          {!isFullFlow ? (
+            <>
+              {/* Quick mode (default): 3 essential steps + done */}
+              {step === 0 && <StepWelcome onNext={next} quick />}
+              {step === 1 && <StepBusinessBasics data={data} onChange={update} onNext={next} onBack={back} />}
+              {step === 2 && <StepBusinessHours data={data} onChange={update} onNext={next} onBack={back} />}
+              {step === 3 && (
+                <StepCoOwnerInvite
+                  data={data}
+                  onChange={update}
+                  onNext={handleConfirm}
+                  onBack={back}
+                  nextLabel="Finish Setup →"
+                  isLoading={isConfirmPending}
+                />
+              )}
+              {step === 4 && (
+                <StepDone
+                  businessName={data.businessName}
+                  invitesSent={invitesSent}
+                  coOwnerName={data.coOwnerName}
+                  onEnter={handleEnterApp}
+                />
+              )}
+            </>
+          ) : (
+            <>
           {step === 0 && <StepWelcome onNext={next} />}
           {/* Step 1: Business basics (name + industry) — first real step */}
           {step === 1 && <StepBusinessBasics data={data} onChange={update} onNext={next} onBack={back} />}
@@ -1973,6 +2082,8 @@ export default function Onboarding() {
               coOwnerName={data.coOwnerName}
               onEnter={handleEnterApp}
             />
+          )}
+            </>
           )}
         </div>
       </div>
