@@ -253,6 +253,13 @@
       "when": 1785270338184,
       "tag": "0031_bitter_norman_osborn",
       "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "5",
+      "when": 1785270700955,
+      "tag": "0036_known_rawhide_kid",
+      "breakpoints": true
     }
   ]
 }
