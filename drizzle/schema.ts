@@ -617,17 +617,23 @@ export const announcements = mysqlTable("announcements", {
 export type Announcement = typeof announcements.$inferSelect;
 export type InsertAnnouncement = typeof announcements.$inferInsert;
 
+
 /**
- * Meeting Notes — voice-recorded and transcribed meeting notes
+ * Meeting Notes — typed notes saved per meeting by owners.
+ * meetingType: the cadence type (daily/weekly/monthly/quarterly)
+ * meetingDate: the date of the meeting (YYYY-MM-DD)
+ * body: the typed note content
  */
 export const meetingNotes = mysqlTable("meeting_notes", {
   id: int("id").autoincrement().primaryKey(),
   accountId: int("accountId").notNull(),
   personId: varchar("personId", { length: 64 }).notNull(),
+  businessId: int("businessId").notNull().default(0),
   meetingType: mysqlEnum("meetingType", ["daily", "weekly", "monthly", "quarterly"]).notNull().default("weekly"),
-  title: varchar("title", { length: 256 }).notNull(),
-  transcript: text("transcript"),
+  meetingDate: varchar("meetingDate", { length: 10 }).notNull(), // YYYY-MM-DD
+  body: text("body").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
 export type MeetingNote = typeof meetingNotes.$inferSelect;
 export type InsertMeetingNote = typeof meetingNotes.$inferInsert;

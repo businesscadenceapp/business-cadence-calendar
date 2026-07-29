@@ -791,7 +791,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'🏢'"
+          "default": "'\ud83c\udfe2'"
         },
         "color": {
           "name": "color",
@@ -1462,6 +1462,14 @@
           "notNull": true,
           "autoincrement": false
         },
+        "businessId": {
+          "name": "businessId",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
         "meetingType": {
           "name": "meetingType",
           "type": "enum('daily','weekly','monthly','quarterly')",
@@ -1470,18 +1478,18 @@
           "autoincrement": false,
           "default": "'weekly'"
         },
-        "title": {
-          "name": "title",
-          "type": "varchar(256)",
+        "meetingDate": {
+          "name": "meetingDate",
+          "type": "varchar(10)",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
-        "transcript": {
-          "name": "transcript",
+        "body": {
+          "name": "body",
           "type": "text",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false
         },
         "createdAt": {
@@ -1490,6 +1498,15 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
+          "default": "(now())"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "onUpdate": true,
           "default": "(now())"
         }
       },

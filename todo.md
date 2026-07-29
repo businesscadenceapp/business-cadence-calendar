@@ -613,7 +613,7 @@
 - [x] Add viewport-fit=cover to index.html for iPhone notch/Dynamic Island
 - [x] Add Capacitor safe area CSS utilities to index.css
 - [x] Add cap:sync, cap:open:ios, cap:open:android scripts to package.json
-- [ ] Update RecordMeeting.tsx to use capacitor-voice-recorder on native (branch on Capacitor.isNativePlatform())
+- [x] Update RecordMeeting.tsx to use capacitor-voice-recorder on native (branch on Capacitor.isNativePlatform())
 - [ ] Generate app icon (1024x1024) and splash screen assets for iOS and Android
 - [ ] Test on physical iOS device via Xcode
 - [ ] Test on physical Android device via Android Studio
@@ -992,3 +992,22 @@
 - [x] Wire GoalsForMeeting component to calendar day detail panel for quarterly meetings
 - [x] Install capacitor-voice-recorder package
 - [x] All 41 tests passing
+
+## Remove All Voice Recording (Jul 2026)
+- [ ] Delete client/src/pages/RecordMeeting.tsx
+- [ ] Remove /app/record route from App.tsx
+- [ ] Remove meeting router from server/routers.ts
+- [ ] Remove meeting note DB helpers from server/db.ts
+- [ ] Remove meetingNotes table from drizzle/schema.ts
+- [ ] Delete server/_core/voiceTranscription.ts
+- [ ] Uninstall capacitor-voice-recorder package
+- [x] Drop meeting_notes table from database (repurposed for typed notes)
+- [x] Remove any remaining voice/recording/transcription references
+- [x] Confirm 0 TypeScript errors and all tests pass
+
+## Typed Meeting Notes (Jul 2026)
+- [x] Restore meeting_notes table in schema.ts (typed notes, no transcript/audio columns)
+- [x] Add saveMeetingNote / getMeetingNotes helpers in server/db.ts
+- [x] Add meetingNotes tRPC router: saveNote + getNotes procedures
+- [x] Build MeetingNotes UI component in calendar day detail panel (textarea + save + list of past notes)
+- [x] Wire into Home.tsx meeting detail view

@@ -1360,33 +1360,71 @@ export async function sendAnnouncement(data: {
 
 // ─── Meeting Notes helpers ────────────────────────────────────────────────────
 
-/** Save a transcribed meeting note. */
+/** Save or update a typed meeting note for a specific meeting date + type + business. */
 export async function saveMeetingNote(data: {
   accountId: number;
   personId: string;
+  businessId: number;
   meetingType: "daily" | "weekly" | "monthly" | "quarterly";
-  title: string;
-  transcript?: string;
+  meetingDate: string; // YYYY-MM-DD
+  body: string;
 }): Promise<MeetingNote> {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  await db.insert(meetingNotes).values(data);
-  const rows = await db.select().from(meetingNotes)
-    .where(eq(meetingNotes.accountId, data.accountId))
-    .orderBy(desc(meetingNotes.createdAt))
+  // Upsert: one note per (accountId, businessId, meetingType, meetingDate)
+  const existing = await db.select().from(meetingNotes)
+    .where(and(
+      eq(meetingNotes.accountId, data.accountId),
+      eq(meetingNotes.businessId, data.businessId),
+      eq(meetingNotes.meetingType, data.meetingType),
+      eq(meetingNotes.meetingDate, data.meetingDate),
+    ))
     .limit(1);
-  return rows[0]!;
+  if (existing.length > 0) {
+    await db.update(meetingNotes)
+      .set({ body: data.body, personId: data.personId })
+      .where(eq(meetingNotes.id, existing[0].id));
+    return { ...existing[0], body: data.body, personId: data.personId };
+  } else {
+    await db.insert(meetingNotes).values(data);
+    const rows = await db.select().from(meetingNotes)
+      .where(and(
+        eq(meetingNotes.accountId, data.accountId),
+        eq(meetingNotes.businessId, data.businessId),
+        eq(meetingNotes.meetingType, data.meetingType),
+        eq(meetingNotes.meetingDate, data.meetingDate),
+      ))
+      .limit(1);
+    return rows[0]!;
+  }
 }
 
-/** Get meeting notes for an account, optionally filtered by meeting type. */
-export async function getMeetingNotes(accountId: number, meetingType?: "daily" | "weekly" | "monthly" | "quarterly"): Promise<MeetingNote[]> {
+/** Get meeting notes for a specific meeting. */
+export async function getMeetingNote(data: {
+  accountId: number;
+  businessId: number;
+  meetingType: "daily" | "weekly" | "monthly" | "quarterly";
+  meetingDate: string;
+}): Promise<MeetingNote | null> {
+  const db = await getDb();
+  if (!db) return null;
+  const rows = await db.select().from(meetingNotes)
+    .where(and(
+      eq(meetingNotes.accountId, data.accountId),
+      eq(meetingNotes.businessId, data.businessId),
+      eq(meetingNotes.meetingType, data.meetingType),
+      eq(meetingNotes.meetingDate, data.meetingDate),
+    ))
+    .limit(1);
+  return rows[0] ?? null;
+}
+
+/** Get recent meeting notes for an account (for history view). */
+export async function getRecentMeetingNotes(accountId: number, limit = 20): Promise<MeetingNote[]> {
   const db = await getDb();
   if (!db) return [];
-  const conditions = meetingType
-    ? and(eq(meetingNotes.accountId, accountId), eq(meetingNotes.meetingType, meetingType))
-    : eq(meetingNotes.accountId, accountId);
   return db.select().from(meetingNotes)
-    .where(conditions)
-    .orderBy(desc(meetingNotes.createdAt))
-    .limit(50);
+    .where(eq(meetingNotes.accountId, accountId))
+    .orderBy(desc(meetingNotes.updatedAt))
+    .limit(limit);
 }
