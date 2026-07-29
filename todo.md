@@ -252,12 +252,12 @@
 - [x] Rename "Board" nav label to "Command Board" for clarity
 
 ### Command Board UI Polish
-- [ ] Redesign card layout: larger, more breathing room, cleaner visual hierarchy
-- [ ] Add owner avatar/color chip to each card (Matt=navy, Lynn=coral) so authorship is instant
-- [ ] Make the "Post" button more prominent — primary CTA on the board
-- [ ] Improve the Active / Awaiting Confirmation / Completed section headers
-- [ ] Add empty state for when the board is clear ("All clear — nothing pending")
-- [ ] Smooth card entry animation (slide in from bottom)
+- [x] Redesign card layout: larger, more breathing room, cleaner visual hierarchy
+- [x] Add owner avatar/color chip to each card (Matt=navy, Lynn=coral) so authorship is instant
+- [x] Make the "Post" button more prominent — primary CTA on the board
+- [x] Improve the Active / Awaiting Confirmation / Completed section headers
+- [x] Add empty state for when the board is clear ("All clear — nothing pending")
+- [x] Smooth card entry animation (slide in from bottom)
 
 ### Goals Page
 - [x] Audit current Goals page — determine if it exists or needs to be created
@@ -266,11 +266,11 @@
 - [ ] Link goals to meeting types (quarterly goals shown in quarterly meeting detail)
 
 ### Overall Layout Polish
-- [ ] First screen after login should feel like a "command center" not a calendar
-- [ ] Tighten header height, give main content more vertical space
-- [ ] Today's date more prominent in calendar month view
-- [ ] Meeting dots slightly larger and more readable on mobile
-- [ ] Save checkpoint
+- [x] First screen after login should feel like a "command center" not a calendar
+- [x] Tighten header height, give main content more vertical space
+- [x] Today's date more prominent in calendar month view
+- [x] Meeting dots slightly larger and more readable on mobile
+- [x] Save checkpoint
 
 ## Seamless Navigation — AppShell (Phase 14)
 - [x] Create `AppShell` layout component with persistent sidebar (desktop, 220px) + bottom tab bar (mobile)
@@ -295,23 +295,23 @@
 - [x] Push DB migration
 
 ### Auth Overhaul
-- [ ] Owner registration: `/register` page — name, email, password, business name → creates person record + first business
-- [ ] Replace shared business login with per-person email + password login
-- [ ] Co-owner invite: owner sends invite link to co-owner email → co-owner sets own password → gets full access
-- [ ] Employee invite: owner adds employee (name + email + business) → employee receives email invite link → sets own password
-- [ ] Session stores personId + role + accountId + businessScope
-- [ ] Remove "I am Matt / Lynn" identity selector from AppShell entirely
-- [ ] Update all board card authorship to use session personId (not localStorage selector)
-- [ ] Seed owner account for Matt with email + password for testing
+- [x] Owner registration: `/register` page — name, email, password, business name → creates person record + first business
+- [x] Replace shared business login with per-person email + password login
+- [x] Co-owner invite: owner sends invite link to co-owner email → co-owner sets own password → gets full access
+- [x] Employee invite: owner adds employee (name + email + business) → employee receives email invite link → sets own password
+- [x] Session stores personId + role + accountId + businessScope
+- [x] Remove "I am Matt / Lynn" identity selector from AppShell entirely
+- [x] Update all board card authorship to use session personId (not localStorage selector)
+- [x] Seed owner account for Matt with email + password for testing
 
 ### Scoped Command Board
-- [ ] Board shows cards scoped to logged-in person's business(es)
-- [ ] Owners see all cards for their businesses
-- [ ] Employees see only cards assigned to them or posted by them in their business
-- [ ] Task assignment dropdown shows real names from persons table (co-owner + employees at that business)
-- [ ] Card author chip shows real name from session
-- [ ] Employees can post Updates (open communication back to owners)
-- [ ] Employees cannot post Issues or Tasks (owners only)
+- [x] Board shows cards scoped to logged-in person's business(es)
+- [x] Owners see all cards for their businesses
+- [x] Employees see only cards assigned to them or posted by them in their business
+- [x] Task assignment dropdown shows real names from persons table (co-owner + employees at that business)
+- [x] Card author chip shows real name from session
+- [x] Employees can post Updates (open communication back to owners)
+- [x] Employees cannot post Issues or Tasks (owners only)
 
 ### Task Due Dates
 - [x] Add optional "Due by" date/time picker to task creation form
@@ -334,9 +334,9 @@
 - [x] KPI nav item in AppShell for both owners and employees
 
 ### UI Cleanup
-- [ ] Remove identity selector from AppShell sidebar
-- [ ] Remove identity selector from AppShell mobile tab bar
-- [ ] AppShell shows logged-in person's name + role in sidebar bottom
+- [x] Remove identity selector from AppShell sidebar
+- [x] Remove identity selector from AppShell mobile tab bar
+- [x] AppShell shows logged-in person's name + role in sidebar bottom
 - [ ] Employee AppShell nav: Board + KPIs only (no Goals, Calendar, Schedule, Settings) (future)
 - [x] Owner AppShell nav: Board, Goals, Reports, KPIs, Calendar, Schedule, Settings
 - [ ] Save checkpoint
@@ -391,12 +391,12 @@
 
 ## Phase 20: Pending Features
 
-- [ ] Goals page: load business list from trpc.business.list (currently hardcoded)
-- [ ] Seed default KPI categories for chiro: Adjustments/week, New Patients/week, Reactivated Patients/month
-- [ ] Weekly report questions: owner configures questions per business in Settings
-- [ ] Employee weekly report submission page (/app/reports/submit)
-- [ ] Owner weekly report summary view in Reports page
-- [ ] Full review pass: check for bugs, broken flows, and inconsistencies
+- [x] Goals page: load business list from trpc.business.list (currently hardcoded)
+- [x] Seed default KPI categories for chiro: Adjustments/week, New Patients/week, Reactivated Patients/month
+- [x] Weekly report questions: owner configures questions per business in Settings
+- [x] Employee weekly report submission page (/app/reports/submit)
+- [x] Owner weekly report summary view in Reports page
+- [x] Full review pass: check for bugs, broken flows, and inconsistencies
 
 ## Bug Fix Batch (Phase 22 — Audit Fixes)
 - [x] Fix accountId > 0 guard in Board.tsx (business.list query)

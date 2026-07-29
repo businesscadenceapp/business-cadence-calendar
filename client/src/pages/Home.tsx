@@ -29,7 +29,7 @@ function MeetingDot({ type }: { type: MeetingType }) {
   const isQuarterly = type === "quarterly";
   return (
     <span
-      className={`inline-block rounded-full flex-shrink-0 ${isQuarterly ? "w-2 h-2" : "w-1.5 h-1.5"}`}
+      className={`inline-block rounded-full flex-shrink-0 ${isQuarterly ? "w-2.5 h-2.5" : "w-2 h-2"}`}
       style={{
         backgroundColor: m.color,
         boxShadow: isQuarterly ? `0 0 4px ${m.color}` : undefined,
@@ -89,21 +89,34 @@ function DayCell({
       title={isClosed ? "Closed day" : undefined}
     >
       <div className="relative w-full flex justify-center">
-        <span
-          className={`text-[10px] leading-none font-medium`}
-          style={{
-            fontFamily: "'JetBrains Mono', monospace",
-            color: isClosed ? "rgba(255,255,255,0.2)"
-              : day.isToday ? "#5EEAD4"
-              : hasQuarterly ? "#FDA4AF"
-              : hasMonthly ? "#5EEAD4"
-              : day.isWeekend ? "rgba(255,255,255,0.2)"
-              : "rgba(255,255,255,0.7)",
-            fontWeight: day.isToday ? 700 : hasQuarterly || hasMonthly ? 600 : 400,
-          }}
-        >
-          {day.dayOfMonth}
-        </span>
+        {day.isToday ? (
+          <span
+            className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] leading-none font-bold"
+            style={{
+              fontFamily: "'JetBrains Mono', monospace",
+              backgroundColor: "#5EEAD4",
+              color: "#0A1929",
+              boxShadow: "0 0 8px rgba(94,234,212,0.5)",
+            }}
+          >
+            {day.dayOfMonth}
+          </span>
+        ) : (
+          <span
+            className={`text-[10px] leading-none font-medium`}
+            style={{
+              fontFamily: "'JetBrains Mono', monospace",
+              color: isClosed ? "rgba(255,255,255,0.2)"
+                : hasQuarterly ? "#FDA4AF"
+                : hasMonthly ? "#5EEAD4"
+                : day.isWeekend ? "rgba(255,255,255,0.2)"
+                : "rgba(255,255,255,0.7)",
+              fontWeight: hasQuarterly || hasMonthly ? 600 : 400,
+            }}
+          >
+            {day.dayOfMonth}
+          </span>
+        )}
         {hasLog && !isClosed && (
           <span
             className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full"

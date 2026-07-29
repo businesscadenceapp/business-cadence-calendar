@@ -377,7 +377,7 @@ function TaskCard({ card, currentUser, accountId, onMarkDone, onConfirmDone, onD
   const swipeReady = Math.abs(swipeDx) >= SWIPE_THRESHOLD;
 
   return (
-    <div className="relative rounded-2xl overflow-hidden">
+    <div className="relative rounded-2xl overflow-hidden animate-card-in">
       {canSwipeRight && (
         <div className="absolute inset-0 flex items-center px-5 rounded-2xl"
           style={{ backgroundColor: swipeReady ? "#059669" : "rgba(5,150,105,0.3)", opacity: Math.min(swipeProgress, 1), transition: swipeDx === 0 ? "opacity 0.2s, background-color 0.2s" : "none" }}>
@@ -521,7 +521,7 @@ function BoardCard({ card, currentUser, accountId, onSeen, onArchive, onDelete }
 
   return (
     <div
-      className="rounded-2xl flex flex-col gap-0 transition-all duration-200 overflow-hidden"
+      className="rounded-2xl flex flex-col gap-0 transition-all duration-200 overflow-hidden animate-card-in"
       style={{
         backgroundColor: alreadySeen ? "rgba(255,255,255,0.02)" : "rgba(255,255,255,0.04)",
         border: `1px solid ${alreadySeen ? "rgba(255,255,255,0.06)" : colors.border}`,
