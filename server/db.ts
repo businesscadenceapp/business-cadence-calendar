@@ -1,6 +1,6 @@
 import { eq, and, desc, inArray, asc } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, meetingLogs, agendaItems, MeetingLog, AgendaItem, boardCards, agendaTemplates, type BoardCard, type InsertBoardCard, waitlistEmails, businessProfiles, type BusinessProfile, closedPeriods, type ClosedPeriod, meetingScheduleOverrides, employees, employeeMetrics, weeklyReports, weeklyReportEntries, type Employee, type EmployeeMetric, type WeeklyReport, type WeeklyReportEntry, goals, type Goal, type InsertGoal, notifications, type Notification, businessHours, type BusinessHours, subscriptions, type Subscription, type InsertSubscription, partnerLinks, type PartnerLink, ownerMessages, type OwnerMessage, announcements, type Announcement } from "../drizzle/schema";
+import { InsertUser, users, meetingLogs, agendaItems, MeetingLog, AgendaItem, boardCards, agendaTemplates, type BoardCard, type InsertBoardCard, waitlistEmails, businessProfiles, type BusinessProfile, closedPeriods, type ClosedPeriod, meetingScheduleOverrides, employees, employeeMetrics, weeklyReports, weeklyReportEntries, type Employee, type EmployeeMetric, type WeeklyReport, type WeeklyReportEntry, goals, type Goal, type InsertGoal, notifications, type Notification, businessHours, type BusinessHours, subscriptions, type Subscription, type InsertSubscription, partnerLinks, type PartnerLink, ownerMessages, type OwnerMessage, announcements, type Announcement, meetingNotes, type MeetingNote } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -1356,4 +1356,37 @@ export async function sendAnnouncement(data: {
     .orderBy(desc(announcements.createdAt))
     .limit(1);
   return rows[0]!;
+}
+
+// ─── Meeting Notes helpers ────────────────────────────────────────────────────
+
+/** Save a transcribed meeting note. */
+export async function saveMeetingNote(data: {
+  accountId: number;
+  personId: string;
+  meetingType: "daily" | "weekly" | "monthly" | "quarterly";
+  title: string;
+  transcript?: string;
+}): Promise<MeetingNote> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.insert(meetingNotes).values(data);
+  const rows = await db.select().from(meetingNotes)
+    .where(eq(meetingNotes.accountId, data.accountId))
+    .orderBy(desc(meetingNotes.createdAt))
+    .limit(1);
+  return rows[0]!;
+}
+
+/** Get meeting notes for an account, optionally filtered by meeting type. */
+export async function getMeetingNotes(accountId: number, meetingType?: "daily" | "weekly" | "monthly" | "quarterly"): Promise<MeetingNote[]> {
+  const db = await getDb();
+  if (!db) return [];
+  const conditions = meetingType
+    ? and(eq(meetingNotes.accountId, accountId), eq(meetingNotes.meetingType, meetingType))
+    : eq(meetingNotes.accountId, accountId);
+  return db.select().from(meetingNotes)
+    .where(conditions)
+    .orderBy(desc(meetingNotes.createdAt))
+    .limit(50);
 }

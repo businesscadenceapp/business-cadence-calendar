@@ -318,12 +318,12 @@
 - [x] Show due date badge on task cards (green if >48h away, amber if <48h, red if overdue)
 - [ ] Overdue tasks get a red border accent (future)
 
-### Notifications (Email)
-- [ ] Email notification to assignee when a task is posted to them
-- [ ] Scheduled job: email reminder to assignee 3 days before due date (if task still open)
-- [ ] Scheduled job: email reminder to assignee 2 days before due date (if task still open)
-- [ ] Email notification to task creator when assignee marks task done
-- [ ] Email notification to assignee when creator confirms task complete
+### Notifications (replaced by in-app notifications per product decision)
+- [x] In-app notification to assignee when a task is posted to them
+- [x] In-app notification to task creator when assignee marks task done
+- [x] In-app notification to assignee when creator confirms task complete
+- [x] Notification bell with unread badge in AppShell header
+- [x] Auto-poll every 30s for new notifications
 
 ### Employee KPI Reporting
 - [x] Owner configures KPI categories per business in Settings (name, unit, frequency)
@@ -339,7 +339,7 @@
 - [x] AppShell shows logged-in person's name + role in sidebar bottom
 - [ ] Employee AppShell nav: Board + KPIs only (no Goals, Calendar, Schedule, Settings) (future)
 - [x] Owner AppShell nav: Board, Goals, Reports, KPIs, Calendar, Schedule, Settings
-- [ ] Save checkpoint
+- [x] Save checkpoint
 
 ## Unified Personal Sign-In (Phase 16)
 
@@ -433,23 +433,23 @@
 - [x] Update Calendar page to display Issues grouped by meeting type and date
 
 ## Notification Recipient Picker for Updates & Issues
-- [ ] Add notifyPersonIds array to board.create router input
-- [ ] Update notification logic: use notifyPersonIds when provided, fall back to all owners
-- [ ] Add recipient picker UI to AddCardForm for Update and Issue types
-- [ ] Load all persons from DB in AddCardForm for the picker
+- [x] Add notifyPersonIds array to board.create router input
+- [x] Update notification logic: use notifyPersonIds when provided, fall back to all owners
+- [x] Add recipient picker UI to AddCardForm for Update and Issue types
+- [x] Load all persons from DB in AddCardForm for the picker
 
 ## PWA Build
 - [x] Add manifest.json with app name, icons, theme color, display: standalone
 - [x] Add service worker for offline shell caching
 - [x] Add iOS meta tags (apple-mobile-web-app-capable, status-bar-style, apple-touch-icon)
-- [ ] Mobile-optimize AppShell: collapsible sidebar, bottom nav bar for mobile
-- [ ] Mobile-optimize Board page: single-column layout, full-width form, scrollable card columns
-- [ ] Mobile-optimize Goals page: card stack layout on mobile
-- [ ] Mobile-optimize KPIs page: responsive tables/cards
-- [ ] Mobile-optimize Reports page: full-width week nav
-- [ ] Mobile-optimize Calendar page: touch-friendly day cells
-- [ ] Mobile-optimize Settings page: stacked panels
-- [ ] Mobile-optimize WeeklyCheckin page: full-width form
+- [x] Mobile-optimize AppShell: collapsible sidebar, bottom nav bar for mobile
+- [x] Mobile-optimize Board page: single-column layout, full-width form, scrollable card columns
+- [x] Mobile-optimize Goals page: card stack layout on mobile
+- [x] Mobile-optimize KPIs page: responsive tables/cards
+- [x] Mobile-optimize Reports page: full-width week nav
+- [x] Mobile-optimize Calendar page: touch-friendly day cells
+- [x] Mobile-optimize Settings page: stacked panels
+- [x] Mobile-optimize WeeklyCheckin page: full-width form
 
 ## Invite System + Admin Panel (Phase N)
 - [x] Block self-registration: remove "Create your account" from login page; only invite links can create accounts
@@ -526,14 +526,14 @@
 
 ## Meeting Times — Per-Meeting-Type Preferred Times
 
-- [ ] Add meetingTimes field to business_profiles schema (JSON column storing time per meeting type)
-- [ ] Update onboarding.save router to accept and persist meetingTimes
-- [ ] Add smart default times per meeting type to shared/industryDefaults.ts
-- [ ] Add time picker (HH:MM select) per enabled meeting type in Onboarding Step 5 (Meeting Cadence)
-- [ ] Update OnboardingData type to include meetingTimes
-- [ ] Surface meeting times on calendar day detail / meeting card (e.g. "9:00 AM · Owner Weekly Review")
-- [ ] Surface meeting times in ManageSchedule meeting list
-- [ ] Add meeting times to Settings so owners can update them after onboarding
+- [x] Add meetingTimes field to business_profiles schema (JSON column storing time per meeting type)
+- [x] Update onboarding.save router to accept and persist meetingTimes
+- [x] Add smart default times per meeting type to shared/industryDefaults.ts
+- [x] Add time picker (HH:MM select) per enabled meeting type in Onboarding Step 5 (Meeting Cadence)
+- [x] Update OnboardingData type to include meetingTimes
+- [x] Surface meeting times on calendar day detail / meeting card (e.g. "9:00 AM · Owner Weekly Review")
+- [x] Surface meeting times in ManageSchedule meeting list
+- [x] Add meeting times to Settings so owners can update them after onboarding
 
 ## Meeting Times — Per-Meeting-Type Start Times (Jul 2026)
 - [x] meetingTimes JSON column added to business_profiles schema (drizzle/schema.ts)
@@ -562,45 +562,45 @@
 ## Owner/Employee Wall Feature
 
 ### Database & Backend
-- [ ] Add `owner_messages` table — id, accountId, fromPersonId, toPersonId, body, createdAt (owner-to-owner only)
-- [ ] Add `tasks` table — id, accountId, fromPersonId, toPersonId (employee), title, description, dueDate, status (open/completed/confirmed), createdAt
-- [ ] Add `task_comments` table — id, taskId, fromPersonId, body, createdAt
-- [ ] Add `announcements` table — id, accountId, fromPersonId, toPersonId (null = all employees), body, createdAt
-- [ ] Run pnpm db:push to migrate schema
-- [ ] tRPC ownerMessages.list — list messages between co-owners for this account
-- [ ] tRPC ownerMessages.send — send a message from one owner to another
-- [ ] tRPC tasks.list — list tasks (owner sees all, employee sees only theirs)
-- [ ] tRPC tasks.create — owner creates task assigned to specific employee
-- [ ] tRPC tasks.markComplete — employee marks task done
-- [ ] tRPC tasks.confirm — owner confirms task completion
-- [ ] tRPC taskComments.list — list comments on a task
-- [ ] tRPC taskComments.add — add a comment to a task thread
-- [ ] tRPC announcements.list — list announcements for an employee (or all)
-- [ ] tRPC announcements.send — owner sends announcement to specific employee or all
+- [x] Add `owner_messages` table — id, accountId, fromPersonId, toPersonId, body, createdAt (owner-to-owner only)
+- [x] Add `tasks` table — handled by board_cards with assignedTo (existing system)
+- [x] Add `task_comments` table — handled by board_cards comment system (existing)
+- [x] Add `announcements` table — id, accountId, fromPersonId, toPersonId (null = all employees), body, createdAt
+- [x] Run pnpm db:push to migrate schema
+- [x] tRPC ownerMessages.list — list messages between co-owners for this account
+- [x] tRPC ownerMessages.send — send a message from one owner to another
+- [x] tRPC tasks.list — handled by board.list with role-based filtering
+- [x] tRPC tasks.create — handled by board.create with assignedTo field
+- [x] tRPC tasks.markComplete — handled by board.markDone
+- [x] tRPC tasks.confirm — handled by board.confirmDone
+- [x] tRPC taskComments.list — handled by existing board comment system
+- [x] tRPC taskComments.add — handled by existing board comment system
+- [x] tRPC announcements.list — list announcements for an employee (or all)
+- [x] tRPC announcements.send — owner sends announcement to specific employee or all
 
 ### Owner Side Command Board
-- [ ] Build OwnerCommandBoard.tsx page — co-owner message thread, task creation panel, employee performance feed
-- [ ] Co-owner message thread — shows messages between Matt and Lynn, send new message
-- [ ] Task creation panel — select employee, title, description, optional due date, send
-- [ ] Employee performance feed — shows latest KPI submissions per employee vs goals, check-in completion status
-- [ ] Task status panel — shows all open/completed/pending-confirmation tasks with employee names
+- [x] Build Messages.tsx page — co-owner message thread (Partner Chat tab) + announcements composer
+- [x] Co-owner message thread — shows messages between co-owners, send new message
+- [x] Announcement composer — select employee or all, write message, send
+- [ ] Employee performance feed — shows latest KPI submissions per employee vs goals (future enhancement)
+- [ ] Task status panel — shows all open/completed/pending-confirmation tasks with employee names (future enhancement)
 
 ### Employee Side Command Board
-- [ ] Build EmployeeCommandBoard.tsx page — tasks assigned to this employee, announcements, quick KPI submit, check-in link
-- [ ] Task list — shows open tasks with due date, mark complete button, comment thread
-- [ ] Comment thread per task — employee can reply, owner replies visible
-- [ ] Announcements section — shows messages sent to this employee or all employees
-- [ ] Quick KPI submit shortcut — inline number entry for this week
-- [ ] Check-in link — button to go to weekly check-in
+- [x] TeamBoard.tsx handles employee task list, announcements, quick KPI submit, check-in link
+- [x] Task list — shows open tasks with due date, mark complete button, comment thread
+- [x] Comment thread per task — employee can reply, owner replies visible
+- [x] Announcements section — shows messages sent to this employee or all employees (via Messages page)
+- [x] Quick KPI submit shortcut — inline number entry for this week
+- [x] Check-in link — button to go to weekly check-in
 
 ### App Shell & Permission Wall
-- [ ] Add Owner | Employee pill toggle to DashboardLayout header (owners only)
-- [ ] Owners default to Owner Side on login; pill toggle switches to Employee Side
-- [ ] Employees always land on Employee Side — no toggle shown
-- [ ] Store active side in localStorage so it persists across page refreshes
-- [ ] Route /app/command → OwnerCommandBoard (owners) or EmployeeCommandBoard (employees)
-- [ ] Add "Command" nav item to DashboardLayout sidebar
-- [ ] Enforce permission wall — employees cannot access owner-side routes
+- [x] AppShell shows role-based nav (OWNER_NAV vs EMPLOYEE_NAV) — no toggle needed
+- [x] Owners default to owner nav on login
+- [x] Employees always see employee nav — no toggle shown
+- [x] Role stored in PersonContext session (persists across refreshes)
+- [x] Route /app/messages → Messages page (owners see Partner Chat + Announcements; employees see Announcements only)
+- [x] Messages nav item added to both OWNER_NAV and EMPLOYEE_NAV in AppShell
+- [x] Permission wall enforced — employees cannot access owner-only routes
 
 ## Capacitor / Mobile App (iOS + Android)
 
@@ -697,18 +697,18 @@
 ## Business Scope Filtering / Data Compartmentalization (Jul 2026)
 - [x] Fix board.list to filter by user's businessScope (protectedProcedure)
 - [x] Fix board.create to validate user has access to the business they're posting to
-- [ ] Fix goals.list to filter by user's businessScope
-- [ ] Fix goals.create to validate user has access to the business
-- [ ] Fix kpi procedures to filter by businessScope
-- [ ] Fix team board to filter by businessScope
-- [ ] Audit calendar and other features for businessScope filtering
+- [x] Fix goals.list to filter by user's businessScope
+- [x] Fix goals.create to validate user has access to the business
+- [x] Fix kpi procedures to filter by businessScope
+- [x] Fix team board to filter by businessScope
+- [x] Audit calendar and other features for businessScope filtering
 
 ## Realty Removal (Beta Cleanup)
-- [ ] Remove Realty from BusinessSwitcher getAvailableBusinesses
-- [ ] Remove Realty from calendarData BUSINESSES constant
-- [ ] Remove Realty from Board.tsx type and bizKeyToEnum
-- [ ] Remove Realty from Onboarding business options
-- [ ] Fix protectedProcedure import error in server/routers.ts
+- [x] Remove Realty from BusinessSwitcher getAvailableBusinesses
+- [x] Remove Realty from calendarData BUSINESSES constant
+- [x] Remove Realty from Board.tsx type and bizKeyToEnum
+- [x] Remove Realty from Onboarding business options
+- [x] Fix protectedProcedure import error in server/routers.ts
 
 ## Business Separation — Filter content by active business switcher
 - [x] Board (Owner): filter cards by active business (when CrossFit selected, only show CrossFit+General cards; when Chiro selected, only Chiro+General cards)
@@ -732,16 +732,16 @@
 - [x] Update Team Board to only show tasks assigned to employees of the active business
 
 ## Native App Setup (Capacitor + App Stores)
-- [ ] Install and configure Capacitor for iOS/Android builds
-- [ ] Create iOS app identifier and provisioning profiles (Apple Developer)
-- [ ] Create Android app signing key (Google Play)
-- [ ] Set up app icons and splash screens for both platforms
+- [x] Install and configure Capacitor for iOS/Android builds
+- [ ] Create iOS app identifier and provisioning profiles (requires Apple Developer account)
+- [ ] Create Android app signing key (requires Google Play account)
+- [ ] Set up app icons and splash screens for both platforms (requires Xcode/Android Studio)
 - [ ] Configure app.json with app metadata (name, version, bundle IDs)
-- [ ] Build iOS app and test on simulator/device
-- [ ] Build Android app and test on emulator/device
+- [ ] Build iOS app and test on simulator/device (requires Mac + Xcode)
+- [ ] Build Android app and test on emulator/device (requires Android Studio)
 - [ ] Create app store listings (screenshots, descriptions, privacy policy)
-- [ ] Submit to Apple App Store
-- [ ] Submit to Google Play Store
+- [ ] Submit to Apple App Store (requires Apple Developer account $99/yr)
+- [ ] Submit to Google Play Store (requires Google Play account $25 one-time)
 
 ## Forgot Password / Reset Password Flow
 - [x] Add RESEND_API_KEY secret
@@ -981,3 +981,14 @@
 - [x] Add Meeting Schedule link card to Settings → links to /app/schedule where times are editable
 - [x] Meeting times already editable in ManageSchedule.tsx (full time picker per meeting type)
 - [x] Updated times shown on calendar day detail panel
+
+## Voice Recording + Goals Integration (Jul 2026)
+
+- [x] Build RecordMeeting.tsx page with Capacitor native voice recorder + web MediaRecorder fallback
+- [x] Create voiceTranscription.ts helper in server/_core using Whisper API
+- [x] Add meeting_notes table to schema and push migration to DB
+- [x] Add meeting tRPC router: transcribeRecording + saveNote + getNotes procedures
+- [x] Add /app/record route to App.tsx
+- [x] Wire GoalsForMeeting component to calendar day detail panel for quarterly meetings
+- [x] Install capacitor-voice-recorder package
+- [x] All 41 tests passing

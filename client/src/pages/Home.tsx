@@ -24,6 +24,68 @@ import { DEFAULT_MEETING_TIMES, formatMeetingTime, type MeetingTimes } from "@sh
 const DOW_LABELS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
 const MEETING_ORDER: MeetingType[] = ["quarterly", "monthly", "weekly", "daily"];
 
+// Shows active quarterly goals inline in the day detail panel when a quarterly meeting is selected
+function GoalsForMeeting({ date, accountId, personId, businessContext }: {
+  date: Date;
+  accountId: number;
+  personId?: string;
+  businessContext: BusinessSelection;
+}) {
+  const year = date.getFullYear();
+  const quarter = Math.floor(date.getMonth() / 3) + 1;
+
+  const { data: goalsData = [] } = trpc.goals.list.useQuery(
+    { accountId, year, personId },
+    { enabled: accountId > 0, staleTime: 60_000 }
+  );
+
+  // Filter to quarterly goals for the current quarter and active business
+  // BusinessSelection is a string union: "chiro" | "crossfit" | "owner" | "all"
+  const activeDbSlug = businessContext === "chiro" ? "chiropractic"
+    : businessContext === "crossfit" ? "crossfit" : null;
+
+  const quarterlyGoals = goalsData.filter(g =>
+    g.period === "quarterly" &&
+    g.quarter === quarter &&
+    (!activeDbSlug || g.business === activeDbSlug || g.business === "general")
+  );
+
+  if (quarterlyGoals.length === 0) return null;
+
+  const STATUS_COLORS: Record<string, string> = {
+    active: "#5EEAD4",
+    achieved: "#34D399",
+    missed: "#F87171",
+    deferred: "#94A3B8",
+  };
+
+  return (
+    <div className="rounded-xl p-3.5 flex flex-col gap-2.5" style={{ backgroundColor: "rgba(196,181,253,0.06)", border: "1px solid rgba(196,181,253,0.18)" }}>
+      <p className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "#C4B5FD", fontFamily: "'Space Grotesk', sans-serif" }}>
+        🎯 Q{quarter} Goals — Agenda
+      </p>
+      {quarterlyGoals.map(goal => (
+        <div key={goal.id} className="flex items-start gap-2">
+          <span className="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0" style={{ backgroundColor: STATUS_COLORS[goal.status] ?? "#5EEAD4" }} />
+          <div className="flex flex-col gap-0.5 min-w-0">
+            <p className="text-[11px] font-medium text-white leading-snug truncate" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+              {goal.title}
+            </p>
+            {goal.description && (
+              <p className="text-[10px] leading-relaxed" style={{ color: "rgba(255,255,255,0.45)" }}>
+                {goal.description}
+              </p>
+            )}
+          </div>
+          <span className="text-[9px] font-semibold uppercase px-1.5 py-0.5 rounded flex-shrink-0" style={{ backgroundColor: `${STATUS_COLORS[goal.status] ?? "#5EEAD4"}18`, color: STATUS_COLORS[goal.status] ?? "#5EEAD4" }}>
+            {goal.status}
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function MeetingDot({ type }: { type: MeetingType }) {
   const m = MEETING_TYPES[type];
   const isQuarterly = type === "quarterly";
@@ -680,10 +742,11 @@ function BoardIssuesForMeeting({ meetingType, dateMs }: { meetingType: "daily_hu
   );
 }
 
-function DetailPanel({ day, onClose, businessContext, meetingTimes }: { day: CalendarDay; onClose: () => void; businessContext: BusinessSelection; meetingTimes: MeetingTimes }) {
+function DetailPanel({ day, onClose, businessContext, meetingTimes, accountId, personId }: { day: CalendarDay; onClose: () => void; businessContext: BusinessSelection; meetingTimes: MeetingTimes; accountId: number; personId?: string }) {
   const dateStr = day.date.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
   const dateKey = `${day.date.getFullYear()}-${String(day.date.getMonth() + 1).padStart(2, "0")}-${String(day.date.getDate()).padStart(2, "0")}`;
   const sortedMeetings = MEETING_ORDER.filter((t) => day.meetings.includes(t));
+  const hasQuarterly = sortedMeetings.includes("quarterly");
 
   return (
     <div className="flex flex-col gap-4">
@@ -718,6 +781,16 @@ function DetailPanel({ day, onClose, businessContext, meetingTimes }: { day: Cal
           </div>
         );
       })}
+
+      {/* Show quarterly goals as agenda items when this is a quarterly review day */}
+      {hasQuarterly && accountId > 0 && (
+        <GoalsForMeeting
+          date={day.date}
+          accountId={accountId}
+          personId={personId}
+          businessContext={businessContext}
+        />
+      )}
     </div>
   );
 }
@@ -1088,7 +1161,7 @@ export default function Home() {
             style={{ backgroundColor: "#0A1929", borderLeft: "1px solid rgba(255,255,255,0.08)" }}
           >
             <div className="p-4">
-              <DetailPanel day={selectedDay} onClose={() => setSelectedDay(null)} businessContext={businessContext} meetingTimes={meetingTimes} />
+              <DetailPanel day={selectedDay} onClose={() => setSelectedDay(null)} businessContext={businessContext} meetingTimes={meetingTimes} accountId={accountId ?? 0} personId={person?.id ? String(person.id) : undefined} />
             </div>
           </aside>
         )}

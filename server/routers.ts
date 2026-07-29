@@ -78,6 +78,8 @@ import {
   getAnnouncements,
   getAllAnnouncements,
   sendAnnouncement,
+  saveMeetingNote,
+  getMeetingNotes,
 } from "./db";
 import {
   getSubscription,
@@ -2154,6 +2156,50 @@ Keep the tone warm but professional. This summary will be saved under this speci
           }
         }
         return { announcement };
+      }),
+  }),
+
+  /** Meeting voice recording — save transcribed notes per meeting type. */
+  meeting: router({
+    /** Save a transcribed meeting note. */
+    saveNote: publicProcedure
+      .input(z.object({
+        accountId: z.number(),
+        personId: z.string(),
+        meetingType: z.enum(["daily", "weekly", "monthly", "quarterly"]),
+        title: z.string().min(1),
+        transcript: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const note = await saveMeetingNote(input);
+        return { note };
+      }),
+
+    /** Get meeting notes for an account. */
+    getNotes: publicProcedure
+      .input(z.object({
+        accountId: z.number(),
+        meetingType: z.enum(["daily", "weekly", "monthly", "quarterly"]).optional(),
+      }))
+      .query(async ({ input }) => {
+        const notes = await getMeetingNotes(input.accountId, input.meetingType);
+        return { notes };
+      }),
+
+    /** Transcribe audio from a storage URL using Whisper. */
+    transcribeRecording: publicProcedure
+      .input(z.object({
+        audioUrl: z.string().url(),
+        meetingType: z.enum(["daily", "weekly", "monthly", "quarterly"]).optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { transcribeAudio } = await import("./_core/voiceTranscription");
+        const result = await transcribeAudio({
+          audioUrl: input.audioUrl,
+          language: "en",
+          prompt: `Transcribe meeting notes for a ${input.meetingType ?? "business"} meeting between business co-owners.`,
+        });
+        return { transcript: result.text, language: result.language };
       }),
   }),
 });

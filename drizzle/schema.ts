@@ -616,3 +616,18 @@ export const announcements = mysqlTable("announcements", {
 });
 export type Announcement = typeof announcements.$inferSelect;
 export type InsertAnnouncement = typeof announcements.$inferInsert;
+
+/**
+ * Meeting Notes — voice-recorded and transcribed meeting notes
+ */
+export const meetingNotes = mysqlTable("meeting_notes", {
+  id: int("id").autoincrement().primaryKey(),
+  accountId: int("accountId").notNull(),
+  personId: varchar("personId", { length: 64 }).notNull(),
+  meetingType: mysqlEnum("meetingType", ["daily", "weekly", "monthly", "quarterly"]).notNull().default("weekly"),
+  title: varchar("title", { length: 256 }).notNull(),
+  transcript: text("transcript"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type MeetingNote = typeof meetingNotes.$inferSelect;
+export type InsertMeetingNote = typeof meetingNotes.$inferInsert;

@@ -39,6 +39,7 @@ import { TourProvider } from "@/contexts/TourContext";
 import TourOverlay from "@/components/TourOverlay";
 import DemoBoard from "@/pages/DemoBoard";
 import Messages from "@/pages/Messages";
+import RecordMeeting from "@/pages/RecordMeeting";
 
 // Wrapper so Paywall (which has optional custom props) works as a wouter route component
 function PaywallPage() {
@@ -160,6 +161,9 @@ function Router() {
       </Route>
       <Route path={"/app/messages"}>
         <Protected component={Messages} />
+      </Route>
+      <Route path={"/app/record"}>
+        <Protected component={RecordMeeting} />
       </Route>
       <Route path={"/app/admin"}>
         <Protected component={AdminPanel} />
