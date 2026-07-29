@@ -179,13 +179,14 @@ function EditGoalForm({
 // ─── Add Goal Form ─────────────────────────────────────────────────────────────
 
 function AddGoalForm({
-  accountId, businesses, ownerNames, onClose, onCreated,
+  accountId, businesses, ownerNames, onClose, onCreated, personId,
 }: {
   accountId: number;
   businesses: DbBusiness[];
   ownerNames: string[];
   onClose: () => void;
   onCreated: () => void;
+  personId?: string;
 }) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -214,6 +215,7 @@ function AddGoalForm({
       status: "active",
       owner,
       sortOrder: 0,
+      personId: personId,
     });
   };
 
@@ -482,7 +484,7 @@ export default function Goals() {
   }, [dbBusinesses]);
 
   const { data: goalsData = [], refetch } = trpc.goals.list.useQuery(
-    { accountId: accountId ?? 0, year: selectedYear },
+    { accountId: accountId ?? 0, year: selectedYear, personId: person?.id },
     { enabled: accountId !== undefined }
   );
 
@@ -638,7 +640,7 @@ export default function Goals() {
 
       {showAddForm && (
         <AddGoalForm accountId={accountId ?? 0} businesses={allowedBusinesses} ownerNames={ownerNames}
-          onClose={() => setShowAddForm(false)} onCreated={() => refetch()} />
+          onClose={() => setShowAddForm(false)} onCreated={() => refetch()} personId={person?.id} />
       )}
 
       {editingGoal && (

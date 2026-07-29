@@ -161,7 +161,7 @@ function CardComments({ cardId, currentUser, accountId }: {
   });
 
   const handleSubmit = () => {
-    if (!currentUser) { toast.error("Select who you are first"); return; }
+    if (!currentUser) { toast.error("Please sign in first"); return; }
     if (!text.trim() && commentAttachments.length === 0) return;
     addComment.mutate({
       cardId,
@@ -685,7 +685,7 @@ function AddCardForm({ currentUser, onAdded, allowedBusinesses, defaultBusiness,
           : "You're posting after business hours. Your partner won't be notified until business hours resume.";
       toast(msg, { icon: "🌙", duration: 6000 });
     }
-    if (!currentUser) { toast.error("Select who you are first (top right)"); return; }
+    if (!currentUser) { toast.error("Please sign in first"); return; }
     if (!content.trim()) { toast.error("Please write something"); return; }
     if (type === "task" && !assignedTo) { toast.error("Please select who this task is assigned to"); return; }
     const dueAt = dueDate ? new Date(dueDate + "T23:59:59").getTime() : undefined;

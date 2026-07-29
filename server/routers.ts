@@ -1001,14 +1001,23 @@ Keep the tone warm but professional. This summary will be saved under this speci
       }),
   }),
   goals: router({
-    /** List goals for an account, optionally filtered by year. */
+    /** List goals for an account, optionally filtered by year. Server-side scope enforcement via personId. */
     list: publicProcedure
-      .input(z.object({ accountId: z.number(), year: z.number().optional() }))
+      .input(z.object({ accountId: z.number(), year: z.number().optional(), personId: z.string().optional() }))
       .query(async ({ input }) => {
-        return getGoals(input.accountId, input.year);
+        const allGoals = await getGoals(input.accountId, input.year);
+        // Server-side scope enforcement: filter by person's businessScope
+        if (input.personId) {
+          const person = await getPersonById(input.personId);
+          if (person && person.businessScope && person.businessScope !== "all") {
+            const scopes = person.businessScope.split(",").map((s: string) => s.trim());
+            return allGoals.filter(g => scopes.includes(g.business) || g.business === "general");
+          }
+        }
+        return allGoals;
       }),
 
-    /** Create a new goal. */
+    /** Create a new goal. Server-side scope enforcement via personId. */
     create: publicProcedure
       .input(z.object({
         accountId: z.number(),
@@ -1021,9 +1030,21 @@ Keep the tone warm but professional. This summary will be saved under this speci
         status: z.enum(["active", "achieved", "missed", "deferred"]).default("active"),
         owner: z.string().default("both"),
         sortOrder: z.number().default(0),
+        personId: z.string().optional(),
       }))
       .mutation(async ({ input }) => {
-        return createGoal(input);
+        // Server-side scope enforcement: validate person has access to this business
+        if (input.personId && input.business !== "general") {
+          const person = await getPersonById(input.personId);
+          if (person && person.businessScope && person.businessScope !== "all") {
+            const scopes = person.businessScope.split(",").map((s: string) => s.trim());
+            if (!scopes.includes(input.business)) {
+              throw new Error(`Access denied: you do not have access to business '${input.business}'`);
+            }
+          }
+        }
+        const { personId: _pid, ...goalData } = input;
+        return createGoal(goalData);
       }),
 
     /** Update a goal's title, description, status, or owner. */
@@ -1053,11 +1074,19 @@ Keep the tone warm but professional. This summary will be saved under this speci
 
   /** Goals summary — grouped by period with status counts. */
   goalsSummary: router({
-    /** Get goals grouped by period (quarterly/annual) with status breakdown. */
+    /** Get goals grouped by period (quarterly/annual) with status breakdown. Server-side scope enforcement via personId. */
     get: publicProcedure
-      .input(z.object({ accountId: z.number(), year: z.number() }))
+      .input(z.object({ accountId: z.number(), year: z.number(), personId: z.string().optional() }))
       .query(async ({ input }) => {
-        const allGoals = await getGoals(input.accountId, input.year);
+        let allGoals = await getGoals(input.accountId, input.year);
+        // Server-side scope enforcement
+        if (input.personId) {
+          const person = await getPersonById(input.personId);
+          if (person && person.businessScope && person.businessScope !== "all") {
+            const scopes = person.businessScope.split(",").map((s: string) => s.trim());
+            allGoals = allGoals.filter(g => scopes.includes(g.business) || g.business === "general");
+          }
+        }
         const quarterly = allGoals.filter(g => g.period === "quarterly");
         const annual = allGoals.filter(g => g.period === "annual");
 

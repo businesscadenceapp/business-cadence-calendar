@@ -888,3 +888,51 @@
 - [x] Change music note icon on welcome card 4 to single outline note (matching heart style)
 - [x] Card 4: Change back to double eighth note in outline style (two notes becoming one, distinct from Apple Music)
 - [x] Card 2: Change people icon to wrench ("most tools")
+
+## Full Update Pass (Jul 2026)
+
+### Phase A: Realty Removal
+- [x] Remove Realty from BusinessSwitcher getAvailableBusinesses
+- [x] Remove Realty from calendarData BUSINESSES constant
+- [x] Remove Realty from Board.tsx type and bizKeyToEnum
+- [x] Remove Realty from Onboarding business options
+- [x] Fix any remaining Realty references in Goals, KPIs, Settings, TeamBoard
+
+### Phase B: Server-Side Business Scope Enforcement
+- [x] goals.list: filter by personId businessScope on server (not just client)
+- [x] goals.create: validate person has access to the business slug on server
+- [x] kpi.list: validate businessSlug matches person's businessScope
+- [x] kpi.create: validate person has access to the business slug
+- [x] team board: validate business access server-side
+
+### Phase C: Mobile Layout Polish
+- [x] Board page: single-column mobile layout, full-width cards, touch-friendly form
+- [x] Goals page: card stack layout on mobile, responsive form
+- [x] KPIs page: responsive tables/cards on mobile
+- [x] Reports page: full-width week nav, stacked tabs on mobile
+- [x] Calendar page: touch-friendly day cells, readable month nav
+- [x] Settings page: stacked panels on mobile
+
+### Phase D: Notification Recipient Picker
+- [x] Add notifyPersonIds array to board.create router input
+- [x] Update notification logic: use notifyPersonIds when provided, fall back to all owners
+- [x] Add recipient picker UI to AddCardForm for Update and Issue types
+- [x] Load all persons from DB in AddCardForm for the picker
+
+### Phase E: Owner/Employee Wall
+- [x] Build EmployeeBoard.tsx — tasks assigned to employee, announcements, quick KPI submit
+- [x] Task list: open tasks with due date, mark complete button, comment thread
+- [x] Announcements section: messages from owners to this employee or all employees
+- [x] Quick KPI submit shortcut inline
+- [x] Route /app/team/board → EmployeeBoard for employees
+- [x] AppShell: employees land on EmployeeBoard, not OwnerBoard
+
+### Phase F: Meeting Times on Calendar
+- [x] Show meeting time on calendar day detail panel (e.g. "9:00 AM · Owner Weekly Review")
+- [x] Show meeting time in ManageSchedule meeting list rows
+
+### Phase G: Employee Weekly Report Submission
+- [x] Build /app/reports/submit page for employees
+- [x] Employee sees their assigned report questions for the active business
+- [x] Employee submits text answers per question for the current week
+- [x] Owner sees submitted answers in Reports page (Weekly tab)
