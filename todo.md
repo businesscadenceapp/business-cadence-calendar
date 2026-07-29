@@ -263,7 +263,7 @@
 - [x] Audit current Goals page — determine if it exists or needs to be created
 - [x] If missing: create Goals page with ability to add/edit quarterly and annual goals per business
 - [x] Goals should be visible from the main nav (second position)
-- [ ] Link goals to meeting types (quarterly goals shown in quarterly meeting detail)
+- [x] Link goals to meeting types (quarterly goals shown in quarterly meeting detail)
 
 ### Overall Layout Polish
 - [x] First screen after login should feel like a "command center" not a calendar
@@ -994,13 +994,13 @@
 - [x] All 41 tests passing
 
 ## Remove All Voice Recording (Jul 2026)
-- [ ] Delete client/src/pages/RecordMeeting.tsx
-- [ ] Remove /app/record route from App.tsx
-- [ ] Remove meeting router from server/routers.ts
-- [ ] Remove meeting note DB helpers from server/db.ts
-- [ ] Remove meetingNotes table from drizzle/schema.ts
-- [ ] Delete server/_core/voiceTranscription.ts
-- [ ] Uninstall capacitor-voice-recorder package
+- [x] Delete client/src/pages/RecordMeeting.tsx
+- [x] Remove /app/record route from App.tsx
+- [x] Remove meeting router from server/routers.ts
+- [x] Remove meeting note DB helpers from server/db.ts
+- [x] Remove meetingNotes table from drizzle/schema.ts
+- [x] Delete server/_core/voiceTranscription.ts
+- [x] Uninstall capacitor-voice-recorder package
 - [x] Drop meeting_notes table from database (repurposed for typed notes)
 - [x] Remove any remaining voice/recording/transcription references
 - [x] Confirm 0 TypeScript errors and all tests pass
@@ -1011,3 +1011,8 @@
 - [x] Add meetingNotes tRPC router: saveNote + getNotes procedures
 - [x] Build MeetingNotes UI component in calendar day detail panel (textarea + save + list of past notes)
 - [x] Wire into Home.tsx meeting detail view
+
+## Business Filtering Fix (Jul 2026)
+- [x] Fix Home.tsx to use bcc_active_business_slug from localStorage to filter meeting blocks (not just person.businessScope)
+- [x] Ensure owners who select Chiropractic only see Chiropractic blocks; CrossFit only sees CrossFit blocks
+- [x] Owner mode (both businesses selected) still shows all blocks

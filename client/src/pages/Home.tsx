@@ -818,7 +818,31 @@ export default function Home() {
   const { person } = usePerson();
   const [selectedDay, setSelectedDay] = useState<CalendarDay | null>(null);
   const [highlightType, setHighlightType] = useState<MeetingType | null>(null);
-  const businessContext = personScopeToBusinessSelection(person?.businessScope);
+  // Derive businessContext: use the active business from localStorage.
+  // Priority: bcc_active_business (in-app switcher) > bcc_active_business_slug (card selector)
+  // Both keys store which business the user is currently viewing.
+  const [activeBusinessKey, setActiveBusinessKey] = useState<string | null>(() => {
+    return localStorage.getItem("bcc_active_business") ||
+           (localStorage.getItem("bcc_active_business_slug") === "chiropractic" ? "chiro" :
+            localStorage.getItem("bcc_active_business_slug") === "crossfit" ? "crossfit" : null);
+  });
+  // Listen for storage changes (e.g. when BusinessSwitcher updates the key)
+  useEffect(() => {
+    const handler = () => {
+      const key = localStorage.getItem("bcc_active_business") ||
+                  (localStorage.getItem("bcc_active_business_slug") === "chiropractic" ? "chiro" :
+                   localStorage.getItem("bcc_active_business_slug") === "crossfit" ? "crossfit" : null);
+      setActiveBusinessKey(key);
+    };
+    window.addEventListener("storage", handler);
+    return () => window.removeEventListener("storage", handler);
+  }, []);
+  const businessContext = useMemo<BusinessSelection>(() => {
+    if (activeBusinessKey === "chiro") return "chiro";
+    if (activeBusinessKey === "crossfit") return "crossfit";
+    // No specific business selected → use person scope ("all" = owner sees everything)
+    return personScopeToBusinessSelection(person?.businessScope);
+  }, [activeBusinessKey, person?.businessScope]);
   const accountId = person?.accountId ?? (() => {
     const stored = localStorage.getItem("bcc_account_id");
     return stored ? parseInt(stored, 10) : undefined;
