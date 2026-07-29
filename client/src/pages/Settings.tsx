@@ -722,6 +722,35 @@ export default function Settings() {
         />
       )}
 
+      {/* ── Meeting Schedule ──────────────────────────────────────────────── */}
+      {(person?.role === "owner" || person?.role === "coowner") && (
+        <div
+          className="mx-4 sm:mx-6 mb-4 rounded-2xl p-5"
+          style={{ backgroundColor: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <span className="text-xl">🗓️</span>
+              <div>
+                <h2 className="text-sm font-bold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+                  Meeting Schedule
+                </h2>
+                <p className="text-[11px] mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>
+                  Edit meeting days, times, and which types are active.
+                </p>
+              </div>
+            </div>
+            <Link
+              href="/app/schedule"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all active:scale-[0.97]"
+              style={{ backgroundColor: "rgba(94,234,212,0.12)", border: "1px solid rgba(94,234,212,0.25)", color: "#5EEAD4", fontFamily: "'Space Grotesk', sans-serif" }}
+            >
+              Edit Schedule →
+            </Link>
+          </div>
+        </div>
+      )}
+
       {/* ── Team Calendar Visibility ──────────────────────────────────────── */}
       {(person?.role === "owner" || person?.role === "coowner") && (
         <div

@@ -585,3 +585,34 @@ export const partnerLinks = mysqlTable("partner_links", {
 
 export type PartnerLink = typeof partnerLinks.$inferSelect;
 export type InsertPartnerLink = typeof partnerLinks.$inferInsert;
+
+/**
+ * Owner Messages — private message thread between co-owners (e.g. Matt ↔ Lynn).
+ * Scoped to an accountId so only owners on the same account can see messages.
+ */
+export const ownerMessages = mysqlTable("owner_messages", {
+  id: int("id").autoincrement().primaryKey(),
+  accountId: int("accountId").notNull(),
+  fromPersonId: varchar("fromPersonId", { length: 64 }).notNull(),
+  toPersonId: varchar("toPersonId", { length: 64 }).notNull(),
+  body: text("body").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type OwnerMessage = typeof ownerMessages.$inferSelect;
+export type InsertOwnerMessage = typeof ownerMessages.$inferInsert;
+
+/**
+ * Announcements — owner-to-employee broadcast messages.
+ * toPersonId = null means "all employees on this account".
+ * toPersonId set = message to a specific employee.
+ */
+export const announcements = mysqlTable("announcements", {
+  id: int("id").autoincrement().primaryKey(),
+  accountId: int("accountId").notNull(),
+  fromPersonId: varchar("fromPersonId", { length: 64 }).notNull(),
+  toPersonId: varchar("toPersonId", { length: 64 }), // null = all employees
+  body: text("body").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type Announcement = typeof announcements.$inferSelect;
+export type InsertAnnouncement = typeof announcements.$inferInsert;

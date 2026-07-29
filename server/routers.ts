@@ -73,6 +73,11 @@ import {
   updateBusinessHours,
   toggleDnd,
   setDnd,
+  getOwnerMessages,
+  sendOwnerMessage,
+  getAnnouncements,
+  getAllAnnouncements,
+  sendAnnouncement,
 } from "./db";
 import {
   getSubscription,
@@ -2058,6 +2063,97 @@ Keep the tone warm but professional. This summary will be saved under this speci
           .set({ partnerInviteToken: null, partnerInviteBusinessName: null })
           .where(eq(personsTable.id, owner.id));
         return { success: true as const };
+      }),
+  }),
+
+  // ─── Owner Messages (co-owner private thread) ────────────────────────────────
+  ownerMessages: router({
+    /** Get the co-owner message thread for this account. */
+    list: publicProcedure
+      .input(z.object({ accountId: z.number() }))
+      .query(async ({ input }) => {
+        const messages = await getOwnerMessages(input.accountId);
+        return { messages };
+      }),
+
+    /** Send a message to the co-owner. */
+    send: publicProcedure
+      .input(z.object({
+        accountId: z.number(),
+        fromPersonId: z.string(),
+        toPersonId: z.string(),
+        body: z.string().min(1).max(2000),
+      }))
+      .mutation(async ({ input }) => {
+        const message = await sendOwnerMessage(input);
+        // Notify the recipient
+        await createNotification({
+          accountId: input.accountId,
+          recipientPersonId: input.toPersonId,
+          type: "owner_message" as any,
+          title: "New message from your partner",
+          body: input.body.length > 80 ? input.body.slice(0, 80) + "..." : input.body,
+          linkTo: "/app/command",
+        });
+        return { message };
+      }),
+  }),
+
+  // ─── Announcements (owner → employee broadcasts) ─────────────────────────────
+  announcements: router({
+    /** Get announcements for a specific employee (or all employees). */
+    list: publicProcedure
+      .input(z.object({ accountId: z.number(), personId: z.string() }))
+      .query(async ({ input }) => {
+        const items = await getAnnouncements(input.accountId, input.personId);
+        return { items };
+      }),
+
+    /** Get all announcements for the account (owner view). */
+    listAll: publicProcedure
+      .input(z.object({ accountId: z.number() }))
+      .query(async ({ input }) => {
+        const items = await getAllAnnouncements(input.accountId);
+        return { items };
+      }),
+
+    /** Send an announcement to a specific employee or all employees. */
+    send: publicProcedure
+      .input(z.object({
+        accountId: z.number(),
+        fromPersonId: z.string(),
+        toPersonId: z.string().nullable(),
+        body: z.string().min(1).max(2000),
+      }))
+      .mutation(async ({ input }) => {
+        const announcement = await sendAnnouncement(input);
+        // Notify recipients
+        if (input.toPersonId) {
+          // Specific employee
+          await createNotification({
+            accountId: input.accountId,
+            recipientPersonId: input.toPersonId,
+            type: "new_update" as any,
+            title: "New announcement from your owner",
+            body: input.body.length > 80 ? input.body.slice(0, 80) + "..." : input.body,
+            linkTo: "/app/command",
+          });
+        } else {
+          // All employees — fetch them and notify each
+          const allPersons = await getPersonsByAccount(input.accountId);
+          const employees = allPersons.filter(p => p.role === "employee");
+          for (const emp of employees) {
+            await createNotification({
+              accountId: input.accountId,
+              recipientPersonId: emp.id,
+              type: "new_update" as any,
+              title: "New announcement from your owner",
+              body: input.body.length > 80 ? input.body.slice(0, 80) + "..." : input.body,
+              linkTo: "/app/command",
+            });
+          }
+        }
+        return { announcement };
       }),
   }),
 });

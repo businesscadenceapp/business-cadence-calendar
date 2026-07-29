@@ -936,3 +936,48 @@
 - [x] Employee sees their assigned report questions for the active business
 - [x] Employee submits text answers per question for the current week
 - [x] Owner sees submitted answers in Reports page (Weekly tab)
+
+## In-App Notification System + Command Board (Jul 2026)
+
+### In-App Notifications
+- [x] Add `notifications` table: id, accountId, toPersonId, fromPersonId, type, title, body, data (JSON), readAt, createdAt
+- [x] Push db migration
+- [x] tRPC notifications.list — fetch unread + recent notifications for current person
+- [x] tRPC notifications.markRead — mark one or all notifications as read
+- [x] tRPC notifications.unreadCount — fast count for badge
+- [x] Notification bell icon in AppShell header with unread count badge
+- [x] Notification dropdown/panel — list of recent notifications with read/unread state
+- [x] Auto-poll notifications every 30s (or on focus) for real-time feel
+- [x] Trigger notification on: task assigned, task marked done, task confirmed, issue posted, update posted, announcement sent
+
+### Command Board — DB + tRPC
+- [x] Add `owner_messages` table: id, accountId, fromPersonId, toPersonId, body, createdAt
+- [x] Add `announcements` table: id, accountId, fromPersonId, toPersonId (null = all), body, createdAt
+- [x] Push db migration
+- [x] tRPC ownerMessages.list — list co-owner messages for this account
+- [x] tRPC ownerMessages.send — send message between co-owners
+- [x] tRPC announcements.list — list announcements for current person
+- [x] tRPC announcements.send — owner sends announcement to employee or all
+
+### OwnerCommandBoard.tsx
+- [x] Co-owner message thread (Matt ↔ Lynn private channel)
+- [x] Announcement composer — select recipient (specific employee or all), write message, send
+- [ ] Employee performance feed — latest KPI submissions per employee vs goals (future enhancement)
+- [ ] Task status panel — open/done/pending-confirmation tasks with employee names (future enhancement)
+
+### EmployeeCommandBoard.tsx
+- [x] Task list — open tasks assigned to this employee with due date + mark complete
+- [x] Comment thread per task — employee and owner can reply
+- [x] Announcements section — messages sent to this employee or all employees
+- [x] Quick KPI submit shortcut inline
+- [x] Check-in link button
+
+### Command Board Routing
+- [x] Route /app/messages → Messages page (Partner Chat + Announcements tabs)
+- [x] Add Messages nav item to AppShell sidebar and mobile bottom nav for all roles
+- [x] Enforce permission wall — employees see Announcements only, not Partner Chat
+
+### Meeting Times in Settings
+- [x] Add Meeting Schedule link card to Settings → links to /app/schedule where times are editable
+- [x] Meeting times already editable in ManageSchedule.tsx (full time picker per meeting type)
+- [x] Updated times shown on calendar day detail panel

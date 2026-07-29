@@ -1,6 +1,6 @@
 import { eq, and, desc, inArray, asc } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, meetingLogs, agendaItems, MeetingLog, AgendaItem, boardCards, agendaTemplates, type BoardCard, type InsertBoardCard, waitlistEmails, businessProfiles, type BusinessProfile, closedPeriods, type ClosedPeriod, meetingScheduleOverrides, employees, employeeMetrics, weeklyReports, weeklyReportEntries, type Employee, type EmployeeMetric, type WeeklyReport, type WeeklyReportEntry, goals, type Goal, type InsertGoal, notifications, type Notification, businessHours, type BusinessHours, subscriptions, type Subscription, type InsertSubscription, partnerLinks, type PartnerLink } from "../drizzle/schema";
+import { InsertUser, users, meetingLogs, agendaItems, MeetingLog, AgendaItem, boardCards, agendaTemplates, type BoardCard, type InsertBoardCard, waitlistEmails, businessProfiles, type BusinessProfile, closedPeriods, type ClosedPeriod, meetingScheduleOverrides, employees, employeeMetrics, weeklyReports, weeklyReportEntries, type Employee, type EmployeeMetric, type WeeklyReport, type WeeklyReportEntry, goals, type Goal, type InsertGoal, notifications, type Notification, businessHours, type BusinessHours, subscriptions, type Subscription, type InsertSubscription, partnerLinks, type PartnerLink, ownerMessages, type OwnerMessage, announcements, type Announcement } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -1286,4 +1286,74 @@ export async function createPartnerLink(accountId: number, ownerPersonId: string
   });
   const [row] = await db.select().from(partnerLinks).where(eq(partnerLinks.partnerPersonId, partnerPersonId)).limit(1);
   return row!;
+}
+
+// ─── Owner Messages helpers ───────────────────────────────────────────────────
+
+/** Get co-owner messages for an account (most recent first). */
+export async function getOwnerMessages(accountId: number, limit = 50): Promise<OwnerMessage[]> {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(ownerMessages)
+    .where(eq(ownerMessages.accountId, accountId))
+    .orderBy(asc(ownerMessages.createdAt))
+    .limit(limit);
+}
+
+/** Send a message from one owner to another. */
+export async function sendOwnerMessage(data: {
+  accountId: number;
+  fromPersonId: string;
+  toPersonId: string;
+  body: string;
+}): Promise<OwnerMessage> {
+  const db = await getDb();
+  if (!db) throw new Error("DB unavailable");
+  await db.insert(ownerMessages).values(data);
+  const rows = await db.select().from(ownerMessages)
+    .where(eq(ownerMessages.accountId, data.accountId))
+    .orderBy(desc(ownerMessages.createdAt))
+    .limit(1);
+  return rows[0]!;
+}
+
+// ─── Announcements helpers ────────────────────────────────────────────────────
+
+/** Get announcements for a person (either sent to them specifically or to all employees). */
+export async function getAnnouncements(accountId: number, personId: string, limit = 30): Promise<Announcement[]> {
+  const db = await getDb();
+  if (!db) return [];
+  const rows = await db.select().from(announcements)
+    .where(eq(announcements.accountId, accountId))
+    .orderBy(desc(announcements.createdAt))
+    .limit(limit);
+  // Filter: include if toPersonId is null (all employees) or matches this person
+  return rows.filter(r => r.toPersonId === null || r.toPersonId === personId);
+}
+
+/** Get all announcements for an account (owner view). */
+export async function getAllAnnouncements(accountId: number, limit = 50): Promise<Announcement[]> {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(announcements)
+    .where(eq(announcements.accountId, accountId))
+    .orderBy(desc(announcements.createdAt))
+    .limit(limit);
+}
+
+/** Send an announcement from an owner to an employee or all employees. */
+export async function sendAnnouncement(data: {
+  accountId: number;
+  fromPersonId: string;
+  toPersonId: string | null;
+  body: string;
+}): Promise<Announcement> {
+  const db = await getDb();
+  if (!db) throw new Error("DB unavailable");
+  await db.insert(announcements).values(data);
+  const rows = await db.select().from(announcements)
+    .where(eq(announcements.accountId, data.accountId))
+    .orderBy(desc(announcements.createdAt))
+    .limit(1);
+  return rows[0]!;
 }
