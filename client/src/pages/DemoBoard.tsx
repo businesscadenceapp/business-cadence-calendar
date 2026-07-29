@@ -299,7 +299,7 @@ export default function DemoBoard() {
               />
             </div>
             <div className="flex justify-center mt-3">
-              <button onClick={demoToast} className="text-[11px] active:opacity-60" style={{ color: "rgba(255,255,255,0.3)", fontFamily: "'Space Grotesk', sans-serif" }}>🗂 Archive</button>
+              <button onClick={demoToast} className="text-[11px] active:opacity-60" style={{ color: "rgba(255,255,255,0.3)", fontFamily: "'Space Grotesk', sans-serif" }}>Archive</button>
             </div>
           </div>
 

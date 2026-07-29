@@ -1472,7 +1472,7 @@ export default function Board() {
               className="text-[11px] transition-colors active:opacity-60"
               style={{ color: "rgba(255,255,255,0.3)", fontFamily: "'Space Grotesk', sans-serif", letterSpacing: "0.03em" }}
             >
-              🗂 Archive {archivedCards.length > 0 ? `(${archivedCards.length})` : ""}
+              Archive{archivedCards.length > 0 ? ` (${archivedCards.length})` : ""}
             </button>
           </div>
         )}
