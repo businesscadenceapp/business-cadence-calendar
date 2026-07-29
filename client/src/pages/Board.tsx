@@ -936,7 +936,7 @@ const CATEGORIES: { key: CategoryKey; label: string; icon: string; gradient: str
   { key: "tasks", label: "Tasks", icon: "☑", gradient: "linear-gradient(135deg, rgba(124,58,237,0.15) 0%, rgba(124,58,237,0.06) 100%)", border: "rgba(124,58,237,0.3)", glow: "rgba(124,58,237,0.12)", textColor: "#C4B5FD", countBg: "rgba(124,58,237,0.25)" },
   { key: "updates", label: "Updates", icon: "✅", gradient: "linear-gradient(135deg, rgba(37,99,235,0.15) 0%, rgba(37,99,235,0.06) 100%)", border: "rgba(37,99,235,0.3)", glow: "rgba(37,99,235,0.12)", textColor: "#93C5FD", countBg: "rgba(37,99,235,0.25)" },
   { key: "issues", label: "Issues", icon: "🔥", gradient: "linear-gradient(135deg, rgba(225,29,72,0.15) 0%, rgba(225,29,72,0.06) 100%)", border: "rgba(225,29,72,0.3)", glow: "rgba(225,29,72,0.12)", textColor: "#FDA4AF", countBg: "rgba(225,29,72,0.25)" },
-  { key: "archive", label: "Archive", icon: "🗂", gradient: "linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%)", border: "rgba(255,255,255,0.12)", glow: "rgba(255,255,255,0.04)", textColor: "rgba(255,255,255,0.6)", countBg: "rgba(255,255,255,0.08)" },
+  { key: "archive", label: "Archive", icon: "__folder__", gradient: "linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%)", border: "rgba(255,255,255,0.12)", glow: "rgba(255,255,255,0.04)", textColor: "rgba(255,255,255,0.6)", countBg: "rgba(255,255,255,0.08)" },
 ];
 
 // Needs Attention tile — shown as 4th tile replacing Archive in the 2×2 grid
@@ -1048,7 +1048,13 @@ function SubCardView({ title, icon, accentColor, onBack, children }: {
           </svg>
         </button>
         <div className="flex items-center gap-2">
-          <span className="text-lg">{icon}</span>
+          {icon === "__folder__" ? (
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.55)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+            </svg>
+          ) : (
+            <span className="text-lg">{icon}</span>
+          )}
           <h2 className="text-[16px] font-bold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>{title}</h2>
         </div>
       </div>
@@ -1472,7 +1478,12 @@ export default function Board() {
               className="text-[11px] transition-colors active:opacity-60"
               style={{ color: "rgba(255,255,255,0.3)", fontFamily: "'Space Grotesk', sans-serif", letterSpacing: "0.03em" }}
             >
-              Archive{archivedCards.length > 0 ? ` (${archivedCards.length})` : ""}
+              <span className="flex items-center gap-1.5">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                </svg>
+                Archive{archivedCards.length > 0 ? ` (${archivedCards.length})` : ""}
+              </span>
             </button>
           </div>
         )}

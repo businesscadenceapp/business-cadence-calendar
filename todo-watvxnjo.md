@@ -114,3 +114,9 @@
 - [x] Needs Attention smart filter: combined view of open tasks + unresolved issues in Board and DemoBoard
 - [x] Archive text link below the 2x2 grid (Board and DemoBoard)
 - [x] PartnerRegister: rebuild as native full-screen dark app screen (remove card wrapper, logo header, website chrome)
+
+## Archive Icon: Replace emoji with SVG folder icon
+- [x] Replace 🗂 emoji in Archive CATEGORIES entry (Board.tsx) with "__folder__" sentinel
+- [x] Update SubCardView to render folder SVG when icon === "__folder__"
+- [x] Add folder SVG icon to Archive text link below the 2×2 grid (Board.tsx)
+- [x] Add folder SVG icon to Archive text link in DemoBoard.tsx
