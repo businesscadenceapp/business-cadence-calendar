@@ -1073,9 +1073,10 @@ export default function Board() {
   const { person } = usePerson();
   const { activeBusiness } = useActiveBusiness(person?.businessScope);
   const filterBusiness: Business | "all" = bizKeyToEnum(activeBusiness);
-  const [activeView, setActiveView] = useState<CategoryKey | null>(null);
+  const [activeView, setActiveView] = useState<CategoryKey | "needs_attention" | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [showCompleted, setShowCompleted] = useState(false);
+  const [needsAttnSection, setNeedsAttnSection] = useState<"tasks" | "issues">("tasks");
   const { replay, registerRef, active: tourActive } = useTour();
   const [profileDeferred, setProfileDeferred] = useState(false);
 
@@ -1189,11 +1190,58 @@ export default function Board() {
 
   // If a sub-card is active, show it
   if (activeView) {
-    const catMeta = CATEGORIES.find(c => c.key === activeView)!;
+    const isNeedsAttn = activeView === "needs_attention";
+    const catMeta = isNeedsAttn
+      ? { label: "Needs Attention", icon: "❗", border: "rgba(245,158,11,0.5)" }
+      : CATEGORIES.find(c => c.key === activeView)!;
     return (
       <div className="flex flex-col min-h-full" style={{ backgroundColor: "#0A1929", fontFamily: "'Inter', sans-serif" }}>
         <SubCardView title={catMeta.label} icon={catMeta.icon} accentColor={catMeta.border} onBack={() => setActiveView(null)}>
-          {activeView === "tasks" && (
+          {isNeedsAttn && (
+            <>
+              {/* Unified combined list */}
+              {openTasks.length === 0 && donePendingTasks.length === 0 && issues.length === 0 ? (
+                <EmptyState icon="✅" title="Nothing needs attention" subtitle="You're all caught up — no open tasks or unresolved issues." />
+              ) : (
+                <>
+                  {/* Open tasks section */}
+                  {(openTasks.length > 0 || donePendingTasks.length > 0) && (
+                    <>
+                      <p className="text-[10px] font-bold uppercase tracking-widest px-1 mb-2" style={{ color: "rgba(255,255,255,0.35)", fontFamily: "'Space Grotesk', sans-serif" }}>
+                        ☑ Open Tasks ({openTasks.length + donePendingTasks.length})
+                      </p>
+                      {openTasks.map(card => (
+                        <TaskCard key={card.id} card={card} currentUser={currentUser} accountId={accountId}
+                          onMarkDone={id => currentUser && markDone.mutate({ id, completedBy: currentUser, ...(accountId ? { accountId } : {}) })}
+                          onConfirmDone={id => currentUser && confirmDone.mutate({ id, confirmedBy: currentUser, ...(accountId ? { accountId } : {}) })}
+                          onDelete={id => deleteCard.mutate({ id })} />
+                      ))}
+                      {donePendingTasks.map(card => (
+                        <TaskCard key={card.id} card={card} currentUser={currentUser} accountId={accountId}
+                          onMarkDone={id => currentUser && markDone.mutate({ id, completedBy: currentUser, ...(accountId ? { accountId } : {}) })}
+                          onConfirmDone={id => currentUser && confirmDone.mutate({ id, confirmedBy: currentUser, ...(accountId ? { accountId } : {}) })}
+                          onDelete={id => deleteCard.mutate({ id })} />
+                      ))}
+                    </>
+                  )}
+                  {/* Issues section */}
+                  {issues.length > 0 && (
+                    <>
+                      <p className="text-[10px] font-bold uppercase tracking-widest px-1 mb-2 mt-4" style={{ color: "rgba(255,255,255,0.35)", fontFamily: "'Space Grotesk', sans-serif" }}>
+                        🔥 Issues ({issues.length})
+                      </p>
+                      {issues.map(card => (
+                        <BoardCard key={card.id} card={card} currentUser={currentUser} accountId={accountId}
+                          onSeen={id => currentUser && markSeen.mutate({ id, seenBy: currentUser })}
+                          onArchive={id => archive.mutate({ id })} onDelete={id => deleteCard.mutate({ id })} />
+                      ))}
+                    </>
+                  )}
+                </>
+              )}
+            </>
+          )}
+          {!isNeedsAttn && activeView === "tasks" && (
             <>
               {openTasks.length === 0 && donePendingTasks.length === 0 && completedTasks.length === 0 ? (
                 <EmptyState icon="☑" title="All clear on tasks" subtitle="Post a task to assign something to your partner." />
@@ -1408,12 +1456,24 @@ export default function Board() {
               cat={NEEDS_ATTENTION_META as unknown as TileMeta}
               count={(counts.tasks ?? 0) + (counts.issues ?? 0)}
               onClick={() => {
-                // Navigate to tasks if there are tasks, otherwise issues
-                if ((counts.tasks ?? 0) > 0) setActiveView("tasks");
-                else if ((counts.issues ?? 0) > 0) setActiveView("issues");
+                setNeedsAttnSection((counts.tasks ?? 0) > 0 ? "tasks" : "issues");
+                setActiveView("needs_attention");
               }}
               delay={3 * 60}
             />
+          </div>
+        )}
+
+        {/* Archive text link */}
+        {!isLoading && (
+          <div className="flex justify-center mt-3">
+            <button
+              onClick={() => setActiveView("archive")}
+              className="text-[11px] transition-colors active:opacity-60"
+              style={{ color: "rgba(255,255,255,0.3)", fontFamily: "'Space Grotesk', sans-serif", letterSpacing: "0.03em" }}
+            >
+              🗂 Archive {archivedCards.length > 0 ? `(${archivedCards.length})` : ""}
+            </button>
           </div>
         )}
 

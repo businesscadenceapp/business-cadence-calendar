@@ -181,7 +181,8 @@ function DemoCategoryTile({ cat, count, onClick, delay }: { cat: DemoTileMeta; c
 // ─── Main Demo Page ───────────────────────────────────────────────────────────
 export default function DemoBoard() {
   const [, navigate] = useLocation();
-  const [activeView, setActiveView] = useState<CategoryKey | null>(null);
+  const [activeView, setActiveView] = useState<CategoryKey | "needs_attention" | null>(null);
+  const [needsAttnSection, setNeedsAttnSection] = useState<"tasks" | "issues">("tasks");
 
   const tasks = SAMPLE_CARDS.filter(c => c.type === "task");
   const updates = SAMPLE_CARDS.filter(c => c.type === "update");
@@ -196,6 +197,7 @@ export default function DemoBoard() {
   };
 
   const activeCards = activeView === "tasks" ? tasks : activeView === "updates" ? updates : issues;
+  const isNeedsAttn = activeView === "needs_attention";
 
   return (
     <div
@@ -214,21 +216,47 @@ export default function DemoBoard() {
             style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}
           >
             <button
-              onClick={() => setActiveView(null)}
+              onClick={() => { setActiveView(null); setNeedsAttnSection("tasks"); }}
               className="w-8 h-8 rounded-xl flex items-center justify-center transition-all active:scale-95"
               style={{ backgroundColor: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.6)" }}
             >←</button>
             <span className="text-[16px] font-bold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-              {CATEGORIES.find(c => c.key === activeView)?.icon} {CATEGORIES.find(c => c.key === activeView)?.label}
+              {isNeedsAttn ? "❗ Needs Attention" : `${CATEGORIES.find(c => c.key === activeView)?.icon} ${CATEGORIES.find(c => c.key === activeView)?.label}`}
             </span>
             <span className="ml-auto text-[10px] px-2 py-0.5 rounded-full font-bold" style={{ backgroundColor: "rgba(245,158,11,0.15)", color: "#FCD34D", border: "1px solid rgba(245,158,11,0.25)" }}>SAMPLE</span>
           </div>
 
           {/* Cards */}
           <div className="flex-1 overflow-y-auto px-5 py-4 flex flex-col gap-3">
-            {activeCards.map(card => (
-              <DemoCardItem key={card.id} card={card} />
-            ))}
+            {isNeedsAttn ? (
+              <>
+                {tasks.length === 0 && issues.length === 0 ? (
+                  <div className="text-center py-10" style={{ color: "rgba(255,255,255,0.35)" }}>
+                    <div className="text-3xl mb-2">✅</div>
+                    <p className="text-sm">Nothing needs attention</p>
+                  </div>
+                ) : (
+                  <>
+                    {tasks.length > 0 && (
+                      <>
+                        <p className="text-[10px] font-bold uppercase tracking-widest px-1 mb-2" style={{ color: "rgba(255,255,255,0.35)", fontFamily: "'Space Grotesk', sans-serif" }}>☑ Open Tasks ({tasks.length})</p>
+                        {tasks.map(card => <DemoCardItem key={card.id} card={card} />)}
+                      </>
+                    )}
+                    {issues.length > 0 && (
+                      <>
+                        <p className="text-[10px] font-bold uppercase tracking-widest px-1 mb-2 mt-4" style={{ color: "rgba(255,255,255,0.35)", fontFamily: "'Space Grotesk', sans-serif" }}>🔥 Issues ({issues.length})</p>
+                        {issues.map(card => <DemoCardItem key={card.id} card={card} />)}
+                      </>
+                    )}
+                  </>
+                )}
+              </>
+            ) : (
+              activeCards.map(card => (
+                <DemoCardItem key={card.id} card={card} />
+              ))
+            )}
           </div>
         </div>
       ) : (
@@ -266,9 +294,12 @@ export default function DemoBoard() {
               <DemoCategoryTile
                 cat={{ key: "needs_attention", label: "Needs Attention", icon: "❗", gradient: "linear-gradient(135deg, rgba(251,191,36,0.18) 0%, rgba(251,191,36,0.07) 100%)", border: "rgba(251,191,36,0.38)", glow: "rgba(251,191,36,0.14)", textColor: "#FDE68A" }}
                 count={counts.tasks + counts.issues}
-                onClick={() => setActiveView("tasks")}
+                onClick={() => { setNeedsAttnSection(counts.tasks > 0 ? "tasks" : "issues"); setActiveView("needs_attention"); }}
                 delay={3 * 60}
               />
+            </div>
+            <div className="flex justify-center mt-3">
+              <button onClick={demoToast} className="text-[11px] active:opacity-60" style={{ color: "rgba(255,255,255,0.3)", fontFamily: "'Space Grotesk', sans-serif" }}>🗂 Archive</button>
             </div>
           </div>
 

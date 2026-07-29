@@ -106,6 +106,11 @@
 - [x] Wire "Take a tour →" button in WaitingForPartner to navigate to /demo
 - [x] Run tests (41/41 pass), checkpoint, push to GitHub
 ## Board Grid Redesign (user feedback)
-- [ ] Make Needs Attention a 4th tile in 2x2 grid (exclamation icon, same style as others)
-- [ ] Compress hero section so full Board home fits on screen without scrolling
-- [ ] Apply same fix to DemoBoard
+- [x] Make Needs Attention a 4th tile in 2x2 grid (exclamation icon, same style as others)
+- [x] Compress hero section so full Board home fits on screen without scrolling
+- [x] Apply same fix to DemoBoard
+
+## Three UX Improvements (user request)
+- [x] Needs Attention smart filter: combined view of open tasks + unresolved issues in Board and DemoBoard
+- [x] Archive text link below the 2x2 grid (Board and DemoBoard)
+- [x] PartnerRegister: rebuild as native full-screen dark app screen (remove card wrapper, logo header, website chrome)

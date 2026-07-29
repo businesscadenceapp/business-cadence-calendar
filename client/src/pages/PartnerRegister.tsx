@@ -18,7 +18,6 @@ import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { usePerson } from "@/contexts/PersonContext";
 import { toast } from "sonner";
-import { BrandIcon } from "@/components/BrandLogo";
 
 type Mode = "register" | "login";
 
@@ -171,16 +170,6 @@ export default function PartnerRegister() {
       />
 
       <div className="w-full max-w-md relative z-10">
-        {/* Logo */}
-        <div className="flex justify-center mb-6">
-          <div className="flex items-center gap-2">
-            <BrandIcon size={36} variant="teal" />
-            <span className="text-white/70 text-base font-medium">
-              Business<span className="text-[#5EEAD4]">Cadence</span>
-            </span>
-          </div>
-        </div>
-
         {tokenLoading ? (
           <div className="flex justify-center py-16">
             <div className="w-8 h-8 rounded-full border-2 border-[#5EEAD4]/30 border-t-[#5EEAD4] animate-spin" />
@@ -244,14 +233,7 @@ export default function PartnerRegister() {
             </div>
 
             {/* ── Form card ── */}
-            <div
-              className="rounded-2xl p-7"
-              style={{
-                backgroundColor: "rgba(255,255,255,0.04)",
-                border: "1px solid rgba(94,234,212,0.2)",
-                boxShadow: "0 8px 32px rgba(0,0,0,0.3), 0 0 0 1px rgba(94,234,212,0.05)",
-              }}
-            >
+            <div className="mt-2">
               {mode === "register" ? (
                 <form onSubmit={handleRegister} className="flex flex-col gap-4">
                   <Field label="Your Name" id="name">
