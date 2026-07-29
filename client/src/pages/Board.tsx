@@ -1325,7 +1325,7 @@ export default function Board() {
           {activeView === "archive" && (
             <>
               {archivedCards.length === 0 ? (
-                <EmptyState icon="🗂" title="Archive is empty" subtitle="Archived posts will appear here." />
+                <EmptyState icon="__folder__" title="Archive is empty" subtitle="Archived posts will appear here." />
               ) : (
                 archivedCards.map(card => (
                   card.type === "task" ? (
@@ -1543,7 +1543,13 @@ export default function Board() {
 function EmptyState({ icon, title, subtitle }: { icon: string; title: string; subtitle: string }) {
   return (
     <div className="rounded-2xl p-8 text-center flex flex-col items-center gap-3" style={{ backgroundColor: "rgba(255,255,255,0.02)", border: "1px dashed rgba(255,255,255,0.1)" }}>
-      <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl" style={{ backgroundColor: "rgba(255,255,255,0.06)" }}>{icon}</div>
+      <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl" style={{ backgroundColor: "rgba(255,255,255,0.06)" }}>
+        {icon === "__folder__" ? (
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.55)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+          </svg>
+        ) : icon}
+      </div>
       <div>
         <p className="text-[13px] font-semibold text-white">{title}</p>
         <p className="text-[11px] mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>{subtitle}</p>
