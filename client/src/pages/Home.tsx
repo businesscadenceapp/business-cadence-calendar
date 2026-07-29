@@ -21,7 +21,6 @@ import {
   YEAR,
 } from "@/lib/calendarData";
 import { DEFAULT_MEETING_TIMES, formatMeetingTime, type MeetingTimes } from "@shared/industryDefaults";
-import MeetingNotes from "@/components/MeetingNotes";
 
 const DOW_LABELS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
 const MEETING_ORDER: MeetingType[] = ["quarterly", "monthly", "weekly", "daily"];
@@ -749,11 +748,6 @@ function DetailPanel({ day, onClose, businessContext, meetingTimes, accountId, p
   const dateKey = `${day.date.getFullYear()}-${String(day.date.getMonth() + 1).padStart(2, "0")}-${String(day.date.getDate()).padStart(2, "0")}`;
   const sortedMeetings = MEETING_ORDER.filter((t) => day.meetings.includes(t));
   const hasQuarterly = sortedMeetings.includes("quarterly");
-  // Get active business ID from localStorage (set by BusinessSelector)
-  const activeBusinessId = (() => {
-    const stored = localStorage.getItem("bcc_active_business_id");
-    return stored ? parseInt(stored, 10) : 0;
-  })();
 
   return (
     <div className="flex flex-col gap-4">
@@ -798,18 +792,7 @@ function DetailPanel({ day, onClose, businessContext, meetingTimes, accountId, p
           businessContext={businessContext}
         />
       )}
-      {/* Meeting Notes — typed notes for this meeting */}
-      {accountId > 0 && personId && sortedMeetings.length > 0 && (
-        <div className="rounded-xl p-3.5 flex flex-col gap-2.5" style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)" }}>
-          <MeetingNotes
-            accountId={accountId}
-            personId={personId}
-            businessId={activeBusinessId}
-            meetingType={sortedMeetings[0] as "daily" | "weekly" | "monthly" | "quarterly"}
-            meetingDate={dateKey}
-          />
-        </div>
-      )}
+
     </div>
   );
 }
