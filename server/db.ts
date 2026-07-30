@@ -961,13 +961,7 @@ export async function getReportQuestions(accountId: number, businessId?: number)
   const db = await getDb();
   if (!db) return [];
   const conditions = [eq(reportQuestions.accountId, accountId), eq(reportQuestions.isActive, true)];
-  if (businessId !== undefined) {
-    // Return questions for this business OR questions that apply to all (businessId=0)
-    conditions.push(
-      // We use a raw OR: businessId = 0 OR businessId = input
-      // Drizzle doesn't have a clean OR in where array, so we filter in JS
-    );
-  }
+  // businessId OR filtering is handled in JS below (after query) to support OR logic cleanly
   const rows = await db.select().from(reportQuestions)
     .where(and(...conditions))
     .orderBy(asc(reportQuestions.sortOrder), asc(reportQuestions.id));
