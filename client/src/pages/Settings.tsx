@@ -14,6 +14,7 @@ import { personScopeToBusinessSelection } from "@/lib/businessScope";
 import type { MeetingType, BusinessKey } from "@/lib/calendarData";
 import PartnerInviteSheet from "@/components/PartnerInviteSheet";
 import { useTour, TOUR_PENDING_KEY } from "@/contexts/TourContext";
+import { useActiveBusiness } from "@/components/BusinessSwitcher";
 
 const BIZ_MAP: Record<BusinessKey, "chiropractic" | "crossfit"> = {
   chiro: "chiropractic",
@@ -477,22 +478,31 @@ export default function Settings() {
     [personsData]
   );
 
-  const visibleBusinesses = dbBusinesses.map(b => ({
-    key: b.slug as DbBusiness,
-    bizKey: b.slug as BusinessKey,
-    label: b.name,
-    color: b.color,
-    icon: b.icon,
-    logoUrl: b.logoUrl ?? null,
-    id: b.id,
-  }));
+  // Only show the currently active business — to customize another, switch business first
+  const { activeBusiness } = useActiveBusiness(person?.businessScope);
+  const visibleBusinesses = dbBusinesses
+    .filter(b => {
+      // Map activeBusiness key ("chiro") to slug ("chiropractic") for comparison
+      const activeSlug = activeBusiness === "chiro" ? "chiropractic" : activeBusiness;
+      return b.slug === activeSlug;
+    })
+    .map(b => ({
+      key: b.slug as DbBusiness,
+      bizKey: b.slug as BusinessKey,
+      label: b.name,
+      color: b.color,
+      icon: b.icon,
+      logoUrl: b.logoUrl ?? null,
+      id: b.id,
+    }));
 
   const [selectedBiz, setSelectedBiz] = useState<DbBusiness>("");
   useEffect(() => {
-    if (!selectedBiz && visibleBusinesses.length > 0) {
+    // Reset selection when active business changes
+    if (visibleBusinesses.length > 0) {
       setSelectedBiz(visibleBusinesses[0].key);
     }
-  }, [visibleBusinesses, selectedBiz]);
+  }, [activeBusiness]);
 
   // Team Calendar visibility settings
   const { data: teamCalSettings, refetch: refetchTeamCal } = trpc.teamCalendar.getSettings.useQuery(
