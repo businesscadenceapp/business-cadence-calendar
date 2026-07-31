@@ -198,10 +198,10 @@ export default function InvitePartnerSetup() {
           {isSending ? "Sending…" : "Send Invite →"}
         </button>
         <button
-          onClick={() => navigate(`/setup?bizName=${encodeURIComponent(businessName.trim())}`)}
-          className="w-full py-3 text-white/30 text-sm text-center mt-2 hover:text-white/50 transition-colors"
+          onClick={() => navigate("/setup")}
+          className="w-full py-3 text-white/40 text-sm text-center mt-2 hover:text-white/60 transition-colors"
         >
-          I'll set it up myself instead
+          Skip — I'll invite my partner later
         </button>
       </div>
     </div>
