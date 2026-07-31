@@ -121,7 +121,7 @@ export default function InvitePartnerSetup() {
         </p>
 
         {/* Form */}
-        <div className="w-full max-w-xs flex flex-col gap-4">
+        <div className="w-full max-w-xs flex flex-col gap-4 mb-2">
           <div className="flex flex-col gap-1.5 text-left">
             <label className="text-xs font-semibold text-white/40 uppercase tracking-wider">
               Business Name
@@ -185,7 +185,7 @@ export default function InvitePartnerSetup() {
       </div>
 
       {/* Bottom CTA */}
-      <div className="relative z-10 px-6 pb-8 max-w-md mx-auto w-full">
+      <div className="relative z-10 px-6 pt-4 pb-10 max-w-md mx-auto w-full">
         <button
           onClick={handleSend}
           disabled={isSending || !businessName.trim() || !partnerName.trim() || !partnerEmail.trim()}
