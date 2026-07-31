@@ -26,10 +26,10 @@ import {
   type BillingPeriod,
 } from "@shared/subscriptionPlans";
 
-// Tester bypass — shows in dev builds (simulator + web browser) but NOT in production App Store builds.
-// Vite sets import.meta.env.PROD=true only when built with `pnpm build` in production mode.
-// The iOS simulator uses a debug build so import.meta.env.DEV is true there.
-const SHOW_TESTER_BYPASS = import.meta.env.DEV || !import.meta.env.PROD;
+// Tester bypass — ALWAYS TRUE until App Store submission.
+// TODO: Set this to `false` before submitting to the App Store.
+// The button lets Matt test the full app flow without going through Apple payment.
+const SHOW_TESTER_BYPASS = true;
 
 // ─── Plan Card ────────────────────────────────────────────────────────────────
 function PlanCard({
