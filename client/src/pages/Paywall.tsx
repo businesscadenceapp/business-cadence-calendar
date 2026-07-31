@@ -26,12 +26,10 @@ import {
   type BillingPeriod,
 } from "@shared/subscriptionPlans";
 
-// Simulator bypass — only visible when running in the iOS/Android simulator (not a real device)
-const IS_SIMULATOR = Capacitor.isNativePlatform() && !Capacitor.getPlatform().includes("web") && (() => {
-  try { return (window as any).__CAPACITOR_SIMULATOR__ === true; } catch { return false; }
-})();
-// Also show bypass in web browser (non-native) for easy testing
-const SHOW_TESTER_BYPASS = !Capacitor.isNativePlatform() || IS_SIMULATOR;
+// Tester bypass — shows in dev builds (simulator + web browser) but NOT in production App Store builds.
+// Vite sets import.meta.env.PROD=true only when built with `pnpm build` in production mode.
+// The iOS simulator uses a debug build so import.meta.env.DEV is true there.
+const SHOW_TESTER_BYPASS = import.meta.env.DEV || !import.meta.env.PROD;
 
 // ─── Plan Card ────────────────────────────────────────────────────────────────
 function PlanCard({
