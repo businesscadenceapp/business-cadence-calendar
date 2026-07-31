@@ -17,6 +17,7 @@ import { toast } from "sonner";
 import { BrandIcon } from "@/components/BrandLogo";
 import { Check, X } from "lucide-react";
 import { Capacitor } from "@capacitor/core";
+
 import {
   SUBSCRIPTION_PLANS as PLANS,
   PAYWALL_FEATURES as FEATURES,
@@ -24,6 +25,13 @@ import {
   type PlanId,
   type BillingPeriod,
 } from "@shared/subscriptionPlans";
+
+// Simulator bypass — only visible when running in the iOS/Android simulator (not a real device)
+const IS_SIMULATOR = Capacitor.isNativePlatform() && !Capacitor.getPlatform().includes("web") && (() => {
+  try { return (window as any).__CAPACITOR_SIMULATOR__ === true; } catch { return false; }
+})();
+// Also show bypass in web browser (non-native) for easy testing
+const SHOW_TESTER_BYPASS = !Capacitor.isNativePlatform() || IS_SIMULATOR;
 
 // ─── Plan Card ────────────────────────────────────────────────────────────────
 function PlanCard({
@@ -333,6 +341,22 @@ export default function Paywall({ dismissible, onSubscribe, onDismiss }: Paywall
           >
             Restore Purchases
           </button>
+
+          {/* ── Simulator / Tester bypass ── */}
+          {SHOW_TESTER_BYPASS && (
+            <button
+              onClick={() => {
+                if (onSubscribe) {
+                  onSubscribe(selectedPlan);
+                } else {
+                  navigate("/invite-partner-setup");
+                }
+              }}
+              className="mt-2 mb-2 text-yellow-400/60 text-xs underline underline-offset-2 hover:text-yellow-400/90 transition-colors"
+            >
+              🧪 Continue as Tester (skip payment)
+            </button>
+          )}
 
           <p className="text-white/20 text-[10px] text-center leading-relaxed max-w-xs">
             Payment will be charged to your Apple ID / Google Play account at
