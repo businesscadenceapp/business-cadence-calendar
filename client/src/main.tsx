@@ -76,10 +76,15 @@ queryClient.getMutationCache().subscribe(event => {
   }
 });
 
+// On native (iOS/Android), relative URLs don't work — must use the full production URL.
+const TRPC_URL = Capacitor.isNativePlatform()
+  ? "https://businesscadence.com/api/trpc"
+  : "/api/trpc";
+
 const trpcClient = trpc.createClient({
   links: [
     httpBatchLink({
-      url: "/api/trpc",
+      url: TRPC_URL,
       transformer: superjson,
       headers() {
         // Preview auto-login fallback: when the browser blocks iframe cookies

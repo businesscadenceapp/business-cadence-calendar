@@ -1,10 +1,16 @@
 export { COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
+import { Capacitor } from "@capacitor/core";
 
 // Generate login URL at runtime so redirect URI reflects the current origin.
+// On native (iOS/Android), window.location.origin is "capacitor://localhost" — unusable.
+// Use the production domain instead so the OAuth callback routes correctly.
 export const getLoginUrl = () => {
   const oauthPortalUrl = import.meta.env.VITE_OAUTH_PORTAL_URL;
   const appId = import.meta.env.VITE_APP_ID;
-  const redirectUri = `${window.location.origin}/api/oauth/callback`;
+  const origin = Capacitor.isNativePlatform()
+    ? "https://businesscadence.com"
+    : window.location.origin;
+  const redirectUri = `${origin}/api/oauth/callback`;
   const state = btoa(redirectUri);
 
   const url = new URL(`${oauthPortalUrl}/app-auth`);
