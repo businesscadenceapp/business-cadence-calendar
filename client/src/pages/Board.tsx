@@ -1462,20 +1462,22 @@ export default function Board() {
           </div>
         )}
 
-        {/* Archive text link */}
+        {/* Archive button — styled to match Team board */}
         {!isLoading && (
-          <div className="flex justify-center mt-3">
+          <div className="flex justify-center mt-4">
             <button
               onClick={() => setActiveView("archive")}
-              className="text-[11px] transition-colors active:opacity-60"
-              style={{ color: "rgba(255,255,255,0.3)", fontFamily: "'Space Grotesk', sans-serif", letterSpacing: "0.03em" }}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-2xl text-[13px] font-semibold transition-all active:scale-[0.97]"
+              style={{
+                backgroundColor: "rgba(255,255,255,0.07)",
+                border: "1.5px solid rgba(255,255,255,0.15)",
+                color: "rgba(255,255,255,0.75)",
+                fontFamily: "'Space Grotesk', sans-serif",
+                letterSpacing: "0.01em",
+              }}
             >
-              <span className="flex items-center gap-1.5">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
-                </svg>
-                Archive{archivedCards.length > 0 ? ` (${archivedCards.length})` : ""}
-              </span>
+              <span style={{ fontSize: "16px" }}>📁</span>
+              Archive{archivedCards.length > 0 ? ` (${archivedCards.length})` : ""}
             </button>
           </div>
         )}
