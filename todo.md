@@ -1016,3 +1016,9 @@
 - [x] Fix Home.tsx to use bcc_active_business_slug from localStorage to filter meeting blocks (not just person.businessScope)
 - [x] Ensure owners who select Chiropractic only see Chiropractic blocks; CrossFit only sees CrossFit blocks
 - [x] Owner mode (both businesses selected) still shows all blocks
+
+## Board.tsx UI Fixes (Session Aug 2026)
+- [x] BottomSheet: add sheetRef and scroll to top on open so all 3 card types are visible
+- [x] allowedBusinesses: deduplicate slugs with Array.from(new Set(...))
+- [x] FAB button: moved from bottom-6 to bottom-24 to always be visible above bottom nav bar (both FAB instances)
+- [x] AddCardForm: removed "Which business?" selector — business is set by the active business switcher only

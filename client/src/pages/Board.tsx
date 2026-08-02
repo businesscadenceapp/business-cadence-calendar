@@ -605,17 +605,17 @@ function BoardCard({ card, currentUser, accountId, onSeen, onArchive, onDelete }
 
 // ─── Add Card Form (Bottom Sheet) ────────────────────────────────────────────
 
-function AddCardForm({ currentUser, onAdded, allowedBusinesses, defaultBusiness, bizLabels, assignablePersons, accountId }: {
+function AddCardForm({ currentUser, onAdded, activeBusiness: activeBusinessProp, bizLabels, assignablePersons, accountId }: {
   currentUser: Author | null;
   onAdded: () => void;
-  allowedBusinesses: Business[];
-  defaultBusiness: Business;
+  activeBusiness: Business;
   bizLabels?: Record<string, { label: string; icon: string; bg: string; text: string; border: string }>;
   assignablePersons?: { id: string; name: string }[];
   accountId?: number;
 }) {
   const [type, setType] = useState<CardType>("update");
-  const [business, setBusiness] = useState<Business>(defaultBusiness);
+  // Business is always the currently active business — never shown as a selector
+  const business = activeBusinessProp;
   const [content, setContent] = useState("");
   const [assignedTo, setAssignedTo] = useState<string | null>(null);
   const [dueDate, setDueDate] = useState("");
@@ -758,24 +758,7 @@ function AddCardForm({ currentUser, onAdded, allowedBusinesses, defaultBusiness,
         </div>
       )}
 
-      {/* Business selector */}
-      {allowedBusinesses.length > 1 && (
-        <div className="flex flex-col gap-1.5">
-          <p className="text-[10px] uppercase tracking-wider" style={{ color: "rgba(255,255,255,0.4)", fontFamily: "'Space Grotesk', sans-serif" }}>Which business?</p>
-          <div className="flex gap-1.5 flex-wrap">
-            {allowedBusinesses.map(key => {
-              const biz = (bizLabels ?? BUSINESS_LABELS)[key] ?? { label: key, icon: "🏢", bg: "rgba(255,255,255,0.08)", text: "rgba(255,255,255,0.6)", border: "rgba(255,255,255,0.15)" };
-              return (
-                <button key={key} onClick={() => setBusiness(key)}
-                  className="px-3 py-1.5 rounded-lg text-[11px] font-medium transition-all flex items-center gap-1 active:scale-[0.97]"
-                  style={{ backgroundColor: business === key ? biz.bg : "rgba(255,255,255,0.03)", border: `1.5px solid ${business === key ? biz.border : "rgba(255,255,255,0.08)"}`, color: business === key ? biz.text : "rgba(255,255,255,0.5)", fontFamily: "'Space Grotesk', sans-serif" }}>
-                  {biz.icon} {biz.label}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      )}
+      {/* Business is silently set from the active business switcher — no UI selector shown */}
 
       {/* Update date */}
       {type === "update" && (
@@ -983,10 +966,16 @@ function CategoryTile({ cat, count, onClick, delay }: { cat: TileMeta; count: nu
 
 function BottomSheet({ open, onClose, children }: { open: boolean; onClose: () => void; children: React.ReactNode }) {
   const overlayRef = useRef<HTMLDivElement>(null);
+  const sheetRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (open) document.body.style.overflow = "hidden";
-    else document.body.style.overflow = "";
+    if (open) {
+      document.body.style.overflow = "hidden";
+      // Scroll sheet back to top whenever it opens so all 3 type options are visible
+      setTimeout(() => { if (sheetRef.current) sheetRef.current.scrollTop = 0; }, 10);
+    } else {
+      document.body.style.overflow = "";
+    }
     return () => { document.body.style.overflow = ""; };
   }, [open]);
 
@@ -1000,6 +989,7 @@ function BottomSheet({ open, onClose, children }: { open: boolean; onClose: () =
       onClick={e => { if (e.target === overlayRef.current) onClose(); }}
     >
       <div
+        ref={sheetRef}
         className="w-full max-w-lg max-h-[85vh] overflow-y-auto rounded-t-3xl p-5 pb-8"
         style={{
           backgroundColor: "#0D2035",
@@ -1134,9 +1124,11 @@ export default function Board() {
   const personScope = person?.businessScope ?? "all";
   const allowedBusinesses = useMemo<Business[]>(() => {
     if (!dbBusinesses.length) return [];
-    if (personScope === "all") return dbBusinesses.map(b => b.slug as Business);
-    const scopes = personScope.split(",").map(s => s.trim());
-    return dbBusinesses.filter(b => scopes.includes(b.slug)).map(b => b.slug as Business);
+    const raw = personScope === "all"
+      ? dbBusinesses.map(b => b.slug as Business)
+      : dbBusinesses.filter(b => personScope.split(",").map(s => s.trim()).includes(b.slug)).map(b => b.slug as Business);
+    // Deduplicate in case of duplicate DB records
+    return Array.from(new Set(raw));
   }, [dbBusinesses, personScope]);
 
   const defaultBusiness = useMemo<Business>(() => allowedBusinesses[0] ?? "general" as Business, [allowedBusinesses]);
@@ -1344,7 +1336,7 @@ export default function Board() {
         {/* FAB for post */}
         <button
           onClick={() => setSheetOpen(true)}
-          className="fixed bottom-6 right-6 w-14 h-14 rounded-2xl flex items-center justify-center text-xl transition-all active:scale-[0.9] hover:scale-[1.05] z-40"
+          className="fixed bottom-24 right-6 w-14 h-14 rounded-2xl flex items-center justify-center text-xl transition-all active:scale-[0.9] hover:scale-[1.05] z-40"
           style={{
             background: "linear-gradient(135deg, #5EEAD4, #38BDF8)",
             boxShadow: "0 6px 24px rgba(94,234,212,0.4), 0 2px 8px rgba(0,0,0,0.3)",
@@ -1353,7 +1345,7 @@ export default function Board() {
 
         <BottomSheet open={sheetOpen} onClose={() => setSheetOpen(false)}>
           <AddCardForm currentUser={currentUser} onAdded={() => { refetch(); setSheetOpen(false); }}
-            allowedBusinesses={allowedBusinesses} defaultBusiness={defaultBusiness}
+            activeBusiness={filterBusiness === "all" ? (allowedBusinesses[0] ?? "general" as Business) : filterBusiness}
             bizLabels={dynamicBizLabels} assignablePersons={allPersons} accountId={accountId} />
         </BottomSheet>
       </div>
@@ -1495,7 +1487,7 @@ export default function Board() {
         ref={(el) => registerRef("tour-hub", el)}
         data-tour="tour-hub"
         onClick={() => setSheetOpen(true)}
-        className="fixed bottom-6 right-6 w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-bold transition-all active:scale-[0.9] hover:scale-[1.05] z-40"
+        className="fixed bottom-24 right-6 w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-bold transition-all active:scale-[0.9] hover:scale-[1.05] z-40"
         style={{
           background: "linear-gradient(135deg, #5EEAD4, #38BDF8)",
           color: "#0F2440",
@@ -1507,7 +1499,7 @@ export default function Board() {
       {/* Bottom Sheet for posting */}
       <BottomSheet open={sheetOpen} onClose={() => setSheetOpen(false)}>
         <AddCardForm currentUser={currentUser} onAdded={() => { refetch(); setSheetOpen(false); }}
-          allowedBusinesses={allowedBusinesses} defaultBusiness={defaultBusiness}
+          activeBusiness={filterBusiness === "all" ? (allowedBusinesses[0] ?? "general" as Business) : filterBusiness}
           bizLabels={dynamicBizLabels} assignablePersons={allPersons} accountId={accountId} />
       </BottomSheet>
 
