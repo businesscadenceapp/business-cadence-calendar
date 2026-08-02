@@ -3,6 +3,8 @@
   "appName": "Business Cadence Command Center",
   "webDir": "dist/public",
   "server": {
+    "url": "https://businesscadence.com",
+    "cleartext": false,
     "androidScheme": "https"
   },
   "plugins": {

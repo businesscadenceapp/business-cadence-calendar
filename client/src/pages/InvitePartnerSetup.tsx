@@ -1,7 +1,6 @@
 /**
- * InvitePartnerSetup — Subscriber sends their partner a setup link.
- * The partner will complete the business profile on behalf of both.
- * After sending, routes to /waiting-for-partner.
+ * InvitePartnerSetup — Subscriber names their business and optionally invites their partner.
+ * Business name is saved even if the invite is skipped.
  */
 
 import { useState } from "react";
@@ -18,6 +17,10 @@ export default function InvitePartnerSetup() {
   const [partnerName, setPartnerName] = useState("");
   const [partnerEmail, setPartnerEmail] = useState("");
   const [isSending, setIsSending] = useState(false);
+  const [isSkipping, setIsSkipping] = useState(false);
+
+  const createBusiness = trpc.business.create.useMutation();
+  const saveOnboarding = trpc.onboarding.save.useMutation();
 
   const generateLink = trpc.subscription.generatePartnerInviteLink.useMutation({
     onSuccess: async (data) => {
@@ -26,7 +29,6 @@ export default function InvitePartnerSetup() {
         setIsSending(false);
         return;
       }
-      // Send email via server
       try {
         await sendInviteEmail.mutateAsync({
           toEmail: partnerEmail,
@@ -57,9 +59,35 @@ export default function InvitePartnerSetup() {
     generateLink.mutate({
       accountId: person.accountId,
       ownerPersonId: person.id,
-      origin: window.location.origin,
+      origin: "https://businesscadence.com",
       businessName: businessName.trim() || undefined,
     });
+  };
+
+  const handleSkip = async () => {
+    if (!person?.accountId) {
+      navigate("/select-business");
+      return;
+    }
+    // Save business name if they typed one before skipping
+    if (businessName.trim()) {
+      setIsSkipping(true);
+      try {
+        const slug = businessName.trim().toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "").slice(0, 60) || "business";
+        await createBusiness.mutateAsync({
+          accountId: person.accountId,
+          name: businessName.trim(),
+          slug,
+          icon: "🏢",
+          color: "#64748B",
+          sortOrder: 0,
+        });
+      } catch {
+        // May already exist — non-fatal
+      }
+      setIsSkipping(false);
+    }
+    navigate("/select-business");
   };
 
   return (
@@ -96,32 +124,33 @@ export default function InvitePartnerSetup() {
         </div>
       </div>
 
-      {/* Content */}
-      <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-8 text-center">
+      {/* Scrollable content */}
+      <div className="relative z-10 flex-1 overflow-y-auto flex flex-col items-center justify-center px-6 py-6">
         {/* Icon */}
         <div
-          className="w-20 h-20 rounded-3xl flex items-center justify-center mb-7"
+          className="w-16 h-16 rounded-2xl flex items-center justify-center mb-5"
           style={{
             background: "linear-gradient(135deg, rgba(94,234,212,0.12) 0%, rgba(13,148,136,0.06) 100%)",
             border: "1px solid rgba(94,234,212,0.22)",
             boxShadow: "0 0 40px rgba(94,234,212,0.10)",
           }}
         >
-          <svg className="w-10 h-10 text-[#5EEAD4]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-8 h-8 text-[#5EEAD4]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
-              d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
           </svg>
         </div>
 
-        <h1 className="text-[26px] font-bold text-white leading-tight tracking-tight mb-3">
-          Let's set up your workspace
+        <h1 className="text-2xl font-bold text-white leading-tight tracking-tight mb-2 text-center">
+          Name your business
         </h1>
-        <p className="text-white/45 text-sm leading-relaxed max-w-xs mb-8">
-          Tell us your business name, then invite your partner to complete the setup together.
+        <p className="text-white/45 text-sm leading-relaxed max-w-xs mb-6 text-center">
+          Enter your business name, then optionally invite your partner to join.
         </p>
 
         {/* Form */}
-        <div className="w-full max-w-xs flex flex-col gap-4 mb-2">
+        <div className="w-full max-w-xs flex flex-col gap-4">
+          {/* Business Name */}
           <div className="flex flex-col gap-1.5 text-left">
             <label className="text-xs font-semibold text-white/40 uppercase tracking-wider">
               Business Name
@@ -142,6 +171,14 @@ export default function InvitePartnerSetup() {
             />
           </div>
 
+          {/* Divider */}
+          <div className="flex items-center gap-3 my-1">
+            <div className="flex-1 h-px bg-white/10" />
+            <span className="text-white/25 text-xs uppercase tracking-wider">Invite partner (optional)</span>
+            <div className="flex-1 h-px bg-white/10" />
+          </div>
+
+          {/* Partner Name */}
           <div className="flex flex-col gap-1.5 text-left">
             <label className="text-xs font-semibold text-white/40 uppercase tracking-wider">
               Partner's Name
@@ -162,6 +199,7 @@ export default function InvitePartnerSetup() {
             />
           </div>
 
+          {/* Partner Email */}
           <div className="flex flex-col gap-1.5 text-left">
             <label className="text-xs font-semibold text-white/40 uppercase tracking-wider">
               Partner's Email
@@ -181,28 +219,29 @@ export default function InvitePartnerSetup() {
               onBlur={(e) => (e.target.style.borderColor = "rgba(255,255,255,0.10)")}
             />
           </div>
-        </div>
-      </div>
 
-      {/* Bottom CTA */}
-      <div className="relative z-10 px-6 pt-4 pb-10 max-w-md mx-auto w-full">
-        <button
-          onClick={handleSend}
-          disabled={isSending || !businessName.trim() || !partnerName.trim() || !partnerEmail.trim()}
-          className="w-full py-4 rounded-2xl font-bold text-[#0A1628] text-base transition-all duration-200 active:scale-[0.97] disabled:opacity-50"
-          style={{
-            background: "linear-gradient(135deg, #5EEAD4 0%, #0D9488 100%)",
-            boxShadow: "0 4px 24px rgba(94,234,212,0.22)",
-          }}
-        >
-          {isSending ? "Sending…" : "Send Invite →"}
-        </button>
-        <button
-          onClick={() => navigate("/select-business")}
-          className="w-full py-3 text-white/40 text-sm text-center mt-2 hover:text-white/60 transition-colors"
-        >
-          Skip — I'll invite my partner later
-        </button>
+          {/* Buttons — same width as inputs */}
+          <div className="flex flex-col gap-2 mt-2">
+            <button
+              onClick={handleSend}
+              disabled={isSending || !businessName.trim() || !partnerName.trim() || !partnerEmail.trim()}
+              className="w-full py-3.5 rounded-xl font-bold text-[#0A1628] text-base transition-all duration-200 active:scale-[0.97] disabled:opacity-50"
+              style={{
+                background: "linear-gradient(135deg, #5EEAD4 0%, #0D9488 100%)",
+                boxShadow: "0 4px 24px rgba(94,234,212,0.22)",
+              }}
+            >
+              {isSending ? "Sending…" : "Send Invite →"}
+            </button>
+            <button
+              onClick={handleSkip}
+              disabled={isSkipping}
+              className="w-full py-3 text-white/40 text-sm text-center hover:text-white/60 transition-colors"
+            >
+              {isSkipping ? "Saving…" : "Skip — I'll invite my partner later"}
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
