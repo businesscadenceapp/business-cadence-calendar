@@ -39,6 +39,7 @@ import { TourProvider } from "@/contexts/TourContext";
 import TourOverlay from "@/components/TourOverlay";
 import DemoBoard from "@/pages/DemoBoard";
 import Messages from "@/pages/Messages";
+import { TEAM_ENABLED } from "@/featureFlags";
 
 // Wrapper so Paywall (which has optional custom props) works as a wouter route component
 function PaywallPage() {
@@ -119,14 +120,15 @@ function Router() {
       <Route path={"/demo"} component={DemoBoard} />
 
       {/* Protected app routes — more specific paths MUST come before less specific ones */}
+      {/* Team routes — hidden until TEAM_ENABLED */}
       <Route path={"/app/team/calendar"}>
-        <Protected component={TeamCalendar} />
+        {TEAM_ENABLED ? <Protected component={TeamCalendar} /> : <Redirect to="/app/board" />}
       </Route>
       <Route path={"/app/team/archive"}>
-        <Protected component={TeamBoardArchive} />
+        {TEAM_ENABLED ? <Protected component={TeamBoardArchive} /> : <Redirect to="/app/board" />}
       </Route>
       <Route path={"/app/team"}>
-        <Protected component={TeamBoard} />
+        {TEAM_ENABLED ? <Protected component={TeamBoard} /> : <Redirect to="/app/board" />}
       </Route>
       <Route path={"/app/board/archive"}>
         <Protected component={BoardArchive} />

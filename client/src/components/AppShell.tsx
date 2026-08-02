@@ -24,6 +24,7 @@ import {
   BusinessSwitcherModal,
 } from "@/components/BusinessSwitcher";
 import { useTour } from "@/contexts/TourContext";
+import { TEAM_ENABLED } from "@/featureFlags";
 
 // ─── Identity Context ─────────────────────────────────────────────────────────
 
@@ -371,8 +372,8 @@ export default function AppShell({ children }: AppShellProps) {
 
           {/* Nav items */}
           <nav className="flex-1 overflow-y-auto px-3 py-3 flex flex-col gap-1">
-            {/* Owner/Team pill toggle — owners and co-owners only */}
-            {isOwnerOrCoOwner && (
+            {/* Owner/Team pill toggle — hidden until TEAM_ENABLED */}
+            {isOwnerOrCoOwner && TEAM_ENABLED && (
               <div
                 className="flex mb-3 rounded-xl overflow-hidden flex-shrink-0"
                 style={{ backgroundColor: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}
@@ -548,8 +549,8 @@ export default function AppShell({ children }: AppShellProps) {
               )}
             </div>
 
-            {/* Owner/Team pill toggle — owners and co-owners only, mobile — centred in remaining space */}
-            {isOwnerOrCoOwner && (
+            {/* Owner/Team pill toggle — hidden until TEAM_ENABLED */}
+            {isOwnerOrCoOwner && TEAM_ENABLED && (
               <div
                 className="flex rounded-xl overflow-hidden mx-2 flex-1 min-w-0"
                 style={{

@@ -14,6 +14,7 @@ import { trpc } from "@/lib/trpc";
 import { usePerson } from "@/contexts/PersonContext";
 import { toast } from "sonner";
 import { BrandIcon } from "@/components/BrandLogo";
+import { TEAM_ENABLED } from "@/featureFlags";
 
 export default function ClientLogin() {
   const [, navigate] = useLocation();
@@ -50,7 +51,8 @@ export default function ClientLogin() {
         const accountId = data.person.accountId;
         const role = data.person.role;
         if (role === "employee") {
-          navigate("/app/team");
+          // When Team is disabled, employees land on the owner board instead
+          navigate(TEAM_ENABLED ? "/app/team" : "/app/board");
           return;
         }
         // Owner or co-owner: check onboarding status
