@@ -158,20 +158,21 @@ export function NotificationBell({ accountId, personId }: Props) {
       {open && (
         <div
           style={{
-            position: "absolute",
-            bottom: "calc(100% + 8px)",
-            left: "50%",
-            transform: "translateX(-50%)",
-            width: "320px",
-            maxWidth: "calc(100vw - 32px)",
+            position: "fixed",
+            top: "calc(env(safe-area-inset-top, 0px) + 58px)",
+            right: "12px",
+            width: "min(320px, calc(100vw - 24px))",
+            maxHeight: "calc(100dvh - env(safe-area-inset-top, 0px) - 80px)",
             background: "#fff",
             borderRadius: "14px",
             boxShadow: "0 8px 32px rgba(30,58,95,0.18), 0 2px 8px rgba(30,58,95,0.08)",
             border: "1.5px solid #E2E8F0",
             zIndex: 9999,
             overflow: "hidden",
+            display: "flex",
+            flexDirection: "column",
             animation: "notif-panel-in 180ms cubic-bezier(0.23,1,0.32,1)",
-            transformOrigin: "bottom center",
+            transformOrigin: "top right",
           }}
         >
           {/* Header */}
@@ -192,7 +193,7 @@ export function NotificationBell({ accountId, personId }: Props) {
           </div>
 
           {/* List */}
-          <div style={{ maxHeight: "360px", overflowY: "auto" }}>
+          <div style={{ flex: 1, overflowY: "auto" }}>
             {notifications.length === 0 ? (
               <div style={{ padding: "32px 16px", textAlign: "center" }}>
                 <div style={{ fontSize: "28px", marginBottom: "8px" }}>🔔</div>
@@ -299,8 +300,8 @@ export function NotificationBell({ accountId, personId }: Props) {
           50% { transform: scale(1.15); }
         }
         @keyframes notif-panel-in {
-          from { opacity: 0; transform: translateX(-50%) scale(0.95); }
-          to   { opacity: 1; transform: translateX(-50%) scale(1); }
+          from { opacity: 0; transform: scale(0.95); }
+          to   { opacity: 1; transform: scale(1); }
         }
       `}</style>
     </div>
