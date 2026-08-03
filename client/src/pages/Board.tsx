@@ -1023,7 +1023,7 @@ const CATEGORIES: { key: CategoryKey; label: string; icon: string; gradient: str
   { key: "tasks", label: "Tasks", icon: "☑", gradient: "linear-gradient(135deg, rgba(124,58,237,0.15) 0%, rgba(124,58,237,0.06) 100%)", border: "rgba(124,58,237,0.3)", glow: "rgba(124,58,237,0.12)", textColor: "#C4B5FD", countBg: "rgba(124,58,237,0.25)" },
   { key: "updates", label: "Updates", icon: "✅", gradient: "linear-gradient(135deg, rgba(37,99,235,0.15) 0%, rgba(37,99,235,0.06) 100%)", border: "rgba(37,99,235,0.3)", glow: "rgba(37,99,235,0.12)", textColor: "#93C5FD", countBg: "rgba(37,99,235,0.25)" },
   { key: "issues", label: "Issues", icon: "🔥", gradient: "linear-gradient(135deg, rgba(225,29,72,0.15) 0%, rgba(225,29,72,0.06) 100%)", border: "rgba(225,29,72,0.3)", glow: "rgba(225,29,72,0.12)", textColor: "#FDA4AF", countBg: "rgba(225,29,72,0.25)" },
-  { key: "archive", label: "Archive", icon: "__folder__", gradient: "linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%)", border: "rgba(255,255,255,0.12)", glow: "rgba(255,255,255,0.04)", textColor: "rgba(255,255,255,0.6)", countBg: "rgba(255,255,255,0.08)" },
+  { key: "archive", label: "Archive", icon: "📁", gradient: "linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%)", border: "rgba(255,255,255,0.12)", glow: "rgba(255,255,255,0.04)", textColor: "rgba(255,255,255,0.6)", countBg: "rgba(255,255,255,0.08)" },
 ];
 
 // Needs Attention tile — shown as 4th tile replacing Archive in the 2×2 grid
@@ -1126,13 +1126,40 @@ function BottomSheet({ open, onClose, children }: { open: boolean; onClose: () =
 
 // ─── Sub-Card View (slide-in panel) ──────────────────────────────────────────
 
-function SubCardView({ title, icon, accentColor, onBack, children }: {
+// All navigable sections for the context menu
+const NAV_SECTIONS = [
+  { key: "tasks", label: "Tasks", icon: "☑" },
+  { key: "updates", label: "Updates", icon: "✅" },
+  { key: "issues", label: "Issues", icon: "🔥" },
+  { key: "needs_attention", label: "Needs Attention", icon: "❗" },
+  { key: "archive", label: "Archive", icon: "📁" },
+  { key: "calendar", label: "Calendar", icon: "📅" },
+];
+
+function SubCardView({ title, icon, accentColor, onBack, currentKey, onNavigate, children }: {
   title: string;
   icon: string;
   accentColor: string;
   onBack: () => void;
+  currentKey: string;
+  onNavigate: (key: string) => void;
   children: React.ReactNode;
 }) {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    if (!menuOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [menuOpen]);
+
+  const otherSections = NAV_SECTIONS.filter(s => s.key !== currentKey);
+
   return (
     <div
       className="flex flex-col min-h-full"
@@ -1140,26 +1167,63 @@ function SubCardView({ title, icon, accentColor, onBack, children }: {
     >
       {/* Sub-card header */}
       <div
-        className="flex-shrink-0 px-5 pt-5 pb-4 flex items-center gap-3"
+        className="flex-shrink-0 px-5 pt-5 pb-4 flex items-center gap-3 relative"
         style={{ borderBottom: `1px solid ${accentColor}22` }}
       >
-        <button
-          onClick={onBack}
-          className="w-8 h-8 rounded-xl flex items-center justify-center transition-all active:scale-[0.9] hover:scale-[1.05]"
-          style={{ backgroundColor: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="15 18 9 12 15 6"/>
-          </svg>
-        </button>
-        <div className="flex items-center gap-2">
-          {icon === "__folder__" ? (
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.55)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+        {/* Hamburger menu button */}
+        <div ref={menuRef} className="relative">
+          <button
+            onClick={() => setMenuOpen(v => !v)}
+            className="w-8 h-8 rounded-xl flex items-center justify-center transition-all active:scale-[0.9] hover:scale-[1.05]"
+            style={{ backgroundColor: menuOpen ? "rgba(94,234,212,0.15)" : "rgba(255,255,255,0.06)", border: menuOpen ? "1px solid rgba(94,234,212,0.3)" : "1px solid rgba(255,255,255,0.1)" }}
+            aria-label="Section menu"
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.2" strokeLinecap="round">
+              <line x1="3" y1="6" x2="21" y2="6"/>
+              <line x1="3" y1="12" x2="21" y2="12"/>
+              <line x1="3" y1="18" x2="21" y2="18"/>
             </svg>
-          ) : (
-            <span className="text-lg">{icon}</span>
+          </button>
+          {/* Dropdown menu */}
+          {menuOpen && (
+            <div
+              className="absolute left-0 top-10 z-50 rounded-2xl overflow-hidden"
+              style={{
+                backgroundColor: "#0D2035",
+                border: "1px solid rgba(94,234,212,0.2)",
+                boxShadow: "0 8px 32px rgba(0,0,0,0.5)",
+                minWidth: "200px",
+                animation: "sheetSlideUp 0.2s cubic-bezier(0.23,1,0.32,1) both",
+              }}
+            >
+              <div className="px-3 pt-3 pb-1">
+                <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "rgba(94,234,212,0.6)" }}>Go to</span>
+              </div>
+              {otherSections.map(s => (
+                <button
+                  key={s.key}
+                  onClick={() => { setMenuOpen(false); onNavigate(s.key); }}
+                  className="w-full flex items-center gap-3 px-4 py-3 text-left transition-all hover:bg-white/5 active:bg-white/10"
+                >
+                  <span className="text-base">{s.icon}</span>
+                  <span className="text-[14px] font-medium text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>{s.label}</span>
+                </button>
+              ))}
+              <div className="h-px mx-3 my-1" style={{ backgroundColor: "rgba(255,255,255,0.06)" }} />
+              <button
+                onClick={() => { setMenuOpen(false); onBack(); }}
+                className="w-full flex items-center gap-3 px-4 py-3 text-left transition-all hover:bg-white/5 active:bg-white/10"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="15 18 9 12 15 6"/>
+                </svg>
+                <span className="text-[14px] font-medium" style={{ color: "rgba(255,255,255,0.5)", fontFamily: "'Space Grotesk', sans-serif" }}>Back to Board</span>
+              </button>
+            </div>
           )}
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-lg">{icon}</span>
           <h2 className="text-[16px] font-bold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>{title}</h2>
         </div>
       </div>
@@ -1310,7 +1374,17 @@ export default function Board() {
       : CATEGORIES.find(c => c.key === activeView)!;
     return (
       <div className="flex flex-col min-h-full" style={{ backgroundColor: "#0A1929", fontFamily: "'Inter', sans-serif" }}>
-        <SubCardView title={catMeta.label} icon={catMeta.icon} accentColor={catMeta.border} onBack={() => setActiveView(null)}>
+        <SubCardView
+          title={catMeta.label}
+          icon={catMeta.icon}
+          accentColor={catMeta.border}
+          onBack={() => setActiveView(null)}
+          currentKey={activeView}
+          onNavigate={(key) => {
+            if (key === "calendar") { navigate("/app/calendar"); }
+            else { setActiveView(key as typeof activeView); }
+          }}
+        >
           {isNeedsAttn && (
             <>
               {/* Unified combined list */}
@@ -1433,7 +1507,7 @@ export default function Board() {
           {activeView === "archive" && (
             <>
               {archivedCards.length === 0 ? (
-                <EmptyState icon="__folder__" title="Archive is empty" subtitle="Archived posts will appear here." />
+                <EmptyState icon="📁" title="Archive is empty" subtitle="Archived posts will appear here." />
               ) : (
                 archivedCards.map(card => (
                   card.type === "task" ? (
@@ -1608,7 +1682,7 @@ export default function Board() {
               cat={{
                 key: "archive",
                 label: "Archive",
-                icon: "__folder__",
+                icon: "📁",
                 gradient: "linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 100%)",
                 border: "rgba(255,255,255,0.15)",
                 glow: "rgba(255,255,255,0.05)",
