@@ -732,6 +732,11 @@ export default function Settings() {
         />
       )}
 
+      {/* ── My Business Hours ──────────────────────────────────────────── */}
+      {(person?.role === "owner" || person?.role === "coowner") && person?.id && accountId !== undefined && (
+        <MyBusinessHoursSection personId={person.id} accountId={accountId} />
+      )}
+
       {/* ── Meeting Schedule ──────────────────────────────────────────────── */}
       {(person?.role === "owner" || person?.role === "coowner") && (
         <div
@@ -1196,5 +1201,150 @@ function PartnerAccessSection() {
 
       <PartnerInviteSheet open={sheetOpen} onClose={() => setSheetOpen(false)} businessName={firstBusinessName} />
     </>
+  );
+}
+
+// ─── My Business Hours (per-partner) ─────────────────────────────────────────
+function MyBusinessHoursSection({ personId, accountId }: { personId: string; accountId: number }) {
+  const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+  const { data: settings, refetch } = trpc.personHours.getSettings.useQuery(
+    { accountId, personId },
+    { enabled: true, staleTime: 30_000 }
+  );
+
+  const updateMutation = trpc.personHours.updateSettings.useMutation({
+    onSuccess: () => { toast.success("Your business hours saved."); refetch(); },
+    onError: () => toast.error("Failed to save hours."),
+  });
+
+  const [workDays, setWorkDays] = useState<number[]>([1, 2, 3, 4, 5]);
+  const [startTime, setStartTime] = useState("09:00");
+  const [endTime, setEndTime] = useState("17:00");
+  const [timezone, setTimezone] = useState("America/New_York");
+
+  useEffect(() => {
+    if (!settings) return;
+    try { setWorkDays(JSON.parse(settings.workDays || "[1,2,3,4,5]")); } catch { setWorkDays([1,2,3,4,5]); }
+    setStartTime(settings.startTime || "09:00");
+    setEndTime(settings.endTime || "17:00");
+    setTimezone(settings.timezone || "America/New_York");
+  }, [settings]);
+
+  const toggleDay = (d: number) =>
+    setWorkDays(prev => prev.includes(d) ? prev.filter(x => x !== d) : [...prev, d].sort((a, b) => a - b));
+
+  const handleSave = () => {
+    updateMutation.mutate({
+      accountId,
+      personId,
+      workDays: JSON.stringify(workDays),
+      startTime,
+      endTime,
+      timezone,
+    });
+  };
+
+  const TIMEZONES = [
+    "America/New_York",
+    "America/Chicago",
+    "America/Denver",
+    "America/Los_Angeles",
+    "America/Phoenix",
+    "America/Anchorage",
+    "Pacific/Honolulu",
+  ];
+
+  return (
+    <div
+      className="mx-4 sm:mx-6 mb-4 rounded-2xl p-5"
+      style={{ backgroundColor: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}
+    >
+      <div className="flex items-center gap-3 mb-4">
+        <span className="text-xl">🕐</span>
+        <div>
+          <h2 className="text-sm font-bold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+            My Business Hours
+          </h2>
+          <p className="text-[11px] mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>
+            Set your own on/off schedule. Your partner sets theirs independently.
+          </p>
+        </div>
+      </div>
+
+      {/* Work days */}
+      <div className="mb-4">
+        <p className="text-[10px] uppercase tracking-wider mb-2 font-medium" style={{ color: "rgba(255,255,255,0.4)", fontFamily: "'Space Grotesk', sans-serif" }}>Work Days</p>
+        <div className="flex gap-1.5 flex-wrap">
+          {DAYS.map((label, idx) => {
+            const active = workDays.includes(idx);
+            return (
+              <button
+                key={idx}
+                type="button"
+                onClick={() => toggleDay(idx)}
+                className="px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all active:scale-[0.97]"
+                style={{
+                  backgroundColor: active ? "rgba(94,234,212,0.15)" : "rgba(255,255,255,0.04)",
+                  border: `1.5px solid ${active ? "rgba(94,234,212,0.4)" : "rgba(255,255,255,0.08)"}`,
+                  color: active ? "#5EEAD4" : "rgba(255,255,255,0.35)",
+                  fontFamily: "'Space Grotesk', sans-serif",
+                }}
+              >
+                {label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Start / End time */}
+      <div className="grid grid-cols-2 gap-3 mb-4">
+        <div>
+          <p className="text-[10px] uppercase tracking-wider mb-1.5 font-medium" style={{ color: "rgba(255,255,255,0.4)", fontFamily: "'Space Grotesk', sans-serif" }}>Start Time</p>
+          <input
+            type="time"
+            value={startTime}
+            onChange={e => setStartTime(e.target.value)}
+            className="w-full rounded-lg px-3 py-2 text-[12px] focus:outline-none"
+            style={{ backgroundColor: "rgba(255,255,255,0.06)", border: "1.5px solid rgba(255,255,255,0.12)", color: "white" }}
+          />
+        </div>
+        <div>
+          <p className="text-[10px] uppercase tracking-wider mb-1.5 font-medium" style={{ color: "rgba(255,255,255,0.4)", fontFamily: "'Space Grotesk', sans-serif" }}>End Time</p>
+          <input
+            type="time"
+            value={endTime}
+            onChange={e => setEndTime(e.target.value)}
+            className="w-full rounded-lg px-3 py-2 text-[12px] focus:outline-none"
+            style={{ backgroundColor: "rgba(255,255,255,0.06)", border: "1.5px solid rgba(255,255,255,0.12)", color: "white" }}
+          />
+        </div>
+      </div>
+
+      {/* Timezone */}
+      <div className="mb-5">
+        <p className="text-[10px] uppercase tracking-wider mb-1.5 font-medium" style={{ color: "rgba(255,255,255,0.4)", fontFamily: "'Space Grotesk', sans-serif" }}>Timezone</p>
+        <select
+          value={timezone}
+          onChange={e => setTimezone(e.target.value)}
+          className="w-full rounded-lg px-3 py-2 text-[12px] focus:outline-none"
+          style={{ backgroundColor: "rgba(255,255,255,0.06)", border: "1.5px solid rgba(255,255,255,0.12)", color: "white" }}
+        >
+          {TIMEZONES.map(tz => (
+            <option key={tz} value={tz} style={{ backgroundColor: "#0F2440" }}>{tz.replace("America/", "").replace("Pacific/", "Pacific/").replace(/_/g, " ")}</option>
+          ))}
+        </select>
+      </div>
+
+      <button
+        onClick={handleSave}
+        disabled={updateMutation.isPending}
+        className="w-full py-2.5 rounded-xl text-sm font-bold transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-40"
+        style={{ backgroundColor: "#5EEAD4", color: "#0A1929", fontFamily: "'Space Grotesk', sans-serif" }}
+      >
+        {updateMutation.isPending ? "Saving…" : "Save My Hours"}
+      </button>
+    </div>
   );
 }

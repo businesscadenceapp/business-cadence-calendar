@@ -479,11 +479,16 @@ function PricingSection() {
         <div className="text-center mb-14">
           <p className="text-[#5EEAD4] text-sm font-semibold uppercase tracking-widest mb-3">Simple Pricing</p>
           <h2 id="pricing-heading" className="text-3xl sm:text-4xl font-bold text-white mb-4">
-            One price. Two owners. Unlimited potential.
+            $49/month. Per couple. Both owners included.
           </h2>
-          <p className="text-white/60 max-w-xl mx-auto">
-            No per-seat fees. One flat rate for both co-owners — less than one therapy session a month.
+          <p className="text-white/60 max-w-xl mx-auto mb-6">
+            Most apps charge per seat — two people means two subscriptions. BusinessCadence is built for two. One flat rate covers both co-owners, forever.
           </p>
+          <div className="inline-flex items-center gap-3 bg-white/5 border border-white/10 rounded-2xl px-6 py-3 text-sm">
+            <span className="text-white/40 line-through">Other tools: $30–$40/mo per person</span>
+            <span className="text-white/30">vs</span>
+            <span className="text-[#5EEAD4] font-bold">BusinessCadence: $49/mo for both</span>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
@@ -494,9 +499,10 @@ function PricingSection() {
               <p className="text-white/50 text-sm">For couples running one business</p>
             </div>
             <div className="mb-6">
-              <span className="text-4xl font-bold text-white">$59</span>
-              <span className="text-white/50 text-sm ml-1">/ month</span>
-              <p className="text-white/40 text-xs mt-1">or $600/year — save 2 months ($50/mo)</p>
+              <span className="text-4xl font-bold text-white">$49</span>
+              <span className="text-white/50 text-sm ml-1">/ month per couple</span>
+              <p className="text-[#5EEAD4]/70 text-xs mt-1 font-medium">Both owners included — no per-seat fees</p>
+              <p className="text-white/40 text-xs mt-0.5">or $490/year — save ~$100 ($40.83/mo)</p>
             </div>
             <ul className="space-y-3 mb-8 flex-1">
               {[
@@ -533,9 +539,10 @@ function PricingSection() {
               <p className="text-white/50 text-sm">For couples running two businesses</p>
             </div>
             <div className="mb-6">
-              <span className="text-4xl font-bold text-white">$69</span>
-              <span className="text-white/50 text-sm ml-1">/ month</span>
-              <p className="text-white/40 text-xs mt-1">or $696/year — save 2 months ($58/mo)</p>
+              <span className="text-4xl font-bold text-white">$59</span>
+              <span className="text-white/50 text-sm ml-1">/ month per couple</span>
+              <p className="text-[#5EEAD4]/70 text-xs mt-1 font-medium">Both owners included — no per-seat fees</p>
+              <p className="text-white/40 text-xs mt-0.5">or $590/year — save ~$120 ($49.17/mo)</p>
             </div>
             <ul className="space-y-3 mb-8 flex-1">
               {[
@@ -562,9 +569,10 @@ function PricingSection() {
           </div>
         </div>
 
-        <p className="text-center text-white/40 text-sm mt-8">
-          Start free. No credit card required. Cancel anytime.
-        </p>
+        <div className="text-center mt-10 space-y-2">
+          <p className="text-white/40 text-sm">Start free. No credit card required. Cancel anytime.</p>
+          <p className="text-white/30 text-xs">Less than one dinner out. Less than one therapy session. For a tool that keeps both from becoming necessary.</p>
+        </div>
       </div>
     </section>
   );
