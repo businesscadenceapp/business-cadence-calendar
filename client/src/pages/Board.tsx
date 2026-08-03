@@ -606,15 +606,16 @@ function BoardCard({ card, currentUser, accountId, onSeen, onArchive, onDelete }
 
 // ─── Add Card Form (Bottom Sheet) ────────────────────────────────────────────
 
-function AddCardForm({ currentUser, onAdded, activeBusiness: activeBusinessProp, bizLabels, assignablePersons, accountId }: {
+function AddCardForm({ currentUser, onAdded, activeBusiness: activeBusinessProp, bizLabels, assignablePersons, accountId, defaultType }: {
   currentUser: Author | null;
   onAdded: () => void;
   activeBusiness: Business;
   bizLabels?: Record<string, { label: string; icon: string; bg: string; text: string; border: string }>;
   assignablePersons?: { id: string; name: string }[];
   accountId?: number;
+  defaultType?: CardType;
 }) {
-  const [type, setType] = useState<CardType>("update");
+  const [type, setType] = useState<CardType>(defaultType ?? "update");
   // Business is always the currently active business — never shown as a selector
   const business = activeBusinessProp;
   const [content, setContent] = useState("");
@@ -719,24 +720,37 @@ function AddCardForm({ currentUser, onAdded, activeBusiness: activeBusinessProp,
 
   return (
     <div className="flex flex-col gap-4">
-      {/* Type selector */}
-      <div className="flex flex-col gap-1.5">
-        <p className="text-[10px] uppercase tracking-wider" style={{ color: "rgba(255,255,255,0.4)", fontFamily: "'Space Grotesk', sans-serif" }}>What kind of post?</p>
+      {/* Type selector — hidden when context-aware (defaultType provided) */}
+      {!defaultType && (
         <div className="flex flex-col gap-1.5">
-          {(["update", "issue", "task"] as CardType[]).map(t => {
-            const s = typeStyles[t];
-            const isActive = type === t;
-            const labels: Record<CardType, string> = { update: "✅ Update — What I did", issue: "💬 Issue — Need to discuss", task: "☑ Task — Assign to someone" };
-            return (
-              <button key={t} onClick={() => setType(t)}
-                className="w-full py-2 rounded-lg text-[11px] font-semibold transition-all text-left px-3 active:scale-[0.98]"
-                style={{ backgroundColor: isActive ? s.activeBg : "rgba(255,255,255,0.03)", border: `1.5px solid ${isActive ? s.activeBorder : "rgba(255,255,255,0.08)"}`, color: isActive ? s.activeText : "rgba(255,255,255,0.5)", fontFamily: "'Space Grotesk', sans-serif" }}>
-                {labels[t]}
-              </button>
-            );
-          })}
+          <p className="text-[10px] uppercase tracking-wider" style={{ color: "rgba(255,255,255,0.4)", fontFamily: "'Space Grotesk', sans-serif" }}>What kind of post?</p>
+          <div className="flex flex-col gap-1.5">
+            {(["update", "issue", "task"] as CardType[]).map(t => {
+              const s = typeStyles[t];
+              const isActive = type === t;
+              const labels: Record<CardType, string> = { update: "✅ Update — What I did", issue: "💬 Issue — Need to discuss", task: "☑ Task — Assign to someone" };
+              return (
+                <button key={t} onClick={() => setType(t)}
+                  className="w-full py-2 rounded-lg text-[11px] font-semibold transition-all text-left px-3 active:scale-[0.98]"
+                  style={{ backgroundColor: isActive ? s.activeBg : "rgba(255,255,255,0.03)", border: `1.5px solid ${isActive ? s.activeBorder : "rgba(255,255,255,0.08)"}`, color: isActive ? s.activeText : "rgba(255,255,255,0.5)", fontFamily: "'Space Grotesk', sans-serif" }}>
+                  {labels[t]}
+                </button>
+              );
+            })}
+          </div>
         </div>
-      </div>
+      )}
+      {/* Context label when type is pre-set */}
+      {defaultType && (
+        <div className="flex items-center gap-2 px-1">
+          <span className="text-lg" aria-hidden="true">
+            {defaultType === "update" ? "✅" : defaultType === "issue" ? "💬" : "☑"}
+          </span>
+          <span className="text-[13px] font-semibold" style={{ color: typeStyles[defaultType].activeText, fontFamily: "'Space Grotesk', sans-serif" }}>
+            {defaultType === "update" ? "New Update" : defaultType === "issue" ? "New Issue" : "New Task"}
+          </span>
+        </div>
+      )}
 
       {/* Assign to (tasks) */}
       {type === "task" && (
@@ -936,11 +950,11 @@ const NEEDS_ATTENTION_META = {
 };
 
 type TileMeta = { key: string; label: string; icon: string; gradient: string; border: string; glow: string; textColor: string; countBg: string };
-function CategoryTile({ cat, count, onClick, delay }: { cat: TileMeta; count: number; onClick: () => void; delay: number }) {
+function CategoryTile({ cat, count, onClick, delay, hasHighPriority }: { cat: TileMeta; count: number; onClick: () => void; delay: number; hasHighPriority?: boolean }) {
   return (
     <button
       onClick={onClick}
-      className="flex flex-col items-center gap-2 p-4 rounded-2xl transition-all hover:scale-[1.02] active:scale-[0.97]"
+      className="relative flex flex-col items-center gap-2 p-4 rounded-2xl transition-all hover:scale-[1.02] active:scale-[0.97]"
       style={{
         background: cat.gradient,
         border: `1px solid ${cat.border}`,
@@ -949,6 +963,14 @@ function CategoryTile({ cat, count, onClick, delay }: { cat: TileMeta; count: nu
         animation: "tileEnter 0.4s cubic-bezier(0.23,1,0.32,1) both",
       }}
     >
+      {/* High-priority red badge */}
+      {hasHighPriority && (
+        <span
+          className="absolute top-2 right-2 w-2.5 h-2.5 rounded-full"
+          style={{ backgroundColor: "#EF4444", boxShadow: "0 0 6px rgba(239,68,68,0.7)" }}
+          aria-label="High priority issue"
+        />
+      )}
       <div className="text-2xl">{cat.icon}</div>
       <div className="flex flex-col items-center gap-0.5">
         <span className="text-[11px] font-bold uppercase tracking-wider" style={{ color: cat.textColor, fontFamily: "'Space Grotesk', sans-serif" }}>{cat.label}</span>
@@ -1351,7 +1373,13 @@ export default function Board() {
         <BottomSheet open={sheetOpen} onClose={() => setSheetOpen(false)}>
           <AddCardForm currentUser={currentUser} onAdded={() => { refetch(); setSheetOpen(false); }}
             activeBusiness={filterBusiness === "all" ? (allowedBusinesses[0] ?? "general" as Business) : filterBusiness}
-            bizLabels={dynamicBizLabels} assignablePersons={allPersons} accountId={accountId} />
+            bizLabels={dynamicBizLabels} assignablePersons={allPersons} accountId={accountId}
+            defaultType={
+              activeView === "tasks" ? "task"
+              : activeView === "updates" ? "update"
+              : activeView === "issues" ? "issue"
+              : undefined
+            } />
         </BottomSheet>
       </div>
     );
@@ -1452,6 +1480,7 @@ export default function Board() {
                 count={counts[cat.key]}
                 onClick={() => setActiveView(cat.key)}
                 delay={i * 60}
+                hasHighPriority={cat.key === "issues" && issues.some(c => c.priority === "high")}
               />
             ))}
             {/* 4th tile: Needs Attention */}
