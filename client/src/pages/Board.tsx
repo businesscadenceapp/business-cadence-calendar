@@ -4,6 +4,7 @@
  * Dark navy theme: #0F2440 bg, #5EEAD4 teal accent, white text
  */
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { usePerson } from "@/contexts/PersonContext";
@@ -1333,15 +1334,19 @@ export default function Board() {
           )}
         </SubCardView>
 
-        {/* FAB for post */}
-        <button
-          onClick={() => setSheetOpen(true)}
-          className="fixed bottom-24 right-6 w-14 h-14 rounded-2xl flex items-center justify-center text-xl transition-all active:scale-[0.9] hover:scale-[1.05] z-40"
-          style={{
-            background: "linear-gradient(135deg, #5EEAD4, #38BDF8)",
-            boxShadow: "0 6px 24px rgba(94,234,212,0.4), 0 2px 8px rgba(0,0,0,0.3)",
-          }}
-        >+</button>
+        {/* FAB for post — portalled to body so fixed pos works inside overflow scroll */}
+        {createPortal(
+          <button
+            onClick={() => setSheetOpen(true)}
+            className="fixed bottom-24 right-6 w-14 h-14 rounded-2xl flex items-center justify-center text-xl transition-all active:scale-[0.9] hover:scale-[1.05] z-40"
+            style={{
+              background: "linear-gradient(135deg, #5EEAD4, #38BDF8)",
+              color: "#0F2440",
+              boxShadow: "0 6px 24px rgba(94,234,212,0.4), 0 2px 8px rgba(0,0,0,0.3)",
+            }}
+          >+</button>,
+          document.body
+        )}
 
         <BottomSheet open={sheetOpen} onClose={() => setSheetOpen(false)}>
           <AddCardForm currentUser={currentUser} onAdded={() => { refetch(); setSheetOpen(false); }}
@@ -1484,19 +1489,22 @@ export default function Board() {
 
       </div>
 
-      {/* Floating Action Button */}
-      <button
-        ref={(el) => registerRef("tour-hub", el)}
-        data-tour="tour-hub"
-        onClick={() => setSheetOpen(true)}
-        className="fixed bottom-24 right-6 w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-bold transition-all active:scale-[0.9] hover:scale-[1.05] z-40"
-        style={{
-          background: "linear-gradient(135deg, #5EEAD4, #38BDF8)",
-          color: "#0F2440",
-          boxShadow: "0 6px 24px rgba(94,234,212,0.4), 0 2px 8px rgba(0,0,0,0.3)",
-          animation: "fabPulse 3s ease-in-out infinite",
-        }}
-      >+</button>
+      {/* Floating Action Button — portalled to body so fixed pos works inside overflow scroll */}
+      {createPortal(
+        <button
+          ref={(el) => registerRef("tour-hub", el)}
+          data-tour="tour-hub"
+          onClick={() => setSheetOpen(true)}
+          className="fixed bottom-24 right-6 w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-bold transition-all active:scale-[0.9] hover:scale-[1.05] z-40"
+          style={{
+            background: "linear-gradient(135deg, #5EEAD4, #38BDF8)",
+            color: "#0F2440",
+            boxShadow: "0 6px 24px rgba(94,234,212,0.4), 0 2px 8px rgba(0,0,0,0.3)",
+            animation: "fabPulse 3s ease-in-out infinite",
+          }}
+        >+</button>,
+        document.body
+      )}
 
       {/* Bottom Sheet for posting */}
       <BottomSheet open={sheetOpen} onClose={() => setSheetOpen(false)}>
