@@ -5,6 +5,7 @@
  */
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
+import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { usePerson } from "@/contexts/PersonContext";
@@ -1068,6 +1069,9 @@ function CategoryTile({ cat, count, onClick, delay, hasHighPriority }: { cat: Ti
         {count === 0 && (
           <span className="text-[12px]" style={{ color: "rgba(255,255,255,0.3)" }}>—</span>
         )}
+        {count === -1 && (
+          <span className="text-[11px]" style={{ color: "rgba(255,255,255,0.35)" }}>View</span>
+        )}
       </div>
     </button>
   );
@@ -1176,6 +1180,7 @@ function bizKeyToEnum(key: string): Business | "all" {
 }
 
 export default function Board() {
+  const [, navigate] = useLocation();
   const { currentUser } = useIdentity();
   const { person } = usePerson();
   const { activeBusiness } = useActiveBusiness(person?.businessScope);
@@ -1561,6 +1566,7 @@ export default function Board() {
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-3">
+            {/* Row 1: Tasks + Updates */}
             {CATEGORIES.filter(c => c.key !== "archive").map((cat, i) => (
               <CategoryTile
                 key={cat.key}
@@ -1571,7 +1577,7 @@ export default function Board() {
                 hasHighPriority={cat.key === "issues" && issues.some(c => c.priority === "high")}
               />
             ))}
-            {/* 4th tile: Needs Attention */}
+            {/* Row 2 col 2: Needs Attention */}
             <CategoryTile
               cat={NEEDS_ATTENTION_META as unknown as TileMeta}
               count={(counts.tasks ?? 0) + (counts.issues ?? 0)}
@@ -1581,26 +1587,38 @@ export default function Board() {
               }}
               delay={3 * 60}
             />
-          </div>
-        )}
-
-        {/* Archive button — styled to match Team board */}
-        {!isLoading && (
-          <div className="flex justify-center mt-4">
-            <button
-              onClick={() => setActiveView("archive")}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-2xl text-[13px] font-semibold transition-all active:scale-[0.97]"
-              style={{
-                backgroundColor: "rgba(255,255,255,0.07)",
-                border: "1.5px solid rgba(255,255,255,0.15)",
-                color: "rgba(255,255,255,0.75)",
-                fontFamily: "'Space Grotesk', sans-serif",
-                letterSpacing: "0.01em",
+            {/* Row 3: Calendar tile */}
+            <CategoryTile
+              cat={{
+                key: "calendar",
+                label: "Calendar",
+                icon: "📅",
+                gradient: "linear-gradient(135deg, rgba(20,184,166,0.18) 0%, rgba(20,184,166,0.07) 100%)",
+                border: "rgba(20,184,166,0.35)",
+                glow: "rgba(20,184,166,0.14)",
+                textColor: "#5EEAD4",
+                countBg: "rgba(20,184,166,0.25)",
               }}
-            >
-              <span style={{ fontSize: "16px" }}>📁</span>
-              Archive{archivedCards.length > 0 ? ` (${archivedCards.length})` : ""}
-            </button>
+              count={-1}
+              onClick={() => navigate("/app/calendar")}
+              delay={4 * 60}
+            />
+            {/* Row 3: Archive tile */}
+            <CategoryTile
+              cat={{
+                key: "archive",
+                label: "Archive",
+                icon: "__folder__",
+                gradient: "linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 100%)",
+                border: "rgba(255,255,255,0.15)",
+                glow: "rgba(255,255,255,0.05)",
+                textColor: "rgba(255,255,255,0.7)",
+                countBg: "rgba(255,255,255,0.12)",
+              }}
+              count={archivedCards.length}
+              onClick={() => setActiveView("archive")}
+              delay={5 * 60}
+            />
           </div>
         )}
 
