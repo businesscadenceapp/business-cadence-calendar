@@ -390,6 +390,15 @@ const FEATURES = [
     title: "Multiple Businesses",
     body: "Own more than one business together? Add each one as a separate workspace. Switch between them instantly — same rhythm, same structure, different door.",
   },
+  {
+    icon: (
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+      </svg>
+    ),
+    title: "AI Tone Check",
+    body: "Before you post, AI reads your message and suggests a calmer, more professional version if it detects frustration or emotional charge. Because how you say it matters as much as what you say.",
+  },
 ];
 
 function FeaturesSection() {
@@ -473,7 +482,7 @@ function PricingSection() {
             One price. Two owners. Unlimited potential.
           </h2>
           <p className="text-white/60 max-w-xl mx-auto">
-            No per-seat fees. No complicated tiers. Just one flat rate for both co-owners.
+            No per-seat fees. One flat rate for both co-owners — less than one therapy session a month.
           </p>
         </div>
 
@@ -485,9 +494,9 @@ function PricingSection() {
               <p className="text-white/50 text-sm">For couples running one business</p>
             </div>
             <div className="mb-6">
-              <span className="text-4xl font-bold text-white">$19</span>
+              <span className="text-4xl font-bold text-white">$59</span>
               <span className="text-white/50 text-sm ml-1">/ month</span>
-              <p className="text-white/40 text-xs mt-1">or $190/year — save 2 months</p>
+              <p className="text-white/40 text-xs mt-1">or $600/year — save 2 months ($50/mo)</p>
             </div>
             <ul className="space-y-3 mb-8 flex-1">
               {[
@@ -496,6 +505,7 @@ function PricingSection() {
                 "Meeting Cadence Command Center",
                 "Goals & KPI tracking",
                 "Weekly reports",
+                "AI Tone Check (toggle on/off)",
                 "Off the Clock mode",
                 "iOS & Android apps",
               ].map((item, i) => (
@@ -523,9 +533,9 @@ function PricingSection() {
               <p className="text-white/50 text-sm">For couples running two businesses</p>
             </div>
             <div className="mb-6">
-              <span className="text-4xl font-bold text-white">$29</span>
+              <span className="text-4xl font-bold text-white">$69</span>
               <span className="text-white/50 text-sm ml-1">/ month</span>
-              <p className="text-white/40 text-xs mt-1">or $290/year — save 2 months</p>
+              <p className="text-white/40 text-xs mt-1">or $696/year — save 2 months ($58/mo)</p>
             </div>
             <ul className="space-y-3 mb-8 flex-1">
               {[

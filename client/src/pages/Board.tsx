@@ -630,6 +630,13 @@ function AddCardForm({ currentUser, onAdded, activeBusiness: activeBusinessProp,
   const [uploadingFile, setUploadingFile] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // AI Tone Check state
+  const [toneCheckEnabled, setToneCheckEnabled] = useState(true);
+  const [toneCheckResult, setToneCheckResult] = useState<{ needsRewrite: boolean; suggestion: string; reason: string } | null>(null);
+  const [showToneModal, setShowToneModal] = useState(false);
+  const [isCheckingTone, setIsCheckingTone] = useState(false);
+  const toneCheckMutation = trpc.toneCheck.analyze.useMutation();
+
   const uploadAttachment = trpc.board.uploadAttachment.useMutation();
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -676,7 +683,7 @@ function AddCardForm({ currentUser, onAdded, activeBusiness: activeBusinessProp,
     { enabled: accountId !== undefined, staleTime: 60_000 }
   );
 
-  const handleSubmit = () => {
+  const doPost = (finalContent: string) => {
     const SESSION_KEY = "bh_after_hours_shown";
     if (bhStatus && (!bhStatus.withinHours || bhStatus.dndActive) && !sessionStorage.getItem(SESSION_KEY)) {
       sessionStorage.setItem(SESSION_KEY, "1");
@@ -687,18 +694,14 @@ function AddCardForm({ currentUser, onAdded, activeBusiness: activeBusinessProp,
           : "You're posting after business hours. Your partner won't be notified until business hours resume.";
       toast(msg, { icon: "🌙", duration: 6000 });
     }
-    if (!currentUser) { toast.error("Please sign in first"); return; }
-    if (!content.trim()) { toast.error("Please write something"); return; }
-    if (type === "task" && !assignedTo) { toast.error("Please select who this task is assigned to"); return; }
     const dueAt = dueDate ? new Date(dueDate + "T23:59:59").getTime() : undefined;
     const updateDateMs = updateDate ? new Date(updateDate + "T12:00:00").getTime() : undefined;
     const scheduledDateMs = scheduledDate ? new Date(scheduledDate + "T12:00:00").getTime() : undefined;
-    if (type === "issue" && !meetingType) { toast.error("Please select which meeting to discuss this in"); return; }
     createCard.mutate({
-      author: currentUser,
+      author: currentUser!,
       type,
       business,
-      content: content.trim(),
+      content: finalContent.trim(),
       ...(type === "task" && assignedTo ? { assignedTo } : {}),
       ...(dueAt ? { dueAt } : {}),
       ...(type === "update" && updateDateMs ? { updateDate: updateDateMs } : {}),
@@ -709,6 +712,31 @@ function AddCardForm({ currentUser, onAdded, activeBusiness: activeBusinessProp,
       ...(pendingAttachments.length > 0 ? { attachmentsJson: JSON.stringify(pendingAttachments) } : {}),
       priority,
     });
+  };
+
+  const handleSubmit = async () => {
+    if (!currentUser) { toast.error("Please sign in first"); return; }
+    if (!content.trim()) { toast.error("Please write something"); return; }
+    if (type === "task" && !assignedTo) { toast.error("Please select who this task is assigned to"); return; }
+    if (type === "issue" && !meetingType) { toast.error("Please select which meeting to discuss this in"); return; }
+
+    // AI Tone Check — only if enabled
+    if (toneCheckEnabled) {
+      setIsCheckingTone(true);
+      try {
+        const result = await toneCheckMutation.mutateAsync({ content: content.trim(), type });
+        setIsCheckingTone(false);
+        if (result.needsRewrite) {
+          setToneCheckResult(result);
+          setShowToneModal(true);
+          return; // Wait for user decision in modal
+        }
+      } catch {
+        setIsCheckingTone(false);
+        // If tone check fails, post anyway
+      }
+    }
+    doPost(content);
   };
 
   const inputStyle = { backgroundColor: "rgba(255,255,255,0.06)", border: "1.5px solid rgba(255,255,255,0.12)", color: "white", fontFamily: "'Inter', sans-serif" };
@@ -915,11 +943,71 @@ function AddCardForm({ currentUser, onAdded, activeBusiness: activeBusinessProp,
         </div>
       )}
 
+      {/* AI Tone Check toggle */}
+      <div className="flex items-center justify-between px-1">
+        <div className="flex items-center gap-2">
+          <span className="text-[11px] font-medium" style={{ color: "rgba(255,255,255,0.5)", fontFamily: "'Space Grotesk', sans-serif" }}>🧠 AI Tone Check</span>
+          <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.3)" }}>{toneCheckEnabled ? "on" : "off"}</span>
+        </div>
+        <button type="button" onClick={() => setToneCheckEnabled(v => !v)}
+          className="relative w-10 h-5 rounded-full transition-all duration-200 flex-shrink-0"
+          style={{ backgroundColor: toneCheckEnabled ? "rgba(94,234,212,0.4)" : "rgba(255,255,255,0.1)", border: toneCheckEnabled ? "1.5px solid rgba(94,234,212,0.6)" : "1.5px solid rgba(255,255,255,0.15)" }}
+          aria-label={toneCheckEnabled ? "Disable AI Tone Check" : "Enable AI Tone Check"}>
+          <span className="absolute top-0.5 transition-all duration-200 w-3.5 h-3.5 rounded-full"
+            style={{ left: toneCheckEnabled ? "calc(100% - 18px)" : "2px", backgroundColor: toneCheckEnabled ? "#5EEAD4" : "rgba(255,255,255,0.4)" }} />
+        </button>
+      </div>
+
+      {/* Tone Check result modal */}
+      {showToneModal && toneCheckResult && createPortal(
+        <div className="fixed inset-0 z-[200] flex items-end justify-center" style={{ backgroundColor: "rgba(0,0,0,0.7)" }}
+          onClick={e => { if (e.target === e.currentTarget) setShowToneModal(false); }}>
+          <div className="w-full max-w-lg mx-auto rounded-t-2xl p-6 pb-8 flex flex-col gap-4"
+            style={{ backgroundColor: "#0F2440", border: "1.5px solid rgba(94,234,212,0.2)", maxHeight: "80vh", overflowY: "auto" }}>
+            <div className="flex items-center gap-2">
+              <span className="text-lg">🧠</span>
+              <h3 className="font-bold text-white text-base" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Tone Check</h3>
+            </div>
+            <p className="text-[12px]" style={{ color: "rgba(255,255,255,0.5)", fontFamily: "'Space Grotesk', sans-serif" }}>
+              {toneCheckResult.reason}
+            </p>
+            <div className="rounded-xl p-4" style={{ backgroundColor: "rgba(94,234,212,0.06)", border: "1.5px solid rgba(94,234,212,0.2)" }}>
+              <p className="text-[11px] uppercase tracking-wider mb-2" style={{ color: "#5EEAD4", fontFamily: "'Space Grotesk', sans-serif" }}>Suggested rewrite</p>
+              <p className="text-[13px] leading-relaxed" style={{ color: "rgba(255,255,255,0.85)" }}>{toneCheckResult.suggestion}</p>
+            </div>
+            <p className="text-[11px] text-center" style={{ color: "rgba(255,255,255,0.35)", fontFamily: "'Space Grotesk', sans-serif" }}>
+              How you say it matters as much as what you say.
+            </p>
+            <div className="flex flex-col gap-2">
+              <button type="button"
+                onClick={() => { setContent(toneCheckResult.suggestion); setShowToneModal(false); setToneCheckResult(null); }}
+                className="w-full py-3 rounded-xl text-[13px] font-bold transition-all active:scale-[0.97]"
+                style={{ backgroundColor: "#5EEAD4", color: "#0F2440", fontFamily: "'Space Grotesk', sans-serif" }}>
+                Use Suggested Rewrite
+              </button>
+              <button type="button"
+                onClick={() => { setShowToneModal(false); setToneCheckResult(null); doPost(content); }}
+                className="w-full py-2.5 rounded-xl text-[12px] font-medium transition-all active:scale-[0.97]"
+                style={{ backgroundColor: "rgba(255,255,255,0.05)", color: "rgba(255,255,255,0.6)", border: "1.5px solid rgba(255,255,255,0.1)", fontFamily: "'Space Grotesk', sans-serif" }}>
+                Post Original Anyway
+              </button>
+              <button type="button"
+                onClick={() => { setShowToneModal(false); setToneCheckResult(null); }}
+                className="w-full py-2.5 rounded-xl text-[12px] font-medium transition-all active:scale-[0.97]"
+                style={{ backgroundColor: "transparent", color: "rgba(255,255,255,0.35)", fontFamily: "'Space Grotesk', sans-serif" }}>
+                Edit My Message
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+
       <button onClick={handleSubmit}
-        disabled={createCard.isPending || !currentUser || !content.trim() || (type === "task" && !assignedTo)}
+        disabled={createCard.isPending || isCheckingTone || !currentUser || !content.trim() || (type === "task" && !assignedTo)}
         className="w-full py-3 rounded-xl text-[13px] font-bold transition-all hover:opacity-90 disabled:opacity-40 active:scale-[0.97]"
         style={{ backgroundColor: "#5EEAD4", color: "#0F2440", fontFamily: "'Space Grotesk', sans-serif", boxShadow: !createCard.isPending ? "0 4px 14px rgba(94,234,212,0.25)" : "none", letterSpacing: "0.02em" }}>
-        {createCard.isPending ? "Posting…" : "📤 Post to Board"}
+        {isCheckingTone ? "🧠 Checking tone…" : createCard.isPending ? "Posting…" : "📤 Post to Board"}
       </button>
     </div>
   );

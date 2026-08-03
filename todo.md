@@ -1022,3 +1022,10 @@
 - [x] allowedBusinesses: deduplicate slugs with Array.from(new Set(...))
 - [x] FAB button: moved from bottom-6 to bottom-24 to always be visible above bottom nav bar (both FAB instances)
 - [x] AddCardForm: removed "Which business?" selector — business is set by the active business switcher only
+
+## Aug 2026 Sprint — Tone Check, Per-Partner Hours, Website Updates
+
+- [ ] Website: Add AI Tone Check feature section with tagline "how you say it matters as much as what you say"
+- [ ] Website: Update pricing to $59/mo monthly ($600/yr annual) for Co-Owner; $69/mo monthly ($696/yr annual) for Growth
+- [ ] App: Per-partner business hours — each owner sets their own independent on/off schedule (not shared account-level)
+- [ ] App: AI Tone Check toggle in AddCardForm — on by default, runs AI before post, shows neutral rewrite suggestion, user can accept/edit/ignore

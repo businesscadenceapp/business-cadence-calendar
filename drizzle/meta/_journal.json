@@ -274,6 +274,13 @@
       "when": 1785300944825,
       "tag": "0038_chemical_black_crow",
       "breakpoints": true
+    },
+    {
+      "idx": 39,
+      "version": "5",
+      "when": 1785727317765,
+      "tag": "0039_charming_scream",
+      "breakpoints": true
     }
   ]
 }

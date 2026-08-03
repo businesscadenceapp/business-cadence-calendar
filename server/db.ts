@@ -1,6 +1,6 @@
 import { eq, and, desc, inArray, asc } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, meetingLogs, agendaItems, MeetingLog, AgendaItem, boardCards, agendaTemplates, type BoardCard, type InsertBoardCard, waitlistEmails, businessProfiles, type BusinessProfile, closedPeriods, type ClosedPeriod, meetingScheduleOverrides, employees, employeeMetrics, weeklyReports, weeklyReportEntries, type Employee, type EmployeeMetric, type WeeklyReport, type WeeklyReportEntry, goals, type Goal, type InsertGoal, notifications, type Notification, businessHours, type BusinessHours, subscriptions, type Subscription, type InsertSubscription, partnerLinks, type PartnerLink, ownerMessages, type OwnerMessage, announcements, type Announcement, meetingNotes, type MeetingNote } from "../drizzle/schema";
+import { InsertUser, users, meetingLogs, agendaItems, MeetingLog, AgendaItem, boardCards, agendaTemplates, type BoardCard, type InsertBoardCard, waitlistEmails, businessProfiles, type BusinessProfile, closedPeriods, type ClosedPeriod, meetingScheduleOverrides, employees, employeeMetrics, weeklyReports, weeklyReportEntries, type Employee, type EmployeeMetric, type WeeklyReport, type WeeklyReportEntry, goals, type Goal, type InsertGoal, notifications, type Notification, businessHours, type BusinessHours, subscriptions, type Subscription, type InsertSubscription, partnerLinks, type PartnerLink, ownerMessages, type OwnerMessage, announcements, type Announcement, meetingNotes, type MeetingNote, personHours, type PersonHours } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -1421,4 +1421,67 @@ export async function getRecentMeetingNotes(accountId: number, limit = 20): Prom
     .where(eq(meetingNotes.accountId, accountId))
     .orderBy(desc(meetingNotes.updatedAt))
     .limit(limit);
+}
+
+// ─── Per-partner person hours ────────────────────────────────────────────────
+
+const DEFAULT_PERSON_WORK_DAYS = "[1,2,3,4,5]";
+
+/** Get (or create default) personal hours for a specific person. */
+export async function getPersonHours(accountId: number, personId: string): Promise<PersonHours> {
+  const db = await getDb();
+  if (!db) throw new Error("DB unavailable");
+  const rows = await db.select().from(personHours)
+    .where(and(eq(personHours.accountId, accountId), eq(personHours.personId, personId)))
+    .limit(1);
+  if (rows.length > 0) return rows[0];
+  // Create default row
+  await db.insert(personHours).values({
+    accountId,
+    personId,
+    workDays: DEFAULT_PERSON_WORK_DAYS,
+    startTime: DEFAULT_START_TIME,
+    endTime: DEFAULT_END_TIME,
+    timezone: DEFAULT_TIMEZONE,
+    manualDndActive: false,
+  });
+  const created = await db.select().from(personHours)
+    .where(and(eq(personHours.accountId, accountId), eq(personHours.personId, personId)))
+    .limit(1);
+  return created[0];
+}
+
+/** Update personal hours for a specific person. */
+export async function updatePersonHours(
+  accountId: number,
+  personId: string,
+  data: { workDays?: string; startTime?: string; endTime?: string; timezone?: string }
+): Promise<PersonHours> {
+  const db = await getDb();
+  if (!db) throw new Error("DB unavailable");
+  await getPersonHours(accountId, personId);
+  await db.update(personHours).set(data)
+    .where(and(eq(personHours.accountId, accountId), eq(personHours.personId, personId)));
+  return getPersonHours(accountId, personId);
+}
+
+/** Toggle personal DND for a specific person. Returns the new state. */
+export async function togglePersonDnd(accountId: number, personId: string): Promise<boolean> {
+  const db = await getDb();
+  if (!db) throw new Error("DB unavailable");
+  const row = await getPersonHours(accountId, personId);
+  const newState = !row.manualDndActive;
+  await db.update(personHours).set({ manualDndActive: newState })
+    .where(and(eq(personHours.accountId, accountId), eq(personHours.personId, personId)));
+  return newState;
+}
+
+/** Set personal DND to a specific value. */
+export async function setPersonDnd(accountId: number, personId: string, active: boolean): Promise<boolean> {
+  const db = await getDb();
+  if (!db) throw new Error("DB unavailable");
+  await getPersonHours(accountId, personId);
+  await db.update(personHours).set({ manualDndActive: active })
+    .where(and(eq(personHours.accountId, accountId), eq(personHours.personId, personId)));
+  return active;
 }

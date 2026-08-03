@@ -637,3 +637,25 @@ export const meetingNotes = mysqlTable("meeting_notes", {
 });
 export type MeetingNote = typeof meetingNotes.$inferSelect;
 export type InsertMeetingNote = typeof meetingNotes.$inferInsert;
+
+/**
+ * Person Hours — per-partner independent business hours / DND settings.
+ * Each owner sets their own on/off schedule independently.
+ * Falls back to account-level business_hours if no row exists for this person.
+ * workDays: JSON number[] e.g. [1,2,3,4,5] (0=Sun, 6=Sat)
+ * startTime / endTime: "HH:MM" 24h strings
+ */
+export const personHours = mysqlTable("person_hours", {
+  id: int("id").autoincrement().primaryKey(),
+  accountId: int("accountId").notNull(),
+  personId: varchar("personId", { length: 64 }).notNull(),
+  workDays: text("workDays").notNull().default("[1,2,3,4,5]"), // JSON number[]
+  startTime: varchar("startTime", { length: 5 }).notNull().default("08:00"), // HH:MM
+  endTime: varchar("endTime", { length: 5 }).notNull().default("18:00"),     // HH:MM
+  timezone: varchar("timezone", { length: 64 }).notNull().default("America/New_York"),
+  manualDndActive: boolean("manualDndActive").default(false).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type PersonHours = typeof personHours.$inferSelect;
+export type InsertPersonHours = typeof personHours.$inferInsert;

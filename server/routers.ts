@@ -81,6 +81,10 @@ import {
   saveMeetingNote,
   getMeetingNote,
   getRecentMeetingNotes,
+  getPersonHours,
+  updatePersonHours,
+  togglePersonDnd,
+  setPersonDnd,
 } from "./db";
 import {
   getSubscription,
@@ -2196,6 +2200,124 @@ Keep the tone warm but professional. This summary will be saved under this speci
           }
         }
         return { announcement };
+      }),
+  }),
+
+  // ─── Per-partner personal hours ─────────────────────────────────────────────
+  personHours: router({
+    /** Get (or create default) personal hours for a specific person. */
+    getSettings: publicProcedure
+      .input(z.object({ accountId: z.number(), personId: z.string() }))
+      .query(async ({ input }) => {
+        return getPersonHours(input.accountId, input.personId);
+      }),
+
+    /** Update personal hours for a specific person. */
+    updateSettings: publicProcedure
+      .input(z.object({
+        accountId: z.number(),
+        personId: z.string(),
+        workDays: z.string().optional(),
+        startTime: z.string().optional(),
+        endTime: z.string().optional(),
+        timezone: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { accountId, personId, ...data } = input;
+        return updatePersonHours(accountId, personId, data);
+      }),
+
+    /** Toggle personal DND. Returns the new active state. */
+    toggleDnd: publicProcedure
+      .input(z.object({ accountId: z.number(), personId: z.string() }))
+      .mutation(async ({ input }) => {
+        const active = await togglePersonDnd(input.accountId, input.personId);
+        return { active };
+      }),
+
+    /** Set personal DND to a specific value. */
+    setDnd: publicProcedure
+      .input(z.object({ accountId: z.number(), personId: z.string(), active: z.boolean() }))
+      .mutation(async ({ input }) => {
+        const active = await setPersonDnd(input.accountId, input.personId, input.active);
+        return { active };
+      }),
+
+    /** Check if the current time is within this person's business hours. */
+    checkStatus: publicProcedure
+      .input(z.object({ accountId: z.number(), personId: z.string() }))
+      .query(async ({ input }) => {
+        const settings = await getPersonHours(input.accountId, input.personId);
+        const workDays: number[] = JSON.parse(settings.workDays || "[1,2,3,4,5]");
+        const tz = settings.timezone || "America/New_York";
+        const now = new Date();
+        const tzDate = new Date(now.toLocaleString("en-US", { timeZone: tz }));
+        const currentDay = tzDate.getDay();
+        const currentMins = tzDate.getHours() * 60 + tzDate.getMinutes();
+        const [startH, startM] = settings.startTime.split(":").map(Number);
+        const [endH, endM] = settings.endTime.split(":").map(Number);
+        const startMins = startH * 60 + startM;
+        const endMins = endH * 60 + endM;
+        const isWorkDay = workDays.includes(currentDay);
+        const isWithinTime = currentMins >= startMins && currentMins < endMins;
+        const withinHours = isWorkDay && isWithinTime;
+        return { withinHours, dndActive: settings.manualDndActive, settings };
+      }),
+  }),
+
+  // ─── AI Tone Check ─────────────────────────────────────────────────────────
+  toneCheck: router({
+    /**
+     * Analyze a message for emotional charge and suggest a calmer rewrite.
+     * Returns { needsRewrite, suggestion, reason } where needsRewrite is false
+     * if the message is already professional and calm.
+     */
+    analyze: publicProcedure
+      .input(z.object({
+        content: z.string().min(1).max(5000),
+        type: z.enum(["task", "update", "issue"]),
+      }))
+      .mutation(async ({ input }) => {
+        const systemPrompt = `You are a communication coach for business co-owners who are also in a romantic relationship. Your job is to review messages before they are posted to a shared business board.
+
+Analyze the message for: frustration, blame language, emotional charge, passive aggression, or unprofessional tone.
+
+If the message is calm, professional, and constructive — respond with needsRewrite: false.
+If the message could cause tension or be received negatively — respond with needsRewrite: true and provide a rewritten version that conveys the same information in a calm, professional, and solution-focused way.
+
+Remember: how you say it matters as much as what you say.`;
+
+        const response = await invokeLLM({
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: `Message type: ${input.type}\n\nMessage:\n${input.content}` },
+          ],
+          response_format: {
+            type: "json_schema",
+            json_schema: {
+              name: "tone_check_result",
+              strict: true,
+              schema: {
+                type: "object",
+                properties: {
+                  needsRewrite: { type: "boolean", description: "True if the message needs a calmer rewrite" },
+                  suggestion: { type: "string", description: "The rewritten message if needsRewrite is true, empty string otherwise" },
+                  reason: { type: "string", description: "Brief explanation of what was detected, e.g. 'Detected frustration and blame language'" },
+                },
+                required: ["needsRewrite", "suggestion", "reason"],
+                additionalProperties: false,
+              },
+            },
+          },
+        });
+
+        const raw = response.choices[0]?.message?.content ?? "{}";
+        const result = JSON.parse(typeof raw === "string" ? raw : JSON.stringify(raw));
+        return {
+          needsRewrite: result.needsRewrite ?? false,
+          suggestion: result.suggestion ?? "",
+          reason: result.reason ?? "",
+        };
       }),
   }),
 
