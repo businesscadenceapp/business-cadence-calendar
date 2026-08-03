@@ -1,15 +1,59 @@
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
+
 // ─── Logo ─────────────────────────────────────────────────────────────────
 function Logo({ className = "", height = 40 }: { className?: string; height?: number }) {
   return (
     <img
       src="/manus-storage/businesscadence-logo-final-clean_3f67cebb.webp"
-      alt="BusinessCadence"
+      alt="BusinessCadence — App for Couples Who Own a Business Together"
       style={{ height, width: "auto", objectFit: "contain", display: "block" }}
       className={className}
     />
+  );
+}
+
+// ─── App Store Buttons ─────────────────────────────────────────────────────
+function AppStoreButtons({ className = "" }: { className?: string }) {
+  return (
+    <div className={`flex flex-col sm:flex-row items-center gap-3 ${className}`}>
+      {/* App Store */}
+      <a
+        href="https://apps.apple.com/app/businesscadence/id6748498898"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Download BusinessCadence on the App Store"
+        className="flex items-center gap-3 bg-black border border-white/20 text-white px-5 py-3 rounded-xl hover:bg-white/10 transition-all active:scale-[0.97] w-full sm:w-auto justify-center"
+        style={{ minWidth: "160px" }}
+      >
+        <svg viewBox="0 0 24 24" className="w-6 h-6 flex-shrink-0" fill="currentColor">
+          <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+        </svg>
+        <div className="text-left">
+          <div className="text-[10px] text-white/60 leading-none">Download on the</div>
+          <div className="text-[15px] font-semibold leading-tight">App Store</div>
+        </div>
+      </a>
+
+      {/* Google Play */}
+      <a
+        href="https://play.google.com/store/apps/details?id=com.businesscadence.app"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Get BusinessCadence on Google Play"
+        className="flex items-center gap-3 bg-black border border-white/20 text-white px-5 py-3 rounded-xl hover:bg-white/10 transition-all active:scale-[0.97] w-full sm:w-auto justify-center"
+        style={{ minWidth: "160px" }}
+      >
+        <svg viewBox="0 0 24 24" className="w-6 h-6 flex-shrink-0" fill="currentColor">
+          <path d="M3.18 23.76c.3.17.65.19.97.07L14.76 12 3.18.17C2.86.05 2.51.07 2.21.24 1.6.6 1.2 1.27 1.2 2v20c0 .73.4 1.4 1.01 1.76zm17.55-10.67l-2.9-1.67-3.28 3.28 3.28 3.28 2.92-1.68c.83-.48.83-1.73-.02-2.21zM4.17 1.03L14.05 10.9l-2.9 2.9L2.2 4.87c.24-.98.9-1.78 1.97-1.84zm0 21.94c-1.07-.06-1.73-.86-1.97-1.84l8.95-8.93 2.9 2.9L4.17 22.97z"/>
+        </svg>
+        <div className="text-left">
+          <div className="text-[10px] text-white/60 leading-none">Get it on</div>
+          <div className="text-[15px] font-semibold leading-tight">Google Play</div>
+        </div>
+      </a>
+    </div>
   );
 }
 
@@ -23,7 +67,7 @@ function Nav() {
   };
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-[#0F2440]/95 backdrop-blur-sm border-b border-white/10">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-[#0F2440]/95 backdrop-blur-sm border-b border-white/10" role="navigation" aria-label="Main navigation">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-24">
           <div style={{ filter: "drop-shadow(0 2px 0px rgba(255,255,255,0.15)) drop-shadow(0 5px 10px rgba(0,0,0,0.40)) saturate(1.2) brightness(1.05)" }}>
@@ -37,20 +81,17 @@ function Nav() {
             <button onClick={() => scrollTo("features")} className="text-sm text-white/60 hover:text-white transition-colors">
               Features
             </button>
+            <button onClick={() => scrollTo("pricing")} className="text-sm text-white/60 hover:text-white transition-colors">
+              Pricing
+            </button>
             <button onClick={() => scrollTo("story")} className="text-sm text-white/60 hover:text-white transition-colors">
               Our Story
             </button>
-            <a
-              href="/login"
-              className="text-sm text-[#5EEAD4] font-medium hover:text-[#2dd4bf] transition-colors border border-[#5EEAD4]/30 px-4 py-2 rounded-lg hover:border-[#5EEAD4]/60 hover:bg-[#5EEAD4]/10"
-            >
-              Client Login
-            </a>
             <button
-              onClick={() => scrollTo("waitlist")}
+              onClick={() => scrollTo("download")}
               className="bg-[#5EEAD4] text-[#0F2440] text-sm font-semibold px-5 py-2 rounded-lg hover:bg-[#2dd4bf] transition-colors active:scale-[0.97]"
             >
-              Join the Waitlist
+              Download Free
             </button>
           </div>
           {/* Mobile menu button */}
@@ -58,13 +99,14 @@ function Nav() {
             className="md:hidden p-2 rounded-md text-white/60 hover:text-white"
             onClick={() => setMenuOpen(!menuOpen)}
             aria-label="Toggle menu"
+            aria-expanded={menuOpen}
           >
             {menuOpen ? (
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             ) : (
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
               </svg>
             )}
@@ -75,13 +117,13 @@ function Nav() {
           <div className="md:hidden border-t border-white/10 py-4 flex flex-col gap-4">
             <button onClick={() => scrollTo("problem")} className="text-sm text-white/60 text-left px-2">The Problem</button>
             <button onClick={() => scrollTo("features")} className="text-sm text-white/60 text-left px-2">Features</button>
+            <button onClick={() => scrollTo("pricing")} className="text-sm text-white/60 text-left px-2">Pricing</button>
             <button onClick={() => scrollTo("story")} className="text-sm text-white/60 text-left px-2">Our Story</button>
-            <a href="/login" className="text-sm text-[#5EEAD4] font-medium px-2">Client Login</a>
             <button
-              onClick={() => scrollTo("waitlist")}
+              onClick={() => scrollTo("download")}
               className="bg-[#5EEAD4] text-[#0F2440] text-sm font-semibold px-5 py-2 rounded-lg mx-2"
             >
-              Join the Waitlist
+              Download Free
             </button>
           </div>
         )}
@@ -124,7 +166,7 @@ function WaitlistForm({ variant = "default" }: { variant?: "default" | "hero" | 
     return (
       <div className={`flex items-center gap-3 ${variant === "hero" ? "justify-center" : ""}`}>
         <div className="w-10 h-10 rounded-full bg-[#5EEAD4]/20 flex items-center justify-center flex-shrink-0">
-          <svg className="w-5 h-5 text-[#5EEAD4]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-5 h-5 text-[#5EEAD4]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
           </svg>
         </div>
@@ -143,6 +185,7 @@ function WaitlistForm({ variant = "default" }: { variant?: "default" | "hero" | 
         onChange={(e) => setEmail(e.target.value)}
         placeholder="Enter your email address"
         required
+        aria-label="Email address for waitlist"
         className="flex-1 px-4 py-3 rounded-lg border bg-white/10 border-white/20 text-white placeholder:text-white/40 focus:border-[#5EEAD4]/60 focus:ring-2 focus:ring-[#5EEAD4]/20 outline-none transition-all text-sm"
       />
       <button
@@ -161,7 +204,7 @@ function Hero() {
   const { data } = trpc.waitlist.count.useQuery();
 
   return (
-    <section className="pt-32 pb-28 px-4" style={{ background: "linear-gradient(160deg, #0F2440 0%, #1E3A5F 60%, #0D2D4A 100%)" }}>
+    <section className="pt-32 pb-28 px-4" style={{ background: "linear-gradient(160deg, #0F2440 0%, #1E3A5F 60%, #0D2D4A 100%)" }} aria-labelledby="hero-heading">
       <div className="max-w-4xl mx-auto">
         {/* Logo */}
         <div className="flex justify-center mb-10 animate-fade-in">
@@ -177,21 +220,31 @@ function Hero() {
 
         <div className="text-center animate-fade-up">
           <div className="inline-flex items-center gap-2 bg-white/10 text-[#5EEAD4] text-xs font-semibold px-4 py-1.5 rounded-full mb-8 border border-white/10">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#5EEAD4] animate-pulse" />
-            Coming Soon — Join the Waitlist
+            <span className="w-1.5 h-1.5 rounded-full bg-[#5EEAD4] animate-pulse" aria-hidden="true" />
+            Now Available on iOS &amp; Android
           </div>
 
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight mb-6">
+          <h1 id="hero-heading" className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight mb-6">
             Stop Bringing the Boardroom{" "}
             <span className="text-[#5EEAD4]">to the Dinner Table.</span>
           </h1>
 
           <p className="text-lg sm:text-xl text-white/70 max-w-2xl mx-auto mb-10 leading-relaxed">
-            BusinessCadence gives co-preneurs, family businesses, and small business teams a structured meeting rhythm — so every conversation happens at the right time, in the right place, with the right agenda. Your business stays in the boardroom. Your life stays yours.
+            BusinessCadence is the app built for couples who own a business together. Structured meeting rhythms, a shared owner board, and goal tracking — so every business conversation happens at the right time, in the right place. Your business stays in the boardroom. Your life stays yours.
           </p>
 
-          <div className="animate-fade-up animation-delay-200 flex justify-center">
-            <WaitlistForm variant="hero" />
+          {/* Download buttons */}
+          <div id="download" className="flex justify-center mb-8 animate-fade-up animation-delay-100">
+            <AppStoreButtons />
+          </div>
+
+          <p className="text-sm text-white/40 mb-8">Free to download · No credit card required</p>
+
+          <div className="border-t border-white/10 pt-8 animate-fade-up animation-delay-200">
+            <p className="text-sm text-white/50 mb-4">Not ready to download? Join the waitlist for updates.</p>
+            <div className="flex justify-center">
+              <WaitlistForm variant="hero" />
+            </div>
           </div>
 
           {data && data.count > 0 && (
@@ -236,15 +289,15 @@ const PROBLEMS = [
 
 function ProblemSection() {
   return (
-    <section id="problem" className="py-20 px-4" style={{ background: "linear-gradient(180deg, #0D2D4A 0%, #0F2440 100%)" }}>
+    <section id="problem" className="py-20 px-4" style={{ background: "linear-gradient(180deg, #0D2D4A 0%, #0F2440 100%)" }} aria-labelledby="problem-heading">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-14">
           <p className="text-[#5EEAD4] text-sm font-semibold uppercase tracking-widest mb-3">Sound Familiar?</p>
-          <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
-            The 5 Mistakes Most Small Business Owners Make
+          <h2 id="problem-heading" className="text-3xl sm:text-4xl font-bold text-white mb-4">
+            The 5 Mistakes Most Co-Owner Couples Make
           </h2>
           <p className="text-white/60 max-w-xl mx-auto">
-            If you own a business with a partner, spouse, or small team, you're probably making at least three of these right now.
+            If you own a business with your spouse or partner, you're probably making at least three of these right now.
           </p>
         </div>
 
@@ -254,7 +307,7 @@ function ProblemSection() {
               key={i}
               className="bg-white/5 rounded-2xl p-6 border border-white/10 hover:border-[#5EEAD4]/30 hover:bg-white/8 transition-all duration-200"
             >
-              <div className="text-3xl mb-4">{p.icon}</div>
+              <div className="text-3xl mb-4" aria-hidden="true">{p.icon}</div>
               <h3 className="font-semibold text-white mb-2 text-lg">{p.title}</h3>
               <p className="text-white/60 text-sm leading-relaxed">{p.body}</p>
             </div>
@@ -262,17 +315,17 @@ function ProblemSection() {
           {/* CTA card */}
           <div className="bg-[#5EEAD4]/10 rounded-2xl p-6 border border-[#5EEAD4]/20 flex flex-col justify-between">
             <div>
-              <div className="text-3xl mb-4">✅</div>
+              <div className="text-3xl mb-4" aria-hidden="true">✅</div>
               <h3 className="font-semibold text-white mb-2 text-lg">There's a better way</h3>
               <p className="text-[#5EEAD4]/80 text-sm leading-relaxed">
                 BusinessCadence gives you a proven meeting rhythm that keeps business conversations structured, productive, and out of your personal time.
               </p>
             </div>
             <button
-              onClick={() => document.getElementById("waitlist")?.scrollIntoView({ behavior: "smooth" })}
+              onClick={() => document.getElementById("download")?.scrollIntoView({ behavior: "smooth" })}
               className="mt-6 bg-[#5EEAD4] text-[#0F2440] text-sm font-semibold px-5 py-2.5 rounded-lg hover:bg-[#2dd4bf] transition-colors active:scale-[0.97]"
             >
-              Get Early Access →
+              Download the App →
             </button>
           </div>
         </div>
@@ -285,7 +338,7 @@ function ProblemSection() {
 const FEATURES = [
   {
     icon: (
-      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
       </svg>
     ),
@@ -294,89 +347,62 @@ const FEATURES = [
   },
   {
     icon: (
-      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
       </svg>
     ),
-    title: "Owner Board",
-    body: "A shared digital board where co-owners post updates, issues, and tasks before the meeting. Everyone arrives prepared, nothing gets forgotten, and the meeting stays focused.",
+    title: "Shared Owner Board",
+    body: "A private digital board where co-owners post updates, issues, and tasks before each meeting. Everyone arrives prepared, nothing gets forgotten, and the meeting stays focused.",
   },
   {
     icon: (
-      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
       </svg>
     ),
-    title: "Set Goals & Track KPIs",
-    body: "Set goals with your partner and share them with your team. Employees submit their numbers each week — revenue, new clients, appointments booked, hours logged — so you always know where you stand.",
+    title: "Goals &amp; KPI Tracking",
+    body: "Set shared goals and track key performance indicators together. See your business health at a glance and stay aligned on what matters most each quarter.",
   },
   {
     icon: (
-      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
       </svg>
     ),
-    title: "Team Board",
-    body: "Keep your whole team aligned. Post announcements, assign tasks, track progress, and let employees check in — all in one place. Owners see everything; employees see what's relevant to them.",
+    title: "Off the Clock Mode",
+    body: "Toggle 'Off the Clock' to pause business notifications when you're in personal time. Your partner knows not to expect a business response — boundaries enforced automatically.",
   },
   {
     icon: (
-      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
       </svg>
     ),
-    title: "AI Meeting Summaries",
-    body: "After each meeting, AI generates a concise summary of what was discussed, what was decided, and what needs follow-up. Your meeting history becomes a searchable record of your business.",
+    title: "Weekly Reports",
+    body: "Automatically generated weekly summaries of what was completed, what is in progress, and what needs attention. Your business story, written for you.",
   },
   {
     icon: (
-      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-2 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
       </svg>
     ),
-    title: "Customizable Agendas",
-    body: "Every business is different. Customize the agenda for each meeting type to match your specific needs — add items, reorder them, and save templates that your whole team can use.",
-  },
-  {
-    icon: (
-      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-      </svg>
-    ),
-    title: "Built for Multiple Businesses",
-    body: "Running multiple completely different businesses at once? BusinessCadence handles them all in one place — with separate time allocations and agendas for each.",
-  },
-  {
-    icon: (
-      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-      </svg>
-    ),
-    title: "Business Hours & Do Not Disturb",
-    body: "Set your business hours and BusinessCadence goes quiet when you're off the clock. No notifications after hours, on holidays, or on closure days. Work mode ends when you say it ends.",
-  },
-  {
-    icon: (
-      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-      </svg>
-    ),
-    title: "Private & Secure",
-    body: "Your business conversations are private. BusinessCadence is password-protected and built for your team only — not a social platform, not a public tool. Just you and your people.",
+    title: "Multiple Businesses",
+    body: "Own more than one business together? Add each one as a separate workspace. Switch between them instantly — same rhythm, same structure, different door.",
   },
 ];
 
 function FeaturesSection() {
   return (
-    <section id="features" className="py-20 px-4 bg-[#0F2440]">
+    <section id="features" className="py-20 px-4 bg-[#0F2440]" aria-labelledby="features-heading">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-14">
           <p className="text-[#5EEAD4] text-sm font-semibold uppercase tracking-widest mb-3">What's Inside</p>
-          <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
-            Everything You Need to Run Your Business — and Protect Your Life
+          <h2 id="features-heading" className="text-3xl sm:text-4xl font-bold text-white mb-4">
+            Everything a Co-Owner Couple Needs
           </h2>
           <p className="text-white/60 max-w-xl mx-auto">
-            BusinessCadence is a complete operating system for co-preneurs and small business teams — built to keep work structured, communication clear, and your personal time sacred.
+            Built specifically for couples who run a business together — not a generic project management tool adapted for two.
           </p>
         </div>
 
@@ -409,11 +435,11 @@ const CADENCE = [
 
 function HowItWorksSection() {
   return (
-    <section className="py-20 px-4" style={{ background: "linear-gradient(180deg, #1E3A5F 0%, #162d4a 100%)" }}>
+    <section className="py-20 px-4" style={{ background: "linear-gradient(180deg, #1E3A5F 0%, #162d4a 100%)" }} aria-labelledby="cadence-heading">
       <div className="max-w-5xl mx-auto">
         <div className="text-center mb-14">
           <p className="text-[#5EEAD4] text-sm font-semibold uppercase tracking-widest mb-3">The Cadence</p>
-          <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
+          <h2 id="cadence-heading" className="text-3xl sm:text-4xl font-bold text-white mb-4">
             Four Meeting Types. One Proven Rhythm.
           </h2>
           <p className="text-white/60 max-w-xl mx-auto">
@@ -424,7 +450,7 @@ function HowItWorksSection() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {CADENCE.map((c, i) => (
             <div key={i} className="bg-white/5 rounded-2xl p-6 border border-white/10 hover:bg-white/10 transition-colors">
-              <div className="w-3 h-3 rounded-full mb-4" style={{ backgroundColor: c.color }} />
+              <div className="w-3 h-3 rounded-full mb-4" style={{ backgroundColor: c.color }} aria-hidden="true" />
               <div className="text-white font-bold text-xl mb-1">{c.freq}</div>
               <div className="text-[#5EEAD4]/80 text-sm font-medium mb-3">{c.time}</div>
               <p className="text-white/60 text-sm leading-relaxed">{c.desc}</p>
@@ -436,20 +462,118 @@ function HowItWorksSection() {
   );
 }
 
+// ─── Pricing section ───────────────────────────────────────────────────────
+function PricingSection() {
+  return (
+    <section id="pricing" className="py-20 px-4 bg-[#0F2440]" aria-labelledby="pricing-heading">
+      <div className="max-w-4xl mx-auto">
+        <div className="text-center mb-14">
+          <p className="text-[#5EEAD4] text-sm font-semibold uppercase tracking-widest mb-3">Simple Pricing</p>
+          <h2 id="pricing-heading" className="text-3xl sm:text-4xl font-bold text-white mb-4">
+            One price. Two owners. Unlimited potential.
+          </h2>
+          <p className="text-white/60 max-w-xl mx-auto">
+            No per-seat fees. No complicated tiers. Just one flat rate for both co-owners.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
+          {/* Base plan */}
+          <div className="bg-white/5 rounded-2xl p-8 border border-white/10 flex flex-col">
+            <div className="mb-6">
+              <h3 className="text-xl font-bold text-white mb-1">Co-Owner Plan</h3>
+              <p className="text-white/50 text-sm">For couples running one business</p>
+            </div>
+            <div className="mb-6">
+              <span className="text-4xl font-bold text-white">$19</span>
+              <span className="text-white/50 text-sm ml-1">/ month</span>
+              <p className="text-white/40 text-xs mt-1">or $190/year — save 2 months</p>
+            </div>
+            <ul className="space-y-3 mb-8 flex-1">
+              {[
+                "Both co-owners included",
+                "Owner Board (tasks, updates, issues)",
+                "Meeting Cadence Command Center",
+                "Goals & KPI tracking",
+                "Weekly reports",
+                "Off the Clock mode",
+                "iOS & Android apps",
+              ].map((item, i) => (
+                <li key={i} className="flex items-start gap-2.5 text-sm text-white/70">
+                  <span className="text-[#5EEAD4] mt-0.5 flex-shrink-0">✓</span>
+                  {item}
+                </li>
+              ))}
+            </ul>
+            <button
+              onClick={() => document.getElementById("download")?.scrollIntoView({ behavior: "smooth" })}
+              className="w-full bg-[#5EEAD4] text-[#0F2440] font-semibold py-3 rounded-xl hover:bg-[#2dd4bf] transition-colors active:scale-[0.97]"
+            >
+              Download Free →
+            </button>
+          </div>
+
+          {/* Growth plan */}
+          <div className="bg-[#5EEAD4]/10 rounded-2xl p-8 border border-[#5EEAD4]/30 flex flex-col relative overflow-hidden">
+            <div className="absolute top-4 right-4 bg-[#5EEAD4] text-[#0F2440] text-xs font-bold px-3 py-1 rounded-full">
+              MOST POPULAR
+            </div>
+            <div className="mb-6">
+              <h3 className="text-xl font-bold text-white mb-1">Growth Plan</h3>
+              <p className="text-white/50 text-sm">For couples running two businesses</p>
+            </div>
+            <div className="mb-6">
+              <span className="text-4xl font-bold text-white">$29</span>
+              <span className="text-white/50 text-sm ml-1">/ month</span>
+              <p className="text-white/40 text-xs mt-1">or $290/year — save 2 months</p>
+            </div>
+            <ul className="space-y-3 mb-8 flex-1">
+              {[
+                "Everything in Co-Owner Plan",
+                "2 business workspaces",
+                "Switch between businesses instantly",
+                "Separate boards & KPIs per business",
+                "Unified notification center",
+                "Priority support",
+                "3+ businesses? Same price — no extra charge",
+              ].map((item, i) => (
+                <li key={i} className="flex items-start gap-2.5 text-sm text-white/70">
+                  <span className="text-[#5EEAD4] mt-0.5 flex-shrink-0">✓</span>
+                  {item}
+                </li>
+              ))}
+            </ul>
+            <button
+              onClick={() => document.getElementById("download")?.scrollIntoView({ behavior: "smooth" })}
+              className="w-full bg-[#5EEAD4] text-[#0F2440] font-semibold py-3 rounded-xl hover:bg-[#2dd4bf] transition-colors active:scale-[0.97]"
+            >
+              Download Free →
+            </button>
+          </div>
+        </div>
+
+        <p className="text-center text-white/40 text-sm mt-8">
+          Start free. No credit card required. Cancel anytime.
+        </p>
+      </div>
+    </section>
+  );
+}
+
 // ─── Founder story ─────────────────────────────────────────────────────────
 function StorySection() {
   return (
-    <section id="story" className="py-20 px-4 bg-[#0F2440]">
+    <section id="story" className="py-20 px-4 bg-[#0F2440]" aria-labelledby="story-heading">
       <div className="max-w-3xl mx-auto">
         <div className="text-center mb-10">
           <p className="text-[#5EEAD4] text-sm font-semibold uppercase tracking-widest mb-3">Our Story</p>
-          <h2 className="text-3xl sm:text-4xl font-bold text-white">
+          <h2 id="story-heading" className="text-3xl sm:text-4xl font-bold text-white">
             We built this because we needed it.
           </h2>
         </div>
 
         <div className="bg-white/5 rounded-2xl p-8 sm:p-10 border border-white/10">
-          <div className="text-[#5EEAD4] text-6xl font-serif leading-none mb-4 opacity-30 select-none">"</div>
+          <div className="text-[#5EEAD4] text-6xl font-serif leading-none mb-4 opacity-30 select-none" aria-hidden="true">"</div>
 
           <div className="space-y-5 text-white/70 leading-relaxed">
             <p>
@@ -473,7 +597,7 @@ function StorySection() {
           </div>
 
           <div className="mt-8 pt-6 border-t border-white/10 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-[#1E3A5F] border border-white/20 flex items-center justify-center text-[#5EEAD4] font-bold text-lg flex-shrink-0">BC</div>
+            <div className="w-12 h-12 rounded-full bg-[#1E3A5F] border border-white/20 flex items-center justify-center text-[#5EEAD4] font-bold text-lg flex-shrink-0" aria-hidden="true">BC</div>
             <div>
               <p className="font-semibold text-white">The Founders</p>
               <p className="text-sm text-white/50">Co-owners of three businesses, married 20+ years</p>
@@ -485,47 +609,52 @@ function StorySection() {
   );
 }
 
-// ─── Waitlist CTA section ──────────────────────────────────────────────────
-function WaitlistSection() {
+// ─── Download CTA section ──────────────────────────────────────────────────
+function DownloadSection() {
   const { data } = trpc.waitlist.count.useQuery();
 
   return (
-    <section id="waitlist" className="py-24 px-4" style={{ background: "linear-gradient(180deg, #162d4a 0%, #0F2440 100%)" }}>
+    <section className="py-24 px-4" style={{ background: "linear-gradient(180deg, #162d4a 0%, #0F2440 100%)" }} aria-labelledby="download-heading">
       <div className="max-w-2xl mx-auto text-center">
         <div className="inline-flex items-center gap-2 bg-white/10 text-[#5EEAD4] text-xs font-semibold px-4 py-1.5 rounded-full mb-8 border border-white/10">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#5EEAD4] animate-pulse" />
-          Free During Early Access
+          <span className="w-1.5 h-1.5 rounded-full bg-[#5EEAD4] animate-pulse" aria-hidden="true" />
+          Available Now on iOS &amp; Android
         </div>
 
-        <h2 className="text-3xl sm:text-4xl font-bold text-white mb-5">
+        <h2 id="download-heading" className="text-3xl sm:text-4xl font-bold text-white mb-5">
           Stop being out of sync.<br />
           <span className="text-[#5EEAD4]">Start building a rhythm.</span>
         </h2>
         <p className="text-white/60 text-lg mb-10 leading-relaxed">
-          Join the waitlist and be among the first to use BusinessCadence. Early access is free, and you'll have a direct line to shape the product.
+          Download BusinessCadence free today. Start your trial, invite your co-owner, and have your first structured meeting this week.
         </p>
 
-        <WaitlistForm variant="footer" />
+        <AppStoreButtons className="justify-center mb-8" />
 
-        {data && data.count > 0 && (
-          <p className="mt-6 text-sm text-white/40">
-            <span className="text-[#5EEAD4] font-semibold">{data.count} business owners</span> are already waiting.
-          </p>
-        )}
-
-        <div className="mt-12 grid grid-cols-1 sm:grid-cols-3 gap-6 text-left">
+        <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-6 text-left">
           {[
+            { label: "Free to download", icon: "✓" },
             { label: "No credit card required", icon: "✓" },
-            { label: "Free during early access", icon: "✓" },
             { label: "Cancel anytime", icon: "✓" },
           ].map((item, i) => (
             <div key={i} className="flex items-center gap-3">
-              <div className="w-6 h-6 rounded-full bg-[#5EEAD4]/20 flex items-center justify-center text-[#5EEAD4] text-xs font-bold flex-shrink-0">
+              <div className="w-6 h-6 rounded-full bg-[#5EEAD4]/20 flex items-center justify-center text-[#5EEAD4] text-xs font-bold flex-shrink-0" aria-hidden="true">
                 {item.icon}
               </div>
               <span className="text-white/60 text-sm">{item.label}</span>
             </div>
           ))}
+        </div>
+
+        {data && data.count > 0 && (
+          <p className="mt-8 text-sm text-white/40">
+            <span className="text-[#5EEAD4] font-semibold">{data.count} business owners</span> are already on the waitlist.
+          </p>
+        )}
+
+        <div className="mt-10 border-t border-white/10 pt-8">
+          <p className="text-sm text-white/40 mb-4">Not ready to download? Get notified about updates.</p>
+          <WaitlistForm variant="footer" />
         </div>
       </div>
     </section>
@@ -535,7 +664,7 @@ function WaitlistSection() {
 // ─── Footer ────────────────────────────────────────────────────────────────
 function Footer() {
   return (
-    <footer className="bg-[#0A1929] border-t border-white/10 py-10 px-4">
+    <footer className="bg-[#0A1929] border-t border-white/10 py-10 px-4" role="contentinfo">
       <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6">
         <div className="flex flex-col items-center sm:items-start gap-1">
           <div style={{ filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.4)) brightness(1.05)" }}>
@@ -557,6 +686,12 @@ function Footer() {
             Features
           </button>
           <button
+            onClick={() => document.getElementById("pricing")?.scrollIntoView({ behavior: "smooth" })}
+            className="hover:text-white transition-colors"
+          >
+            Pricing
+          </button>
+          <button
             onClick={() => document.getElementById("story")?.scrollIntoView({ behavior: "smooth" })}
             className="hover:text-white transition-colors"
           >
@@ -565,7 +700,6 @@ function Footer() {
         </div>
         <div className="flex items-center gap-4">
           <p className="text-xs text-white/30">© {new Date().getFullYear()} BusinessCadence. All rights reserved.</p>
-          <a href="/login" className="text-xs text-white/40 hover:text-white transition-colors">Client Login</a>
         </div>
       </div>
     </footer>
@@ -581,8 +715,9 @@ export default function Landing() {
       <ProblemSection />
       <FeaturesSection />
       <HowItWorksSection />
+      <PricingSection />
       <StorySection />
-      <WaitlistSection />
+      <DownloadSection />
       <Footer />
     </div>
   );
