@@ -553,11 +553,15 @@ export const subscriptions = mysqlTable("subscriptions", {
   ownerPersonId: varchar("ownerPersonId", { length: 64 }).notNull(), // the person who purchased
   revenueCatUserId: varchar("revenueCatUserId", { length: 256 }),    // RC app_user_id
   revenueCatProductId: varchar("revenueCatProductId", { length: 256 }), // e.g. "bc_core_monthly"
-  plan: mysqlEnum("plan", ["core", "core_team"]).notNull().default("core"),
-  status: mysqlEnum("status", ["trialing", "active", "lapsed", "cancelled"]).notNull().default("trialing"),
+  plan: mysqlEnum("plan", ["core", "core_team", "founding", "co_owner", "co_owner_team"]).notNull().default("co_owner"),
+  status: mysqlEnum("status", ["trialing", "active", "lapsed", "cancelled", "beta"]).notNull().default("trialing"),
   trialEndsAt: timestamp("trialEndsAt"),           // null after trial converts
   currentPeriodEndsAt: timestamp("currentPeriodEndsAt"), // next renewal / access end date
   revenueCatData: text("revenueCatData"),          // JSON: latest RC webhook payload
+  /** betaGrantedBy: openId of the admin who granted beta access (null for paid subs) */
+  betaGrantedBy: varchar("betaGrantedBy", { length: 64 }),
+  /** betaNote: optional note explaining why beta access was granted */
+  betaNote: varchar("betaNote", { length: 256 }),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });

@@ -1257,6 +1257,9 @@ export async function checkSubscriptionAccess(
     const stillActive = !sub.currentPeriodEndsAt || sub.currentPeriodEndsAt > now;
     return { hasAccess: stillActive, reason: stillActive ? "active" : "lapsed", plan: sub.plan, trialDaysLeft: null };
   }
+  if (sub.status === "beta") {
+    return { hasAccess: true, reason: "beta", plan: sub.plan, trialDaysLeft: null };
+  }
   return { hasAccess: false, reason: "lapsed", plan: sub.plan, trialDaysLeft: null };
 }
 
@@ -1485,3 +1488,69 @@ export async function setPersonDnd(accountId: number, personId: string, active: 
     .where(and(eq(personHours.accountId, accountId), eq(personHours.personId, personId)));
   return active;
 }
+// ─── Founding Member spots helpers ───────────────────────────────────────────
+
+/** Count how many accounts have the "founding" plan (active or trialing). */
+export async function getFoundingSpotsTaken(): Promise<number> {
+  const db = await getDb();
+  if (!db) return 0;
+  const rows = await db
+    .select({ id: subscriptions.id })
+    .from(subscriptions)
+    .where(
+      and(
+        eq(subscriptions.plan, "founding"),
+        // Only count paid/trialing founding members — exclude beta (free) and lapsed
+        inArray(subscriptions.status, ["trialing", "active", "cancelled"])
+      )
+    );
+  return rows.length;
+}
+
+// ─── Beta access helpers ──────────────────────────────────────────────────────
+
+/**
+ * Grant beta access to an account.
+ * Creates or updates the subscription row with status="beta" and plan="founding"
+ * (beta users get founding-tier features at $0).
+ * betaGrantedBy: openId of the admin granting access.
+ */
+export async function grantBetaAccess(
+  accountId: number,
+  ownerPersonId: string,
+  betaGrantedBy: string,
+  betaNote?: string,
+): Promise<Subscription> {
+  const db = await getDb();
+  if (!db) throw new Error("DB unavailable");
+  await db.insert(subscriptions).values({
+    accountId,
+    ownerPersonId,
+    plan: "founding",
+    status: "beta",
+    betaGrantedBy,
+    betaNote: betaNote ?? null,
+  }).onDuplicateKeyUpdate({
+    set: {
+      plan: "founding",
+      status: "beta",
+      betaGrantedBy,
+      betaNote: betaNote ?? null,
+    },
+  });
+  const [row] = await db.select().from(subscriptions).where(eq(subscriptions.accountId, accountId)).limit(1);
+  return row!;
+}
+
+/**
+ * Revoke beta access — sets status back to "lapsed" so the user hits the paywall.
+ */
+export async function revokeBetaAccess(accountId: number): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("DB unavailable");
+  await db.update(subscriptions)
+    .set({ status: "lapsed", betaGrantedBy: null, betaNote: null })
+    .where(eq(subscriptions.accountId, accountId));
+}
+
+// ─── Partner link helpers ─────────────────────────────────────────────────────

@@ -14,3 +14,17 @@
 - [x] Improve card surface differentiation (slightly lighter card bg + more visible border)
 - [x] Improve typography hierarchy (bolder h1/h2/h3, lighter body via CSS base layer)
 - [x] Apply warm amber to overdue states in Board.tsx, TeamBoard.tsx, NotificationBell.tsx
+
+## Founding Member Spots Counter
+- [x] Add founding spots tracking to subscriptions table (plan enum extended)
+- [x] Add server procedure to get founding spots count (used / 100)
+- [x] Wire live count to landing page Founding Member card badge (progress bar + spots remaining)
+- [x] Auto-hide/mark Founding Member tier when 100 spots are filled (badge changes to "Sold Out")
+
+## Beta Tier ($0 Internal Plan)
+- [x] Add beta status to subscriptions table (status enum extended with "beta")
+- [x] Add beta entitlement logic to checkSubscriptionAccess (beta status = hasAccess: true)
+- [x] Add grantBetaAccess and revokeBetaAccess DB helpers
+- [x] Add grantBeta and revokeBeta tRPC procedures (admin-only via ownerOpenId check)
+- [x] Add Beta Access tab to admin panel with email search, grant/revoke controls, spots counter
+- [x] Add person.findByEmail procedure for admin search

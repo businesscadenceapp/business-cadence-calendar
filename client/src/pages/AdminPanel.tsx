@@ -37,9 +37,60 @@ export default function AdminPanel() {
   const { person } = usePerson();
   const [, navigate] = useLocation();
   const accountId = person?.accountId ?? 0;
-  const [activeTab, setActiveTab] = useState<"team" | "waitlist">("team");
+  const [activeTab, setActiveTab] = useState<"team" | "waitlist" | "beta">("team");
 
   const [inviteName, setInviteName] = useState("");
+
+  // Beta access state
+  const [betaSearchEmail, setBetaSearchEmail] = useState("");
+  const [betaNote, setBetaNote] = useState("");
+  const [betaSearchResult, setBetaSearchResult] = useState<null | { found: boolean; accountId?: number; personId?: string; name?: string; email?: string; hasBeta?: boolean }>(null);
+
+  const foundingSpots = trpc.subscription.getFoundingSpots.useQuery(undefined, { staleTime: 30_000 });
+
+  const grantBeta = trpc.subscription.grantBeta.useMutation({
+    onSuccess: () => {
+      toast.success("Beta access granted!");
+      setBetaSearchResult(null);
+      setBetaSearchEmail("");
+      setBetaNote("");
+    },
+    onError: (e) => toast.error(e.message || "Failed to grant beta access"),
+  });
+
+  const revokeBeta = trpc.subscription.revokeBeta.useMutation({
+    onSuccess: () => {
+      toast.success("Beta access revoked.");
+      setBetaSearchResult(null);
+      setBetaSearchEmail("");
+    },
+    onError: (e) => toast.error(e.message || "Failed to revoke beta access"),
+  });
+
+  const betaPersonSearch = trpc.person.findByEmail.useQuery(
+    { email: betaSearchEmail.trim() || "placeholder@x.com" },
+    { enabled: false }
+  );
+
+  const betaSubSearch = trpc.subscription.getSubscription.useQuery(
+    { accountId: betaSearchResult?.accountId ?? 0 },
+    { enabled: !!betaSearchResult?.accountId }
+  );
+
+  // Update hasBeta once betaSubSearch resolves
+  const betaSubStatus = betaSubSearch.data?.subscription?.status;
+
+  const handleBetaSearch = async () => {
+    if (!betaSearchEmail.trim()) return;
+    const result = await betaPersonSearch.refetch();
+    if (result.data?.person) {
+      const p = result.data.person;
+      setBetaSearchResult({ found: true, accountId: p.accountId, personId: p.id, name: p.name, email: p.email, hasBeta: false });
+    } else {
+      setBetaSearchResult({ found: false });
+    }
+  };
+
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRole, setInviteRole] = useState<"coowner" | "employee">("coowner");
   const [inviteLink, setInviteLink] = useState<string | null>(null);
@@ -171,7 +222,7 @@ export default function AdminPanel() {
       <div className="p-4 pb-24 max-w-2xl">
         {/* Tabs */}
         <div className="flex gap-2 mb-5">
-          {(["team", "waitlist"] as const).map(tab => (
+  {(["team", "waitlist"] as const).map(tab => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -182,7 +233,7 @@ export default function AdminPanel() {
                   : { backgroundColor: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.5)", border: "1px solid rgba(255,255,255,0.1)" }
               }
             >
-              {tab === "team" ? `👥 Team (${members.length})` : `📋 Waitlist (${waitlistCount})`}
+              {tab === "team" ? `👥 Team (${members.length})` : tab === "waitlist" ? `📋 Waitlist (${waitlistCount})` : `🧪 Beta Access`}
             </button>
           ))}
         </div>
@@ -418,6 +469,127 @@ export default function AdminPanel() {
                 ))}
               </div>
             )}
+          </div>
+        )}
+        {/* ── Beta Access Tab ── */}
+        {activeTab === "beta" && (
+          <div className="flex flex-col gap-4">
+            {/* Founding spots counter */}
+            <div className="rounded-2xl p-5" style={{ background: "linear-gradient(135deg, rgba(245,158,11,0.10) 0%, rgba(245,158,11,0.05) 100%)", border: "1.5px solid rgba(245,158,11,0.25)" }}>
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-7 h-7 rounded-lg flex items-center justify-center text-sm" style={{ background: "rgba(245,158,11,0.2)", border: "1px solid rgba(245,158,11,0.35)" }}>🏅</div>
+                <h2 className="text-sm font-bold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Founding Member Spots</h2>
+              </div>
+              {foundingSpots.data ? (
+                <div className="flex items-end gap-2">
+                  <span className="text-3xl font-black" style={{ color: "#FCD34D", fontFamily: "'Space Grotesk', sans-serif" }}>{foundingSpots.data.remaining}</span>
+                  <span className="text-sm mb-1" style={{ color: "rgba(255,255,255,0.5)" }}>of {foundingSpots.data.total} spots remaining</span>
+                  <span className="ml-auto text-xs px-2.5 py-1 rounded-full font-bold" style={{ backgroundColor: "rgba(245,158,11,0.2)", color: "#FCD34D", border: "1px solid rgba(245,158,11,0.35)" }}>
+                    {foundingSpots.data.taken} taken
+                  </span>
+                </div>
+              ) : (
+                <p className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>Loading…</p>
+              )}
+            </div>
+
+            {/* Grant beta access */}
+            <div className="rounded-2xl overflow-hidden" style={{ background: "linear-gradient(135deg, rgba(16,185,129,0.08) 0%, rgba(16,185,129,0.04) 100%)", border: "1.5px solid rgba(16,185,129,0.2)" }}>
+              <div className="px-5 py-4 flex items-center gap-3" style={{ borderBottom: "1px solid rgba(16,185,129,0.2)" }}>
+                <div className="w-7 h-7 rounded-lg flex items-center justify-center text-sm" style={{ background: "rgba(16,185,129,0.2)", border: "1px solid rgba(16,185,129,0.35)" }}>🧪</div>
+                <h2 className="text-sm font-bold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Grant Beta Access</h2>
+              </div>
+              <div className="p-5 flex flex-col gap-3">
+                <p className="text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>
+                  Beta users get full Founding Member access at $0. Search by email to find a user, then grant or revoke their beta status.
+                </p>
+                <div className="flex gap-2">
+                  <input
+                    type="email"
+                    value={betaSearchEmail}
+                    onChange={e => { setBetaSearchEmail(e.target.value); setBetaSearchResult(null); }}
+                    placeholder="user@example.com"
+                    style={{ ...inputStyle, flex: 1 }}
+                    onKeyDown={e => e.key === "Enter" && handleBetaSearch()}
+                  />
+                  <button
+                    onClick={handleBetaSearch}
+                    disabled={!betaSearchEmail.trim() || betaPersonSearch.isFetching}
+                    className="px-4 py-2 rounded-xl text-xs font-bold transition-all active:scale-[0.97] disabled:opacity-50"
+                    style={{ background: "linear-gradient(135deg, #5EEAD4, #38BDF8)", color: "#0F2440" }}
+                  >
+                    {betaPersonSearch.isFetching ? "…" : "Search"}
+                  </button>
+                </div>
+
+                {betaSearchResult && !betaSearchResult.found && (
+                  <div className="rounded-xl px-4 py-3 text-sm" style={{ backgroundColor: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.25)", color: "#FCA5A5" }}>
+                    No user found with that email address.
+                  </div>
+                )}
+
+                {betaSearchResult?.found && (
+                  <div className="rounded-xl p-4 flex flex-col gap-3" style={{ backgroundColor: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)" }}>
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0" style={{ backgroundColor: "rgba(94,234,212,0.2)", color: "#5EEAD4", border: "1px solid rgba(94,234,212,0.3)" }}>
+                        {betaSearchResult.name?.[0]?.toUpperCase() ?? "?"}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-white truncate">{betaSearchResult.name}</p>
+                        <p className="text-xs truncate" style={{ color: "rgba(255,255,255,0.45)" }}>{betaSearchResult.email}</p>
+                      </div>
+                      {betaSubStatus === "beta" && (
+                        <span className="text-[10px] px-2 py-0.5 rounded-full font-bold flex-shrink-0" style={{ backgroundColor: "rgba(16,185,129,0.2)", color: "#6EE7B7", border: "1px solid rgba(16,185,129,0.35)" }}>
+                          Beta Active
+                        </span>
+                      )}
+                    </div>
+
+                    {betaSubStatus !== "beta" && (
+                      <input
+                        type="text"
+                        value={betaNote}
+                        onChange={e => setBetaNote(e.target.value)}
+                        placeholder="Note (optional): e.g. 'Beta tester — referred by Sarah'"
+                        style={{ ...inputStyle }}
+                      />
+                    )}
+
+                    <div className="flex gap-2">
+                      {betaSubStatus !== "beta" ? (
+                        <button
+                          onClick={() => {
+                            if (!betaSearchResult.accountId || !betaSearchResult.personId || !person?.id) return;
+                            grantBeta.mutate({
+                              accountId: betaSearchResult.accountId,
+                              ownerPersonId: betaSearchResult.personId,
+                              note: betaNote || undefined,
+                            });
+                          }}
+                          disabled={grantBeta.isPending}
+                          className="flex-1 py-2.5 rounded-xl text-xs font-bold transition-all active:scale-[0.97] disabled:opacity-50"
+                          style={{ background: "linear-gradient(135deg, #10B981, #059669)", color: "white" }}
+                        >
+                          {grantBeta.isPending ? "Granting…" : "✓ Grant Beta Access"}
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => {
+                            if (!betaSearchResult.accountId || !person?.id) return;
+                            revokeBeta.mutate({ accountId: betaSearchResult.accountId! });
+                          }}
+                          disabled={revokeBeta.isPending}
+                          className="flex-1 py-2.5 rounded-xl text-xs font-bold transition-all active:scale-[0.97] disabled:opacity-50"
+                          style={{ backgroundColor: "rgba(239,68,68,0.15)", border: "1px solid rgba(239,68,68,0.3)", color: "#FCA5A5" }}
+                        >
+                          {revokeBeta.isPending ? "Revoking…" : "✕ Revoke Beta Access"}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         )}
       </div>

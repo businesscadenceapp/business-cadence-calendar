@@ -281,6 +281,13 @@
       "when": 1785727317765,
       "tag": "0039_charming_scream",
       "breakpoints": true
+    },
+    {
+      "idx": 40,
+      "version": "5",
+      "when": 1785820996156,
+      "tag": "0040_powerful_logan",
+      "breakpoints": true
     }
   ]
 }

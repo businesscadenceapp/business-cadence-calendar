@@ -475,10 +475,15 @@ function HowItWorksSection() {
 function PricingSection() {
   const [billing, setBilling] = useState<"monthly" | "annual">("monthly");
 
+  const foundingSpots = trpc.subscription.getFoundingSpots.useQuery(undefined, { staleTime: 60_000 });
+  const spotsRemaining = foundingSpots.data?.remaining ?? 100;
+  const spotsTaken = foundingSpots.data?.taken ?? 0;
+  const foundingFull = spotsRemaining <= 0;
+
   const plans = [
     {
       id: "founding",
-      badge: { text: "Limited · Founding Rate", color: "bg-gradient-to-r from-[#F59E0B] to-[#D97706] text-[#0A1628]" },
+      badge: { text: foundingFull ? "Sold Out" : `${spotsRemaining} of 100 spots left`, color: "bg-gradient-to-r from-[#F59E0B] to-[#D97706] text-[#0A1628]" },
       name: "Founding Member",
       tagline: "Early adopter rate — locked in forever",
       monthly: "$39",
@@ -598,6 +603,16 @@ function PricingSection() {
               {plan.badge && (
                 <div className={`absolute -top-3.5 left-1/2 -translate-x-1/2 ${plan.badge.color} text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-wide whitespace-nowrap`}>
                   {plan.badge.text}
+                </div>
+              )}
+              {plan.id === "founding" && spotsTaken > 0 && (
+                <div className="mt-2 mb-1">
+                  <div className="w-full h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: "rgba(245,158,11,0.2)" }}>
+                    <div className="h-full rounded-full transition-all duration-500" style={{ width: `${Math.min(100, (spotsTaken / 100) * 100)}%`, background: "linear-gradient(90deg, #F59E0B, #D97706)" }} />
+                  </div>
+                  <p className="text-[10px] mt-1 font-medium" style={{ color: "rgba(245,158,11,0.7)" }}>
+                    {spotsTaken} of 100 founding spots claimed
+                  </p>
                 </div>
               )}
 

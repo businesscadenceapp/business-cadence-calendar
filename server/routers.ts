@@ -94,6 +94,11 @@ import {
   getPartnerLink,
   createPartnerLink,
 } from "./db";
+import {
+  getFoundingSpotsTaken,
+  grantBetaAccess,
+  revokeBetaAccess,
+} from "./db";
 import { persons as personsTable } from "../drizzle/schema";
 import { partnerLinks as partnerLinksTable } from "../drizzle/schema";
 import { generateMeetingSchedule } from "../shared/calendarEngine";
@@ -1186,6 +1191,23 @@ Keep the tone warm but professional. This summary will be saved under this speci
         return { valid: true as const, name: person.name, email: person.email, role: person.role };
       }),
 
+    /** Find a person by email address — used by admin beta access search. */
+    findByEmail: publicProcedure
+      .input(z.object({ email: z.string().email() }))
+      .query(async ({ input }) => {
+        const person = await getPersonByEmail(input.email);
+        if (!person) return { person: null };
+        return {
+          person: {
+            id: person.id,
+            name: person.name,
+            email: person.email,
+            role: person.role,
+            accountId: person.accountId,
+          },
+        };
+      }),
+
     /** List all persons for an account (owner only). */
     list: publicProcedure
       .input(z.object({ accountId: z.number() }))
@@ -1201,6 +1223,7 @@ Keep the tone warm but professional. This summary will be saved under this speci
           createdAt: p.createdAt,
         }));
       }),
+
 
     /** Invite a person (owner creates the record, sends invite link). */
     invite: publicProcedure
@@ -1834,6 +1857,57 @@ Keep the tone warm but professional. This summary will be saved under this speci
       }),
 
     /**
+     * Get the number of founding member spots taken (out of 100).
+     * Public — used by the landing page to show live availability.
+     */
+    getFoundingSpots: publicProcedure.query(async () => {
+      const taken = await getFoundingSpotsTaken();
+      return { taken, total: 100, remaining: Math.max(0, 100 - taken) };
+    }),
+
+    /**
+     * Grant beta access to an account by accountId.
+     * Admin-only (checked via ownerOpenId env var).
+     */
+    grantBeta: publicProcedure
+      .input(z.object({
+        accountId: z.number(),
+        ownerPersonId: z.string(),
+        note: z.string().optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const adminOpenId = ctx.user?.openId;
+        if (!adminOpenId || adminOpenId !== ENV.ownerOpenId) {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Only the app owner can grant beta access" });
+        }
+        const sub = await grantBetaAccess(input.accountId, input.ownerPersonId, adminOpenId, input.note);
+        return { success: true, subscription: sub };
+      }),
+
+    /**
+     * Revoke beta access from an account.
+     * Admin-only.
+     */
+    revokeBeta: publicProcedure
+      .input(z.object({
+        accountId: z.number(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const adminOpenId = ctx.user?.openId;
+        if (!adminOpenId || adminOpenId !== ENV.ownerOpenId) {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Only the app owner can revoke beta access" });
+        }
+        await revokeBetaAccess(input.accountId);
+        return { success: true };
+      }),
+
+    /**
+     * [DUPLICATE REMOVED — startTrial is defined above]
+     * Start a 14-day free trial for the current account (legacy comment kept for reference).
+     * Called automatically after onboarding completion for the owner.
+     * No-op if a subscription already exists.
+     */
+    /**
      * Check whether the given person has active access.
      * Called on every app open by EntitlementGuard.
      * Returns { hasAccess, reason, plan, trialDaysLeft, isPartner }.
@@ -2323,3 +2397,4 @@ Remember: how you say it matters as much as what you say.`;
 
 });
 export type AppRouter = typeof appRouter;
+import { TRPCError } from "@trpc/server";
