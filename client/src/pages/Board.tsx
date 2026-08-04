@@ -1828,7 +1828,7 @@ export default function Board() {
                   style={{ width: "100%", aspectRatio: "1 / 1", maxWidth: 360, margin: "0 auto" }}
                 >
                   <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none" }} viewBox="0 0 360 360">
-                    {[-90, 30, 150, 90].map((angle, i) => {
+                    {[-90, -30, 30, 90, 150, -150].map((angle, i) => {
                       const rad = (angle * Math.PI) / 180;
                       const r = 118;
                       return <line key={i} x1="180" y1="180" x2={180 + r * Math.cos(rad)} y2={180 + r * Math.sin(rad)} stroke="rgba(167,139,250,0.12)" strokeWidth="1.5" strokeDasharray="4 4" />;
@@ -1855,6 +1855,8 @@ export default function Board() {
                     { key: "kpis", label: "KPIs", icon: "📊", gradient: "linear-gradient(135deg, rgba(37,99,235,0.18) 0%, rgba(37,99,235,0.07) 100%)", border: "rgba(37,99,235,0.35)", glow: "rgba(37,99,235,0.14)", textColor: "#93C5FD", countBg: "rgba(37,99,235,0.25)", angle: 30, onClick: () => navigate("/app/kpis"), tourId: "tour-kpis" },
                     { key: "reports", label: "Reports", icon: "📝", gradient: "linear-gradient(135deg, rgba(5,150,105,0.18) 0%, rgba(5,150,105,0.07) 100%)", border: "rgba(5,150,105,0.35)", glow: "rgba(5,150,105,0.14)", textColor: "#6EE7B7", countBg: "rgba(5,150,105,0.25)", angle: 150, onClick: () => navigate("/app/reports"), tourId: "tour-reports" },
                     { key: "refer", label: "Refer a Friend", icon: "🎁", gradient: "linear-gradient(135deg, rgba(217,119,6,0.22) 0%, rgba(217,119,6,0.08) 100%)", border: "rgba(251,191,36,0.45)", glow: "rgba(251,191,36,0.18)", textColor: "#FCD34D", countBg: "rgba(217,119,6,0.25)", angle: 90, onClick: () => setReferralOpen(true), tourId: "tour-refer" },
+                    { key: "inbox", label: "Co-Owner Inbox", icon: "💬", gradient: "linear-gradient(135deg, rgba(20,184,166,0.18) 0%, rgba(20,184,166,0.07) 100%)", border: "rgba(94,234,212,0.35)", glow: "rgba(94,234,212,0.14)", textColor: "#5EEAD4", countBg: "rgba(20,184,166,0.25)", angle: -30, onClick: () => navigate("/app/messages"), tourId: "tour-inbox" },
+                    { key: "settings", label: "Settings", icon: "⚙️", gradient: "linear-gradient(135deg, rgba(100,116,139,0.18) 0%, rgba(100,116,139,0.07) 100%)", border: "rgba(148,163,184,0.35)", glow: "rgba(148,163,184,0.12)", textColor: "#CBD5E1", countBg: "rgba(100,116,139,0.25)", angle: -150, onClick: () => navigate("/app/settings"), tourId: "tour-settings" },
                   ].map(({ angle, onClick, tourId, ...cat }, i) => {
                     const rad = (angle * Math.PI) / 180;
                     const r = 118;

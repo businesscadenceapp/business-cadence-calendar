@@ -58,9 +58,7 @@ interface NavItem {
 const OWNER_NAV: NavItem[] = [
   { path: "/app/board",    label: "Board",    icon: "📋", activeColor: "#5EEAD4" },
   // Goals, KPIs, Reports now live in the Performance Hub (swipe left on Board)
-  { path: "/app/messages", label: "Messages", icon: "💬", activeColor: "#5EEAD4" },
   { path: "/app/calendar", label: "Calendar", icon: "📅", activeColor: "#5EEAD4" },
-  { path: "/app/settings", label: "Settings", icon: "⚙️", activeColor: "#5EEAD4" },
   { path: "/app/admin",    label: "Admin",    icon: "🔑", activeColor: "#F87171" },
 ];
 

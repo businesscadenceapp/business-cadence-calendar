@@ -28,3 +28,12 @@
 - [x] Add grantBeta and revokeBeta tRPC procedures (admin-only via ownerOpenId check)
 - [x] Add Beta Access tab to admin panel with email search, grant/revoke controls, spots counter
 - [x] Add person.findByEmail procedure for admin search
+
+## Move Messages → Performance Hub (Co-Owner Inbox)
+- [x] Add Co-Owner Inbox node to Performance Hub in Board.tsx (teal 💬, angle -30°)
+- [x] Remove Messages from OWNER_NAV in AppShell.tsx
+- [x] SVG spokes updated to 6 angles to match all nodes
+
+## Move Settings → Performance Hub
+- [x] Add Settings node to Performance Hub in Board.tsx (slate ⚙️, angle -150°)
+- [x] Remove Settings from OWNER_NAV in AppShell.tsx
