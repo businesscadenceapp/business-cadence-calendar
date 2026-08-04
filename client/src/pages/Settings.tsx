@@ -618,7 +618,8 @@ export default function Settings() {
         </div>
         <button
           onClick={() => {
-            // Set a pending flag and navigate to Board — Board will auto-start the tour
+            // Navigate to Board first, THEN start the tour after a short delay
+            // so the tour runs on the Board page, not the Settings page
             localStorage.setItem(TOUR_PENDING_KEY, "1");
             navigate("/app/board");
           }}

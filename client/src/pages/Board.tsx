@@ -1346,18 +1346,25 @@ export default function Board() {
   const { replay, registerRef, active: tourActive } = useTour();
   const [profileDeferred, setProfileDeferred] = useState(false);
 
-  // Start the tour on first Board visit after onboarding
+  // Start the tour on first Board visit after onboarding, or when returning from Settings replay
   useEffect(() => {
-    const pending = localStorage.getItem(TOUR_PENDING_KEY);
-    const completed = localStorage.getItem(TOUR_STORAGE_KEY);
-    // Show tour if: explicit replay request from Settings, OR first-ever Board visit
-    if (pending === "1" || !completed) {
-      const t = setTimeout(() => {
+    const checkAndStartTour = () => {
+      const pending = localStorage.getItem(TOUR_PENDING_KEY);
+      const completed = localStorage.getItem(TOUR_STORAGE_KEY);
+      if (pending === "1" || !completed) {
         localStorage.removeItem(TOUR_PENDING_KEY);
-        replay(); // replay() clears completion key and sets active=true
-      }, 800);
-      return () => clearTimeout(t);
-    }
+        setTimeout(() => replay(), 600);
+      }
+    };
+    // Check immediately on mount
+    checkAndStartTour();
+    // Also check when the tab/app regains focus (handles navigate-back-from-Settings case)
+    window.addEventListener("focus", checkAndStartTour);
+    document.addEventListener("visibilitychange", checkAndStartTour);
+    return () => {
+      window.removeEventListener("focus", checkAndStartTour);
+      document.removeEventListener("visibilitychange", checkAndStartTour);
+    };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const accountId = person?.accountId ?? (() => {
