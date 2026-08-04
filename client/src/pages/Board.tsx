@@ -1330,6 +1330,8 @@ export default function Board() {
   const { activeBusiness } = useActiveBusiness(person?.businessScope);
   const filterBusiness: Business | "all" = bizKeyToEnum(activeBusiness);
   const [activeView, setActiveView] = useState<CategoryKey | "needs_attention" | null>(null);
+  const [activeHub, setActiveHub] = useState<0 | 1>(0); // 0 = Command Center, 1 = Performance Hub
+  const hubScrollRef = useRef<HTMLDivElement>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [referralOpen, setReferralOpen] = useState(false);
   const [showCompleted, setShowCompleted] = useState(false);
@@ -1659,12 +1661,18 @@ export default function Board() {
         <div className="flex items-center gap-2.5 mb-2">
           <div style={{
             width: 36, height: 36, borderRadius: "12px",
-            background: "linear-gradient(135deg, rgba(167,139,250,0.2) 0%, rgba(167,139,250,0.08) 100%)",
-            border: "1px solid rgba(167,139,250,0.3)",
+            background: activeHub === 0
+              ? "linear-gradient(135deg, rgba(94,234,212,0.2) 0%, rgba(94,234,212,0.08) 100%)"
+              : "linear-gradient(135deg, rgba(167,139,250,0.2) 0%, rgba(167,139,250,0.08) 100%)",
+            border: activeHub === 0 ? "1px solid rgba(94,234,212,0.3)" : "1px solid rgba(167,139,250,0.3)",
             display: "flex", alignItems: "center", justifyContent: "center", fontSize: "18px",
-            boxShadow: "0 0 16px rgba(167,139,250,0.15)",
-          }}>📈</div>
-          <span className="text-[11px] font-bold uppercase tracking-[0.15em]" style={{ color: "#A78BFA", fontFamily: "'Space Grotesk', sans-serif" }}>Performance Hub</span>
+            boxShadow: activeHub === 0 ? "0 0 16px rgba(94,234,212,0.15)" : "0 0 16px rgba(167,139,250,0.15)",
+            transition: "all 0.3s ease",
+          }}>{activeHub === 0 ? "⚡" : "📈"}</div>
+          <span
+            className="text-[11px] font-bold uppercase tracking-[0.15em]"
+            style={{ color: activeHub === 0 ? "#5EEAD4" : "#A78BFA", fontFamily: "'Space Grotesk', sans-serif", transition: "color 0.3s ease" }}
+          >{activeHub === 0 ? "Command Center" : "Performance Hub"}</span>
         </div>
 
         <h1 className="text-[22px] font-black text-white leading-tight mb-1" style={{ fontFamily: "'Space Grotesk', sans-serif", letterSpacing: "-0.02em" }}>
@@ -1728,7 +1736,12 @@ export default function Board() {
           <div style={{ position: "relative", marginLeft: "-20px", marginRight: "-20px" }}>
             {/* Swipe container — negative margin breaks out of parent px-5 padding */}
             <div
-              ref={(el) => registerRef("tour-hub-swipe", el)}
+              ref={(el) => { registerRef("tour-hub-swipe", el); (hubScrollRef as React.MutableRefObject<HTMLDivElement | null>).current = el; }}
+              onScroll={(e) => {
+                const el = e.currentTarget;
+                const hub = Math.round(el.scrollLeft / el.offsetWidth) as 0 | 1;
+                setActiveHub(hub);
+              }}
               style={{
                 display: "flex",
                 overflowX: "auto",
@@ -1741,64 +1754,7 @@ export default function Board() {
               }}
               className="[&::-webkit-scrollbar]:hidden"
             >
-              {/* ── Hub 2: Performance (now first / default) ── */}
-              <div
-                style={{
-                  flex: "0 0 100%",
-                  scrollSnapAlign: "start",
-                  width: "100%",
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                }}
-              >
-                <div
-                  className="relative flex items-center justify-center"
-                  style={{ width: "100%", aspectRatio: "1 / 1", maxWidth: 360, margin: "0 auto" }}
-                >
-                  <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none" }} viewBox="0 0 360 360">
-                    {[-90, 30, 150, 90].map((angle, i) => {
-                      const rad = (angle * Math.PI) / 180;
-                      const r = 118;
-                      return <line key={i} x1="180" y1="180" x2={180 + r * Math.cos(rad)} y2={180 + r * Math.sin(rad)} stroke="rgba(167,139,250,0.12)" strokeWidth="1.5" strokeDasharray="4 4" />;
-                    })}
-                  </svg>
-                  {/* Performance hub center */}
-                  <div
-                    ref={(el) => registerRef("tour-perf-center", el)}
-                    style={{
-                      position: "absolute", left: "50%", top: "50%",
-                      transform: "translate(-50%, -50%)",
-                      width: 72, height: 72, borderRadius: "50%",
-                      background: "linear-gradient(135deg, rgba(167,139,250,0.22) 0%, rgba(167,139,250,0.08) 100%)",
-                      border: "2px solid rgba(167,139,250,0.45)",
-                      boxShadow: "0 0 32px rgba(167,139,250,0.25), 0 0 8px rgba(167,139,250,0.15)",
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      zIndex: 2, animation: "hubCenterPulse2 3s ease-in-out infinite",
-                    }}
-                  >
-                    <span style={{ fontSize: 28 }}>📈</span>
-                  </div>
-                  {[
-                    { key: "goals", label: "Goals", icon: "🎯", gradient: "linear-gradient(135deg, rgba(124,58,237,0.18) 0%, rgba(124,58,237,0.07) 100%)", border: "rgba(124,58,237,0.35)", glow: "rgba(124,58,237,0.14)", textColor: "#C4B5FD", countBg: "rgba(124,58,237,0.25)", angle: -90, onClick: () => navigate("/app/goals"), tourId: "tour-goals" },
-                    { key: "kpis", label: "KPIs", icon: "📊", gradient: "linear-gradient(135deg, rgba(37,99,235,0.18) 0%, rgba(37,99,235,0.07) 100%)", border: "rgba(37,99,235,0.35)", glow: "rgba(37,99,235,0.14)", textColor: "#93C5FD", countBg: "rgba(37,99,235,0.25)", angle: 30, onClick: () => navigate("/app/kpis"), tourId: "tour-kpis" },
-                    { key: "reports", label: "Reports", icon: "📝", gradient: "linear-gradient(135deg, rgba(5,150,105,0.18) 0%, rgba(5,150,105,0.07) 100%)", border: "rgba(5,150,105,0.35)", glow: "rgba(5,150,105,0.14)", textColor: "#6EE7B7", countBg: "rgba(5,150,105,0.25)", angle: 150, onClick: () => navigate("/app/reports"), tourId: "tour-reports" },
-                    { key: "refer", label: "Refer a Friend", icon: "🎁", gradient: "linear-gradient(135deg, rgba(217,119,6,0.22) 0%, rgba(217,119,6,0.08) 100%)", border: "rgba(251,191,36,0.45)", glow: "rgba(251,191,36,0.18)", textColor: "#FCD34D", countBg: "rgba(217,119,6,0.25)", angle: 90, onClick: () => setReferralOpen(true), tourId: "tour-refer" },
-                  ].map(({ angle, onClick, tourId, ...cat }, i) => {
-                    const rad = (angle * Math.PI) / 180;
-                    const r = 118;
-                    const cx = 50 + (r / 360) * 100 * Math.cos(rad);
-                    const cy = 50 + (r / 360) * 100 * Math.sin(rad);
-                    return (
-                      <div key={cat.key} style={{ position: "absolute", left: `${cx}%`, top: `${cy}%`, transform: "translate(-50%, -50%)", zIndex: 3 }}>
-                        <HubNode cat={cat as TileMeta} count={-1} onClick={onClick} delay={i * 70} size={76} tourId={tourId} registerRef={registerRef} />
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* ── Hub 1: Command Board (now second — swipe right) ── */}
+              {/* ── Hub 1: Command Board (default) ── */}
               <div
                 style={{
                   flex: "0 0 100%",
@@ -1856,19 +1812,69 @@ export default function Board() {
                 </div>
               </div>
 
+              {/* ── Hub 2: Performance Hub ── */}
+              <div
+                style={{
+                  flex: "0 0 100%",
+                  scrollSnapAlign: "start",
+                  width: "100%",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                }}
+              >
+                <div
+                  className="relative flex items-center justify-center"
+                  style={{ width: "100%", aspectRatio: "1 / 1", maxWidth: 360, margin: "0 auto" }}
+                >
+                  <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none" }} viewBox="0 0 360 360">
+                    {[-90, 30, 150, 90].map((angle, i) => {
+                      const rad = (angle * Math.PI) / 180;
+                      const r = 118;
+                      return <line key={i} x1="180" y1="180" x2={180 + r * Math.cos(rad)} y2={180 + r * Math.sin(rad)} stroke="rgba(167,139,250,0.12)" strokeWidth="1.5" strokeDasharray="4 4" />;
+                    })}
+                  </svg>
+                  {/* Performance hub center */}
+                  <div
+                    ref={(el) => registerRef("tour-perf-center", el)}
+                    style={{
+                      position: "absolute", left: "50%", top: "50%",
+                      transform: "translate(-50%, -50%)",
+                      width: 72, height: 72, borderRadius: "50%",
+                      background: "linear-gradient(135deg, rgba(167,139,250,0.22) 0%, rgba(167,139,250,0.08) 100%)",
+                      border: "2px solid rgba(167,139,250,0.45)",
+                      boxShadow: "0 0 32px rgba(167,139,250,0.25), 0 0 8px rgba(167,139,250,0.15)",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      zIndex: 2, animation: "hubCenterPulse2 3s ease-in-out infinite",
+                    }}
+                  >
+                    <span style={{ fontSize: 28 }}>📈</span>
+                  </div>
+                  {[
+                    { key: "goals", label: "Goals", icon: "🎯", gradient: "linear-gradient(135deg, rgba(124,58,237,0.18) 0%, rgba(124,58,237,0.07) 100%)", border: "rgba(124,58,237,0.35)", glow: "rgba(124,58,237,0.14)", textColor: "#C4B5FD", countBg: "rgba(124,58,237,0.25)", angle: -90, onClick: () => navigate("/app/goals"), tourId: "tour-goals" },
+                    { key: "kpis", label: "KPIs", icon: "📊", gradient: "linear-gradient(135deg, rgba(37,99,235,0.18) 0%, rgba(37,99,235,0.07) 100%)", border: "rgba(37,99,235,0.35)", glow: "rgba(37,99,235,0.14)", textColor: "#93C5FD", countBg: "rgba(37,99,235,0.25)", angle: 30, onClick: () => navigate("/app/kpis"), tourId: "tour-kpis" },
+                    { key: "reports", label: "Reports", icon: "📝", gradient: "linear-gradient(135deg, rgba(5,150,105,0.18) 0%, rgba(5,150,105,0.07) 100%)", border: "rgba(5,150,105,0.35)", glow: "rgba(5,150,105,0.14)", textColor: "#6EE7B7", countBg: "rgba(5,150,105,0.25)", angle: 150, onClick: () => navigate("/app/reports"), tourId: "tour-reports" },
+                    { key: "refer", label: "Refer a Friend", icon: "🎁", gradient: "linear-gradient(135deg, rgba(217,119,6,0.22) 0%, rgba(217,119,6,0.08) 100%)", border: "rgba(251,191,36,0.45)", glow: "rgba(251,191,36,0.18)", textColor: "#FCD34D", countBg: "rgba(217,119,6,0.25)", angle: 90, onClick: () => setReferralOpen(true), tourId: "tour-refer" },
+                  ].map(({ angle, onClick, tourId, ...cat }, i) => {
+                    const rad = (angle * Math.PI) / 180;
+                    const r = 118;
+                    const cx = 50 + (r / 360) * 100 * Math.cos(rad);
+                    const cy = 50 + (r / 360) * 100 * Math.sin(rad);
+                    return (
+                      <div key={cat.key} style={{ position: "absolute", left: `${cx}%`, top: `${cy}%`, transform: "translate(-50%, -50%)", zIndex: 3 }}>
+                        <HubNode cat={cat as TileMeta} count={-1} onClick={onClick} delay={i * 70} size={76} tourId={tourId} registerRef={registerRef} />
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
             </div>
 
-            {/* Hub indicator dots + swipe hint */}
-            <div className="flex flex-col items-center gap-1.5 mt-2 mb-1">
-              <div className="flex items-center gap-2">
-                <div style={{ width: 6, height: 5, borderRadius: 3, backgroundColor: "rgba(255,255,255,0.2)" }} />
-                <div style={{ width: 20, height: 5, borderRadius: 3, backgroundColor: "rgba(94,234,212,0.7)" }} />
-              </div>
-              <div className="flex items-center gap-1.5" style={{ animation: "swipeHint 2s ease-in-out infinite" }}>
-                <span style={{ fontSize: "10px", color: "rgba(255,255,255,0.35)", fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, letterSpacing: "0.08em" }}>SWIPE</span>
-                <span style={{ fontSize: 14, animation: "swipeArrow 1.4s ease-in-out infinite" }}>👉</span>
-                <span style={{ fontSize: 10, color: "rgba(94,234,212,0.7)", fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, letterSpacing: "0.06em" }}>COMMAND CENTER</span>
-              </div>
+            {/* Hub indicator dots */}
+            <div className="flex items-center justify-center gap-2 mt-2 mb-1">
+              <div style={{ width: activeHub === 0 ? 20 : 6, height: 5, borderRadius: 3, backgroundColor: activeHub === 0 ? "rgba(94,234,212,0.7)" : "rgba(255,255,255,0.2)", transition: "all 0.3s ease" }} />
+              <div style={{ width: activeHub === 1 ? 20 : 6, height: 5, borderRadius: 3, backgroundColor: activeHub === 1 ? "rgba(167,139,250,0.7)" : "rgba(255,255,255,0.2)", transition: "all 0.3s ease" }} />
             </div>
           </div>
         )}
