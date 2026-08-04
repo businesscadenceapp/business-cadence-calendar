@@ -609,18 +609,18 @@ export default function AppShell({ children }: AppShellProps) {
               {person && (
                 <NotificationBell accountId={person.accountId} personId={person.id} />
               )}
-              {/* Settings gear — top right */}
-              <Link
-                href="/app/settings"
+              {/* Hamburger menu — opens full nav sheet */}
+              <button
+                onClick={() => setMoreOpen(true)}
                 className="w-8 h-8 rounded-lg flex items-center justify-center transition-all active:scale-95"
                 style={{
-                  backgroundColor: activePath.startsWith("/app/settings") ? "rgba(94,234,212,0.18)" : "rgba(255,255,255,0.06)",
-                  border: activePath.startsWith("/app/settings") ? "1px solid rgba(94,234,212,0.4)" : "1px solid rgba(255,255,255,0.1)",
+                  backgroundColor: moreIsActive ? "rgba(94,234,212,0.18)" : "rgba(255,255,255,0.06)",
+                  border: moreIsActive ? "1px solid rgba(94,234,212,0.4)" : "1px solid rgba(255,255,255,0.1)",
                 }}
-                title="Settings"
+                title="Menu"
               >
-                <span className="text-sm">⚙️</span>
-              </Link>
+                <span className="text-sm">☰</span>
+              </button>
             </div>
           </header>
 
@@ -639,10 +639,10 @@ export default function AppShell({ children }: AppShellProps) {
         </div>
       </div>
 
-      {/* More Sheet */}
+      {/* More Sheet — hamburger menu shows all nav items */}
       {moreOpen && (
         <MoreSheet
-          items={moreItems}
+          items={NAV_ITEMS}
           activePath={activePath}
           person={person}
           onClose={() => setMoreOpen(false)}
