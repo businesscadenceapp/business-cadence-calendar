@@ -326,7 +326,7 @@ export default function AppShell({ children }: AppShellProps) {
   return (
     <IdentityContext.Provider value={{ currentUser: person?.name ?? null }}>
       <div
-        className="flex h-screen overflow-hidden"
+        className="flex h-screen overflow-hidden app-shell-root"
         style={{ backgroundColor: "#0F2440", fontFamily: "'Inter', sans-serif" }}
       >
         {/* ── Desktop Sidebar ── */}

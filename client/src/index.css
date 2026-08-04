@@ -291,14 +291,16 @@ button, a, input, select, textarea {
 }
 
 /* Capacitor body — prevent overscroll bounce showing white on dark app */
-html, body {
-  overflow-x: hidden;
-  max-width: 100vw;
-}
 body {
-  overscroll-behavior: none;
   -webkit-tap-highlight-color: transparent;
   background-color: #0A1929;
+}
+
+/* Lock horizontal scroll only inside the app shell (not the marketing landing page) */
+.app-shell-root {
+  overflow-x: hidden;
+  max-width: 100vw;
+  overscroll-behavior-x: none;
 }
 
 /* Minimum tap target size for mobile (WCAG 2.5.5) */
