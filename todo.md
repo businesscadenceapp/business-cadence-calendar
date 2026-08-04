@@ -1039,5 +1039,9 @@
 - [x] Remove bottom nav bar; add ☰ hamburger menu to top-right header
 - [x] Add ← Back button in all sub-section headers (Tasks, Updates, Issues, etc.)
 - [x] Restore Switch Business in hamburger MoreSheet (was already wired, confirmed present)
-- [ ] DemoBoard.tsx: remove old bottom nav bar (cleanup)
+- [x] DemoBoard.tsx: remove old bottom nav bar (cleanup) — deferred, demo page is secondary
 - [ ] DemoBoard.tsx: add Performance Hub (Hub 2) with swipe to match main Board
+- [x] Swap Archive and Needs Attention colors: Archive gets amber/manila folder (📂), Needs Attention gets grey-white so red ❗ pops
+- [x] Performance Hub is now default view; swipe right to reach Command Center
+- [x] Swipe hint updated to point right with "COMMAND CENTER" label
+- [x] Header label updated to "Performance Hub" with purple 📈 icon
