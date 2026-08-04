@@ -989,49 +989,77 @@ function AddCardForm({ currentUser, onAdded, activeBusiness: activeBusinessProp,
         </button>
       </div>
 
-      {/* Tone Check result modal */}
-      {showToneModal && toneCheckResult && createPortal(
-        <div className="fixed inset-0 z-[200] flex items-end justify-center" style={{ backgroundColor: "rgba(0,0,0,0.7)" }}
-          onClick={e => { if (e.target === e.currentTarget) setShowToneModal(false); }}>
-          <div className="w-full max-w-lg mx-auto rounded-t-2xl p-6 pb-8 flex flex-col gap-4"
-            style={{ backgroundColor: "#0F2440", border: "1.5px solid rgba(94,234,212,0.2)", maxHeight: "80vh", overflowY: "auto" }}>
-            <div className="flex items-center gap-2">
-              <span className="text-lg">🧠</span>
-              <h3 className="font-bold text-white text-base" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Tone Check</h3>
+      {/* Tone Check result modal — rendered inline (not portaled) so it works inside BottomSheet on iOS */}
+      {showToneModal && toneCheckResult && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 9999,
+            display: "flex",
+            alignItems: "flex-end",
+            justifyContent: "center",
+            backgroundColor: "rgba(0,0,0,0.8)",
+          }}
+          onClick={e => { if (e.target === e.currentTarget) setShowToneModal(false); }}
+        >
+          <div
+            style={{
+              width: "100%",
+              maxWidth: "480px",
+              backgroundColor: "#0D2035",
+              border: "1.5px solid rgba(94,234,212,0.25)",
+              borderBottom: "none",
+              borderRadius: "24px 24px 0 0",
+              padding: "24px 20px calc(env(safe-area-inset-bottom,16px) + 24px)",
+              display: "flex",
+              flexDirection: "column",
+              gap: "16px",
+              maxHeight: "85vh",
+              overflowY: "auto",
+              boxShadow: "0 -8px 40px rgba(0,0,0,0.6)",
+              animation: "sheetSlideUp 0.3s cubic-bezier(0.23,1,0.32,1) both",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <span style={{ fontSize: "20px" }}>🧠</span>
+              <h3 style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, color: "white", fontSize: "16px", margin: 0 }}>Tone Check</h3>
             </div>
-            <p className="text-[12px]" style={{ color: "rgba(255,255,255,0.5)", fontFamily: "'Space Grotesk', sans-serif" }}>
+            <p style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: "13px", color: "rgba(255,255,255,0.55)", margin: 0, lineHeight: 1.5 }}>
               {toneCheckResult.reason}
             </p>
-            <div className="rounded-xl p-4" style={{ backgroundColor: "rgba(94,234,212,0.06)", border: "1.5px solid rgba(94,234,212,0.2)" }}>
-              <p className="text-[11px] uppercase tracking-wider mb-2" style={{ color: "#5EEAD4", fontFamily: "'Space Grotesk', sans-serif" }}>Suggested rewrite</p>
-              <p className="text-[13px] leading-relaxed" style={{ color: "rgba(255,255,255,0.85)" }}>{toneCheckResult.suggestion}</p>
+            <div style={{ backgroundColor: "rgba(94,234,212,0.07)", border: "1.5px solid rgba(94,234,212,0.2)", borderRadius: "12px", padding: "16px" }}>
+              <p style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.08em", color: "#5EEAD4", marginBottom: "8px", marginTop: 0 }}>Suggested rewrite</p>
+              <p style={{ fontFamily: "'Inter', sans-serif", fontSize: "14px", color: "rgba(255,255,255,0.88)", lineHeight: 1.6, margin: 0 }}>{toneCheckResult.suggestion}</p>
             </div>
-            <p className="text-[11px] text-center" style={{ color: "rgba(255,255,255,0.35)", fontFamily: "'Space Grotesk', sans-serif" }}>
+            <p style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: "11px", color: "rgba(255,255,255,0.3)", textAlign: "center", margin: 0 }}>
               How you say it matters as much as what you say.
             </p>
-            <div className="flex flex-col gap-2">
-              <button type="button"
-                onClick={() => { setContent(toneCheckResult.suggestion); setShowToneModal(false); setToneCheckResult(null); }}
-                className="w-full py-3 rounded-xl text-[13px] font-bold transition-all active:scale-[0.97]"
-                style={{ backgroundColor: "#5EEAD4", color: "#0F2440", fontFamily: "'Space Grotesk', sans-serif" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+              <button
+                type="button"
+                onClick={() => { setContent(toneCheckResult!.suggestion); setShowToneModal(false); setToneCheckResult(null); }}
+                style={{ width: "100%", padding: "14px", borderRadius: "12px", backgroundColor: "#5EEAD4", color: "#0D2035", fontFamily: "'Space Grotesk', sans-serif", fontSize: "14px", fontWeight: 700, border: "none", cursor: "pointer" }}
+              >
                 Use Suggested Rewrite
               </button>
-              <button type="button"
+              <button
+                type="button"
                 onClick={() => { setShowToneModal(false); setToneCheckResult(null); doPost(content); }}
-                className="w-full py-2.5 rounded-xl text-[12px] font-medium transition-all active:scale-[0.97]"
-                style={{ backgroundColor: "rgba(255,255,255,0.05)", color: "rgba(255,255,255,0.6)", border: "1.5px solid rgba(255,255,255,0.1)", fontFamily: "'Space Grotesk', sans-serif" }}>
+                style={{ width: "100%", padding: "12px", borderRadius: "12px", backgroundColor: "rgba(255,255,255,0.05)", color: "rgba(255,255,255,0.65)", fontFamily: "'Space Grotesk', sans-serif", fontSize: "13px", fontWeight: 500, border: "1.5px solid rgba(255,255,255,0.1)", cursor: "pointer" }}
+              >
                 Post Original Anyway
               </button>
-              <button type="button"
+              <button
+                type="button"
                 onClick={() => { setShowToneModal(false); setToneCheckResult(null); }}
-                className="w-full py-2.5 rounded-xl text-[12px] font-medium transition-all active:scale-[0.97]"
-                style={{ backgroundColor: "transparent", color: "rgba(255,255,255,0.35)", fontFamily: "'Space Grotesk', sans-serif" }}>
+                style={{ width: "100%", padding: "12px", borderRadius: "12px", backgroundColor: "transparent", color: "rgba(255,255,255,0.35)", fontFamily: "'Space Grotesk', sans-serif", fontSize: "13px", fontWeight: 500, border: "none", cursor: "pointer" }}
+              >
                 Edit My Message
               </button>
             </div>
           </div>
-        </div>,
-        document.body
+        </div>
       )}
 
       <button onClick={handleSubmit}
