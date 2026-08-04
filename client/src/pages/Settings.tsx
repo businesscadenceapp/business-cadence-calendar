@@ -15,6 +15,7 @@ import type { MeetingType, BusinessKey } from "@/lib/calendarData";
 import PartnerInviteSheet from "@/components/PartnerInviteSheet";
 import { useTour, TOUR_PENDING_KEY } from "@/contexts/TourContext";
 import { useActiveBusiness } from "@/components/BusinessSwitcher";
+import { TEAM_ENABLED } from "@/featureFlags";
 
 const BIZ_MAP: Record<BusinessKey, "chiropractic" | "crossfit"> = {
   chiro: "chiropractic",
@@ -716,7 +717,8 @@ export default function Settings() {
         <PartnerAccessSection />
       )}
 
-      {(person?.role === "owner" || person?.role === "coowner") && (
+      {/* Team Members — hidden until TEAM_ENABLED is true */}
+      {TEAM_ENABLED && (person?.role === "owner" || person?.role === "coowner") && (
         <EmployeeInvitePanel accountId={accountId ?? 0} />
       )}
 
@@ -805,13 +807,37 @@ export default function Settings() {
                 </div>
                 <button
                   onClick={() => setTeamCalToggles(prev => ({ ...prev, [key]: !prev[key] }))}
-                  className="relative flex-shrink-0 w-10 h-5 rounded-full transition-colors duration-200"
-                  style={{ backgroundColor: teamCalToggles[key] ? "#5EEAD4" : "rgba(255,255,255,0.12)" }}
                   aria-label={`Toggle ${label}`}
+                  style={{
+                    position: "relative",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    flexShrink: 0,
+                    width: "44px",
+                    height: "24px",
+                    borderRadius: "12px",
+                    backgroundColor: teamCalToggles[key] ? "#5EEAD4" : "rgba(255,255,255,0.12)",
+                    border: teamCalToggles[key] ? "none" : "1.5px solid rgba(255,255,255,0.2)",
+                    boxShadow: teamCalToggles[key] ? "0 0 8px rgba(94,234,212,0.3)" : "none",
+                    transition: "background-color 0.2s, box-shadow 0.2s",
+                    cursor: "pointer",
+                    minWidth: "44px",
+                    minHeight: "24px",
+                    padding: 0,
+                  }}
                 >
                   <span
-                    className="absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform duration-200"
-                    style={{ transform: teamCalToggles[key] ? "translateX(1.25rem)" : "translateX(0.125rem)" }}
+                    style={{
+                      position: "absolute",
+                      top: "3px",
+                      left: teamCalToggles[key] ? "23px" : "3px",
+                      width: "18px",
+                      height: "18px",
+                      borderRadius: "50%",
+                      backgroundColor: teamCalToggles[key] ? "#0F2440" : "rgba(255,255,255,0.5)",
+                      boxShadow: "0 1px 3px rgba(0,0,0,0.3)",
+                      transition: "left 0.2s cubic-bezier(0.23,1,0.32,1)",
+                    }}
                   />
                 </button>
               </div>
