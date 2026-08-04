@@ -673,6 +673,8 @@ function AddCardForm({ currentUser, onAdded, activeBusiness: activeBusinessProp,
     onSuccess: () => {
       setContent(""); setAssignedTo(null); setDueDate(""); setUpdateDate("");
       setMeetingType(null); setScheduledDate(""); setNotifyPersonIds([]); setPriority("medium"); setPendingAttachments([]);
+      // Reset tone check state so it works fresh on next post
+      setToneCheckEnabled(true); setToneCheckResult(null); setShowToneModal(false); setIsCheckingTone(false);
       onAdded();
       toast.success("Posted to the board");
     },
@@ -1038,7 +1040,13 @@ function AddCardForm({ currentUser, onAdded, activeBusiness: activeBusinessProp,
             <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
               <button
                 type="button"
-                onClick={() => { setContent(toneCheckResult!.suggestion); setShowToneModal(false); setToneCheckResult(null); }}
+                onClick={() => {
+                  const suggested = toneCheckResult!.suggestion;
+                  setShowToneModal(false);
+                  setToneCheckResult(null);
+                  // Auto-post with the suggested rewrite — no second tap needed
+                  doPost(suggested);
+                }}
                 style={{ width: "100%", padding: "14px", borderRadius: "12px", backgroundColor: "#5EEAD4", color: "#0D2035", fontFamily: "'Space Grotesk', sans-serif", fontSize: "14px", fontWeight: 700, border: "none", cursor: "pointer" }}
               >
                 Use Suggested Rewrite
