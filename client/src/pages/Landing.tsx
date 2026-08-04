@@ -473,7 +473,7 @@ function HowItWorksSection() {
 
 // ─── Pricing section ───────────────────────────────────────────────────────
 function PricingSection() {
-  const [billing, setBilling] = useState<"monthly" | "annual">("annual");
+  const [billing, setBilling] = useState<"monthly" | "annual">("monthly");
 
   const plans = [
     {
