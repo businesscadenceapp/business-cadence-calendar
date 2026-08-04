@@ -328,6 +328,12 @@ body {
   overscroll-behavior-x: none;
 }
 
+/* Board hub home view — lock vertical scroll so screen feels native and stationary */
+#app-main-scroll[data-scroll="locked"] {
+  overflow-y: hidden !important;
+  overscroll-behavior: none;
+}
+
 /* Minimum tap target size for mobile (WCAG 2.5.5) */
 @media (pointer: coarse) {
   button, [role="button"], a[href] {

@@ -1339,13 +1339,13 @@ export default function Board() {
     if (!mainEl) return;
     if (!activeView) {
       // Hub home — lock scroll
-      mainEl.style.overflow = "hidden";
+      mainEl.setAttribute("data-scroll", "locked");
     } else {
       // Sub-view (tasks, updates, etc.) — allow scroll
-      mainEl.style.overflow = "auto";
+      mainEl.setAttribute("data-scroll", "auto");
     }
     return () => {
-      mainEl.style.overflow = "";
+      mainEl.setAttribute("data-scroll", "auto");
     };
   }, [activeView]);
   const hubScrollRef = useRef<HTMLDivElement>(null);
@@ -1869,7 +1869,7 @@ export default function Board() {
                   </div>
                   {[
                     { key: "goals", label: "Goals", icon: "🎯", gradient: "linear-gradient(135deg, rgba(124,58,237,0.18) 0%, rgba(124,58,237,0.07) 100%)", border: "rgba(124,58,237,0.35)", glow: "rgba(124,58,237,0.14)", textColor: "#C4B5FD", countBg: "rgba(124,58,237,0.25)", angle: -90, onClick: () => navigate("/app/goals"), tourId: "tour-goals" },
-                    { key: "kpis", label: "KPIs", icon: "📊", gradient: "linear-gradient(135deg, rgba(37,99,235,0.18) 0%, rgba(37,99,235,0.07) 100%)", border: "rgba(37,99,235,0.35)", glow: "rgba(37,99,235,0.14)", textColor: "#93C5FD", countBg: "rgba(37,99,235,0.25)", angle: 30, onClick: () => navigate("/app/kpis"), tourId: "tour-kpis" },
+                    { key: "kpis", label: "KPIs", icon: "📊", gradient: "linear-gradient(135deg, rgba(37,99,235,0.18) 0%, rgba(37,99,235,0.07) 100%)", border: "rgba(37,99,235,0.35)", glow: "rgba(37,99,235,0.14)", textColor: "#93C5FD", countBg: "rgba(37,99,235,0.25)", angle: 30, onClick: () => navigate("/app/kpi"), tourId: "tour-kpis" },
                     { key: "reports", label: "Reports", icon: "📝", gradient: "linear-gradient(135deg, rgba(5,150,105,0.18) 0%, rgba(5,150,105,0.07) 100%)", border: "rgba(5,150,105,0.35)", glow: "rgba(5,150,105,0.14)", textColor: "#6EE7B7", countBg: "rgba(5,150,105,0.25)", angle: 150, onClick: () => navigate("/app/reports"), tourId: "tour-reports" },
                     { key: "refer", label: "Refer a Friend", icon: "🎁", gradient: "linear-gradient(135deg, rgba(217,119,6,0.22) 0%, rgba(217,119,6,0.08) 100%)", border: "rgba(251,191,36,0.45)", glow: "rgba(251,191,36,0.18)", textColor: "#FCD34D", countBg: "rgba(217,119,6,0.25)", angle: 90, onClick: () => setReferralOpen(true), tourId: "tour-refer" },
                     { key: "inbox", label: "Co-Owner Inbox", icon: "💬", gradient: "linear-gradient(135deg, rgba(20,184,166,0.18) 0%, rgba(20,184,166,0.07) 100%)", border: "rgba(94,234,212,0.35)", glow: "rgba(94,234,212,0.14)", textColor: "#5EEAD4", countBg: "rgba(20,184,166,0.25)", angle: -30, onClick: () => navigate("/app/messages"), tourId: "tour-inbox" },
