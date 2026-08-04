@@ -589,7 +589,7 @@ export default function AppShell({ children }: AppShellProps) {
               </div>
             )}
 
-            {/* Right: DND toggle (owners/co-owners) + notification bell */}
+            {/* Right: DND toggle + notification bell + settings */}
             <div className="flex items-center gap-2 flex-shrink-0">
               {person && isOwnerOrCoOwner && (
                 <button
@@ -609,13 +609,25 @@ export default function AppShell({ children }: AppShellProps) {
               {person && (
                 <NotificationBell accountId={person.accountId} personId={person.id} />
               )}
+              {/* Settings gear — top right */}
+              <Link
+                href="/app/settings"
+                className="w-8 h-8 rounded-lg flex items-center justify-center transition-all active:scale-95"
+                style={{
+                  backgroundColor: activePath.startsWith("/app/settings") ? "rgba(94,234,212,0.18)" : "rgba(255,255,255,0.06)",
+                  border: activePath.startsWith("/app/settings") ? "1px solid rgba(94,234,212,0.4)" : "1px solid rgba(255,255,255,0.1)",
+                }}
+                title="Settings"
+              >
+                <span className="text-sm">⚙️</span>
+              </Link>
             </div>
           </header>
 
           <main
             className="flex-1 overflow-y-auto"
             style={{
-              paddingBottom: "calc(64px + env(safe-area-inset-bottom, 0px))",
+              paddingBottom: "env(safe-area-inset-bottom, 16px)",
             }}
           >
             <PageTransition locationKey={activePath}>
@@ -623,70 +635,7 @@ export default function AppShell({ children }: AppShellProps) {
             </PageTransition>
           </main>
 
-          {/* ── Mobile Bottom Tab Bar ── */}
-          <nav
-            className="md:hidden flex-shrink-0 flex items-stretch"
-            style={{
-              backgroundColor: "#0A1929",
-              borderTop: "1px solid rgba(255,255,255,0.08)",
-              height: "calc(56px + env(safe-area-inset-bottom, 0px))",
-              paddingBottom: "env(safe-area-inset-bottom, 0px)",
-              position: "fixed",
-              bottom: 0,
-              left: 0,
-              right: 0,
-              zIndex: 40,
-            }}
-          >
-            {mobilePrimary.map(item => {
-              const isActive = activePath === item.path || activePath.startsWith(item.path + "/");
-              return (
-                <Link
-                  key={item.path}
-                  href={item.path}
-                  ref={(el: HTMLAnchorElement | null) => {
-                    if (item.path === "/app/calendar") registerRef("tour-calendar", el);
-                    if (item.path === "/app/goals") registerRef("tour-goals", el);
-                  }}
-                  data-tour={item.path === "/app/calendar" ? "tour-calendar" : item.path === "/app/goals" ? "tour-goals" : undefined}
-                  className="relative flex-1 flex flex-col items-center justify-center gap-0.5 transition-all duration-150 active:scale-95"
-                  style={{ color: isActive ? "#5EEAD4" : "rgba(255,255,255,0.35)" }}
-                >
-                  <span className="text-[20px] leading-none">{item.icon}</span>
-                  <span
-                    className="text-[9px] font-semibold leading-none"
-                    style={{ fontFamily: "'Space Grotesk', sans-serif" }}
-                  >
-                    {item.label}
-                  </span>
-                  {isActive && (
-                    <div
-                      className="absolute top-0 w-8 h-0.5 rounded-full"
-                      style={{ backgroundColor: "#5EEAD4" }}
-                    />
-                  )}
-                </Link>
-              );
-            })}
-
-            {/* More button — shows remaining nav items + person info */}
-            <button
-              onClick={() => setMoreOpen(true)}
-              className="relative flex-1 flex flex-col items-center justify-center gap-0.5 transition-all duration-150 active:scale-95"
-              style={{ color: moreIsActive ? "#5EEAD4" : "rgba(255,255,255,0.35)" }}
-            >
-              <span className="text-[20px] leading-none">☰</span>
-              <span
-                className="text-[9px] font-semibold leading-none"
-                style={{ fontFamily: "'Space Grotesk', sans-serif" }}
-              >
-                More
-              </span>
-              {moreIsActive && (
-                <div className="absolute top-0 w-8 h-0.5 rounded-full" style={{ backgroundColor: "#5EEAD4" }} />
-              )}
-            </button>
-          </nav>
+          {/* Bottom nav removed — all navigation via hub circles + top-right settings gear */}
         </div>
       </div>
 
