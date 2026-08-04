@@ -1157,42 +1157,49 @@ function BottomSheet({ open, onClose, children, title }: { open: boolean; onClos
   return (
     <div
       ref={overlayRef}
-      className="fixed inset-0 z-50 flex items-end justify-center"
-      style={{ backgroundColor: "rgba(0,0,0,0.85)", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)", animation: "fadeIn 0.2s ease-out" }}
-      onClick={e => { if (e.target === overlayRef.current) onClose(); }}
+      className="fixed inset-0 z-50 flex flex-col"
+      style={{
+        backgroundColor: "#0A1929",
+        animation: "sheetSlideUp 0.3s cubic-bezier(0.23,1,0.32,1) both",
+        paddingTop: "env(safe-area-inset-top, 0px)",
+      }}
     >
+      {/* Header bar with close button */}
       <div
-        ref={sheetRef}
-        className="w-full max-w-lg overflow-y-auto rounded-t-3xl"
+        className="flex items-center justify-between flex-shrink-0"
         style={{
+          padding: "16px 20px 12px 20px",
+          borderBottom: "1px solid rgba(255,255,255,0.08)",
           backgroundColor: "#0D2035",
-          border: "1px solid rgba(94,234,212,0.15)",
-          borderBottom: "none",
-          boxShadow: "0 -8px 40px rgba(0,0,0,0.5), 0 -2px 20px rgba(94,234,212,0.08)",
-          animation: "sheetSlideUp 0.35s cubic-bezier(0.23,1,0.32,1) both",
-          maxHeight: "90vh",
-          paddingTop: "16px",
-          paddingLeft: "20px",
-          paddingRight: "20px",
-          paddingBottom: "calc(env(safe-area-inset-bottom, 16px) + 24px)",
         }}
       >
-        {/* Handle bar + close button row */}
-        <div className="flex items-center justify-between mb-4">
-          <div className="w-10 h-1 rounded-full invisible" />
-          <div className="w-10 h-1 rounded-full" style={{ backgroundColor: "rgba(255,255,255,0.2)" }} />
-          <button
-            onClick={onClose}
-            className="w-8 h-8 rounded-full flex items-center justify-center transition-all active:scale-[0.9]"
-            style={{ backgroundColor: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)" }}
-            aria-label="Close"
-          >
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-              <line x1="1" y1="1" x2="11" y2="11" stroke="rgba(255,255,255,0.6)" strokeWidth="1.8" strokeLinecap="round"/>
-              <line x1="11" y1="1" x2="1" y2="11" stroke="rgba(255,255,255,0.6)" strokeWidth="1.8" strokeLinecap="round"/>
-            </svg>
-          </button>
-        </div>
+        <button
+          onClick={onClose}
+          className="flex items-center gap-2 transition-all active:scale-[0.95]"
+          style={{ color: "rgba(255,255,255,0.5)", fontSize: 14 }}
+          aria-label="Cancel"
+        >
+          <svg width="8" height="14" viewBox="0 0 8 14" fill="none">
+            <path d="M7 1L1 7L7 13" stroke="rgba(255,255,255,0.5)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+          <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 500 }}>Cancel</span>
+        </button>
+        {title && (
+          <p className="text-sm font-bold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>{title}</p>
+        )}
+        <div style={{ width: 60 }} />
+      </div>
+
+      {/* Scrollable content */}
+      <div
+        ref={sheetRef}
+        className="flex-1 overflow-y-auto"
+        style={{
+          backgroundColor: "#0A1929",
+          padding: "20px 20px",
+          paddingBottom: "calc(env(safe-area-inset-bottom, 16px) + 32px)",
+        }}
+      >
         {children}
       </div>
     </div>
@@ -1612,17 +1619,20 @@ export default function Board() {
           document.body
         )}
 
-        <BottomSheet open={sheetOpen} onClose={() => setSheetOpen(false)}>
-          <AddCardForm currentUser={currentUser} onAdded={() => { refetch(); setSheetOpen(false); }}
-            activeBusiness={filterBusiness === "all" ? (allowedBusinesses[0] ?? "general" as Business) : filterBusiness}
-            bizLabels={dynamicBizLabels} assignablePersons={allPersons} accountId={accountId}
-            defaultType={
-              activeView === "tasks" ? "task"
-              : activeView === "updates" ? "update"
-              : activeView === "issues" ? "issue"
-              : undefined
-            } />
-        </BottomSheet>
+        {sheetOpen && createPortal(
+          <BottomSheet open={sheetOpen} onClose={() => setSheetOpen(false)}>
+            <AddCardForm currentUser={currentUser} onAdded={() => { refetch(); setSheetOpen(false); }}
+              activeBusiness={filterBusiness === "all" ? (allowedBusinesses[0] ?? "general" as Business) : filterBusiness}
+              bizLabels={dynamicBizLabels} assignablePersons={allPersons} accountId={accountId}
+              defaultType={
+                activeView === "tasks" ? "task"
+                : activeView === "updates" ? "update"
+                : activeView === "issues" ? "issue"
+                : undefined
+              } />
+          </BottomSheet>,
+          document.body
+        )}
       </div>
     );
   }
@@ -1790,12 +1800,15 @@ export default function Board() {
         document.body
       )}
 
-      {/* Bottom Sheet for posting */}
-      <BottomSheet open={sheetOpen} onClose={() => setSheetOpen(false)}>
-        <AddCardForm currentUser={currentUser} onAdded={() => { refetch(); setSheetOpen(false); }}
-          activeBusiness={filterBusiness === "all" ? (allowedBusinesses[0] ?? "general" as Business) : filterBusiness}
-          bizLabels={dynamicBizLabels} assignablePersons={allPersons} accountId={accountId} />
-      </BottomSheet>
+      {/* Bottom Sheet for posting — portalled to body so it covers the full screen including nav bar */}
+      {sheetOpen && createPortal(
+        <BottomSheet open={sheetOpen} onClose={() => setSheetOpen(false)}>
+          <AddCardForm currentUser={currentUser} onAdded={() => { refetch(); setSheetOpen(false); }}
+            activeBusiness={filterBusiness === "all" ? (allowedBusinesses[0] ?? "general" as Business) : filterBusiness}
+            bizLabels={dynamicBizLabels} assignablePersons={allPersons} accountId={accountId} />
+        </BottomSheet>,
+        document.body
+      )}
 
       {/* Animations */}
       <style>{`
