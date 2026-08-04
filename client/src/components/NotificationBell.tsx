@@ -16,7 +16,7 @@ const TYPE_META: Record<string, { icon: string; accent: string; label: string }>
   task_confirmed:   { icon: "✅", accent: "#16A34A", label: "Task confirmed" },
   new_update:       { icon: "📣", accent: "#0369A1", label: "New update" },
   new_issue:        { icon: "⚠️", accent: "#DC2626", label: "New issue" },
-  overdue_task:     { icon: "🔴", accent: "#DC2626", label: "Overdue task" },
+  overdue_task:     { icon: "⚠️", accent: "#F59E0B", label: "Overdue task" },
 };
 
 function timeAgo(date: Date): string {
@@ -135,7 +135,7 @@ export function NotificationBell({ accountId, personId }: Props) {
               minWidth: "16px",
               height: "16px",
               borderRadius: "8px",
-              backgroundColor: "#DC2626",
+          backgroundColor: "#DC2626",
               color: "#fff",
               fontSize: "10px",
               fontWeight: 700,

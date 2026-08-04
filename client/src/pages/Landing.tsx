@@ -473,105 +473,187 @@ function HowItWorksSection() {
 
 // ─── Pricing section ───────────────────────────────────────────────────────
 function PricingSection() {
+  const [billing, setBilling] = useState<"monthly" | "annual">("annual");
+
+  const plans = [
+    {
+      id: "founding",
+      badge: { text: "Limited · Founding Rate", color: "bg-gradient-to-r from-[#F59E0B] to-[#D97706] text-[#0A1628]" },
+      name: "Founding Member",
+      tagline: "Early adopter rate — locked in forever",
+      monthly: "$39",
+      annual: "$29",
+      annualBilled: "$348",
+      features: [
+        "Both co-owners included",
+        "Owner Board (tasks, updates, issues)",
+        "Meeting Cadence Command Center",
+        "Goals & KPI tracking",
+        "Weekly reports",
+        "AI Tone Check",
+        "Off the Clock mode",
+        "iOS & Android apps",
+        "Rate locked in — never increases",
+      ],
+      cta: "Claim Founding Rate →",
+      cardClass: "bg-[#F59E0B]/8 border border-[#F59E0B]/30",
+      ctaClass: "bg-gradient-to-r from-[#F59E0B] to-[#D97706] text-[#0A1628] hover:opacity-90",
+      popular: false,
+    },
+    {
+      id: "co_owner",
+      badge: null,
+      name: "Co-Owner",
+      tagline: "For couples running one business",
+      monthly: "$69",
+      annual: "$52",
+      annualBilled: "$624",
+      features: [
+        "Both co-owners included",
+        "Owner Board (tasks, updates, issues)",
+        "Meeting Cadence Command Center",
+        "Goals & KPI tracking",
+        "Weekly reports",
+        "AI Tone Check",
+        "Off the Clock mode",
+        "iOS & Android apps",
+      ],
+      cta: "Start 14-Day Free Trial →",
+      cardClass: "bg-white/5 border border-white/10",
+      ctaClass: "bg-[#5EEAD4] text-[#0F2440] hover:bg-[#2dd4bf]",
+      popular: false,
+    },
+    {
+      id: "co_owner_team",
+      badge: { text: "Most Popular", color: "bg-gradient-to-r from-[#5EEAD4] to-[#0D9488] text-[#0A1628]" },
+      name: "Co-Owner + Team",
+      tagline: "For couples running multiple businesses with a team",
+      monthly: "$79",
+      annual: "$59",
+      annualBilled: "$708",
+      features: [
+        "Everything in Co-Owner",
+        "Unlimited business workspaces",
+        "Unlimited team employees",
+        "Separate boards & KPIs per business",
+        "Team calendar & scheduling",
+        "Unified notification center",
+        "Priority support",
+      ],
+      cta: "Start 14-Day Free Trial →",
+      cardClass: "bg-[#5EEAD4]/8 border border-[#5EEAD4]/30",
+      ctaClass: "bg-[#5EEAD4] text-[#0F2440] hover:bg-[#2dd4bf]",
+      popular: true,
+    },
+  ];
+
   return (
     <section id="pricing" className="py-20 px-4 bg-[#0F2440]" aria-labelledby="pricing-heading">
-      <div className="max-w-4xl mx-auto">
-        <div className="text-center mb-14">
-          <p className="text-[#5EEAD4] text-sm font-semibold uppercase tracking-widest mb-3">Simple Pricing</p>
+      <div className="max-w-5xl mx-auto">
+        {/* Header */}
+        <div className="text-center mb-10">
+          <p className="text-[#5EEAD4] text-sm font-bold uppercase tracking-widest mb-3">Pricing</p>
           <h2 id="pricing-heading" className="text-3xl sm:text-4xl font-bold text-white mb-4">
-            $49/month. Per couple. Both owners included.
+            One flat rate. Both owners included.
           </h2>
           <p className="text-white/60 max-w-xl mx-auto mb-6">
-            Most apps charge per seat — two people means two subscriptions. BusinessCadence is built for two. One flat rate covers both co-owners, forever.
+            Most apps charge per seat — two people means two subscriptions. BusinessCadence is built for two. One price covers both co-owners, forever.
           </p>
-          <div className="inline-flex items-center gap-3 bg-white/5 border border-white/10 rounded-2xl px-6 py-3 text-sm">
+
+          {/* Trial banner */}
+          <div className="inline-flex items-center gap-3 bg-[#5EEAD4]/10 border border-[#5EEAD4]/25 rounded-2xl px-6 py-3 text-sm mb-8">
+            <span className="w-2 h-2 rounded-full bg-[#5EEAD4] animate-pulse flex-shrink-0" aria-hidden="true" />
+            <span className="text-[#5EEAD4] font-semibold">14-day free trial on all plans</span>
+            <span className="text-white/30 hidden sm:inline">·</span>
+            <span className="text-white/50 hidden sm:inline">No credit card required</span>
+          </div>
+
+          {/* Billing toggle */}
+          <div className="flex items-center justify-center gap-1 p-1 rounded-xl bg-white/6 border border-white/10 max-w-xs mx-auto">
+            {(["monthly", "annual"] as const).map((b) => (
+              <button
+                key={b}
+                onClick={() => setBilling(b)}
+                className={[
+                  "flex-1 py-2 px-4 rounded-lg text-sm font-semibold transition-all duration-200",
+                  billing === b
+                    ? "bg-[#5EEAD4] text-[#0F2440]"
+                    : "text-white/50 hover:text-white/80",
+                ].join(" ")}
+              >
+                {b === "monthly" ? "Monthly" : "Annual · Save 25%"}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Plan cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {plans.map((plan) => (
+            <div
+              key={plan.id}
+              className={`${plan.cardClass} rounded-2xl p-8 flex flex-col relative overflow-visible`}
+            >
+              {/* Badge */}
+              {plan.badge && (
+                <div className={`absolute -top-3.5 left-1/2 -translate-x-1/2 ${plan.badge.color} text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-wide whitespace-nowrap`}>
+                  {plan.badge.text}
+                </div>
+              )}
+
+              <div className="mb-5 mt-2">
+                <h3 className="text-xl font-bold text-white mb-1">{plan.name}</h3>
+                <p className="text-white/50 text-sm">{plan.tagline}</p>
+              </div>
+
+              {/* Price */}
+              <div className="mb-6">
+                <div className="flex items-baseline gap-1">
+                  <span className="text-4xl font-bold text-white">
+                    {billing === "annual" ? plan.annual : plan.monthly}
+                  </span>
+                  <span className="text-white/50 text-sm">/ mo per couple</span>
+                </div>
+                {billing === "annual" ? (
+                  <p className="text-white/40 text-xs mt-1">Billed {plan.annualBilled}/year</p>
+                ) : (
+                  <p className="text-[#5EEAD4]/60 text-xs mt-1 font-medium">
+                    Switch to annual and save {plan.id === "founding" ? "$120" : plan.id === "co_owner" ? "$204" : "$240"}/yr
+                  </p>
+                )}
+                <p className="text-[#5EEAD4]/70 text-xs mt-0.5 font-medium">Both owners included — no per-seat fees</p>
+              </div>
+
+              {/* Features */}
+              <ul className="space-y-2.5 mb-8 flex-1">
+                {plan.features.map((item, i) => (
+                  <li key={i} className="flex items-start gap-2.5 text-sm text-white/70">
+                    <span className={`mt-0.5 flex-shrink-0 font-bold ${plan.id === "founding" ? "text-[#F59E0B]" : "text-[#5EEAD4]"}`}>✓</span>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+
+              {/* CTA */}
+              <button
+                onClick={() => document.getElementById("download")?.scrollIntoView({ behavior: "smooth" })}
+                className={`w-full ${plan.ctaClass} font-semibold py-3 rounded-xl transition-all active:scale-[0.97]`}
+              >
+                {plan.cta}
+              </button>
+            </div>
+          ))}
+        </div>
+
+        {/* Footer notes */}
+        <div className="text-center mt-10 space-y-2">
+          <p className="text-white/40 text-sm">14-day free trial · No credit card required · Cancel anytime</p>
+          <p className="text-white/30 text-xs">Less than one therapy session. For a tool that keeps both from becoming necessary.</p>
+          <div className="mt-4 inline-flex items-center gap-3 bg-white/5 border border-white/10 rounded-2xl px-6 py-3 text-sm">
             <span className="text-white/40 line-through">Other tools: $30–$40/mo per person</span>
             <span className="text-white/30">vs</span>
-            <span className="text-[#5EEAD4] font-bold">BusinessCadence: $49/mo for both</span>
+            <span className="text-[#5EEAD4] font-bold">BusinessCadence: one price for both</span>
           </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
-          {/* Base plan */}
-          <div className="bg-white/5 rounded-2xl p-8 border border-white/10 flex flex-col">
-            <div className="mb-6">
-              <h3 className="text-xl font-bold text-white mb-1">Co-Owner Plan</h3>
-              <p className="text-white/50 text-sm">For couples running one business</p>
-            </div>
-            <div className="mb-6">
-              <span className="text-4xl font-bold text-white">$49</span>
-              <span className="text-white/50 text-sm ml-1">/ month per couple</span>
-              <p className="text-[#5EEAD4]/70 text-xs mt-1 font-medium">Both owners included — no per-seat fees</p>
-              <p className="text-white/40 text-xs mt-0.5">or $490/year — save ~$100 ($40.83/mo)</p>
-            </div>
-            <ul className="space-y-3 mb-8 flex-1">
-              {[
-                "Both co-owners included",
-                "Owner Board (tasks, updates, issues)",
-                "Meeting Cadence Command Center",
-                "Goals & KPI tracking",
-                "Weekly reports",
-                "AI Tone Check (toggle on/off)",
-                "Off the Clock mode",
-                "iOS & Android apps",
-              ].map((item, i) => (
-                <li key={i} className="flex items-start gap-2.5 text-sm text-white/70">
-                  <span className="text-[#5EEAD4] mt-0.5 flex-shrink-0">✓</span>
-                  {item}
-                </li>
-              ))}
-            </ul>
-            <button
-              onClick={() => document.getElementById("download")?.scrollIntoView({ behavior: "smooth" })}
-              className="w-full bg-[#5EEAD4] text-[#0F2440] font-semibold py-3 rounded-xl hover:bg-[#2dd4bf] transition-colors active:scale-[0.97]"
-            >
-              Download Free →
-            </button>
-          </div>
-
-          {/* Growth plan */}
-          <div className="bg-[#5EEAD4]/10 rounded-2xl p-8 border border-[#5EEAD4]/30 flex flex-col relative overflow-hidden">
-            <div className="absolute top-4 right-4 bg-[#5EEAD4] text-[#0F2440] text-xs font-bold px-3 py-1 rounded-full">
-              MOST POPULAR
-            </div>
-            <div className="mb-6">
-              <h3 className="text-xl font-bold text-white mb-1">Growth Plan</h3>
-              <p className="text-white/50 text-sm">For couples running two businesses</p>
-            </div>
-            <div className="mb-6">
-              <span className="text-4xl font-bold text-white">$59</span>
-              <span className="text-white/50 text-sm ml-1">/ month per couple</span>
-              <p className="text-[#5EEAD4]/70 text-xs mt-1 font-medium">Both owners included — no per-seat fees</p>
-              <p className="text-white/40 text-xs mt-0.5">or $590/year — save ~$120 ($49.17/mo)</p>
-            </div>
-            <ul className="space-y-3 mb-8 flex-1">
-              {[
-                "Everything in Co-Owner Plan",
-                "2 business workspaces",
-                "Switch between businesses instantly",
-                "Separate boards & KPIs per business",
-                "Unified notification center",
-                "Priority support",
-                "3+ businesses? Same price — no extra charge",
-              ].map((item, i) => (
-                <li key={i} className="flex items-start gap-2.5 text-sm text-white/70">
-                  <span className="text-[#5EEAD4] mt-0.5 flex-shrink-0">✓</span>
-                  {item}
-                </li>
-              ))}
-            </ul>
-            <button
-              onClick={() => document.getElementById("download")?.scrollIntoView({ behavior: "smooth" })}
-              className="w-full bg-[#5EEAD4] text-[#0F2440] font-semibold py-3 rounded-xl hover:bg-[#2dd4bf] transition-colors active:scale-[0.97]"
-            >
-              Download Free →
-            </button>
-          </div>
-        </div>
-
-        <div className="text-center mt-10 space-y-2">
-          <p className="text-white/40 text-sm">Start free. No credit card required. Cancel anytime.</p>
-          <p className="text-white/30 text-xs">Less than one dinner out. Less than one therapy session. For a tool that keeps both from becoming necessary.</p>
         </div>
       </div>
     </section>

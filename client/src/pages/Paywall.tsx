@@ -61,6 +61,11 @@ function PlanCard({
           Most Popular
         </div>
       )}
+      {"foundingBadge" in plan && plan.foundingBadge && (
+        <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-[#F59E0B] to-[#D97706] text-[#0A1628] text-xs font-bold px-4 py-1 rounded-full uppercase tracking-wide whitespace-nowrap">
+          Limited · Founding Rate
+        </div>
+      )}
       <div className="flex items-center gap-4">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
@@ -118,7 +123,7 @@ function BillingToggle({
               : "text-white/45 hover:text-white/70",
           ].join(" ")}
         >
-          {b === "monthly" ? "Monthly" : "Annual · Save $120"}
+          {b === "monthly" ? "Monthly" : "Annual · Save 25%"}
         </button>
       ))}
     </div>

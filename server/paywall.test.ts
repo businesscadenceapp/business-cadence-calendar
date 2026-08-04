@@ -20,47 +20,46 @@ import {
 // ─── Tests ────────────────────────────────────────────────────────────────────
 
 describe("Paywall plan data", () => {
-  it("has exactly two plans: core and core_team", () => {
-    expect(PLANS).toHaveLength(2);
-    expect(PLANS.map((p) => p.id)).toEqual(["core", "core_team"]);
+  it("has exactly three plans: founding, co_owner, and co_owner_team", () => {
+    expect(PLANS).toHaveLength(3);
+    expect(PLANS.map((p) => p.id)).toEqual(["founding", "co_owner", "co_owner_team"]);
   });
 
-  it("core_team plan is marked as popular", () => {
-    const coreTeam = PLANS.find((p) => p.id === "core_team");
-    expect(coreTeam?.popular).toBe(true);
+  it("co_owner_team plan is marked as popular", () => {
+    const popular = PLANS.find((p) => p.popular);
+    expect(popular?.id).toBe("co_owner_team");
   });
 
-  it("core plan is not marked as popular", () => {
-    const core = PLANS.find((p) => p.id === "core");
-    expect(core?.popular).toBe(false);
+  it("founding plan has foundingBadge true", () => {
+    const founding = PLANS.find((p) => p.id === "founding");
+    expect(founding?.foundingBadge).toBe(true);
   });
 
-  it("core plan is $39/mo monthly and $29/mo annual", () => {
-    const core = PLANS.find((p) => p.id === "core")!;
-    expect(core.monthly.price).toBe("$39");
-    expect(core.annual.price).toBe("$29");
-    expect(core.monthly.period).toBe("/ month");
-    expect(core.annual.period).toBe("/ month");
+  it("founding plan is $39/mo monthly and $29/mo annual", () => {
+    const founding = PLANS.find((p) => p.id === "founding")!;
+    expect(founding.monthly.price).toBe("$39");
+    expect(founding.annual.price).toBe("$29");
+    expect(founding.monthly.period).toBe("/ month");
+    expect(founding.annual.period).toBe("/ month");
   });
 
-  it("core_team plan is $49/mo monthly and $39/mo annual", () => {
-    const coreTeam = PLANS.find((p) => p.id === "core_team")!;
-    expect(coreTeam.monthly.price).toBe("$49");
-    expect(coreTeam.annual.price).toBe("$39");
+  it("co_owner plan is $69/mo monthly and $52/mo annual", () => {
+    const coOwner = PLANS.find((p) => p.id === "co_owner")!;
+    expect(coOwner.monthly.price).toBe("$69");
+    expect(coOwner.annual.price).toBe("$52");
   });
 
-  it("annual billing totals are correct ($348 core, $468 core_team)", () => {
-    const core = PLANS.find((p) => p.id === "core")!;
-    const coreTeam = PLANS.find((p) => p.id === "core_team")!;
-    expect(core.annual.annualCents).toBe(348 * 100);
-    expect(coreTeam.annual.annualCents).toBe(468 * 100);
+  it("co_owner_team plan is $79/mo monthly and $59/mo annual", () => {
+    const coOwnerTeam = PLANS.find((p) => p.id === "co_owner_team")!;
+    expect(coOwnerTeam.monthly.price).toBe("$79");
+    expect(coOwnerTeam.annual.price).toBe("$59");
   });
 
-  it("core_team plan costs more than core plan", () => {
-    const core = PLANS.find((p) => p.id === "core")!;
-    const coreTeam = PLANS.find((p) => p.id === "core_team")!;
-    expect(coreTeam.monthly.annualCents).toBeGreaterThan(core.monthly.annualCents);
-    expect(coreTeam.annual.annualCents).toBeGreaterThan(core.annual.annualCents);
+  it("co_owner_team plan costs more than co_owner plan", () => {
+    const coOwner = PLANS.find((p) => p.id === "co_owner")!;
+    const coOwnerTeam = PLANS.find((p) => p.id === "co_owner_team")!;
+    expect(coOwnerTeam.monthly.annualCents).toBeGreaterThan(coOwner.monthly.annualCents);
+    expect(coOwnerTeam.annual.annualCents).toBeGreaterThan(coOwner.annual.annualCents);
   });
 
   it("all billing options have valid RevenueCat product IDs", () => {
@@ -117,22 +116,27 @@ describe("Subscription onboarding steps", () => {
 });
 
 describe("Subscription helper functions", () => {
-  it("getTrialSubtext returns core_team text for core_team plan", () => {
-    const text = getTrialSubtext("core_team");
-    expect(text).toContain("$49");
-    expect(text).toContain("$39");
+  it("getTrialSubtext returns co_owner_team text for co_owner_team plan", () => {
+    const text = getTrialSubtext("co_owner_team");
+    expect(text).toContain("$79");
+    expect(text).toContain("$59");
     expect(text).toContain("Cancel anytime");
   });
 
-  it("getTrialSubtext returns core text for core plan", () => {
-    const text = getTrialSubtext("core");
-    expect(text).toContain("$39");
-    expect(text).toContain("$29");
+  it("getTrialSubtext returns co_owner text for co_owner plan", () => {
+    const text = getTrialSubtext("co_owner");
+    expect(text).toContain("$69");
+    expect(text).toContain("$52");
     expect(text).toContain("Cancel anytime");
   });
 
-  it("annualSavingsPercent returns 0 for month-only plans", () => {
+  it("getTrialSubtext returns founding locked text for founding plan", () => {
+    const text = getTrialSubtext("founding");
+    expect(text.toLowerCase()).toContain("founding");
+  });
+
+  it("annualSavingsPercent returns 25 for annual plans", () => {
     const pct = annualSavingsPercent();
-    expect(pct).toBe(0);
+    expect(pct).toBe(25);
   });
 });

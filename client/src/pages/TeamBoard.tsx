@@ -225,7 +225,7 @@ function TeamTaskCard({ card, currentUser, accountId, onMarkDone, onConfirmDone,
       className="rounded-2xl overflow-hidden transition-all duration-200"
       style={{
         backgroundColor: taskState === "confirmed" ? "rgba(5,150,105,0.06)" : "rgba(255,255,255,0.05)",
-        border: `1.5px solid ${taskState === "confirmed" ? "rgba(5,150,105,0.3)" : taskState === "done_pending" ? "rgba(217,119,6,0.4)" : isOverdue ? "rgba(239,68,68,0.4)" : "rgba(255,255,255,0.1)"}`,
+        border: `1.5px solid ${taskState === "confirmed" ? "rgba(5,150,105,0.3)" : taskState === "done_pending" ? "rgba(217,119,6,0.4)" : isOverdue ? "rgba(245,158,11,0.45)" : "rgba(255,255,255,0.1)"}`,
         animation: "cardSlideIn 0.22s cubic-bezier(0.23,1,0.32,1) both",
       }}
     >
@@ -233,7 +233,7 @@ function TeamTaskCard({ card, currentUser, accountId, onMarkDone, onConfirmDone,
       <div className="w-full h-1 flex-shrink-0" style={{
         backgroundColor: taskState === "confirmed" ? "#059669"
           : taskState === "done_pending" ? "#D97706"
-          : isOverdue ? "#EF4444"
+          : isOverdue ? "#F59E0B"
           : "#7C3AED",
       }} />
 
@@ -273,7 +273,7 @@ function TeamTaskCard({ card, currentUser, accountId, onMarkDone, onConfirmDone,
 
         {/* Due date */}
         {card.dueAt && (
-          <p className="text-[11px] pl-12" style={{ color: isOverdue ? "#F87171" : "rgba(255,255,255,0.4)" }}>
+          <p className="text-[11px] pl-12" style={{ color: isOverdue ? "#FCD34D" : "rgba(255,255,255,0.4)" }}>
             {isOverdue ? "⚠ Overdue · " : "📅 Due "}
             {formatDate(card.dueAt)}
           </p>

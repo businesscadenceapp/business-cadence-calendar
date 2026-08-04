@@ -432,9 +432,9 @@ function TaskCard({ card, currentUser, accountId, onMarkDone, onConfirmDone, onD
                 {dueLabel && (
                   <span className="text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1"
                     style={{
-                      backgroundColor: isOverdue ? "rgba(185,28,28,0.2)" : isDueSoon ? "rgba(217,119,6,0.2)" : "rgba(255,255,255,0.06)",
-                      color: isOverdue ? "#FCA5A5" : isDueSoon ? "#FCD34D" : "rgba(255,255,255,0.5)",
-                      border: `1px solid ${isOverdue ? "rgba(185,28,28,0.3)" : isDueSoon ? "rgba(217,119,6,0.3)" : "rgba(255,255,255,0.1)"}`,
+                      backgroundColor: isOverdue ? "rgba(245,158,11,0.18)" : isDueSoon ? "rgba(245,158,11,0.10)" : "rgba(255,255,255,0.06)",
+                      color: isOverdue ? "#FCD34D" : isDueSoon ? "#FDE68A" : "rgba(255,255,255,0.5)",
+                      border: `1px solid ${isOverdue ? "rgba(245,158,11,0.40)" : isDueSoon ? "rgba(245,158,11,0.25)" : "rgba(255,255,255,0.1)"}`,
                       fontFamily: "'Space Grotesk', sans-serif",
                     }}>
                     {isOverdue ? "⚠️" : "📅"} {isOverdue ? "Overdue" : "Due"} {dueLabel}
