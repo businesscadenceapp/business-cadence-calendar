@@ -627,6 +627,7 @@ export default function AppShell({ children }: AppShellProps) {
             style={{
               paddingBottom: "env(safe-area-inset-bottom, 16px)",
             }}
+            id="app-main-scroll"
           >
             <PageTransition locationKey={activePath}>
               {children}

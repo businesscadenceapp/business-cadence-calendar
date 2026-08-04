@@ -1331,6 +1331,23 @@ export default function Board() {
   const filterBusiness: Business | "all" = bizKeyToEnum(activeBusiness);
   const [activeView, setActiveView] = useState<CategoryKey | "needs_attention" | null>(null);
   const [activeHub, setActiveHub] = useState<0 | 1>(0); // 0 = Command Center, 1 = Performance Hub
+
+  // Lock the AppShell scroll container when on the hub home view so the screen
+  // feels native and stationary (like a real app). Restore scroll for sub-views.
+  useEffect(() => {
+    const mainEl = document.getElementById("app-main-scroll");
+    if (!mainEl) return;
+    if (!activeView) {
+      // Hub home — lock scroll
+      mainEl.style.overflow = "hidden";
+    } else {
+      // Sub-view (tasks, updates, etc.) — allow scroll
+      mainEl.style.overflow = "auto";
+    }
+    return () => {
+      mainEl.style.overflow = "";
+    };
+  }, [activeView]);
   const hubScrollRef = useRef<HTMLDivElement>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [referralOpen, setReferralOpen] = useState(false);
@@ -1642,7 +1659,7 @@ export default function Board() {
   // ── Home Card View ──
   return (
     <div
-      className="flex flex-col min-h-full"
+      className="flex flex-col h-full overflow-hidden"
       style={{ backgroundColor: "#0A1929", fontFamily: "'Inter', sans-serif" }}
     >
       {/* Hero */}
@@ -1685,7 +1702,7 @@ export default function Board() {
       </div>
 
       {/* Category Tiles Grid */}
-      <div className="flex-1 px-5 py-3">
+      <div className="flex-1 px-5 py-3 overflow-hidden flex flex-col">
         {/* Complete your profile prompt (quick onboarding deferred full setup) */}
         {profileDeferred && (
           <div
