@@ -1107,16 +1107,19 @@ const NEEDS_ATTENTION_META = {
 type TileMeta = { key: string; label: string; icon: string; gradient: string; border: string; glow: string; textColor: string; countBg: string };
 
 /** A single circular hub node — used in the radial layout */
-function HubNode({ cat, count, onClick, delay, hasHighPriority, size = 80 }: {
+function HubNode({ cat, count, onClick, delay, hasHighPriority, size = 80, tourId, registerRef }: {
   cat: TileMeta;
   count: number;
   onClick: () => void;
   delay: number;
   hasHighPriority?: boolean;
   size?: number;
+  tourId?: string;
+  registerRef?: (id: string, el: HTMLElement | null) => void;
 }) {
   return (
     <button
+      ref={tourId && registerRef ? (el) => registerRef(tourId, el) : undefined}
       onClick={onClick}
       className="relative flex flex-col items-center gap-1.5 transition-all active:scale-[0.92] hover:scale-[1.06]"
       style={{
@@ -1768,113 +1771,143 @@ export default function Board() {
             </div>
           </div>
         ) : (
-          /* ── Radial Hub Layout ── */
-          <div
-            className="relative flex items-center justify-center"
-            style={{ width: "100%", aspectRatio: "1 / 1", maxWidth: 360, margin: "0 auto" }}
-          >
-            {/* Connector lines from center to each node */}
-            <svg
-              style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none" }}
-              viewBox="0 0 360 360"
-            >
-              {[
-                { angle: -90 },   // Tasks — top
-                { angle: -30 },   // Updates — top-right
-                { angle: 30 },    // Issues — bottom-right
-                { angle: 90 },    // Needs Attention — bottom
-                { angle: 150 },   // Calendar — bottom-left
-                { angle: 210 },   // Archive — top-left
-              ].map(({ angle }, i) => {
-                const rad = (angle * Math.PI) / 180;
-                const r = 118;
-                const x = 180 + r * Math.cos(rad);
-                const y = 180 + r * Math.sin(rad);
-                return (
-                  <line
-                    key={i}
-                    x1="180" y1="180"
-                    x2={x} y2={y}
-                    stroke="rgba(94,234,212,0.12)"
-                    strokeWidth="1.5"
-                    strokeDasharray="4 4"
-                  />
-                );
-              })}
-            </svg>
-
-            {/* Center hub circle */}
+          /* ── Swipeable Dual-Hub Layout ── */
+          <div style={{ position: "relative" }}>
+            {/* Swipe container */}
             <div
+              ref={(el) => registerRef("tour-hub-swipe", el)}
               style={{
-                position: "absolute",
-                left: "50%", top: "50%",
-                transform: "translate(-50%, -50%)",
-                width: 72, height: 72,
-                borderRadius: "50%",
-                background: "linear-gradient(135deg, rgba(94,234,212,0.22) 0%, rgba(94,234,212,0.08) 100%)",
-                border: "2px solid rgba(94,234,212,0.45)",
-                boxShadow: "0 0 32px rgba(94,234,212,0.25), 0 0 8px rgba(94,234,212,0.15)",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                zIndex: 2,
-                animation: "hubCenterPulse 3s ease-in-out infinite",
+                display: "flex",
+                overflowX: "auto",
+                scrollSnapType: "x mandatory",
+                scrollBehavior: "smooth",
+                WebkitOverflowScrolling: "touch",
+                msOverflowStyle: "none",
+                scrollbarWidth: "none",
               }}
+              className="[&::-webkit-scrollbar]:hidden"
             >
-              <span style={{ fontSize: 28 }}>⚡</span>
+              {/* ── Hub 1: Command Board ── */}
+              <div
+                style={{
+                  flex: "0 0 100%",
+                  scrollSnapAlign: "start",
+                  width: "100%",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                }}
+              >
+                <div
+                  className="relative flex items-center justify-center"
+                  style={{ width: "100%", aspectRatio: "1 / 1", maxWidth: 360, margin: "0 auto" }}
+                >
+                  <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none" }} viewBox="0 0 360 360">
+                    {[-90, -30, 30, 90, 150, 210].map((angle, i) => {
+                      const rad = (angle * Math.PI) / 180;
+                      const r = 118;
+                      return <line key={i} x1="180" y1="180" x2={180 + r * Math.cos(rad)} y2={180 + r * Math.sin(rad)} stroke="rgba(94,234,212,0.12)" strokeWidth="1.5" strokeDasharray="4 4" />;
+                    })}
+                  </svg>
+                  <div
+                    ref={(el) => registerRef("tour-hub-center", el)}
+                    style={{
+                      position: "absolute", left: "50%", top: "50%",
+                      transform: "translate(-50%, -50%)",
+                      width: 72, height: 72, borderRadius: "50%",
+                      background: "linear-gradient(135deg, rgba(94,234,212,0.22) 0%, rgba(94,234,212,0.08) 100%)",
+                      border: "2px solid rgba(94,234,212,0.45)",
+                      boxShadow: "0 0 32px rgba(94,234,212,0.25), 0 0 8px rgba(94,234,212,0.15)",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      zIndex: 2, animation: "hubCenterPulse 3s ease-in-out infinite",
+                    }}
+                  >
+                    <span style={{ fontSize: 28 }}>⚡</span>
+                  </div>
+                  {[
+                    { cat: CATEGORIES.find(c => c.key === "tasks")!, count: counts.tasks, angle: -90, onClick: () => setActiveView("tasks"), tourId: "tour-hub-tasks", extra: {} },
+                    { cat: CATEGORIES.find(c => c.key === "updates")!, count: counts.updates, angle: -30, onClick: () => setActiveView("updates"), tourId: "tour-hub-updates", extra: {} },
+                    { cat: CATEGORIES.find(c => c.key === "issues")!, count: counts.issues, angle: 30, onClick: () => setActiveView("issues"), tourId: "tour-hub-issues", extra: { hasHighPriority: issues.some(c => c.priority === "high") } },
+                    { cat: NEEDS_ATTENTION_META as unknown as TileMeta, count: (counts.tasks ?? 0) + (counts.issues ?? 0), angle: 90, onClick: () => { setNeedsAttnSection((counts.tasks ?? 0) > 0 ? "tasks" : "issues"); setActiveView("needs_attention"); }, tourId: "tour-hub-needs-attention", extra: {} },
+                    { cat: { key: "calendar", label: "Calendar", icon: "📅", gradient: "linear-gradient(135deg, rgba(20,184,166,0.18) 0%, rgba(20,184,166,0.07) 100%)", border: "rgba(20,184,166,0.35)", glow: "rgba(20,184,166,0.14)", textColor: "#5EEAD4", countBg: "rgba(20,184,166,0.25)" }, count: -1, angle: 150, onClick: () => navigate("/app/calendar"), tourId: "tour-hub-calendar", extra: {} },
+                    { cat: { key: "archive", label: "Archive", icon: "📁", gradient: "linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 100%)", border: "rgba(255,255,255,0.15)", glow: "rgba(255,255,255,0.05)", textColor: "rgba(255,255,255,0.7)", countBg: "rgba(255,255,255,0.12)" }, count: archivedCards.length, angle: 210, onClick: () => setActiveView("archive"), tourId: "tour-hub-archive", extra: {} },
+                  ].map(({ cat, count, angle, onClick, tourId, extra }, i) => {
+                    const rad = (angle * Math.PI) / 180;
+                    const r = 118;
+                    const cx = 50 + (r / 360) * 100 * Math.cos(rad);
+                    const cy = 50 + (r / 360) * 100 * Math.sin(rad);
+                    return (
+                      <div key={cat.key} style={{ position: "absolute", left: `${cx}%`, top: `${cy}%`, transform: "translate(-50%, -50%)", zIndex: 3 }}>
+                        <HubNode cat={cat} count={count} onClick={onClick} delay={i * 70} size={76} tourId={tourId} registerRef={registerRef} {...extra} />
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* ── Hub 2: Performance ── */}
+              <div
+                style={{
+                  flex: "0 0 100%",
+                  scrollSnapAlign: "start",
+                  width: "100%",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                }}
+              >
+                <div
+                  className="relative flex items-center justify-center"
+                  style={{ width: "100%", aspectRatio: "1 / 1", maxWidth: 360, margin: "0 auto" }}
+                >
+                  <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none" }} viewBox="0 0 360 360">
+                    {[-90, 30, 150].map((angle, i) => {
+                      const rad = (angle * Math.PI) / 180;
+                      const r = 118;
+                      return <line key={i} x1="180" y1="180" x2={180 + r * Math.cos(rad)} y2={180 + r * Math.sin(rad)} stroke="rgba(167,139,250,0.12)" strokeWidth="1.5" strokeDasharray="4 4" />;
+                    })}
+                  </svg>
+                  {/* Performance hub center */}
+                  <div
+                    ref={(el) => registerRef("tour-perf-center", el)}
+                    style={{
+                      position: "absolute", left: "50%", top: "50%",
+                      transform: "translate(-50%, -50%)",
+                      width: 72, height: 72, borderRadius: "50%",
+                      background: "linear-gradient(135deg, rgba(167,139,250,0.22) 0%, rgba(167,139,250,0.08) 100%)",
+                      border: "2px solid rgba(167,139,250,0.45)",
+                      boxShadow: "0 0 32px rgba(167,139,250,0.25), 0 0 8px rgba(167,139,250,0.15)",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      zIndex: 2, animation: "hubCenterPulse2 3s ease-in-out infinite",
+                    }}
+                  >
+                    <span style={{ fontSize: 28 }}>📈</span>
+                  </div>
+                  {[
+                    { key: "goals", label: "Goals", icon: "🎯", gradient: "linear-gradient(135deg, rgba(124,58,237,0.18) 0%, rgba(124,58,237,0.07) 100%)", border: "rgba(124,58,237,0.35)", glow: "rgba(124,58,237,0.14)", textColor: "#C4B5FD", countBg: "rgba(124,58,237,0.25)", angle: -90, onClick: () => navigate("/app/goals"), tourId: "tour-goals" },
+                    { key: "kpis", label: "KPIs", icon: "📊", gradient: "linear-gradient(135deg, rgba(37,99,235,0.18) 0%, rgba(37,99,235,0.07) 100%)", border: "rgba(37,99,235,0.35)", glow: "rgba(37,99,235,0.14)", textColor: "#93C5FD", countBg: "rgba(37,99,235,0.25)", angle: 30, onClick: () => navigate("/app/kpis"), tourId: "tour-kpis" },
+                    { key: "reports", label: "Reports", icon: "📝", gradient: "linear-gradient(135deg, rgba(5,150,105,0.18) 0%, rgba(5,150,105,0.07) 100%)", border: "rgba(5,150,105,0.35)", glow: "rgba(5,150,105,0.14)", textColor: "#6EE7B7", countBg: "rgba(5,150,105,0.25)", angle: 150, onClick: () => navigate("/app/reports"), tourId: "tour-reports" },
+                  ].map(({ angle, onClick, tourId, ...cat }, i) => {
+                    const rad = (angle * Math.PI) / 180;
+                    const r = 118;
+                    const cx = 50 + (r / 360) * 100 * Math.cos(rad);
+                    const cy = 50 + (r / 360) * 100 * Math.sin(rad);
+                    return (
+                      <div key={cat.key} style={{ position: "absolute", left: `${cx}%`, top: `${cy}%`, transform: "translate(-50%, -50%)", zIndex: 3 }}>
+                        <HubNode cat={cat as TileMeta} count={-1} onClick={onClick} delay={i * 70} size={76} tourId={tourId} registerRef={registerRef} />
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
 
-            {/* Orbit nodes — 6 categories evenly spaced */}
-            {[
-              { cat: CATEGORIES.find(c => c.key === "tasks")!, count: counts.tasks, angle: -90, onClick: () => setActiveView("tasks"), extra: {} },
-              { cat: CATEGORIES.find(c => c.key === "updates")!, count: counts.updates, angle: -30, onClick: () => setActiveView("updates"), extra: {} },
-              { cat: CATEGORIES.find(c => c.key === "issues")!, count: counts.issues, angle: 30, onClick: () => setActiveView("issues"), extra: { hasHighPriority: issues.some(c => c.priority === "high") } },
-              {
-                cat: NEEDS_ATTENTION_META as unknown as TileMeta,
-                count: (counts.tasks ?? 0) + (counts.issues ?? 0),
-                angle: 90,
-                onClick: () => { setNeedsAttnSection((counts.tasks ?? 0) > 0 ? "tasks" : "issues"); setActiveView("needs_attention"); },
-                extra: {},
-              },
-              {
-                cat: { key: "calendar", label: "Calendar", icon: "📅", gradient: "linear-gradient(135deg, rgba(20,184,166,0.18) 0%, rgba(20,184,166,0.07) 100%)", border: "rgba(20,184,166,0.35)", glow: "rgba(20,184,166,0.14)", textColor: "#5EEAD4", countBg: "rgba(20,184,166,0.25)" },
-                count: -1,
-                angle: 150,
-                onClick: () => navigate("/app/calendar"),
-                extra: {},
-              },
-              {
-                cat: { key: "archive", label: "Archive", icon: "📁", gradient: "linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 100%)", border: "rgba(255,255,255,0.15)", glow: "rgba(255,255,255,0.05)", textColor: "rgba(255,255,255,0.7)", countBg: "rgba(255,255,255,0.12)" },
-                count: archivedCards.length,
-                angle: 210,
-                onClick: () => setActiveView("archive"),
-                extra: {},
-              },
-            ].map(({ cat, count, angle, onClick, extra }, i) => {
-              const rad = (angle * Math.PI) / 180;
-              const r = 118; // orbit radius in px (for 360px container)
-              const cx = 50 + (r / 360) * 100 * Math.cos(rad);
-              const cy = 50 + (r / 360) * 100 * Math.sin(rad);
-              return (
-                <div
-                  key={cat.key}
-                  style={{
-                    position: "absolute",
-                    left: `${cx}%`,
-                    top: `${cy}%`,
-                    transform: "translate(-50%, -50%)",
-                    zIndex: 3,
-                  }}
-                >
-                  <HubNode
-                    cat={cat}
-                    count={count}
-                    onClick={onClick}
-                    delay={i * 70}
-                    size={76}
-                    {...extra}
-                  />
-                </div>
-              );
-            })}
+            {/* Hub indicator dots */}
+            <div className="flex justify-center gap-2 mt-2 mb-1">
+              <div style={{ width: 20, height: 5, borderRadius: 3, backgroundColor: "rgba(94,234,212,0.7)" }} />
+              <div style={{ width: 6, height: 5, borderRadius: 3, backgroundColor: "rgba(255,255,255,0.2)" }} />
+            </div>
+            <p className="text-center text-[10px] font-semibold" style={{ color: "rgba(255,255,255,0.25)", fontFamily: "'Space Grotesk', sans-serif", letterSpacing: "0.08em" }}>SWIPE FOR PERFORMANCE HUB</p>
           </div>
         )}
 
@@ -1916,6 +1949,10 @@ export default function Board() {
         @keyframes hubCenterPulse {
           0%, 100% { box-shadow: 0 0 32px rgba(94,234,212,0.25), 0 0 8px rgba(94,234,212,0.15); }
           50% { box-shadow: 0 0 48px rgba(94,234,212,0.4), 0 0 16px rgba(94,234,212,0.25); }
+        }
+        @keyframes hubCenterPulse2 {
+          0%, 100% { box-shadow: 0 0 32px rgba(167,139,250,0.25), 0 0 8px rgba(167,139,250,0.15); }
+          50% { box-shadow: 0 0 48px rgba(167,139,250,0.4), 0 0 16px rgba(167,139,250,0.25); }
         }
         @keyframes tileEnter {
           from { opacity: 0; transform: translateY(12px) scale(0.96); }
