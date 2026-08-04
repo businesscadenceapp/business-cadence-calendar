@@ -1342,14 +1342,26 @@ export default function Board() {
     const mainEl = document.getElementById("app-main-scroll");
     if (!mainEl) return;
     if (!activeView) {
-      // Hub home — lock scroll
+      // Hub home — lock scroll on the container AND prevent iOS rubber-band
       mainEl.setAttribute("data-scroll", "locked");
+      document.body.style.overflow = "hidden";
+      document.body.style.position = "fixed";
+      document.body.style.width = "100%";
+      document.documentElement.style.overflow = "hidden";
     } else {
       // Sub-view (tasks, updates, etc.) — allow scroll
       mainEl.setAttribute("data-scroll", "auto");
+      document.body.style.overflow = "";
+      document.body.style.position = "";
+      document.body.style.width = "";
+      document.documentElement.style.overflow = "";
     }
     return () => {
       mainEl.setAttribute("data-scroll", "auto");
+      document.body.style.overflow = "";
+      document.body.style.position = "";
+      document.body.style.width = "";
+      document.documentElement.style.overflow = "";
     };
   }, [activeView]);
 
