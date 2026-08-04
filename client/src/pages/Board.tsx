@@ -1346,26 +1346,20 @@ export default function Board() {
   const { replay, registerRef, active: tourActive } = useTour();
   const [profileDeferred, setProfileDeferred] = useState(false);
 
-  // Start the tour on first Board visit after onboarding, or when returning from Settings replay
+  // Start the tour only after person data has loaded (so the sun button is in the DOM)
+  const tourStartedRef = useRef(false);
   useEffect(() => {
-    const checkAndStartTour = () => {
-      const pending = localStorage.getItem(TOUR_PENDING_KEY);
-      const completed = localStorage.getItem(TOUR_STORAGE_KEY);
-      if (pending === "1" || !completed) {
-        localStorage.removeItem(TOUR_PENDING_KEY);
-        setTimeout(() => replay(), 600);
-      }
-    };
-    // Check immediately on mount
-    checkAndStartTour();
-    // Also check when the tab/app regains focus (handles navigate-back-from-Settings case)
-    window.addEventListener("focus", checkAndStartTour);
-    document.addEventListener("visibilitychange", checkAndStartTour);
-    return () => {
-      window.removeEventListener("focus", checkAndStartTour);
-      document.removeEventListener("visibilitychange", checkAndStartTour);
-    };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    if (!person) return; // wait for person data — sun button is conditionally rendered on person
+    if (tourStartedRef.current) return; // prevent double-fire
+    const pending = localStorage.getItem(TOUR_PENDING_KEY);
+    const completed = localStorage.getItem(TOUR_STORAGE_KEY);
+    if (pending === "1" || !completed) {
+      tourStartedRef.current = true;
+      localStorage.removeItem(TOUR_PENDING_KEY);
+      // 1.5s delay: ensures header, nav tabs, and all conditional elements are fully painted
+      setTimeout(() => replay(), 1500);
+    }
+  }, [person]); // re-run when person loads — eslint-disable-line react-hooks/exhaustive-deps
 
   const accountId = person?.accountId ?? (() => {
     const stored = localStorage.getItem("bcc_account_id");
