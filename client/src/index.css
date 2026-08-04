@@ -291,6 +291,10 @@ button, a, input, select, textarea {
 }
 
 /* Capacitor body — prevent overscroll bounce showing white on dark app */
+html, body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
 body {
   overscroll-behavior: none;
   -webkit-tap-highlight-color: transparent;

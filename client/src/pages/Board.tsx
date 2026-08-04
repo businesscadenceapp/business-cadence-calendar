@@ -954,25 +954,36 @@ function AddCardForm({ currentUser, onAdded, activeBusiness: activeBusinessProp,
         <button
           type="button"
           onClick={() => setToneCheckEnabled(v => !v)}
-          className="relative flex-shrink-0 transition-all duration-200"
+          aria-label={toneCheckEnabled ? "Disable AI Tone Check" : "Enable AI Tone Check"}
           style={{
-            width: "52px",
-            height: "28px",
-            borderRadius: "14px",
+            position: "relative",
+            display: "inline-flex",
+            alignItems: "center",
+            flexShrink: 0,
+            width: "44px",
+            height: "24px",
+            borderRadius: "12px",
             backgroundColor: toneCheckEnabled ? "#5EEAD4" : "rgba(255,255,255,0.12)",
             border: toneCheckEnabled ? "none" : "1.5px solid rgba(255,255,255,0.2)",
-            boxShadow: toneCheckEnabled ? "0 0 10px rgba(94,234,212,0.35)" : "none",
+            boxShadow: toneCheckEnabled ? "0 0 8px rgba(94,234,212,0.3)" : "none",
+            transition: "background-color 0.2s, box-shadow 0.2s",
+            cursor: "pointer",
+            minWidth: "44px",
+            minHeight: "24px",
+            padding: 0,
           }}
-          aria-label={toneCheckEnabled ? "Disable AI Tone Check" : "Enable AI Tone Check"}
         >
           <span
-            className="absolute top-[3px] transition-all duration-200 rounded-full"
             style={{
-              width: "22px",
-              height: "22px",
-              left: toneCheckEnabled ? "27px" : "3px",
+              position: "absolute",
+              top: "3px",
+              left: toneCheckEnabled ? "23px" : "3px",
+              width: "18px",
+              height: "18px",
+              borderRadius: "50%",
               backgroundColor: toneCheckEnabled ? "#0F2440" : "rgba(255,255,255,0.5)",
-              boxShadow: "0 1px 4px rgba(0,0,0,0.3)",
+              boxShadow: "0 1px 3px rgba(0,0,0,0.3)",
+              transition: "left 0.2s cubic-bezier(0.23,1,0.32,1)",
             }}
           />
         </button>
@@ -1098,7 +1109,7 @@ function CategoryTile({ cat, count, onClick, delay, hasHighPriority }: { cat: Ti
 
 // ─── Bottom Sheet Overlay ────────────────────────────────────────────────────
 
-function BottomSheet({ open, onClose, children }: { open: boolean; onClose: () => void; children: React.ReactNode }) {
+function BottomSheet({ open, onClose, children, title }: { open: boolean; onClose: () => void; children: React.ReactNode; title?: string }) {
   const overlayRef = useRef<HTMLDivElement>(null);
   const sheetRef = useRef<HTMLDivElement>(null);
 
@@ -1132,15 +1143,27 @@ function BottomSheet({ open, onClose, children }: { open: boolean; onClose: () =
           boxShadow: "0 -8px 40px rgba(0,0,0,0.5), 0 -2px 20px rgba(94,234,212,0.08)",
           animation: "sheetSlideUp 0.35s cubic-bezier(0.23,1,0.32,1) both",
           maxHeight: "90vh",
-          paddingTop: "20px",
+          paddingTop: "16px",
           paddingLeft: "20px",
           paddingRight: "20px",
           paddingBottom: "calc(env(safe-area-inset-bottom, 16px) + 24px)",
         }}
       >
-        {/* Handle bar */}
-        <div className="flex justify-center mb-5">
+        {/* Handle bar + close button row */}
+        <div className="flex items-center justify-between mb-4">
+          <div className="w-10 h-1 rounded-full invisible" />
           <div className="w-10 h-1 rounded-full" style={{ backgroundColor: "rgba(255,255,255,0.2)" }} />
+          <button
+            onClick={onClose}
+            className="w-8 h-8 rounded-full flex items-center justify-center transition-all active:scale-[0.9]"
+            style={{ backgroundColor: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)" }}
+            aria-label="Close"
+          >
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+              <line x1="1" y1="1" x2="11" y2="11" stroke="rgba(255,255,255,0.6)" strokeWidth="1.8" strokeLinecap="round"/>
+              <line x1="11" y1="1" x2="1" y2="11" stroke="rgba(255,255,255,0.6)" strokeWidth="1.8" strokeLinecap="round"/>
+            </svg>
+          </button>
         </div>
         {children}
       </div>
