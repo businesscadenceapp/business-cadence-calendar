@@ -1105,18 +1105,23 @@ function BottomSheet({ open, onClose, children }: { open: boolean; onClose: () =
     >
       <div
         ref={sheetRef}
-        className="w-full max-w-lg max-h-[85vh] overflow-y-auto rounded-t-3xl p-5 pb-8"
+        className="w-full max-w-lg overflow-y-auto rounded-t-3xl"
         style={{
           backgroundColor: "#0D2035",
           border: "1px solid rgba(94,234,212,0.15)",
           borderBottom: "none",
           boxShadow: "0 -8px 40px rgba(0,0,0,0.5), 0 -2px 20px rgba(94,234,212,0.08)",
           animation: "sheetSlideUp 0.35s cubic-bezier(0.23,1,0.32,1) both",
+          maxHeight: "90vh",
+          paddingTop: "20px",
+          paddingLeft: "20px",
+          paddingRight: "20px",
+          paddingBottom: "calc(env(safe-area-inset-bottom, 16px) + 24px)",
         }}
       >
         {/* Handle bar */}
-        <div className="flex justify-center mb-4">
-          <div className="w-10 h-1 rounded-full" style={{ backgroundColor: "rgba(255,255,255,0.15)" }} />
+        <div className="flex justify-center mb-5">
+          <div className="w-10 h-1 rounded-full" style={{ backgroundColor: "rgba(255,255,255,0.2)" }} />
         </div>
         {children}
       </div>
@@ -1524,7 +1529,7 @@ export default function Board() {
         </SubCardView>
 
         {/* FAB for post — portalled to body so fixed pos works inside overflow scroll */}
-        {createPortal(
+        {!sheetOpen && createPortal(
           <button
             onClick={() => setSheetOpen(true)}
             className="fixed bottom-24 right-6 w-14 h-14 rounded-2xl flex items-center justify-center text-xl transition-all active:scale-[0.9] hover:scale-[1.05] z-40"
@@ -1699,7 +1704,7 @@ export default function Board() {
       </div>
 
       {/* Floating Action Button — portalled to body so fixed pos works inside overflow scroll */}
-      {createPortal(
+      {!sheetOpen && createPortal(
         <button
           ref={(el) => registerRef("tour-hub", el)}
           data-tour="tour-hub"
