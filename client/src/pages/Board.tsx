@@ -1273,21 +1273,6 @@ function SubCardView({ title, icon, accentColor, onBack, currentKey, onNavigate,
   onNavigate: (key: string) => void;
   children: React.ReactNode;
 }) {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
-
-  // Close menu when clicking outside
-  useEffect(() => {
-    if (!menuOpen) return;
-    const handler = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false);
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, [menuOpen]);
-
-  const otherSections = NAV_SECTIONS.filter(s => s.key !== currentKey);
-
   return (
     <div
       className="flex flex-col min-h-full"
@@ -1295,64 +1280,31 @@ function SubCardView({ title, icon, accentColor, onBack, currentKey, onNavigate,
     >
       {/* Sub-card header */}
       <div
-        className="flex-shrink-0 px-5 pt-5 pb-4 flex items-center gap-3 relative"
+        className="flex-shrink-0 px-4 pt-4 pb-3 flex items-center gap-3"
         style={{ borderBottom: `1px solid ${accentColor}22` }}
       >
-        {/* Hamburger menu button */}
-        <div ref={menuRef} className="relative">
-          <button
-            onClick={() => setMenuOpen(v => !v)}
-            className="w-8 h-8 rounded-xl flex items-center justify-center transition-all active:scale-[0.9] hover:scale-[1.05]"
-            style={{ backgroundColor: menuOpen ? "rgba(94,234,212,0.15)" : "rgba(255,255,255,0.06)", border: menuOpen ? "1px solid rgba(94,234,212,0.3)" : "1px solid rgba(255,255,255,0.1)" }}
-            aria-label="Section menu"
-          >
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.2" strokeLinecap="round">
-              <line x1="3" y1="6" x2="21" y2="6"/>
-              <line x1="3" y1="12" x2="21" y2="12"/>
-              <line x1="3" y1="18" x2="21" y2="18"/>
-            </svg>
-          </button>
-          {/* Dropdown menu */}
-          {menuOpen && (
-            <div
-              className="absolute left-0 top-10 z-50 rounded-2xl overflow-hidden"
-              style={{
-                backgroundColor: "#0D2035",
-                border: "1px solid rgba(94,234,212,0.2)",
-                boxShadow: "0 8px 32px rgba(0,0,0,0.5)",
-                minWidth: "200px",
-                animation: "sheetSlideUp 0.2s cubic-bezier(0.23,1,0.32,1) both",
-              }}
-            >
-              <div className="px-3 pt-3 pb-1">
-                <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "rgba(94,234,212,0.6)" }}>Go to</span>
-              </div>
-              {otherSections.map(s => (
-                <button
-                  key={s.key}
-                  onClick={() => { setMenuOpen(false); onNavigate(s.key); }}
-                  className="w-full flex items-center gap-3 px-4 py-3 text-left transition-all hover:bg-white/5 active:bg-white/10"
-                >
-                  <span className="text-base">{s.icon}</span>
-                  <span className="text-[14px] font-medium text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>{s.label}</span>
-                </button>
-              ))}
-              <div className="h-px mx-3 my-1" style={{ backgroundColor: "rgba(255,255,255,0.06)" }} />
-              <button
-                onClick={() => { setMenuOpen(false); onBack(); }}
-                className="w-full flex items-center gap-3 px-4 py-3 text-left transition-all hover:bg-white/5 active:bg-white/10"
-              >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="15 18 9 12 15 6"/>
-                </svg>
-                <span className="text-[14px] font-medium" style={{ color: "rgba(255,255,255,0.5)", fontFamily: "'Space Grotesk', sans-serif" }}>Back to Board</span>
-              </button>
-            </div>
-          )}
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="text-lg">{icon}</span>
-          <h2 className="text-[16px] font-bold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>{title}</h2>
+        {/* Visible BACK button */}
+        <button
+          onClick={onBack}
+          className="flex items-center gap-1.5 px-3 py-2 rounded-xl transition-all active:scale-[0.95] flex-shrink-0"
+          style={{
+            backgroundColor: "rgba(94,234,212,0.08)",
+            border: "1px solid rgba(94,234,212,0.25)",
+            color: "#5EEAD4",
+            fontFamily: "'Space Grotesk', sans-serif",
+            fontSize: "13px",
+            fontWeight: 600,
+          }}
+          aria-label="Back to hub"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5EEAD4" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+          Back
+        </button>
+        <div className="flex items-center gap-2 flex-1 min-w-0">
+          <span className="text-lg flex-shrink-0">{icon}</span>
+          <h2 className="text-[16px] font-bold text-white truncate" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>{title}</h2>
         </div>
       </div>
       {/* Sub-card content */}
