@@ -53,7 +53,6 @@ function Protected({ component: Component }: { component: React.ComponentType })
       <EntitlementGuard>
       <AppShell>
         <Component />
-        <TourOverlay />
       </AppShell>
       </EntitlementGuard>
     </PasswordGate>
@@ -185,6 +184,8 @@ function App() {
         <TooltipProvider>
           <Toaster />
           <Router />
+          {/* Single TourOverlay at app root — persists across page navigation */}
+          <TourOverlay />
         </TooltipProvider>
         </TourProvider>
       </ThemeProvider>
