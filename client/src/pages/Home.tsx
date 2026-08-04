@@ -892,8 +892,6 @@ export default function Home() {
     setSelectedDay((prev) => prev && prev.date.getTime() === day.date.getTime() ? null : day);
   };
 
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-
   const [viewMode, setViewMode] = useState<"month" | "year">(() => {
     try { return (localStorage.getItem("bcc_cal_view") as "month" | "year") ?? "month"; } catch { return "month"; }
   });
@@ -927,31 +925,28 @@ export default function Home() {
 
   return (
     <div style={{ backgroundColor: "#0F2440", fontFamily: "'Inter', sans-serif" }}>
-      {/* Slim page title bar */}
+      {/* Header with back button */}
       <div
         className="px-4 py-2.5 flex items-center justify-between flex-shrink-0 relative z-30"
         style={{ borderBottom: "1px solid rgba(255,255,255,0.08)", backgroundColor: "#0A1929" }}
       >
         <div className="flex items-center gap-2.5">
-          <button
-            className="md:hidden flex items-center justify-center w-8 h-8 rounded-lg transition-all"
-            style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)" }}
-            onClick={() => setSidebarOpen((v) => !v)}
-            aria-label="Toggle sidebar"
+          <Link href="/app/board"
+            className="flex items-center justify-center w-8 h-8 rounded-lg transition-all active:scale-95"
+            style={{ background: "rgba(94,234,212,0.12)", border: "1px solid rgba(94,234,212,0.3)" }}
+            aria-label="Back to Board"
           >
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <rect x="2" y="4" width="12" height="1.5" rx="0.75" fill="rgba(255,255,255,0.7)" />
-              <rect x="2" y="7.25" width="12" height="1.5" rx="0.75" fill="rgba(255,255,255,0.7)" />
-              <rect x="2" y="10.5" width="12" height="1.5" rx="0.75" fill="rgba(255,255,255,0.7)" />
+              <path d="M10 3L5 8L10 13" stroke="#5EEAD4" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
-          </button>
+          </Link>
           <span className="text-base">📅</span>
-          <h1 className="text-sm font-bold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Command Center</h1>
+          <h1 className="text-sm font-bold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Calendar</h1>
           <span className="text-xs font-mono font-bold ml-1" style={{ color: "rgba(255,255,255,0.3)", fontFamily: "'JetBrains Mono', monospace" }}>{viewYear}</span>
         </div>
-        <div className="hidden md:flex items-center gap-3">
+        <div className="flex items-center gap-3">
           {(["daily", "weekly", "monthly", "quarterly"] as MeetingType[]).map((t) => (
-            <div key={t} className="flex items-center gap-1.5">
+            <div key={t} className="hidden sm:flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full" style={{ backgroundColor: MEETING_TYPES[t].color }} />
               <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.4)", fontFamily: "'Space Grotesk', sans-serif" }}>
                 {MEETING_TYPES[t].shortLabel}
@@ -961,89 +956,8 @@ export default function Home() {
         </div>
       </div>
 
-      {sidebarOpen && (
-        <div className="fixed inset-0 z-20 bg-black/50 md:hidden" onClick={() => setSidebarOpen(false)} />
-      )}
-
       <div className="flex flex-1 min-h-0">
-        {/* Left Sidebar */}
-        <aside
-          className={`flex-shrink-0 flex flex-col gap-4 p-4 overflow-y-auto transition-transform duration-300
-            md:relative md:translate-x-0 md:w-60
-            fixed top-0 left-0 h-full z-30 w-72
-            ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}
-          style={{ borderRight: "1px solid rgba(255,255,255,0.08)", backgroundColor: "#0A1929" }}
-        >
-          <div className="flex items-center justify-between md:hidden mb-1">
-            <span className="text-xs font-bold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Menu</span>
-            <button
-              className="w-7 h-7 flex items-center justify-center rounded-lg"
-              style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)" }}
-              onClick={() => setSidebarOpen(false)}
-            >
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                <path d="M1 1L11 11M11 1L1 11" stroke="rgba(255,255,255,0.7)" strokeWidth="1.5" strokeLinecap="round" />
-              </svg>
-            </button>
-          </div>
-
-          {/* Quick Nav */}
-          <div className="flex flex-col gap-2">
-            <p className="text-[10px] font-bold uppercase tracking-widest mb-1 px-1" style={{ color: "rgba(255,255,255,0.3)", fontFamily: "'Space Grotesk', sans-serif" }}>
-              Quick Access
-            </p>
-            <Link href="/app/board" className="flex items-center gap-2 w-full px-3 py-2.5 rounded-lg text-[11px] font-semibold transition-all hover:opacity-90"
-              style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: "rgba(255,255,255,0.75)", fontFamily: "'Space Grotesk', sans-serif" }}>
-              <span>📋</span> Owner Board
-            </Link>
-            <Link href="/app/goals" className="flex items-center gap-2 w-full px-3 py-2.5 rounded-lg text-[11px] font-semibold transition-all hover:opacity-90"
-              style={{ background: "rgba(196,181,253,0.08)", border: "1px solid rgba(196,181,253,0.2)", color: "#C4B5FD", fontFamily: "'Space Grotesk', sans-serif" }}>
-              <span>🎯</span> Goals
-            </Link>
-            <Link href="/app/reports" className="flex items-center gap-2 w-full px-3 py-2.5 rounded-lg text-[11px] font-semibold transition-all hover:opacity-90"
-              style={{ background: "rgba(94,234,212,0.08)", border: "1px solid rgba(94,234,212,0.2)", color: "#5EEAD4", fontFamily: "'Space Grotesk', sans-serif" }}>
-              <span>📊</span> Weekly Reports
-            </Link>
-            <Link href="/app/settings" className="flex items-center gap-2 w-full px-3 py-2.5 rounded-lg text-[11px] font-semibold transition-all hover:opacity-90"
-              style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.5)", fontFamily: "'Space Grotesk', sans-serif" }}>
-              <span>⚙️</span> Agenda Settings
-            </Link>
-          </div>
-
-
-
-          {/* Manage Schedule */}
-          <div className="flex flex-col gap-2">
-            <Link href="/app/schedule" className="flex items-center gap-2 w-full px-3 py-2.5 rounded-lg text-[11px] font-semibold transition-all hover:opacity-90"
-              style={{ background: "rgba(94,234,212,0.08)", border: "1px solid rgba(94,234,212,0.2)", color: "#5EEAD4", fontFamily: "'Space Grotesk', sans-serif" }}>
-              <span>📆</span> Manage Schedule
-            </Link>
-          </div>
-
-          {/* Golden Rule */}
-          <div className="rounded-xl p-3.5" style={{ backgroundColor: "rgba(244,63,94,0.08)", border: "1px solid rgba(244,63,94,0.2)" }}>
-            <p className="text-[10px] font-bold uppercase tracking-wider mb-1.5" style={{ color: "#FDA4AF", fontFamily: "'Space Grotesk', sans-serif" }}>
-              ★ The Golden Rule
-            </p>
-            <p className="text-[11px] leading-relaxed" style={{ color: "rgba(255,255,255,0.6)" }}>
-              When an issue arises outside a meeting,{" "}
-              <strong className="text-white">add it to the Issues List</strong> — don't discuss it. It waits for the next scheduled meeting.
-            </p>
-          </div>
-
-          {/* Science note */}
-          <div className="rounded-xl p-3.5" style={{ backgroundColor: "rgba(14,165,233,0.08)", border: "1px solid rgba(14,165,233,0.2)" }}>
-            <p className="text-[10px] font-bold uppercase tracking-wider mb-1.5" style={{ color: "#7DD3FC", fontFamily: "'Space Grotesk', sans-serif" }}>
-              Why This Works
-            </p>
-            <p className="text-[11px] leading-relaxed" style={{ color: "rgba(255,255,255,0.6)" }}>
-              APA research: unstructured task-switching costs up to{" "}
-              <strong className="text-white">40% of productive time</strong>. Structured cadence eliminates that loss.
-            </p>
-          </div>
-        </aside>
-
-        {/* Main Calendar */}
+        {/* Main Calendar — full width, no sidebar */}
         <main className="flex-1 p-3 sm:p-5 flex flex-col gap-3 sm:gap-4">
           {/* Summary Strip */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
