@@ -989,8 +989,8 @@ function AddCardForm({ currentUser, onAdded, activeBusiness: activeBusinessProp,
         </button>
       </div>
 
-      {/* Tone Check result modal — rendered inline (not portaled) so it works inside BottomSheet on iOS */}
-      {showToneModal && toneCheckResult && (
+      {/* Tone Check result modal — portalled to document.body so it's not clipped by overflow-y-auto on iOS */}
+      {showToneModal && toneCheckResult && createPortal(
         <div
           style={{
             position: "fixed",
@@ -1060,7 +1060,7 @@ function AddCardForm({ currentUser, onAdded, activeBusiness: activeBusinessProp,
             </div>
           </div>
         </div>
-      )}
+      , document.body)}
 
       <button onClick={handleSubmit}
         disabled={createCard.isPending || isCheckingTone || !currentUser || !content.trim() || (type === "task" && !assignedTo)}
