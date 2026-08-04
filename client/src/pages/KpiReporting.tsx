@@ -759,6 +759,14 @@ export default function KpiReporting() {
         position: "relative",
         overflow: "hidden",
       }}>
+        <button
+          onClick={() => window.history.back()}
+          className="flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-lg mb-3 transition-all active:scale-[0.97]"
+          style={{ color: "#5EEAD4", backgroundColor: "rgba(94,234,212,0.1)", border: "1px solid rgba(94,234,212,0.25)" }}
+        >
+          <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M9 2L4 7L9 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+          Back to Hub
+        </button>
         <div style={{
           position: "absolute", top: "-40px", right: "-40px",
           width: "200px", height: "200px",

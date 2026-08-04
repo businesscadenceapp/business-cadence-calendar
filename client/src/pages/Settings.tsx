@@ -572,18 +572,14 @@ export default function Settings() {
           background: "radial-gradient(circle, rgba(94,234,212,0.07) 0%, transparent 70%)",
           pointerEvents: "none",
         }} />
-        <Link
-          href="/app"
-          className="inline-flex items-center gap-1.5 text-[11px] mb-3 transition-colors"
-          style={{ color: "rgba(255,255,255,0.35)", fontFamily: "'Space Grotesk', sans-serif" }}
-          onMouseEnter={e => (e.currentTarget.style.color = "rgba(255,255,255,0.7)")}
-          onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.35)")}
+        <button
+          onClick={() => window.history.back()}
+          className="flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-lg mb-3 transition-all active:scale-[0.97]"
+          style={{ color: "#5EEAD4", backgroundColor: "rgba(94,234,212,0.1)", border: "1px solid rgba(94,234,212,0.25)" }}
         >
-          <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
-            <path d="M9 2L4 7L9 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-          Back to Command Center
-        </Link>
+          <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M9 2L4 7L9 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+          Back to Hub
+        </button>
         <div className="flex items-center gap-2.5">
           <div style={{
             width: 30, height: 30, borderRadius: "9px",

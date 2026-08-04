@@ -5,6 +5,7 @@
 import { useState, useMemo } from "react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
+import { useLocation } from "wouter";
 import { usePerson } from "@/contexts/PersonContext";
 import { useActiveBusiness } from "@/components/BusinessSwitcher";
 
@@ -443,6 +444,7 @@ function GoalCard({
 
 export default function Goals() {
   const { person } = usePerson();
+  const [, navigate] = useLocation();
   const accountId = person?.accountId ?? (() => {
     const stored = localStorage.getItem("bcc_account_id");
     return stored ? parseInt(stored, 10) : undefined;
@@ -529,6 +531,14 @@ export default function Goals() {
           <span className="text-[10px] hidden sm:block" style={{ color: "rgba(255,255,255,0.35)" }}>Quarterly & annual targets</span>
         </div>
         <div className="flex items-center gap-2">
+          <button
+            onClick={() => navigate("/app/board")}
+            className="flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-lg transition-all active:scale-[0.97]"
+            style={{ color: "#5EEAD4", backgroundColor: "rgba(94,234,212,0.1)", border: "1px solid rgba(94,234,212,0.25)" }}
+          >
+            <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M9 2L4 7L9 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            Hub
+          </button>
           <select value={selectedYear} onChange={e => setSelectedYear(Number(e.target.value))}
             className="rounded-lg px-2 py-1.5 text-xs font-semibold focus:outline-none"
             style={{ backgroundColor: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", color: "white" }}>

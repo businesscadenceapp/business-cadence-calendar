@@ -292,7 +292,17 @@ export default function Messages() {
     <div className="flex flex-col h-full bg-background">
       {/* Page header */}
       <div className="px-4 pt-4 pb-0 shrink-0">
-        <h1 className="text-xl font-bold text-foreground mb-3">Messages</h1>
+        <div className="flex items-center justify-between mb-3">
+          <h1 className="text-xl font-bold text-foreground">Co-Owner Inbox</h1>
+          <button
+            onClick={() => window.history.back()}
+            className="flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-lg transition-all active:scale-[0.97]"
+            style={{ color: "#5EEAD4", backgroundColor: "rgba(94,234,212,0.1)", border: "1px solid rgba(94,234,212,0.25)" }}
+          >
+            <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M9 2L4 7L9 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            Back to Hub
+          </button>
+        </div>
 
         {/* Tabs */}
         <div className="flex gap-1 bg-muted/50 rounded-xl p-1">
