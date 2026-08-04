@@ -1910,7 +1910,7 @@ export default function Board() {
                 <div style={{ width: 6, height: 5, borderRadius: 3, backgroundColor: "rgba(255,255,255,0.2)" }} />
               </div>
               <div className="flex items-center gap-1.5" style={{ animation: "swipeHint 2s ease-in-out infinite" }}>
-                <span style={{ fontSize: 13, color: "rgba(255,255,255,0.35)", fontFamily: "'Space Grotesk', sans-serif", fontSize: "10px", fontWeight: 600, letterSpacing: "0.08em" }}>SWIPE</span>
+                <span style={{ fontSize: "10px", color: "rgba(255,255,255,0.35)", fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, letterSpacing: "0.08em" }}>SWIPE</span>
                 <span style={{ fontSize: 14, animation: "swipeArrow 1.4s ease-in-out infinite" }}>👉</span>
                 <span style={{ fontSize: 10, color: "rgba(167,139,250,0.7)", fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, letterSpacing: "0.06em" }}>PERFORMANCE HUB</span>
               </div>

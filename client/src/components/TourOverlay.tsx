@@ -253,7 +253,7 @@ export default function TourOverlay() {
         }}
       />
 
-      {/* Tap-through zone on spotlight */}
+      {/* Tap-through zone on spotlight — passes clicks to the element underneath */}
       <div
         style={{
           position: "absolute",
@@ -263,9 +263,9 @@ export default function TourOverlay() {
           height: s.height,
           borderRadius: s.radius,
           cursor: "pointer",
+          pointerEvents: "none", // let clicks fall through to the real element
         }}
-        onClick={next}
-        aria-label="Tap to advance tour"
+        aria-label="Tap to interact with highlighted element"
       />
 
       {/* Coach mark card */}
