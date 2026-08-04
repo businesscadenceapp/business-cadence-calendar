@@ -1105,42 +1105,77 @@ const NEEDS_ATTENTION_META = {
 };
 
 type TileMeta = { key: string; label: string; icon: string; gradient: string; border: string; glow: string; textColor: string; countBg: string };
-function CategoryTile({ cat, count, onClick, delay, hasHighPriority }: { cat: TileMeta; count: number; onClick: () => void; delay: number; hasHighPriority?: boolean }) {
+
+/** A single circular hub node — used in the radial layout */
+function HubNode({ cat, count, onClick, delay, hasHighPriority, size = 80 }: {
+  cat: TileMeta;
+  count: number;
+  onClick: () => void;
+  delay: number;
+  hasHighPriority?: boolean;
+  size?: number;
+}) {
   return (
     <button
       onClick={onClick}
-      className="relative flex flex-col items-center gap-2 p-4 rounded-2xl transition-all hover:scale-[1.02] active:scale-[0.97]"
+      className="relative flex flex-col items-center gap-1.5 transition-all active:scale-[0.92] hover:scale-[1.06]"
       style={{
-        background: cat.gradient,
-        border: `1px solid ${cat.border}`,
-        boxShadow: `0 4px 20px ${cat.glow}`,
         animationDelay: `${delay}ms`,
-        animation: "tileEnter 0.4s cubic-bezier(0.23,1,0.32,1) both",
+        animation: "hubNodeEnter 0.45s cubic-bezier(0.23,1,0.32,1) both",
+        WebkitTapHighlightColor: "transparent",
       }}
     >
-      {/* High-priority red badge */}
-      {hasHighPriority && (
-        <span
-          className="absolute top-2 right-2 w-2.5 h-2.5 rounded-full"
-          style={{ backgroundColor: "#EF4444", boxShadow: "0 0 6px rgba(239,68,68,0.7)" }}
-          aria-label="High priority issue"
-        />
-      )}
-      <div className="text-2xl">{cat.icon}</div>
-      <div className="flex flex-col items-center gap-0.5">
-        <span className="text-[11px] font-bold uppercase tracking-wider" style={{ color: cat.textColor, fontFamily: "'Space Grotesk', sans-serif" }}>{cat.label}</span>
+      {/* Circle */}
+      <div
+        style={{
+          width: size,
+          height: size,
+          borderRadius: "50%",
+          background: cat.gradient,
+          border: `2px solid ${cat.border}`,
+          boxShadow: `0 0 18px ${cat.glow}, 0 4px 16px rgba(0,0,0,0.35)`,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          position: "relative",
+          flexShrink: 0,
+        }}
+      >
+        <span style={{ fontSize: size * 0.36 }}>{cat.icon}</span>
+        {/* Count badge */}
         {count > 0 && (
-          <span className="text-[18px] font-black" style={{ color: "white", fontFamily: "'Space Grotesk', sans-serif" }}>{count}</span>
+          <span
+            className="absolute -top-1.5 -right-1.5 min-w-[22px] h-[22px] rounded-full flex items-center justify-center text-[11px] font-black"
+            style={{
+              backgroundColor: cat.countBg,
+              color: cat.textColor,
+              border: `1.5px solid ${cat.border}`,
+              fontFamily: "'Space Grotesk', sans-serif",
+              padding: "0 5px",
+              boxShadow: `0 0 8px ${cat.glow}`,
+            }}
+          >{count}</span>
         )}
-        {count === 0 && (
-          <span className="text-[12px]" style={{ color: "rgba(255,255,255,0.3)" }}>—</span>
-        )}
-        {count === -1 && (
-          <span className="text-[11px]" style={{ color: "rgba(255,255,255,0.35)" }}>View</span>
+        {/* High-priority red dot */}
+        {hasHighPriority && (
+          <span
+            className="absolute top-0.5 right-0.5 w-3 h-3 rounded-full"
+            style={{ backgroundColor: "#EF4444", boxShadow: "0 0 8px rgba(239,68,68,0.8)", border: "1.5px solid #0A1929" }}
+          />
         )}
       </div>
+      {/* Label */}
+      <span
+        className="text-[10px] font-bold uppercase tracking-wider text-center leading-tight"
+        style={{ color: cat.textColor, fontFamily: "'Space Grotesk', sans-serif", maxWidth: size + 12 }}
+      >{cat.label}</span>
     </button>
   );
+}
+
+/** Deprecated square tile — kept for compatibility but replaced by HubNode */
+function CategoryTile({ cat, count, onClick, delay, hasHighPriority }: { cat: TileMeta; count: number; onClick: () => void; delay: number; hasHighPriority?: boolean }) {
+  return <HubNode cat={cat} count={count} onClick={onClick} delay={delay} hasHighPriority={hasHighPriority} />;
 }
 
 // ─── Bottom Sheet Overlay ────────────────────────────────────────────────────
@@ -1733,60 +1768,113 @@ export default function Board() {
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-3">
-            {/* Row 1: Tasks + Updates */}
-            {CATEGORIES.filter(c => c.key !== "archive").map((cat, i) => (
-              <CategoryTile
-                key={cat.key}
-                cat={cat}
-                count={counts[cat.key]}
-                onClick={() => setActiveView(cat.key)}
-                delay={i * 60}
-                hasHighPriority={cat.key === "issues" && issues.some(c => c.priority === "high")}
-              />
-            ))}
-            {/* Row 2 col 2: Needs Attention */}
-            <CategoryTile
-              cat={NEEDS_ATTENTION_META as unknown as TileMeta}
-              count={(counts.tasks ?? 0) + (counts.issues ?? 0)}
-              onClick={() => {
-                setNeedsAttnSection((counts.tasks ?? 0) > 0 ? "tasks" : "issues");
-                setActiveView("needs_attention");
+          /* ── Radial Hub Layout ── */
+          <div
+            className="relative flex items-center justify-center"
+            style={{ width: "100%", aspectRatio: "1 / 1", maxWidth: 360, margin: "0 auto" }}
+          >
+            {/* Connector lines from center to each node */}
+            <svg
+              style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none" }}
+              viewBox="0 0 360 360"
+            >
+              {[
+                { angle: -90 },   // Tasks — top
+                { angle: -30 },   // Updates — top-right
+                { angle: 30 },    // Issues — bottom-right
+                { angle: 90 },    // Needs Attention — bottom
+                { angle: 150 },   // Calendar — bottom-left
+                { angle: 210 },   // Archive — top-left
+              ].map(({ angle }, i) => {
+                const rad = (angle * Math.PI) / 180;
+                const r = 118;
+                const x = 180 + r * Math.cos(rad);
+                const y = 180 + r * Math.sin(rad);
+                return (
+                  <line
+                    key={i}
+                    x1="180" y1="180"
+                    x2={x} y2={y}
+                    stroke="rgba(94,234,212,0.12)"
+                    strokeWidth="1.5"
+                    strokeDasharray="4 4"
+                  />
+                );
+              })}
+            </svg>
+
+            {/* Center hub circle */}
+            <div
+              style={{
+                position: "absolute",
+                left: "50%", top: "50%",
+                transform: "translate(-50%, -50%)",
+                width: 72, height: 72,
+                borderRadius: "50%",
+                background: "linear-gradient(135deg, rgba(94,234,212,0.22) 0%, rgba(94,234,212,0.08) 100%)",
+                border: "2px solid rgba(94,234,212,0.45)",
+                boxShadow: "0 0 32px rgba(94,234,212,0.25), 0 0 8px rgba(94,234,212,0.15)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                zIndex: 2,
+                animation: "hubCenterPulse 3s ease-in-out infinite",
               }}
-              delay={3 * 60}
-            />
-            {/* Row 3: Calendar tile */}
-            <CategoryTile
-              cat={{
-                key: "calendar",
-                label: "Calendar",
-                icon: "📅",
-                gradient: "linear-gradient(135deg, rgba(20,184,166,0.18) 0%, rgba(20,184,166,0.07) 100%)",
-                border: "rgba(20,184,166,0.35)",
-                glow: "rgba(20,184,166,0.14)",
-                textColor: "#5EEAD4",
-                countBg: "rgba(20,184,166,0.25)",
-              }}
-              count={-1}
-              onClick={() => navigate("/app/calendar")}
-              delay={4 * 60}
-            />
-            {/* Row 3: Archive tile */}
-            <CategoryTile
-              cat={{
-                key: "archive",
-                label: "Archive",
-                icon: "📁",
-                gradient: "linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 100%)",
-                border: "rgba(255,255,255,0.15)",
-                glow: "rgba(255,255,255,0.05)",
-                textColor: "rgba(255,255,255,0.7)",
-                countBg: "rgba(255,255,255,0.12)",
-              }}
-              count={archivedCards.length}
-              onClick={() => setActiveView("archive")}
-              delay={5 * 60}
-            />
+            >
+              <span style={{ fontSize: 28 }}>⚡</span>
+            </div>
+
+            {/* Orbit nodes — 6 categories evenly spaced */}
+            {[
+              { cat: CATEGORIES.find(c => c.key === "tasks")!, count: counts.tasks, angle: -90, onClick: () => setActiveView("tasks"), extra: {} },
+              { cat: CATEGORIES.find(c => c.key === "updates")!, count: counts.updates, angle: -30, onClick: () => setActiveView("updates"), extra: {} },
+              { cat: CATEGORIES.find(c => c.key === "issues")!, count: counts.issues, angle: 30, onClick: () => setActiveView("issues"), extra: { hasHighPriority: issues.some(c => c.priority === "high") } },
+              {
+                cat: NEEDS_ATTENTION_META as unknown as TileMeta,
+                count: (counts.tasks ?? 0) + (counts.issues ?? 0),
+                angle: 90,
+                onClick: () => { setNeedsAttnSection((counts.tasks ?? 0) > 0 ? "tasks" : "issues"); setActiveView("needs_attention"); },
+                extra: {},
+              },
+              {
+                cat: { key: "calendar", label: "Calendar", icon: "📅", gradient: "linear-gradient(135deg, rgba(20,184,166,0.18) 0%, rgba(20,184,166,0.07) 100%)", border: "rgba(20,184,166,0.35)", glow: "rgba(20,184,166,0.14)", textColor: "#5EEAD4", countBg: "rgba(20,184,166,0.25)" },
+                count: -1,
+                angle: 150,
+                onClick: () => navigate("/app/calendar"),
+                extra: {},
+              },
+              {
+                cat: { key: "archive", label: "Archive", icon: "📁", gradient: "linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 100%)", border: "rgba(255,255,255,0.15)", glow: "rgba(255,255,255,0.05)", textColor: "rgba(255,255,255,0.7)", countBg: "rgba(255,255,255,0.12)" },
+                count: archivedCards.length,
+                angle: 210,
+                onClick: () => setActiveView("archive"),
+                extra: {},
+              },
+            ].map(({ cat, count, angle, onClick, extra }, i) => {
+              const rad = (angle * Math.PI) / 180;
+              const r = 118; // orbit radius in px (for 360px container)
+              const cx = 50 + (r / 360) * 100 * Math.cos(rad);
+              const cy = 50 + (r / 360) * 100 * Math.sin(rad);
+              return (
+                <div
+                  key={cat.key}
+                  style={{
+                    position: "absolute",
+                    left: `${cx}%`,
+                    top: `${cy}%`,
+                    transform: "translate(-50%, -50%)",
+                    zIndex: 3,
+                  }}
+                >
+                  <HubNode
+                    cat={cat}
+                    count={count}
+                    onClick={onClick}
+                    delay={i * 70}
+                    size={76}
+                    {...extra}
+                  />
+                </div>
+              );
+            })}
           </div>
         )}
 
@@ -1821,6 +1909,14 @@ export default function Board() {
 
       {/* Animations */}
       <style>{`
+        @keyframes hubNodeEnter {
+          from { opacity: 0; transform: scale(0.6); }
+          to { opacity: 1; transform: scale(1); }
+        }
+        @keyframes hubCenterPulse {
+          0%, 100% { box-shadow: 0 0 32px rgba(94,234,212,0.25), 0 0 8px rgba(94,234,212,0.15); }
+          50% { box-shadow: 0 0 48px rgba(94,234,212,0.4), 0 0 16px rgba(94,234,212,0.25); }
+        }
         @keyframes tileEnter {
           from { opacity: 0; transform: translateY(12px) scale(0.96); }
           to { opacity: 1; transform: translateY(0) scale(1); }

@@ -157,23 +157,37 @@ function DemoCardItem({ card }: { card: DemoCard }) {
   );
 }
 
-// ─── Category Tile ────────────────────────────────────────────────────────────
+// ─── Category Tile (circular hub node) ───────────────────────────────────────
 type DemoTileMeta = { key: string; label: string; icon: string; gradient: string; border: string; glow: string; textColor: string };
-function DemoCategoryTile({ cat, count, onClick, delay }: { cat: DemoTileMeta; count: number; onClick: () => void; delay: number }) {
+function DemoCategoryTile({ cat, count, onClick, delay, size = 76 }: { cat: DemoTileMeta; count: number; onClick: () => void; delay: number; size?: number }) {
   return (
     <button
       onClick={onClick}
-      className="flex flex-col items-center gap-2 p-4 rounded-2xl transition-all hover:scale-[1.02] active:scale-[0.97]"
+      className="relative flex flex-col items-center gap-1.5 transition-all active:scale-[0.92] hover:scale-[1.06]"
       style={{
-        background: cat.gradient,
-        border: `1px solid ${cat.border}`,
-        boxShadow: `0 4px 20px ${cat.glow}`,
-        animation: `tileEnter 0.4s cubic-bezier(0.23,1,0.32,1) ${delay}ms both`,
+        animation: `hubNodeEnter 0.45s cubic-bezier(0.23,1,0.32,1) ${delay}ms both`,
+        WebkitTapHighlightColor: "transparent",
       }}
     >
-      <div className="text-2xl">{cat.icon}</div>
-      <span className="text-[11px] font-bold uppercase tracking-wider" style={{ color: cat.textColor, fontFamily: "'Space Grotesk', sans-serif" }}>{cat.label}</span>
-      <span className="text-[18px] font-black text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>{count}</span>
+      <div
+        style={{
+          width: size, height: size, borderRadius: "50%",
+          background: cat.gradient,
+          border: `2px solid ${cat.border}`,
+          boxShadow: `0 0 18px ${cat.glow}, 0 4px 16px rgba(0,0,0,0.35)`,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          position: "relative", flexShrink: 0,
+        }}
+      >
+        <span style={{ fontSize: size * 0.36 }}>{cat.icon}</span>
+        {count > 0 && (
+          <span
+            className="absolute -top-1.5 -right-1.5 min-w-[22px] h-[22px] rounded-full flex items-center justify-center text-[11px] font-black"
+            style={{ backgroundColor: "rgba(255,255,255,0.12)", color: cat.textColor, border: `1.5px solid ${cat.border}`, fontFamily: "'Space Grotesk', sans-serif", padding: "0 5px" }}
+          >{count}</span>
+        )}
+      </div>
+      <span className="text-[10px] font-bold uppercase tracking-wider text-center leading-tight" style={{ color: cat.textColor, fontFamily: "'Space Grotesk', sans-serif", maxWidth: size + 12 }}>{cat.label}</span>
     </button>
   );
 }
@@ -284,29 +298,65 @@ export default function DemoBoard() {
             </p>
           </div>
 
-          {/* Tiles */}
-          <div className="flex-1 px-5 py-3">
-            <div className="grid grid-cols-2 gap-3">
-              {CATEGORIES.map((cat, i) => (
-                <DemoCategoryTile key={cat.key} cat={cat} count={counts[cat.key]} onClick={() => setActiveView(cat.key)} delay={i * 60} />
-              ))}
-              {/* 4th tile: Needs Attention */}
-              <DemoCategoryTile
-                cat={{ key: "needs_attention", label: "Needs Attention", icon: "❗", gradient: "linear-gradient(135deg, rgba(251,191,36,0.18) 0%, rgba(251,191,36,0.07) 100%)", border: "rgba(251,191,36,0.38)", glow: "rgba(251,191,36,0.14)", textColor: "#FDE68A" }}
-                count={counts.tasks + counts.issues}
-                onClick={() => { setNeedsAttnSection(counts.tasks > 0 ? "tasks" : "issues"); setActiveView("needs_attention"); }}
-                delay={3 * 60}
-              />
-            </div>
-            <div className="flex justify-center mt-3">
-              <button onClick={demoToast} className="text-[11px] active:opacity-60" style={{ color: "rgba(255,255,255,0.3)", fontFamily: "'Space Grotesk', sans-serif" }}>
-                <span className="flex items-center gap-1.5">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
-                  </svg>
-                  Archive
-                </span>
-              </button>
+          {/* Radial Hub Layout */}
+          <div className="flex-1 px-5 py-3 flex items-center justify-center">
+            <div
+              className="relative flex items-center justify-center"
+              style={{ width: "100%", aspectRatio: "1 / 1", maxWidth: 340, margin: "0 auto" }}
+            >
+              {/* Connector lines */}
+              <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none" }} viewBox="0 0 340 340">
+                {[
+                  { angle: -90 },
+                  { angle: -30 },
+                  { angle: 30 },
+                  { angle: 90 },
+                  { angle: 150 },
+                  { angle: 210 },
+                ].map(({ angle }, i) => {
+                  const rad = (angle * Math.PI) / 180;
+                  const r = 112;
+                  const x = 170 + r * Math.cos(rad);
+                  const y = 170 + r * Math.sin(rad);
+                  return <line key={i} x1="170" y1="170" x2={x} y2={y} stroke="rgba(94,234,212,0.12)" strokeWidth="1.5" strokeDasharray="4 4" />;
+                })}
+              </svg>
+
+              {/* Center hub */}
+              <div
+                style={{
+                  position: "absolute", left: "50%", top: "50%",
+                  transform: "translate(-50%, -50%)",
+                  width: 68, height: 68, borderRadius: "50%",
+                  background: "linear-gradient(135deg, rgba(94,234,212,0.22) 0%, rgba(94,234,212,0.08) 100%)",
+                  border: "2px solid rgba(94,234,212,0.45)",
+                  boxShadow: "0 0 32px rgba(94,234,212,0.25), 0 0 8px rgba(94,234,212,0.15)",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  zIndex: 2, animation: "hubCenterPulse 3s ease-in-out infinite",
+                }}
+              >
+                <span style={{ fontSize: 26 }}>⚡</span>
+              </div>
+
+              {/* Orbit nodes */}
+              {[
+                { cat: CATEGORIES[0], count: counts.tasks, angle: -90, onClick: () => setActiveView("tasks") },
+                { cat: CATEGORIES[1], count: counts.updates, angle: -30, onClick: () => setActiveView("updates") },
+                { cat: CATEGORIES[2], count: counts.issues, angle: 30, onClick: () => setActiveView("issues") },
+                { cat: { key: "needs_attention", label: "Needs Attention", icon: "❗", gradient: "linear-gradient(135deg, rgba(251,191,36,0.18) 0%, rgba(251,191,36,0.07) 100%)", border: "rgba(251,191,36,0.38)", glow: "rgba(251,191,36,0.14)", textColor: "#FDE68A" }, count: counts.tasks + counts.issues, angle: 90, onClick: () => { setNeedsAttnSection(counts.tasks > 0 ? "tasks" : "issues"); setActiveView("needs_attention"); } },
+                { cat: { key: "calendar", label: "Calendar", icon: "📅", gradient: "linear-gradient(135deg, rgba(20,184,166,0.18) 0%, rgba(20,184,166,0.07) 100%)", border: "rgba(20,184,166,0.35)", glow: "rgba(20,184,166,0.14)", textColor: "#5EEAD4" }, count: -1, angle: 150, onClick: demoToast },
+                { cat: { key: "archive", label: "Archive", icon: "📁", gradient: "linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 100%)", border: "rgba(255,255,255,0.15)", glow: "rgba(255,255,255,0.05)", textColor: "rgba(255,255,255,0.7)" }, count: 0, angle: 210, onClick: demoToast },
+              ].map(({ cat, count, angle, onClick }, i) => {
+                const rad = (angle * Math.PI) / 180;
+                const r = 112;
+                const cx = 50 + (r / 340) * 100 * Math.cos(rad);
+                const cy = 50 + (r / 340) * 100 * Math.sin(rad);
+                return (
+                  <div key={cat.key} style={{ position: "absolute", left: `${cx}%`, top: `${cy}%`, transform: "translate(-50%, -50%)", zIndex: 3 }}>
+                    <DemoCategoryTile cat={cat} count={count} onClick={onClick} delay={i * 70} size={72} />
+                  </div>
+                );
+              })}
             </div>
           </div>
 
@@ -354,6 +404,14 @@ export default function DemoBoard() {
       </div>
 
       <style>{`
+        @keyframes hubNodeEnter {
+          from { opacity: 0; transform: scale(0.6); }
+          to { opacity: 1; transform: scale(1); }
+        }
+        @keyframes hubCenterPulse {
+          0%, 100% { box-shadow: 0 0 32px rgba(94,234,212,0.25), 0 0 8px rgba(94,234,212,0.15); }
+          50% { box-shadow: 0 0 48px rgba(94,234,212,0.4), 0 0 16px rgba(94,234,212,0.25); }
+        }
         @keyframes tileEnter {
           from { opacity: 0; transform: translateY(12px) scale(0.96); }
           to { opacity: 1; transform: translateY(0) scale(1); }
