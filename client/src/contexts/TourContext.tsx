@@ -35,18 +35,45 @@ export interface TourStep {
 }
 
 export const TOUR_STEPS: TourStep[] = [
-  // ── Hub 1: Command Board ──
+  // ── Step 1: Welcome ──
   {
     id: "tour-hub-center",
-    title: "Your Command Board",
-    description: "This is your business hub. Everything you and your partner need to run the business together lives here — organized into categories so nothing gets lost.",
+    title: "Welcome to BusinessCadence",
+    description: "Your business runs on rhythm. Two hubs, one mission — keep the business in the boardroom and out of your relationship. Let's take a quick tour.",
+    icon: "🎵",
+    shape: "circle",
+    padding: 16,
+  },
+  // ── Steps 2–3: Calendar first ──
+  {
+    id: "tour-hub-calendar",
+    title: "Your Year at a Glance",
+    description: "This is what a structured business looks like. Every dot is a scheduled meeting — daily huddles, weekly reviews, monthly check-ins, quarterly offsites. Tap to see your full calendar.",
+    icon: "📅",
+    shape: "circle",
+    padding: 14,
+  },
+  {
+    id: "tour-hub-calendar",
+    title: "Color-Coded Cadence",
+    description: "Each color is a different meeting type. Purple = Daily Huddle. Teal = Weekly Review. Green = Monthly Financial. Red = Quarterly Offsite. You'll build this automatically when you set your schedule.",
+    icon: "🎨",
+    shape: "circle",
+    padding: 14,
+  },
+  // ── Step 4: Command Center intro ──
+  {
+    id: "tour-hub-center",
+    title: "Command Center",
+    description: "Now let's meet the engine behind that calendar. Every circle is a category — tap one to dive in. Here's what each one does.",
     icon: "⚡",
     shape: "circle",
     padding: 16,
   },
+  // ── Steps 5–11: Command Center circles ──
   {
     id: "tour-hub-tasks",
-    title: "Tasks",
+    title: "Tasks ✅",
     description: "Assign tasks to yourself or your partner. When it's done, mark it complete — your partner gets notified. No more 'did you do that thing?' at dinner.",
     icon: "☑️",
     shape: "circle",
@@ -54,7 +81,7 @@ export const TOUR_STEPS: TourStep[] = [
   },
   {
     id: "tour-hub-updates",
-    title: "Updates",
+    title: "Updates 📣",
     description: "Share wins, progress, and important news with your partner. Good news travels fast — and so does the stuff they need to know before the next meeting.",
     icon: "✅",
     shape: "circle",
@@ -62,7 +89,7 @@ export const TOUR_STEPS: TourStep[] = [
   },
   {
     id: "tour-hub-issues",
-    title: "Issues",
+    title: "Issues 🔥",
     description: "Log problems as they come up. Flag them as high priority when they need immediate attention. Issues stay in the app — not in the car ride home.",
     icon: "🔥",
     shape: "circle",
@@ -70,49 +97,42 @@ export const TOUR_STEPS: TourStep[] = [
   },
   {
     id: "tour-hub-needs-attention",
-    title: "Needs Attention",
-    description: "A combined view of open tasks and unresolved issues. Your quick-glance list of what needs action from either of you — right now.",
+    title: "Needs Attention ❗",
+    description: "A combined view of open tasks and unresolved issues. Your quick-glance list of what needs action from either of you — right now. Red means act now.",
     icon: "❗",
     shape: "circle",
     padding: 14,
   },
   {
-    id: "tour-hub-calendar",
-    title: "Meeting Rhythm",
-    description: "Daily huddles. Weekly reviews. Monthly check-ins. Your structured cadence keeps business conversations where they belong — in the meeting, not in the bedroom.",
-    icon: "📅",
-    shape: "circle",
-    padding: 14,
-  },
-  {
     id: "tour-hub-archive",
-    title: "Archive",
-    description: "Completed tasks and resolved issues live here. Your record of everything you've handled together — proof that the system works.",
-    icon: "📁",
+    title: "Archive 📂",
+    description: "Completed tasks and resolved issues move here automatically. Your record of everything you've handled together — proof that the system works.",
+    icon: "📂",
     shape: "circle",
     padding: 14,
   },
-  // ── Swipe hint ──
+  // ── Step 12: Swipe hint ──
   {
     id: "tour-hub-swipe",
-    title: "Swipe for Performance Hub",
-    description: "Swipe left to reveal your Performance Hub — Goals, KPIs, and Reports. Two hubs, one screen. Your whole business at your fingertips.",
+    title: "Swipe Left → Performance Hub",
+    description: "Swipe left to unlock your Performance Hub — Goals, KPIs, Reports, and more. Two hubs, one screen. Your whole business at your fingertips.",
     icon: "👈",
     shape: "rect",
     padding: 12,
   },
-  // ── Hub 2: Performance ──
+  // ── Step 13: Performance Hub intro ──
   {
     id: "tour-perf-center",
     title: "Performance Hub",
-    description: "This is where you track how the business is actually doing. Goals you've set, KPIs you're measuring, and reports you've run — all in one place.",
+    description: "This is where you track how the business is actually doing. Goals, KPIs, reports, and communication — all in one place.",
     icon: "📈",
     shape: "circle",
     padding: 16,
   },
+  // ── Steps 14–19: Performance Hub circles ──
   {
     id: "tour-goals",
-    title: "Shared Goals",
+    title: "Goals 🎯",
     description: "Set targets you both own. Track progress together. When you're aligned on what winning looks like, everything else gets easier — including the relationship.",
     icon: "🎯",
     shape: "circle",
@@ -120,36 +140,52 @@ export const TOUR_STEPS: TourStep[] = [
   },
   {
     id: "tour-kpis",
-    title: "KPIs",
-    description: "The numbers that tell you if the business is healthy. Revenue, bookings, retention — whatever matters most to your business. Track it here together.",
+    title: "KPIs 📊",
+    description: "The numbers that tell you if the business is healthy. Revenue, bookings, retention — whatever matters most. Track it here together so you're always working from facts.",
     icon: "📊",
     shape: "circle",
     padding: 14,
   },
   {
     id: "tour-reports",
-    title: "Reports",
-    description: "A running record of how your business has performed. Use it in your weekly review so you're always working from facts, not feelings.",
+    title: "Reports 📝",
+    description: "Weekly snapshots of how the business performed. One owner fills it in, both see it. Use it in your weekly review so you're never working from memory.",
     icon: "📝",
     shape: "circle",
     padding: 14,
   },
   {
+    id: "tour-inbox",
+    title: "Co-Owner Inbox 💬",
+    description: "Async communication between you and your partner. Business messages stay in the app — not in your personal texts, not at the dinner table.",
+    icon: "💬",
+    shape: "circle",
+    padding: 14,
+  },
+  {
+    id: "tour-settings",
+    title: "Settings ⚙️",
+    description: "Customize your meeting schedule, business profile, and notification preferences. Set it once, and the calendar builds itself.",
+    icon: "⚙️",
+    shape: "circle",
+    padding: 14,
+  },
+  {
     id: "tour-refer",
-    title: "Refer a Friend",
-    description: "Love the app? Share it with another couple who runs a business together. You both get a free month — because the best relationships are built on good referrals.",
+    title: "Refer a Friend 🎁",
+    description: "Love the app? Share it with another couple who runs a business together. You both get a free month — because great systems are worth sharing.",
     icon: "🎁",
     shape: "circle",
     padding: 14,
   },
-  // ── Sleep mode ──
+  // ── Step 20: Closing ──
   {
-    id: "tour-sleep",
-    title: "Off the Clock",
-    description: "Tap this when the workday ends. Notifications pause so you can be a partner first, a business owner second. The business will still be there tomorrow.",
-    icon: "🌙",
+    id: "tour-hub",
+    title: "You're Ready 🎉",
+    description: "Your business now has a heartbeat. Structured meetings, shared goals, and a clear cadence — so the business stays in the boardroom and your relationship stays yours.",
+    icon: "🎵",
     shape: "rect",
-    padding: 8,
+    padding: 16,
   },
 ];
 
