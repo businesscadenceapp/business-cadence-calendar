@@ -1,3 +1,4 @@
+import React from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
@@ -40,6 +41,7 @@ import TourOverlay from "@/components/TourOverlay";
 import DemoBoard from "@/pages/DemoBoard";
 import Messages from "@/pages/Messages";
 import { TEAM_ENABLED } from "@/featureFlags";
+import SplashScreen, { shouldShowSplash } from "@/components/SplashScreen";
 
 // Wrapper so Paywall (which has optional custom props) works as a wouter route component
 function PaywallPage() {
@@ -177,12 +179,18 @@ function Router() {
 }
 
 function App() {
+  const [splashDone, setSplashDone] = React.useState(() => !shouldShowSplash());
+
   return (
     <ErrorBoundary>
       <ThemeProvider defaultTheme="dark">
         <TourProvider>
         <TooltipProvider>
           <Toaster />
+          {/* Two-screen animated splash — shows once per session */}
+          {!splashDone && (
+            <SplashScreen onComplete={() => setSplashDone(true)} />
+          )}
           <Router />
           {/* Single TourOverlay at app root — persists across page navigation */}
           <TourOverlay />
