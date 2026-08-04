@@ -1029,3 +1029,15 @@
 - [ ] Website: Update pricing to $59/mo monthly ($600/yr annual) for Co-Owner; $69/mo monthly ($696/yr annual) for Growth
 - [ ] App: Per-partner business hours — each owner sets their own independent on/off schedule (not shared account-level)
 - [ ] App: AI Tone Check toggle in AddCardForm — on by default, runs AI before post, shows neutral rewrite suggestion, user can accept/edit/ignore
+
+## Aug 2026 Sprint — Hub Redesign + Refer a Friend
+
+- [x] Replace 2×3 square grid with circular hub layout on Command Board (Board.tsx + DemoBoard.tsx)
+- [x] Add Performance Hub (Hub 2) with swipe-left gesture — Goals, KPIs, Reports nodes
+- [x] Add Refer a Friend (🎁) node to Performance Hub with referral sheet modal
+- [x] Add tour-refer step to TourContext.tsx for the Refer a Friend node
+- [x] Remove bottom nav bar; add ☰ hamburger menu to top-right header
+- [x] Add ← Back button in all sub-section headers (Tasks, Updates, Issues, etc.)
+- [x] Restore Switch Business in hamburger MoreSheet (was already wired, confirmed present)
+- [ ] DemoBoard.tsx: remove old bottom nav bar (cleanup)
+- [ ] DemoBoard.tsx: add Performance Hub (Hub 2) with swipe to match main Board

@@ -134,6 +134,14 @@ export const TOUR_STEPS: TourStep[] = [
     shape: "circle",
     padding: 14,
   },
+  {
+    id: "tour-refer",
+    title: "Refer a Friend",
+    description: "Love the app? Share it with another couple who runs a business together. You both get a free month — because the best relationships are built on good referrals.",
+    icon: "🎁",
+    shape: "circle",
+    padding: 14,
+  },
   // ── Sleep mode ──
   {
     id: "tour-sleep",

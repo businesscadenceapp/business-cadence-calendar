@@ -1331,6 +1331,7 @@ export default function Board() {
   const filterBusiness: Business | "all" = bizKeyToEnum(activeBusiness);
   const [activeView, setActiveView] = useState<CategoryKey | "needs_attention" | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [referralOpen, setReferralOpen] = useState(false);
   const [showCompleted, setShowCompleted] = useState(false);
   const [needsAttnSection, setNeedsAttnSection] = useState<"tasks" | "issues">("tasks");
   const { replay, registerRef, active: tourActive } = useTour();
@@ -1814,7 +1815,7 @@ export default function Board() {
                   style={{ width: "100%", aspectRatio: "1 / 1", maxWidth: 360, margin: "0 auto" }}
                 >
                   <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none" }} viewBox="0 0 360 360">
-                    {[-90, 30, 150].map((angle, i) => {
+                    {[-90, 30, 150, 90].map((angle, i) => {
                       const rad = (angle * Math.PI) / 180;
                       const r = 118;
                       return <line key={i} x1="180" y1="180" x2={180 + r * Math.cos(rad)} y2={180 + r * Math.sin(rad)} stroke="rgba(167,139,250,0.12)" strokeWidth="1.5" strokeDasharray="4 4" />;
@@ -1840,6 +1841,7 @@ export default function Board() {
                     { key: "goals", label: "Goals", icon: "🎯", gradient: "linear-gradient(135deg, rgba(124,58,237,0.18) 0%, rgba(124,58,237,0.07) 100%)", border: "rgba(124,58,237,0.35)", glow: "rgba(124,58,237,0.14)", textColor: "#C4B5FD", countBg: "rgba(124,58,237,0.25)", angle: -90, onClick: () => navigate("/app/goals"), tourId: "tour-goals" },
                     { key: "kpis", label: "KPIs", icon: "📊", gradient: "linear-gradient(135deg, rgba(37,99,235,0.18) 0%, rgba(37,99,235,0.07) 100%)", border: "rgba(37,99,235,0.35)", glow: "rgba(37,99,235,0.14)", textColor: "#93C5FD", countBg: "rgba(37,99,235,0.25)", angle: 30, onClick: () => navigate("/app/kpis"), tourId: "tour-kpis" },
                     { key: "reports", label: "Reports", icon: "📝", gradient: "linear-gradient(135deg, rgba(5,150,105,0.18) 0%, rgba(5,150,105,0.07) 100%)", border: "rgba(5,150,105,0.35)", glow: "rgba(5,150,105,0.14)", textColor: "#6EE7B7", countBg: "rgba(5,150,105,0.25)", angle: 150, onClick: () => navigate("/app/reports"), tourId: "tour-reports" },
+                    { key: "refer", label: "Refer a Friend", icon: "🎁", gradient: "linear-gradient(135deg, rgba(217,119,6,0.22) 0%, rgba(217,119,6,0.08) 100%)", border: "rgba(251,191,36,0.45)", glow: "rgba(251,191,36,0.18)", textColor: "#FCD34D", countBg: "rgba(217,119,6,0.25)", angle: 90, onClick: () => setReferralOpen(true), tourId: "tour-refer" },
                   ].map(({ angle, onClick, tourId, ...cat }, i) => {
                     const rad = (angle * Math.PI) / 180;
                     const r = 118;
@@ -1896,6 +1898,94 @@ export default function Board() {
             activeBusiness={filterBusiness === "all" ? (allowedBusinesses[0] ?? "general" as Business) : filterBusiness}
             bizLabels={dynamicBizLabels} assignablePersons={allPersons} accountId={accountId} />
         </BottomSheet>,
+        document.body
+      )}
+
+      {/* Referral Sheet */}
+      {referralOpen && createPortal(
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center"
+          style={{ backgroundColor: "rgba(0,0,0,0.7)", animation: "fadeIn 0.2s ease" }}
+          onClick={() => setReferralOpen(false)}
+        >
+          <div
+            className="w-full max-w-lg rounded-t-3xl p-6 flex flex-col gap-5"
+            style={{
+              backgroundColor: "#0D2035",
+              border: "1px solid rgba(251,191,36,0.25)",
+              borderBottom: "none",
+              boxShadow: "0 -8px 40px rgba(0,0,0,0.5)",
+              animation: "sheetSlideUp 0.3s cubic-bezier(0.23,1,0.32,1) both",
+            }}
+            onClick={e => e.stopPropagation()}
+          >
+            {/* Handle */}
+            <div className="w-10 h-1 rounded-full mx-auto" style={{ backgroundColor: "rgba(255,255,255,0.15)" }} />
+
+            {/* Header */}
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl flex-shrink-0"
+                style={{ background: "linear-gradient(135deg, rgba(217,119,6,0.25), rgba(217,119,6,0.1))", border: "1.5px solid rgba(251,191,36,0.4)" }}>
+                🎁
+              </div>
+              <div>
+                <h2 className="text-[18px] font-bold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Refer a Friend</h2>
+                <p className="text-[12px]" style={{ color: "rgba(255,255,255,0.5)", fontFamily: "'Inter', sans-serif" }}>Share the love. Share the savings.</p>
+              </div>
+            </div>
+
+            {/* Offer card */}
+            <div className="rounded-2xl p-4 flex flex-col gap-3"
+              style={{ background: "linear-gradient(135deg, rgba(217,119,6,0.12), rgba(217,119,6,0.05))", border: "1.5px solid rgba(251,191,36,0.25)" }}>
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-xl flex items-center justify-center text-base flex-shrink-0"
+                  style={{ backgroundColor: "rgba(251,191,36,0.15)" }}>🤝</div>
+                <div>
+                  <p className="text-[13px] font-semibold" style={{ color: "#FCD34D", fontFamily: "'Space Grotesk', sans-serif" }}>You get 1 free month</p>
+                  <p className="text-[11px]" style={{ color: "rgba(255,255,255,0.5)", fontFamily: "'Inter', sans-serif" }}>When your friend subscribes</p>
+                </div>
+              </div>
+              <div className="h-px" style={{ backgroundColor: "rgba(251,191,36,0.12)" }} />
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-xl flex items-center justify-center text-base flex-shrink-0"
+                  style={{ backgroundColor: "rgba(251,191,36,0.15)" }}>🎉</div>
+                <div>
+                  <p className="text-[13px] font-semibold" style={{ color: "#FCD34D", fontFamily: "'Space Grotesk', sans-serif" }}>They get 1 free month</p>
+                  <p className="text-[11px]" style={{ color: "rgba(255,255,255,0.5)", fontFamily: "'Inter', sans-serif" }}>No credit card required to start</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Share button */}
+            <button
+              onClick={() => {
+                const msg = `Hey! I've been using BusinessCadence to keep our business and relationship in sync. You should try it — we both get a free month! businesscadence.com`;
+                if (navigator.share) {
+                  navigator.share({ title: "BusinessCadence — Free Month", text: msg, url: "https://businesscadence.com" });
+                } else {
+                  navigator.clipboard.writeText(msg).then(() => alert("Copied to clipboard!"));
+                }
+              }}
+              className="w-full py-4 rounded-2xl font-bold text-[15px] transition-all active:scale-[0.97]"
+              style={{
+                background: "linear-gradient(135deg, #F59E0B, #D97706)",
+                color: "#0F2440",
+                fontFamily: "'Space Grotesk', sans-serif",
+                boxShadow: "0 4px 20px rgba(245,158,11,0.35)",
+              }}
+            >
+              Share with a Friend 🚀
+            </button>
+
+            <button
+              onClick={() => setReferralOpen(false)}
+              className="w-full py-3 rounded-2xl text-[13px] font-medium"
+              style={{ color: "rgba(255,255,255,0.4)", fontFamily: "'Space Grotesk', sans-serif", backgroundColor: "transparent" }}
+            >
+              Maybe later
+            </button>
+          </div>
+        </div>,
         document.body
       )}
 
