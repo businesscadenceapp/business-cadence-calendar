@@ -1330,7 +1330,10 @@ export default function Board() {
   const { activeBusiness } = useActiveBusiness(person?.businessScope);
   const filterBusiness: Business | "all" = bizKeyToEnum(activeBusiness);
   const [activeView, setActiveView] = useState<CategoryKey | "needs_attention" | null>(null);
-  const [activeHub, setActiveHub] = useState<0 | 1>(0); // 0 = Command Center, 1 = Performance Hub
+  const [activeHub, setActiveHub] = useState<0 | 1>(() => {
+    // Restore the last active hub so "Back to Hub" always returns to the right one
+    try { return (parseInt(sessionStorage.getItem("bcc_active_hub") ?? "0", 10) as 0 | 1) || 0; } catch { return 0; }
+  });
 
   // Lock the AppShell scroll container when on the hub home view so the screen
   // feels native and stationary (like a real app). Restore scroll for sub-views.
@@ -1758,6 +1761,7 @@ export default function Board() {
                 const el = e.currentTarget;
                 const hub = Math.round(el.scrollLeft / el.offsetWidth) as 0 | 1;
                 setActiveHub(hub);
+                try { sessionStorage.setItem("bcc_active_hub", String(hub)); } catch { /* ignore */ }
               }}
               style={{
                 display: "flex",
