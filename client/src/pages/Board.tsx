@@ -809,7 +809,7 @@ function AddCardForm({ currentUser, onAdded, activeBusiness: activeBusinessProp,
         <div className="flex flex-col gap-1.5">
           <p className="text-[10px] uppercase tracking-wider font-medium" style={{ color: "rgba(255,255,255,0.4)", fontFamily: "'Space Grotesk', sans-serif" }}>Date <span className="normal-case" style={{ color: "rgba(255,255,255,0.3)" }}>(optional)</span></p>
           <input type="date" value={updateDate} onChange={e => setUpdateDate(e.target.value)}
-            className="w-full rounded-lg px-3 py-2 text-[12px] focus:outline-none transition-colors" style={inputStyle}
+            className="w-full rounded-lg px-3 py-2 text-[12px] focus:outline-none transition-colors" style={{ ...inputStyle, boxSizing: "border-box" }}
             onFocus={e => (e.target.style.borderColor = "#5EEAD4")} onBlur={e => (e.target.style.borderColor = "rgba(255,255,255,0.12)")} />
         </div>
       )}
@@ -837,7 +837,7 @@ function AddCardForm({ currentUser, onAdded, activeBusiness: activeBusinessProp,
           <div className="flex flex-col gap-1.5">
             <p className="text-[10px] uppercase tracking-wider font-medium" style={{ color: "rgba(255,255,255,0.4)", fontFamily: "'Space Grotesk', sans-serif" }}>Meeting date <span className="normal-case" style={{ color: "rgba(255,255,255,0.3)" }}>(optional)</span></p>
             <input type="date" value={scheduledDate} onChange={e => setScheduledDate(e.target.value)}
-              className="w-full rounded-lg px-3 py-2 text-[12px] focus:outline-none transition-colors" style={inputStyle}
+              className="w-full rounded-lg px-3 py-2 text-[12px] focus:outline-none transition-colors" style={{ ...inputStyle, boxSizing: "border-box" }}
               onFocus={e => (e.target.style.borderColor = "#FCD34D")} onBlur={e => (e.target.style.borderColor = "rgba(255,255,255,0.12)")} />
           </div>
         </>
@@ -847,8 +847,8 @@ function AddCardForm({ currentUser, onAdded, activeBusiness: activeBusinessProp,
       {type === "task" && (
         <div className="flex flex-col gap-1.5">
           <p className="text-[10px] uppercase tracking-wider font-medium" style={{ color: "rgba(255,255,255,0.4)", fontFamily: "'Space Grotesk', sans-serif" }}>Due date <span className="normal-case" style={{ color: "rgba(255,255,255,0.3)" }}>(optional)</span></p>
-          <input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} min={new Date().toISOString().split("T")[0]}
-            className="w-full rounded-lg px-3 py-2 text-[12px] focus:outline-none transition-colors" style={inputStyle}
+            <input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} min={new Date().toISOString().split("T")[0]}
+            className="w-full rounded-lg px-3 py-2 text-[12px] focus:outline-none transition-colors" style={{ ...inputStyle, boxSizing: "border-box" }}
             onFocus={e => (e.target.style.borderColor = "#C4B5FD")} onBlur={e => (e.target.style.borderColor = "rgba(255,255,255,0.12)")} />
         </div>
       )}
@@ -931,8 +931,8 @@ function AddCardForm({ currentUser, onAdded, activeBusiness: activeBusinessProp,
               return (
                 <button key={p.id} type="button"
                   onClick={() => setNotifyPersonIds(prev => selected ? prev.filter(id => id !== p.id) : [...prev, p.id])}
-                  className="px-3 py-1.5 rounded-full text-[11px] font-medium transition-all active:scale-[0.96]"
-                  style={{ backgroundColor: selected ? "rgba(94,234,212,0.15)" : "rgba(255,255,255,0.04)", color: selected ? "#5EEAD4" : "rgba(255,255,255,0.5)", border: selected ? "1.5px solid rgba(94,234,212,0.3)" : "1.5px solid rgba(255,255,255,0.08)", fontFamily: "'Space Grotesk', sans-serif" }}>
+                  className="px-4 py-2 rounded-full text-[13px] font-semibold transition-all active:scale-[0.96]"
+                  style={{ backgroundColor: selected ? "rgba(94,234,212,0.15)" : "rgba(255,255,255,0.07)", color: selected ? "#5EEAD4" : "rgba(255,255,255,0.7)", border: selected ? "1.5px solid rgba(94,234,212,0.4)" : "1.5px solid rgba(255,255,255,0.15)", fontFamily: "'Space Grotesk', sans-serif" }}>
                   {selected ? "✓ " : ""}{p.name}
                 </button>
               );
@@ -945,17 +945,36 @@ function AddCardForm({ currentUser, onAdded, activeBusiness: activeBusinessProp,
       )}
 
       {/* AI Tone Check toggle */}
-      <div className="flex items-center justify-between px-1">
+      <div className="flex items-center justify-between px-1 py-1">
         <div className="flex items-center gap-2">
-          <span className="text-[11px] font-medium" style={{ color: "rgba(255,255,255,0.5)", fontFamily: "'Space Grotesk', sans-serif" }}>🧠 AI Tone Check</span>
-          <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.3)" }}>{toneCheckEnabled ? "on" : "off"}</span>
+          <span className="text-base">🧠</span>
+          <span className="text-[13px] font-semibold" style={{ color: "rgba(255,255,255,0.8)", fontFamily: "'Space Grotesk', sans-serif" }}>AI Tone Check</span>
         </div>
-        <button type="button" onClick={() => setToneCheckEnabled(v => !v)}
-          className="relative w-10 h-5 rounded-full transition-all duration-200 flex-shrink-0"
-          style={{ backgroundColor: toneCheckEnabled ? "rgba(94,234,212,0.4)" : "rgba(255,255,255,0.1)", border: toneCheckEnabled ? "1.5px solid rgba(94,234,212,0.6)" : "1.5px solid rgba(255,255,255,0.15)" }}
-          aria-label={toneCheckEnabled ? "Disable AI Tone Check" : "Enable AI Tone Check"}>
-          <span className="absolute top-0.5 transition-all duration-200 w-3.5 h-3.5 rounded-full"
-            style={{ left: toneCheckEnabled ? "calc(100% - 18px)" : "2px", backgroundColor: toneCheckEnabled ? "#5EEAD4" : "rgba(255,255,255,0.4)" }} />
+        {/* Pill toggle */}
+        <button
+          type="button"
+          onClick={() => setToneCheckEnabled(v => !v)}
+          className="relative flex-shrink-0 transition-all duration-200"
+          style={{
+            width: "52px",
+            height: "28px",
+            borderRadius: "14px",
+            backgroundColor: toneCheckEnabled ? "#5EEAD4" : "rgba(255,255,255,0.12)",
+            border: toneCheckEnabled ? "none" : "1.5px solid rgba(255,255,255,0.2)",
+            boxShadow: toneCheckEnabled ? "0 0 10px rgba(94,234,212,0.35)" : "none",
+          }}
+          aria-label={toneCheckEnabled ? "Disable AI Tone Check" : "Enable AI Tone Check"}
+        >
+          <span
+            className="absolute top-[3px] transition-all duration-200 rounded-full"
+            style={{
+              width: "22px",
+              height: "22px",
+              left: toneCheckEnabled ? "27px" : "3px",
+              backgroundColor: toneCheckEnabled ? "#0F2440" : "rgba(255,255,255,0.5)",
+              boxShadow: "0 1px 4px rgba(0,0,0,0.3)",
+            }}
+          />
         </button>
       </div>
 
@@ -1100,7 +1119,7 @@ function BottomSheet({ open, onClose, children }: { open: boolean; onClose: () =
     <div
       ref={overlayRef}
       className="fixed inset-0 z-50 flex items-end justify-center"
-      style={{ backgroundColor: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)", animation: "fadeIn 0.2s ease-out" }}
+      style={{ backgroundColor: "rgba(0,0,0,0.85)", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)", animation: "fadeIn 0.2s ease-out" }}
       onClick={e => { if (e.target === overlayRef.current) onClose(); }}
     >
       <div
@@ -1528,11 +1547,11 @@ export default function Board() {
           )}
         </SubCardView>
 
-        {/* FAB for post — portalled to body so fixed pos works inside overflow scroll */}
-        {!sheetOpen && createPortal(
+        {/* FAB for post — hidden on archive/needs_attention, hidden when sheet is open */}
+        {!sheetOpen && activeView !== "archive" && activeView !== "needs_attention" && createPortal(
           <button
             onClick={() => setSheetOpen(true)}
-            className="fixed bottom-24 right-6 w-14 h-14 rounded-2xl flex items-center justify-center text-xl transition-all active:scale-[0.9] hover:scale-[1.05] z-40"
+            className="fixed bottom-24 right-6 w-14 h-14 rounded-2xl flex items-center justify-center text-2xl font-bold transition-all active:scale-[0.9] hover:scale-[1.05] z-40"
             style={{
               background: "linear-gradient(135deg, #5EEAD4, #38BDF8)",
               color: "#0F2440",
