@@ -1772,8 +1772,8 @@ export default function Board() {
           </div>
         ) : (
           /* ── Swipeable Dual-Hub Layout ── */
-          <div style={{ position: "relative" }}>
-            {/* Swipe container */}
+          <div style={{ position: "relative", marginLeft: "-20px", marginRight: "-20px" }}>
+            {/* Swipe container — negative margin breaks out of parent px-5 padding */}
             <div
               ref={(el) => registerRef("tour-hub-swipe", el)}
               style={{
@@ -1784,6 +1784,7 @@ export default function Board() {
                 WebkitOverflowScrolling: "touch",
                 msOverflowStyle: "none",
                 scrollbarWidth: "none",
+                width: "100%",
               }}
               className="[&::-webkit-scrollbar]:hidden"
             >
@@ -1902,12 +1903,18 @@ export default function Board() {
               </div>
             </div>
 
-            {/* Hub indicator dots */}
-            <div className="flex justify-center gap-2 mt-2 mb-1">
-              <div style={{ width: 20, height: 5, borderRadius: 3, backgroundColor: "rgba(94,234,212,0.7)" }} />
-              <div style={{ width: 6, height: 5, borderRadius: 3, backgroundColor: "rgba(255,255,255,0.2)" }} />
+            {/* Hub indicator dots + swipe hint */}
+            <div className="flex flex-col items-center gap-1.5 mt-2 mb-1">
+              <div className="flex items-center gap-2">
+                <div style={{ width: 20, height: 5, borderRadius: 3, backgroundColor: "rgba(94,234,212,0.7)" }} />
+                <div style={{ width: 6, height: 5, borderRadius: 3, backgroundColor: "rgba(255,255,255,0.2)" }} />
+              </div>
+              <div className="flex items-center gap-1.5" style={{ animation: "swipeHint 2s ease-in-out infinite" }}>
+                <span style={{ fontSize: 13, color: "rgba(255,255,255,0.35)", fontFamily: "'Space Grotesk', sans-serif", fontSize: "10px", fontWeight: 600, letterSpacing: "0.08em" }}>SWIPE</span>
+                <span style={{ fontSize: 14, animation: "swipeArrow 1.4s ease-in-out infinite" }}>👉</span>
+                <span style={{ fontSize: 10, color: "rgba(167,139,250,0.7)", fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, letterSpacing: "0.06em" }}>PERFORMANCE HUB</span>
+              </div>
             </div>
-            <p className="text-center text-[10px] font-semibold" style={{ color: "rgba(255,255,255,0.25)", fontFamily: "'Space Grotesk', sans-serif", letterSpacing: "0.08em" }}>SWIPE FOR PERFORMANCE HUB</p>
           </div>
         )}
 
@@ -1953,6 +1960,10 @@ export default function Board() {
         @keyframes hubCenterPulse2 {
           0%, 100% { box-shadow: 0 0 32px rgba(167,139,250,0.25), 0 0 8px rgba(167,139,250,0.15); }
           50% { box-shadow: 0 0 48px rgba(167,139,250,0.4), 0 0 16px rgba(167,139,250,0.25); }
+        }
+        @keyframes swipeArrow {
+          0%, 100% { transform: translateX(0); opacity: 0.6; }
+          50% { transform: translateX(5px); opacity: 1; }
         }
         @keyframes tileEnter {
           from { opacity: 0; transform: translateY(12px) scale(0.96); }
