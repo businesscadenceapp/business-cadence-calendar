@@ -1330,6 +1330,7 @@ export default function Board() {
   const { activeBusiness } = useActiveBusiness(person?.businessScope);
   const filterBusiness: Business | "all" = bizKeyToEnum(activeBusiness);
   const [activeView, setActiveView] = useState<CategoryKey | "needs_attention" | null>(null);
+  const hubScrollRef = useRef<HTMLDivElement>(null);
   const [activeHub, setActiveHub] = useState<0 | 1>(() => {
     // Restore the last active hub so "Back to Hub" always returns to the right one
     try { return (parseInt(sessionStorage.getItem("bcc_active_hub") ?? "0", 10) as 0 | 1) || 0; } catch { return 0; }
@@ -1351,7 +1352,26 @@ export default function Board() {
       mainEl.setAttribute("data-scroll", "auto");
     };
   }, [activeView]);
-  const hubScrollRef = useRef<HTMLDivElement>(null);
+
+  // Restore the scroll position of the hub container after mount so the header
+  // label matches the hub that was active when the user navigated away.
+  useEffect(() => {
+    const el = hubScrollRef.current;
+    if (!el) return;
+    const stored = (() => { try { return parseInt(sessionStorage.getItem("bcc_active_hub") ?? "0", 10) as 0 | 1; } catch { return 0 as const; } })();
+    if (stored === 1) {
+      // Use rAF to wait for layout — then jump to hub 2 without animation
+      const raf = requestAnimationFrame(() => {
+        el.style.scrollBehavior = "auto";
+        el.scrollLeft = el.offsetWidth;
+        el.style.scrollBehavior = "smooth";
+        setActiveHub(1);
+      });
+      return () => cancelAnimationFrame(raf);
+    } else {
+      setActiveHub(0);
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const [sheetOpen, setSheetOpen] = useState(false);
   const [referralOpen, setReferralOpen] = useState(false);
   const [showCompleted, setShowCompleted] = useState(false);
@@ -1766,12 +1786,15 @@ export default function Board() {
               style={{
                 display: "flex",
                 overflowX: "auto",
+                overflowY: "hidden",
                 scrollSnapType: "x mandatory",
                 scrollBehavior: "smooth",
                 WebkitOverflowScrolling: "touch",
                 msOverflowStyle: "none",
                 scrollbarWidth: "none",
                 width: "100%",
+                overscrollBehavior: "none",
+                touchAction: "pan-x",
               }}
               className="[&::-webkit-scrollbar]:hidden"
             >
