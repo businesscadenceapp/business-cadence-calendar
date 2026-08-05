@@ -16,11 +16,25 @@
  *   → /onboarding (business profile setup)
  */
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useLocation } from "wouter";
 import { BrandLogoStacked } from "@/components/BrandLogo";
 import { ONBOARDING_STEP_BADGES } from "@shared/subscriptionPlans";
 import { trpc } from "@/lib/trpc";
+import { Haptics, ImpactStyle } from "@capacitor/haptics";
+import { Capacitor } from "@capacitor/core";
+
+/** Fire a double-beat haptic pattern that mirrors the heartbeat animation */
+async function fireHeartbeatHaptic() {
+  if (!Capacitor.isNativePlatform()) return;
+  try {
+    await Haptics.impact({ style: ImpactStyle.Medium });
+    await new Promise(r => setTimeout(r, 160));
+    await Haptics.impact({ style: ImpactStyle.Light });
+  } catch {
+    // silently ignore
+  }
+}
 
 const HEART_SRC = "/manus-storage/heart-transparent-clean_14235c91.png";
 
@@ -140,6 +154,14 @@ export default function SubscriptionOnboarding() {
   const [isAnimating, setIsAnimating] = useState(false);
   const [direction, setDirection] = useState<"forward" | "back">("forward");
   const [touchStart, setTouchStart] = useState<number | null>(null);
+
+  // Fire haptic heartbeat once when the welcome screen first mounts
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      fireHeartbeatHaptic();
+    }, 400); // slight delay so splash has fully dismissed
+    return () => clearTimeout(timer);
+  }, []);
 
   // ─── Partner invite detection ────────────────────────────────────────────────
   // Read query params once (stable — no re-render side effects)
