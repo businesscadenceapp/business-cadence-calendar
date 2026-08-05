@@ -16,8 +16,6 @@
 - [x] Add haptic feedback on successful login using @capacitor/haptics
 - [x] Increase splash screen duration from 2000ms to 2500ms in capacitor.config.json
 
-- [ ] Move haptic heartbeat to fire on app launch (SubscriptionOnboarding mount), not login success
 - [x] Move haptic heartbeat to fire on app launch (SubscriptionOnboarding mount), not login success
 
-- [ ] Add haptic double-beat on mount + beating heart animation to ClientLogin page (matches onboarding experience after logout)
 - [x] Add haptic double-beat on mount + beating heart animation to ClientLogin page (matches onboarding experience after logout)
