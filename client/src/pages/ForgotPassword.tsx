@@ -48,7 +48,7 @@ export default function ForgotPassword() {
           <div className="flex items-center justify-between h-20">
             <a href="/">
               <img
-                src="/manus-storage/app-logo_a4d9bc44.jpeg"
+                src="/manus-storage/businesscadence-logo-final-clean_3f67cebb.webp"
                 alt="BusinessCadence"
                 height={80}
                 style={{ height: 80, width: "auto", filter: "drop-shadow(0 2px 0px rgba(255,255,255,0.15)) drop-shadow(0 5px 10px rgba(0,0,0,0.40)) saturate(1.2) brightness(1.05)" }}

@@ -150,7 +150,7 @@ export default function AcceptInvite() {
         {/* Logo */}
         <div className="flex justify-center mb-8">
           <img
-            src="/manus-storage/app-logo_a4d9bc44.jpeg"
+            src="/manus-storage/businesscadence-logo-final-clean_3f67cebb.webp"
             alt="BusinessCadence"
             height={100}
             style={{ height: 100, width: "auto", filter: "brightness(1.1)" }}
