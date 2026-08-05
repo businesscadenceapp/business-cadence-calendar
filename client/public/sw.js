@@ -1,7 +1,7 @@
 // BusinessCadence Service Worker
 // Caches the app shell for fast loading and basic offline support
 
-const CACHE_NAME = 'bcc-shell-v4';
+const CACHE_NAME = 'bcc-shell-v5';
 const SHELL_URLS = [
   '/',
   '/app/board',
