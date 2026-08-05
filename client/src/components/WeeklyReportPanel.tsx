@@ -127,7 +127,7 @@ function EmployeeCard({
         className="rounded-xl overflow-hidden"
         style={{
           background: "#FFFFFF",
-          border: submitted ? "1px solid rgba(13,148,136,0.25)" : "1px solid #E5E3DE",
+          border: submitted ? "1px solid rgba(37,220,249,0.25)" : "1px solid #E5E3DE",
           boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
         }}
       >
@@ -136,7 +136,7 @@ function EmployeeCard({
           className="flex items-center justify-between px-4 py-3"
           style={{
             borderBottom: "1px solid #F1F0ED",
-            background: submitted ? "rgba(13,148,136,0.04)" : "rgba(248,247,244,0.8)",
+            background: submitted ? "rgba(37,220,249,0.04)" : "rgba(248,247,244,0.8)",
           }}
         >
           <div className="flex items-center gap-2">
@@ -152,7 +152,7 @@ function EmployeeCard({
             {submitted ? (
               <span
                 className="text-xs font-semibold px-2 py-0.5 rounded-full"
-                style={{ background: "rgba(13,148,136,0.12)", color: "#0D9488" }}
+                style={{ background: "rgba(37,220,249,0.12)", color: "#25DCF9" }}
               >
                 ✓ Submitted
               </span>
@@ -216,11 +216,11 @@ function EmployeeCard({
   return (
     <div
       className="rounded-xl overflow-hidden"
-      style={{ background: "#FFFFFF", border: "1px solid #0D9488", boxShadow: "0 2px 8px rgba(13,148,136,0.1)" }}
+      style={{ background: "#FFFFFF", border: "1px solid #25DCF9", boxShadow: "0 2px 8px rgba(37,220,249,0.1)" }}
     >
       <div
         className="flex items-center justify-between px-4 py-3"
-        style={{ borderBottom: "1px solid #E5E3DE", background: "rgba(13,148,136,0.04)" }}
+        style={{ borderBottom: "1px solid #E5E3DE", background: "rgba(37,220,249,0.04)" }}
       >
         <div className="flex items-center gap-2">
           <span className="text-sm font-semibold text-slate-800">{employee.name}</span>
@@ -319,7 +319,7 @@ export default function WeeklyReportPanel({ dateKey }: WeeklyReportPanelProps) {
         <div>
           <h3
             className="text-sm font-bold uppercase tracking-wider"
-            style={{ color: "#0D9488", fontFamily: "'Space Grotesk', sans-serif" }}
+            style={{ color: "#25DCF9", fontFamily: "'Space Grotesk', sans-serif" }}
           >
             📊 Weekly Reports
           </h3>
@@ -332,8 +332,8 @@ export default function WeeklyReportPanel({ dateKey }: WeeklyReportPanelProps) {
             <span
               className="text-xs font-semibold px-2.5 py-1 rounded-full"
               style={{
-                background: submittedCount === totalCount ? "rgba(13,148,136,0.12)" : "rgba(245,158,11,0.12)",
-                color: submittedCount === totalCount ? "#0D9488" : "#D97706",
+                background: submittedCount === totalCount ? "rgba(37,220,249,0.12)" : "rgba(245,158,11,0.12)",
+                color: submittedCount === totalCount ? "#25DCF9" : "#D97706",
               }}
             >
               {submittedCount}/{totalCount} submitted
@@ -353,7 +353,7 @@ export default function WeeklyReportPanel({ dateKey }: WeeklyReportPanelProps) {
       {!hasEmployees && (
         <div
           className="rounded-xl p-5 text-center"
-          style={{ background: "rgba(13,148,136,0.04)", border: "1px dashed rgba(13,148,136,0.25)" }}
+          style={{ background: "rgba(37,220,249,0.04)", border: "1px dashed rgba(37,220,249,0.25)" }}
         >
           <p className="text-sm text-slate-500 mb-3">
             No employees set up yet. Add your staff and their weekly metrics to start tracking numbers here.
@@ -361,7 +361,7 @@ export default function WeeklyReportPanel({ dateKey }: WeeklyReportPanelProps) {
           <Link
             href="/app/employees"
             className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold text-white transition-all active:scale-95"
-            style={{ background: "#0D9488" }}
+            style={{ background: "#25DCF9" }}
           >
             + Set Up Employees
           </Link>

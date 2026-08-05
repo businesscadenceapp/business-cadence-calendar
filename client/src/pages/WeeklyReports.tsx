@@ -5,7 +5,7 @@
  *   Quarterly → all goals for current quarter with status, KPI sparklines
  *   Goals   → all active goals grouped by period
  *
- * Dark navy theme (#0F2440 bg, #3B9EE8 teal accent)
+ * Dark navy theme (#0F2440 bg, #33A2DB teal accent)
  */
 import { useState, useMemo } from "react";
 import { Link } from "wouter";
@@ -179,14 +179,14 @@ function EntryForm({ row, weekKey, onSaved }: { row: SummaryRow; weekKey: string
             <input type="number" min={0} step="any" value={values[m.id] ?? ""} onChange={(e) => setValues((v) => ({ ...v, [m.id]: e.target.value }))} placeholder="0"
               className="w-24 px-3 py-1.5 rounded-lg text-sm text-right font-mono focus:outline-none transition-colors placeholder-white/30"
               style={{ backgroundColor: "rgba(255,255,255,0.06)", border: "1.5px solid rgba(255,255,255,0.12)", color: "white" }}
-              onFocus={e => (e.target.style.borderColor = "#3B9EE8")} onBlur={e => (e.target.style.borderColor = "rgba(255,255,255,0.12)")} />
+              onFocus={e => (e.target.style.borderColor = "#33A2DB")} onBlur={e => (e.target.style.borderColor = "rgba(255,255,255,0.12)")} />
             {m.unit && <span className="text-xs w-8" style={{ color: "rgba(255,255,255,0.4)", fontFamily: "'JetBrains Mono', monospace" }}>{m.unit}</span>}
           </div>
         </div>
       ))}
       <button onClick={handleSubmit} disabled={submitMutation.isPending}
         className="w-full mt-2 py-2 rounded-lg text-sm font-semibold transition-all active:scale-[0.98]"
-        style={{ background: submitMutation.isPending ? "rgba(13,148,136,0.4)" : "#0D9488", color: "#fff" }}>
+        style={{ background: submitMutation.isPending ? "rgba(37,220,249,0.4)" : "#25DCF9", color: "#fff" }}>
         {submitMutation.isPending ? "Saving…" : "Submit Numbers"}
       </button>
     </div>
@@ -198,14 +198,14 @@ function EmployeeCard({ row, weekKey, onRefresh }: { row: SummaryRow; weekKey: s
   const { employee, metrics, thisWeek, lastWeek, submitted } = row;
   return (
     <div className="rounded-2xl p-5 flex flex-col gap-4 transition-all"
-      style={{ background: submitted ? "rgba(5,150,105,0.06)" : "rgba(255,255,255,0.04)", border: submitted ? "1px solid rgba(13,148,136,0.35)" : "1px solid rgba(255,255,255,0.1)" }}>
+      style={{ background: submitted ? "rgba(5,150,105,0.06)" : "rgba(255,255,255,0.04)", border: submitted ? "1px solid rgba(37,220,249,0.35)" : "1px solid rgba(255,255,255,0.1)" }}>
       <div className="flex items-start justify-between gap-2">
         <div>
           <p className="text-base font-bold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>{employee.name}</p>
           <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>{employee.role}</p>
         </div>
         <span className="shrink-0 text-xs font-semibold px-2.5 py-1 rounded-full"
-          style={{ background: submitted ? "rgba(13,148,136,0.15)" : "rgba(255,255,255,0.06)", color: submitted ? "#3B9EE8" : "rgba(255,255,255,0.4)" }}>
+          style={{ background: submitted ? "rgba(37,220,249,0.15)" : "rgba(255,255,255,0.06)", color: submitted ? "#33A2DB" : "rgba(255,255,255,0.4)" }}>
           {submitted ? "✓ Submitted" : "⏳ Pending"}
         </span>
       </div>
@@ -231,15 +231,15 @@ function EmployeeCard({ row, weekKey, onRefresh }: { row: SummaryRow; weekKey: s
               </div>
             );
           })}
-          <button onClick={() => setEntering(true)} className="text-xs transition-colors mt-1" style={{ color: "rgba(59,158,232,0.5)" }}
-            onMouseEnter={e => (e.currentTarget.style.color = "#3B9EE8")} onMouseLeave={e => (e.currentTarget.style.color = "rgba(59,158,232,0.5)")}>Edit numbers</button>
+          <button onClick={() => setEntering(true)} className="text-xs transition-colors mt-1" style={{ color: "rgba(51,162,219,0.5)" }}
+            onMouseEnter={e => (e.currentTarget.style.color = "#33A2DB")} onMouseLeave={e => (e.currentTarget.style.color = "rgba(51,162,219,0.5)")}>Edit numbers</button>
         </div>
       )}
       {!submitted && !entering && (
         <div className="flex flex-col items-center gap-3 py-2">
           <p className="text-xs text-center" style={{ color: "rgba(255,255,255,0.4)" }}>No numbers submitted yet for this week.</p>
           <button onClick={() => setEntering(true)} className="px-5 py-2 rounded-xl text-sm font-semibold transition-all active:scale-[0.97]"
-            style={{ background: "rgba(13,148,136,0.1)", border: "1px solid rgba(13,148,136,0.3)", color: "#3B9EE8" }}>Enter Numbers</button>
+            style={{ background: "rgba(37,220,249,0.1)", border: "1px solid rgba(37,220,249,0.3)", color: "#33A2DB" }}>Enter Numbers</button>
         </div>
       )}
       {entering && (
@@ -338,7 +338,7 @@ function WeeklyTab({ accountId, forcedBusiness }: { accountId: number; forcedBus
         <div className="flex justify-center mb-4">
           <button onClick={() => setSelectedWeek(currentWeekKey)}
             className="text-xs px-3 py-1 rounded-lg font-semibold transition-all"
-            style={{ background: "rgba(13,148,136,0.1)", border: "1px solid rgba(13,148,136,0.25)", color: "#3B9EE8" }}>
+            style={{ background: "rgba(37,220,249,0.1)", border: "1px solid rgba(37,220,249,0.25)", color: "#33A2DB" }}>
             Jump to Current Week
           </button>
         </div>
@@ -351,25 +351,25 @@ function WeeklyTab({ accountId, forcedBusiness }: { accountId: number; forcedBus
           {summaryQuery.isLoading && <div className="flex items-center justify-center py-16"><div className="w-8 h-8 rounded-full border-2 border-teal-400/30 border-t-teal-400 animate-spin" /></div>}
           {!summaryQuery.isLoading && rows.length === 0 && (
             <EmptyState icon="👥" title="No staff set up yet" body="Add your team members and their metrics to start tracking weekly numbers."
-              cta={<Link href="/app/employees" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold" style={{ background: "rgba(13,148,136,0.1)", border: "1px solid rgba(13,148,136,0.3)", color: "#3B9EE8" }}>Set Up Staff →</Link>} />
+              cta={<Link href="/app/employees" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold" style={{ background: "rgba(37,220,249,0.1)", border: "1px solid rgba(37,220,249,0.3)", color: "#33A2DB" }}>Set Up Staff →</Link>} />
           )}
           {!summaryQuery.isLoading && rows.length > 0 && (
             <>
               <div className="mb-6">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>Submission Progress</span>
-                  <span className="text-xs font-semibold" style={{ color: submittedCount === totalCount ? "#3B9EE8" : "rgba(255,255,255,0.5)", fontFamily: "'JetBrains Mono', monospace" }}>{submittedCount} of {totalCount}</span>
+                  <span className="text-xs font-semibold" style={{ color: submittedCount === totalCount ? "#33A2DB" : "rgba(255,255,255,0.5)", fontFamily: "'JetBrains Mono', monospace" }}>{submittedCount} of {totalCount}</span>
                 </div>
                 <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.1)" }}>
-                  <div className="h-full rounded-full transition-all duration-500" style={{ width: totalCount > 0 ? `${(submittedCount / totalCount) * 100}%` : "0%", background: "linear-gradient(90deg, #0D9488, #3B9EE8)" }} />
+                  <div className="h-full rounded-full transition-all duration-500" style={{ width: totalCount > 0 ? `${(submittedCount / totalCount) * 100}%` : "0%", background: "linear-gradient(90deg, #25DCF9, #33A2DB)" }} />
                 </div>
               </div>
               <div className="grid gap-4" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))" }}>
                 {rows.map(row => <EmployeeCard key={row.employee.id} row={row} weekKey={selectedWeek} onRefresh={() => summaryQuery.refetch()} />)}
               </div>
               {submittedCount === totalCount && totalCount > 0 && (
-                <div className="mt-8 rounded-2xl p-5 text-center" style={{ background: "rgba(13,148,136,0.07)", border: "1px solid rgba(13,148,136,0.22)" }}>
-                  <p className="text-sm font-semibold" style={{ color: "#3B9EE8" }}>✓ All reports submitted for this week</p>
+                <div className="mt-8 rounded-2xl p-5 text-center" style={{ background: "rgba(37,220,249,0.07)", border: "1px solid rgba(37,220,249,0.22)" }}>
+                  <p className="text-sm font-semibold" style={{ color: "#33A2DB" }}>✓ All reports submitted for this week</p>
                 </div>
               )}
             </>
@@ -480,7 +480,7 @@ function MonthlyTab({ accountId, forcedBusiness }: { accountId: number; forcedBu
       {goalsQuery.isLoading && <div className="flex items-center justify-center py-10"><div className="w-7 h-7 rounded-full border-2 border-teal-400/30 border-t-teal-400 animate-spin" /></div>}
       {!goalsQuery.isLoading && (!qGoals || qGoals.goals.length === 0) && (
         <EmptyState icon="🎯" title={`No Q${currentQ} goals set`} body="Add quarterly goals in the Goals page to track them here."
-          cta={<Link href="/app/goals" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold" style={{ background: "rgba(13,148,136,0.1)", border: "1px solid rgba(13,148,136,0.3)", color: "#3B9EE8" }}>Set Goals →</Link>} />
+          cta={<Link href="/app/goals" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold" style={{ background: "rgba(37,220,249,0.1)", border: "1px solid rgba(37,220,249,0.3)", color: "#33A2DB" }}>Set Goals →</Link>} />
       )}
       {!goalsQuery.isLoading && qGoals && qGoals.goals.length > 0 && (
         <div className="flex flex-col gap-3">
@@ -567,7 +567,7 @@ function QuarterlyTab({ accountId, forcedBusiness }: { accountId: number; forced
             style={{
               backgroundColor: viewQ === q ? "#1E3A5F" : "rgba(255,255,255,0.05)",
               color: viewQ === q ? "white" : "rgba(255,255,255,0.5)",
-              border: viewQ === q ? "1px solid rgba(59,158,232,0.3)" : "1px solid rgba(255,255,255,0.1)",
+              border: viewQ === q ? "1px solid rgba(51,162,219,0.3)" : "1px solid rgba(255,255,255,0.1)",
             }}>
             Q{q}{q === currentQ ? " ·  Now" : ""}
           </button>
@@ -579,7 +579,7 @@ function QuarterlyTab({ accountId, forcedBusiness }: { accountId: number; forced
       {goalsQuery.isLoading && <div className="flex items-center justify-center py-10"><div className="w-7 h-7 rounded-full border-2 border-teal-400/30 border-t-teal-400 animate-spin" /></div>}
       {!goalsQuery.isLoading && (!qData || qData.goals.length === 0) && (
         <EmptyState icon="🎯" title={`No Q${viewQ} goals`} body="Goals set for this quarter will appear here."
-          cta={<Link href="/app/goals" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold" style={{ background: "rgba(13,148,136,0.1)", border: "1px solid rgba(13,148,136,0.3)", color: "#3B9EE8" }}>Add Goals →</Link>} />
+          cta={<Link href="/app/goals" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold" style={{ background: "rgba(37,220,249,0.1)", border: "1px solid rgba(37,220,249,0.3)", color: "#33A2DB" }}>Add Goals →</Link>} />
       )}
       {!goalsQuery.isLoading && qData && qData.goals.length > 0 && (
         <>
@@ -649,7 +649,7 @@ function QuarterlyTab({ accountId, forcedBusiness }: { accountId: number; forced
                     const h = Math.max((v / max) * 100, 4);
                     return (
                       <div key={i} className="flex-1 rounded-sm transition-all" title={`${formatYearMonth(months[i])}: ${v}`}
-                        style={{ height: `${h}%`, backgroundColor: i === vals.length - 1 ? "#3B9EE8" : "rgba(59,158,232,0.3)" }} />
+                        style={{ height: `${h}%`, backgroundColor: i === vals.length - 1 ? "#33A2DB" : "rgba(51,162,219,0.3)" }} />
                     );
                   })}
                 </div>
@@ -715,7 +715,7 @@ function GoalsTab({ accountId, forcedBusiness }: { accountId: number; forcedBusi
           style={{ border: "1px solid rgba(255,255,255,0.12)", color: "rgba(255,255,255,0.6)", backgroundColor: "rgba(255,255,255,0.04)" }}>›</button>
         {viewYear !== currentYear && (
           <button onClick={() => setViewYear(currentYear)} className="text-xs px-2.5 py-1 rounded-lg font-semibold transition-all"
-            style={{ background: "rgba(13,148,136,0.1)", border: "1px solid rgba(13,148,136,0.25)", color: "#3B9EE8" }}>This Year</button>
+            style={{ background: "rgba(37,220,249,0.1)", border: "1px solid rgba(37,220,249,0.25)", color: "#33A2DB" }}>This Year</button>
         )}
       </div>
 
@@ -723,7 +723,7 @@ function GoalsTab({ accountId, forcedBusiness }: { accountId: number; forcedBusi
 
       {!goalsQuery.isLoading && data && data.all.length === 0 && (
         <EmptyState icon="🎯" title="No goals yet" body="Set your annual and quarterly goals to track progress here."
-          cta={<Link href="/app/goals" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold" style={{ background: "rgba(13,148,136,0.1)", border: "1px solid rgba(13,148,136,0.3)", color: "#3B9EE8" }}>Add Goals →</Link>} />
+          cta={<Link href="/app/goals" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold" style={{ background: "rgba(37,220,249,0.1)", border: "1px solid rgba(37,220,249,0.3)", color: "#33A2DB" }}>Add Goals →</Link>} />
       )}
 
       {!goalsQuery.isLoading && data && data.all.length > 0 && (
@@ -842,7 +842,7 @@ export default function WeeklyReports() {
         <button
           onClick={() => window.history.back()}
           className="flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-lg mb-3 transition-all active:scale-[0.97]"
-          style={{ color: "#3B9EE8", backgroundColor: "rgba(59,158,232,0.1)", border: "1px solid rgba(59,158,232,0.25)" }}
+          style={{ color: "#33A2DB", backgroundColor: "rgba(51,162,219,0.1)", border: "1px solid rgba(51,162,219,0.25)" }}
         >
           <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M9 2L4 7L9 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
           Back to Hub
@@ -863,7 +863,7 @@ export default function WeeklyReports() {
               style={{
                 backgroundColor: activeTab === t.id ? "#1E3A5F" : "transparent",
                 color: activeTab === t.id ? "white" : "rgba(255,255,255,0.5)",
-                border: activeTab === t.id ? "1px solid rgba(59,158,232,0.25)" : "1px solid transparent",
+                border: activeTab === t.id ? "1px solid rgba(51,162,219,0.25)" : "1px solid transparent",
                 fontFamily: "'Space Grotesk', sans-serif",
               }}>
               <span>{t.icon}</span>

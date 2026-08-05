@@ -136,7 +136,7 @@ export default function PersonLoginModal({ accountId }: PersonLoginModalProps) {
                 autoComplete="email"
                 className="w-full rounded-xl px-4 py-2.5 text-sm text-[#1A1A2E] placeholder-[#94A3B8] focus:outline-none transition-all"
                 style={{ backgroundColor: "#F8F7F4", border: "1.5px solid #E2E0DB" }}
-                onFocus={e => (e.target.style.borderColor = "#0D9488")}
+                onFocus={e => (e.target.style.borderColor = "#25DCF9")}
                 onBlur={e => (e.target.style.borderColor = "#E2E0DB")}
               />
             </div>
@@ -151,7 +151,7 @@ export default function PersonLoginModal({ accountId }: PersonLoginModalProps) {
                 autoComplete="current-password"
                 className="w-full rounded-xl px-4 py-2.5 text-sm text-[#1A1A2E] placeholder-[#94A3B8] focus:outline-none transition-all"
                 style={{ backgroundColor: "#F8F7F4", border: "1.5px solid #E2E0DB" }}
-                onFocus={e => (e.target.style.borderColor = "#0D9488")}
+                onFocus={e => (e.target.style.borderColor = "#25DCF9")}
                 onBlur={e => (e.target.style.borderColor = "#E2E0DB")}
               />
             </div>
@@ -187,7 +187,7 @@ export default function PersonLoginModal({ accountId }: PersonLoginModalProps) {
                 autoComplete="name"
                 className="w-full rounded-xl px-4 py-2.5 text-sm text-[#1A1A2E] placeholder-[#94A3B8] focus:outline-none transition-all"
                 style={{ backgroundColor: "#F8F7F4", border: "1.5px solid #E2E0DB" }}
-                onFocus={e => (e.target.style.borderColor = "#0D9488")}
+                onFocus={e => (e.target.style.borderColor = "#25DCF9")}
                 onBlur={e => (e.target.style.borderColor = "#E2E0DB")}
               />
             </div>
@@ -202,7 +202,7 @@ export default function PersonLoginModal({ accountId }: PersonLoginModalProps) {
                 autoComplete="email"
                 className="w-full rounded-xl px-4 py-2.5 text-sm text-[#1A1A2E] placeholder-[#94A3B8] focus:outline-none transition-all"
                 style={{ backgroundColor: "#F8F7F4", border: "1.5px solid #E2E0DB" }}
-                onFocus={e => (e.target.style.borderColor = "#0D9488")}
+                onFocus={e => (e.target.style.borderColor = "#25DCF9")}
                 onBlur={e => (e.target.style.borderColor = "#E2E0DB")}
               />
             </div>
@@ -217,7 +217,7 @@ export default function PersonLoginModal({ accountId }: PersonLoginModalProps) {
                 autoComplete="new-password"
                 className="w-full rounded-xl px-4 py-2.5 text-sm text-[#1A1A2E] placeholder-[#94A3B8] focus:outline-none transition-all"
                 style={{ backgroundColor: "#F8F7F4", border: "1.5px solid #E2E0DB" }}
-                onFocus={e => (e.target.style.borderColor = "#0D9488")}
+                onFocus={e => (e.target.style.borderColor = "#25DCF9")}
                 onBlur={e => (e.target.style.borderColor = "#E2E0DB")}
               />
             </div>
@@ -232,7 +232,7 @@ export default function PersonLoginModal({ accountId }: PersonLoginModalProps) {
                 autoComplete="new-password"
                 className="w-full rounded-xl px-4 py-2.5 text-sm text-[#1A1A2E] placeholder-[#94A3B8] focus:outline-none transition-all"
                 style={{ backgroundColor: "#F8F7F4", border: "1.5px solid #E2E0DB" }}
-                onFocus={e => (e.target.style.borderColor = "#0D9488")}
+                onFocus={e => (e.target.style.borderColor = "#25DCF9")}
                 onBlur={e => (e.target.style.borderColor = "#E2E0DB")}
               />
             </div>

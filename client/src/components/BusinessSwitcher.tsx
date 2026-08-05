@@ -145,9 +145,9 @@ export function SwitchBusinessButton({ onClick, compact = false }: SwitchBusines
         onClick={onClick}
         className="flex items-center gap-2 w-full px-4 py-3 rounded-xl text-sm font-semibold transition-all active:scale-[0.98]"
         style={{
-          backgroundColor: "rgba(59,158,232,0.08)",
-          border: "1px solid rgba(59,158,232,0.2)",
-          color: "#3B9EE8",
+          backgroundColor: "rgba(51,162,219,0.08)",
+          border: "1px solid rgba(51,162,219,0.2)",
+          color: "#33A2DB",
           fontFamily: "'Space Grotesk', sans-serif",
         }}
       >
@@ -162,13 +162,13 @@ export function SwitchBusinessButton({ onClick, compact = false }: SwitchBusines
       onClick={onClick}
       className="flex items-center gap-2 w-full px-3 py-2 rounded-xl text-[12px] font-semibold transition-all active:scale-[0.98]"
       style={{
-        backgroundColor: "rgba(59,158,232,0.07)",
-        border: "1px solid rgba(59,158,232,0.18)",
-        color: "#3B9EE8",
+        backgroundColor: "rgba(51,162,219,0.07)",
+        border: "1px solid rgba(51,162,219,0.18)",
+        color: "#33A2DB",
         fontFamily: "'Space Grotesk', sans-serif",
       }}
-      onMouseEnter={e => (e.currentTarget.style.backgroundColor = "rgba(59,158,232,0.13)")}
-      onMouseLeave={e => (e.currentTarget.style.backgroundColor = "rgba(59,158,232,0.07)")}
+      onMouseEnter={e => (e.currentTarget.style.backgroundColor = "rgba(51,162,219,0.13)")}
+      onMouseLeave={e => (e.currentTarget.style.backgroundColor = "rgba(51,162,219,0.07)")}
     >
       <span className="text-sm">🔀</span>
       Switch Business

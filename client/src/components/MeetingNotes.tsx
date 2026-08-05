@@ -79,7 +79,7 @@ export default function MeetingNotes({
           </span>
         )}
         {saveStatus === "saved" && (
-          <span className="text-[10px]" style={{ color: "#0D9488" }}>
+          <span className="text-[10px]" style={{ color: "#25DCF9" }}>
             ✓ Saved
           </span>
         )}
@@ -98,10 +98,10 @@ export default function MeetingNotes({
           border: "1px solid rgba(255,255,255,0.1)",
           color: "rgba(255,255,255,0.85)",
           fontFamily: "'Inter', sans-serif",
-          caretColor: "#0D9488",
+          caretColor: "#25DCF9",
         }}
         onFocus={(e) => {
-          e.currentTarget.style.borderColor = "rgba(13,148,136,0.5)";
+          e.currentTarget.style.borderColor = "rgba(37,220,249,0.5)";
           e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.07)";
         }}
         onBlurCapture={(e) => {

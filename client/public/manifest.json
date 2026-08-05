@@ -9,19 +9,19 @@
   "theme_color": "#0A1929",
   "icons": [
     {
-      "src": "/manus-storage/app-icon_a22c8062.png",
+      "src": "/manus-storage/web-pwa-192_9d47d823.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/manus-storage/app-icon_a22c8062.png",
+      "src": "/manus-storage/web-pwa-512_d74a954e.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/manus-storage/app-icon_a22c8062.png",
+      "src": "/manus-storage/icon-1024_a3aeaf92.png",
       "sizes": "1024x1024",
       "type": "image/png",
       "purpose": "any maskable"

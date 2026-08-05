@@ -21,7 +21,7 @@ function PreviewFrame({ title, icon, children }: { title: string; icon: string; 
     >
       <div className="flex items-center gap-2 mb-3">
         <span className="text-base">{icon}</span>
-        <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#3B9EE8]">{title}</span>
+        <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#33A2DB]">{title}</span>
         <span className="ml-auto text-[9px] font-semibold px-2 py-0.5 rounded-full"
           style={{ background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.35)" }}>
           SAMPLE
@@ -68,7 +68,7 @@ function HubPreview() {
           <p className="text-[9px] text-white/30 mt-1">Mike · 9:14 AM</p>
         </div>
         <div className="self-end max-w-[85%] rounded-2xl rounded-br-md px-3 py-2"
-          style={{ background: "rgba(59,158,232,0.12)", border: "1px solid rgba(59,158,232,0.25)" }}>
+          style={{ background: "rgba(51,162,219,0.12)", border: "1px solid rgba(51,162,219,0.25)" }}>
           <p className="text-[12px] text-white/90 leading-snug">Love it — adding it to Friday's owner meeting agenda.</p>
           <p className="text-[9px] text-white/35 mt-1">Lynn · 9:20 AM</p>
         </div>
@@ -90,7 +90,7 @@ function CalendarPreview() {
     <PreviewFrame title="The Calendar" icon="📅">
       <div className="flex flex-col gap-2 text-left">
         {[
-          { day: "MON", date: "9", label: "Daily Huddle", time: "8:30 AM", color: "#3B9EE8" },
+          { day: "MON", date: "9", label: "Daily Huddle", time: "8:30 AM", color: "#33A2DB" },
           { day: "FRI", date: "13", label: "Weekly Owner Meeting", time: "2:00 PM", color: "#38BDF8" },
           { day: "FRI", date: "27", label: "Monthly Deep Dive", time: "1:00 PM", color: "#A78BFA" },
         ].map(m => (
@@ -149,13 +149,13 @@ export default function WaitingForPartner() {
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <div
           className="absolute top-0 left-1/2 -translate-x-1/2 w-[400px] h-[400px] rounded-full"
-          style={{ background: "radial-gradient(circle, rgba(59,158,232,0.08) 0%, transparent 70%)" }}
+          style={{ background: "radial-gradient(circle, rgba(51,162,219,0.08) 0%, transparent 70%)" }}
         />
         <div
           className="absolute inset-0"
           style={{
             backgroundImage:
-              "linear-gradient(rgba(59,158,232,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(59,158,232,0.02) 1px, transparent 1px)",
+              "linear-gradient(rgba(51,162,219,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(51,162,219,0.02) 1px, transparent 1px)",
             backgroundSize: "48px 48px",
           }}
         />
@@ -166,7 +166,7 @@ export default function WaitingForPartner() {
         <div className="flex items-center gap-2">
           <BrandIcon size={28} variant="teal" />
           <span className="text-white/40 text-sm font-medium tracking-wide">
-            Business<span className="text-[#3B9EE8]">Cadence</span>
+            Business<span className="text-[#33A2DB]">Cadence</span>
           </span>
         </div>
       </div>
@@ -179,14 +179,14 @@ export default function WaitingForPartner() {
           <div
             className="absolute inset-0 rounded-full animate-ping"
             style={{
-              background: "rgba(59,158,232,0.08)",
+              background: "rgba(51,162,219,0.08)",
               animationDuration: "2.5s",
             }}
           />
           <div
             className="absolute inset-[-8px] rounded-full animate-ping"
             style={{
-              background: "rgba(59,158,232,0.04)",
+              background: "rgba(51,162,219,0.04)",
               animationDuration: "2.5s",
               animationDelay: "0.5s",
             }}
@@ -195,11 +195,11 @@ export default function WaitingForPartner() {
           <div
             className="relative w-20 h-20 rounded-3xl flex items-center justify-center"
             style={{
-              background: "linear-gradient(135deg, rgba(59,158,232,0.12) 0%, rgba(13,148,136,0.06) 100%)",
-              border: "1px solid rgba(59,158,232,0.25)",
+              background: "linear-gradient(135deg, rgba(51,162,219,0.12) 0%, rgba(37,220,249,0.06) 100%)",
+              border: "1px solid rgba(51,162,219,0.25)",
             }}
           >
-            <svg className="w-10 h-10 text-[#3B9EE8]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-10 h-10 text-[#33A2DB]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
                 d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
             </svg>
@@ -210,7 +210,7 @@ export default function WaitingForPartner() {
           Invite sent to {partnerName}
         </h1>
         {partnerEmail && (
-          <p className="text-[#3B9EE8]/70 text-sm mb-4 font-medium">{partnerEmail}</p>
+          <p className="text-[#33A2DB]/70 text-sm mb-4 font-medium">{partnerEmail}</p>
         )}
         <p className="text-white/40 text-base leading-relaxed max-w-xs mb-6">
           Once they complete the business profile, you'll both have full access. We'll notify you when they're in.
@@ -220,12 +220,12 @@ export default function WaitingForPartner() {
         <div
           className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-8"
           style={{
-            background: "rgba(59,158,232,0.08)",
-            border: "1px solid rgba(59,158,232,0.2)",
+            background: "rgba(51,162,219,0.08)",
+            border: "1px solid rgba(51,162,219,0.2)",
           }}
         >
-          <div className="w-2 h-2 rounded-full bg-[#3B9EE8] animate-pulse" />
-          <span className="text-[#3B9EE8] text-xs font-semibold">Waiting for setup</span>
+          <div className="w-2 h-2 rounded-full bg-[#33A2DB] animate-pulse" />
+          <span className="text-[#33A2DB] text-xs font-semibold">Waiting for setup</span>
         </div>
 
         {/* Sneak-peek carousel with sample data */}
@@ -253,7 +253,7 @@ export default function WaitingForPartner() {
                 style={{
                   width: i === previewIndex ? 16 : 6,
                   height: 6,
-                  background: i === previewIndex ? "#3B9EE8" : "rgba(255,255,255,0.15)",
+                  background: i === previewIndex ? "#33A2DB" : "rgba(255,255,255,0.15)",
                 }}
               />
             ))}
@@ -267,8 +267,8 @@ export default function WaitingForPartner() {
         onClick={() => navigate(`/setup?bizName=${encodeURIComponent(bizName)}&partnerSent=1&partnerName=${encodeURIComponent(partnerName)}`)}
         className="w-full py-4 rounded-2xl font-bold text-[#0A1628] text-base transition-all duration-200 active:scale-[0.97]"
         style={{
-          background: "linear-gradient(135deg, #3B9EE8 0%, #0D9488 100%)",
-          boxShadow: "0 4px 24px rgba(59,158,232,0.22)",
+          background: "linear-gradient(135deg, #33A2DB 0%, #25DCF9 100%)",
+          boxShadow: "0 4px 24px rgba(51,162,219,0.22)",
         }}
       >
         Set up my business →

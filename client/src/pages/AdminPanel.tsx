@@ -106,7 +106,7 @@ export default function AdminPanel() {
           <button
             onClick={() => navigate("/app/board")}
             className="mt-4 px-4 py-2 rounded-xl text-sm font-semibold"
-            style={{ backgroundColor: "#3B9EE8", color: "#0F2440" }}
+            style={{ backgroundColor: "#33A2DB", color: "#0F2440" }}
           >
             Go to Board
           </button>
@@ -229,7 +229,7 @@ export default function AdminPanel() {
               className="px-4 py-2 rounded-xl text-[12px] font-bold transition-all"
               style={
                 activeTab === tab
-                  ? { background: "linear-gradient(135deg, #3B9EE8, #38BDF8)", color: "#0F2440", boxShadow: "0 4px 12px rgba(59,158,232,0.25)" }
+                  ? { background: "linear-gradient(135deg, #33A2DB, #38BDF8)", color: "#0F2440", boxShadow: "0 4px 12px rgba(51,162,219,0.25)" }
                   : { backgroundColor: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.5)", border: "1px solid rgba(255,255,255,0.1)" }
               }
             >
@@ -322,9 +322,9 @@ export default function AdminPanel() {
             <div
               className="rounded-2xl overflow-hidden"
               style={{
-                background: "linear-gradient(135deg, rgba(59,158,232,0.06) 0%, rgba(59,158,232,0.03) 100%)",
-                border: "1.5px solid rgba(59,158,232,0.18)",
-                boxShadow: "0 4px 24px rgba(59,158,232,0.06)",
+                background: "linear-gradient(135deg, rgba(51,162,219,0.06) 0%, rgba(51,162,219,0.03) 100%)",
+                border: "1.5px solid rgba(51,162,219,0.18)",
+                boxShadow: "0 4px 24px rgba(51,162,219,0.06)",
               }}
             >
               <button
@@ -332,14 +332,14 @@ export default function AdminPanel() {
                 onClick={() => { setShowInviteForm(v => !v); setInviteLink(null); }}
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-7 h-7 rounded-lg flex items-center justify-center text-sm" style={{ background: "rgba(59,158,232,0.15)", border: "1px solid rgba(59,158,232,0.3)" }}>✉️</div>
+                  <div className="w-7 h-7 rounded-lg flex items-center justify-center text-sm" style={{ background: "rgba(51,162,219,0.15)", border: "1px solid rgba(51,162,219,0.3)" }}>✉️</div>
                   <h2 className="text-sm font-bold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Invite New Team Member</h2>
                 </div>
                 <span className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>{showInviteForm ? "▲" : "▼"}</span>
               </button>
 
               {showInviteForm && (
-                <div className="px-5 pb-5" style={{ borderTop: "1px solid rgba(59,158,232,0.12)" }}>
+                <div className="px-5 pb-5" style={{ borderTop: "1px solid rgba(51,162,219,0.12)" }}>
                   <form onSubmit={handleInvite} className="flex flex-col gap-3 mt-4">
                     <div className="flex flex-col gap-1">
                       <label className="text-xs font-semibold" style={{ color: "rgba(255,255,255,0.6)" }}>Name</label>
@@ -349,7 +349,7 @@ export default function AdminPanel() {
                         onChange={e => setInviteName(e.target.value)}
                         placeholder="e.g. Lynn"
                         style={inputStyle}
-                        onFocus={e => ((e.target as HTMLInputElement).style.borderColor = "rgba(59,158,232,0.5)")}
+                        onFocus={e => ((e.target as HTMLInputElement).style.borderColor = "rgba(51,162,219,0.5)")}
                         onBlur={e => ((e.target as HTMLInputElement).style.borderColor = "rgba(255,255,255,0.12)")}
                       />
                     </div>
@@ -361,7 +361,7 @@ export default function AdminPanel() {
                         onChange={e => setInviteEmail(e.target.value)}
                         placeholder="their@email.com"
                         style={inputStyle}
-                        onFocus={e => ((e.target as HTMLInputElement).style.borderColor = "rgba(59,158,232,0.5)")}
+                        onFocus={e => ((e.target as HTMLInputElement).style.borderColor = "rgba(51,162,219,0.5)")}
                         onBlur={e => ((e.target as HTMLInputElement).style.borderColor = "rgba(255,255,255,0.12)")}
                       />
                     </div>
@@ -381,9 +381,9 @@ export default function AdminPanel() {
                       disabled={inviteMutation.isPending || !inviteName.trim() || !inviteEmail.trim()}
                       className="w-full py-3 rounded-xl text-sm font-bold transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-40"
                       style={{
-                        background: "linear-gradient(135deg, #3B9EE8, #38BDF8)",
+                        background: "linear-gradient(135deg, #33A2DB, #38BDF8)",
                         color: "#0F2440",
-                        boxShadow: "0 4px 16px rgba(59,158,232,0.25)",
+                        boxShadow: "0 4px 16px rgba(51,162,219,0.25)",
                         fontFamily: "'Space Grotesk', sans-serif",
                       }}
                     >
@@ -411,7 +411,7 @@ export default function AdminPanel() {
                         <button
                           onClick={() => { navigator.clipboard.writeText(inviteLink); toast.success("Copied!"); }}
                           className="px-3 py-2 rounded-lg text-xs font-bold flex-shrink-0"
-                          style={{ backgroundColor: "#0D9488", color: "white" }}
+                          style={{ backgroundColor: "#25DCF9", color: "white" }}
                         >
                           Copy
                         </button>
@@ -516,7 +516,7 @@ export default function AdminPanel() {
                     onClick={handleBetaSearch}
                     disabled={!betaSearchEmail.trim() || betaPersonSearch.isFetching}
                     className="px-4 py-2 rounded-xl text-xs font-bold transition-all active:scale-[0.97] disabled:opacity-50"
-                    style={{ background: "linear-gradient(135deg, #3B9EE8, #38BDF8)", color: "#0F2440" }}
+                    style={{ background: "linear-gradient(135deg, #33A2DB, #38BDF8)", color: "#0F2440" }}
                   >
                     {betaPersonSearch.isFetching ? "…" : "Search"}
                   </button>
@@ -531,7 +531,7 @@ export default function AdminPanel() {
                 {betaSearchResult?.found && (
                   <div className="rounded-xl p-4 flex flex-col gap-3" style={{ backgroundColor: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)" }}>
                     <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0" style={{ backgroundColor: "rgba(59,158,232,0.2)", color: "#3B9EE8", border: "1px solid rgba(59,158,232,0.3)" }}>
+                      <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0" style={{ backgroundColor: "rgba(51,162,219,0.2)", color: "#33A2DB", border: "1px solid rgba(51,162,219,0.3)" }}>
                         {betaSearchResult.name?.[0]?.toUpperCase() ?? "?"}
                       </div>
                       <div className="flex-1 min-w-0">

@@ -39,7 +39,7 @@ export function BrandIcon({
       <img
         src="/manus-storage/heart-transparent-clean_14235c91.png"
         alt="BusinessCadence"
-        style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
       />
     </div>
   );
@@ -72,7 +72,7 @@ export default function BrandLogo({
 }: BrandLogoProps) {
   const s = SIZES[size];
   const nameColor    = theme === "dark" ? "#FFFFFF"              : "#1E3A5F";
-  const cadenceColor = "#3B9EE8";
+  const cadenceColor = "#33A2DB";
   const tagColor     = theme === "dark" ? "rgba(255,255,255,0.50)" : "rgba(30,58,95,0.55)";
 
   return (

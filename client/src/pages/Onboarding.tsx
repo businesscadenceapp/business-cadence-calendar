@@ -121,8 +121,8 @@ const selectStyle: React.CSSProperties = {
 function TipBox({ children }: { children: React.ReactNode }) {
   return (
     <div className="rounded-xl p-4 text-sm leading-relaxed"
-      style={{ backgroundColor: "rgba(59,158,232,0.07)", border: "1px solid rgba(59,158,232,0.2)", color: "rgba(255,255,255,0.6)" }}>
-      <span style={{ color: "#3B9EE8" }}>💡 </span>{children}
+      style={{ backgroundColor: "rgba(51,162,219,0.07)", border: "1px solid rgba(51,162,219,0.2)", color: "rgba(255,255,255,0.6)" }}>
+      <span style={{ color: "#33A2DB" }}>💡 </span>{children}
     </div>
   );
 }
@@ -164,7 +164,7 @@ function NavButtons({
         onClick={onNext}
         disabled={!canProceed}
         className="flex-1 py-2.5 rounded-xl text-sm font-bold transition-all active:scale-[0.98] disabled:opacity-40"
-        style={{ background: "linear-gradient(135deg, #3B9EE8, #2980c9)", color: "#0F2440" }}
+        style={{ background: "linear-gradient(135deg, #33A2DB, #2485b8)", color: "#0F2440" }}
       >
         {nextLabel}
       </button>
@@ -187,7 +187,7 @@ function StepWelcome({ onNext, quick }: { onNext: () => void; quick?: boolean })
   return (
     <div className="flex flex-col items-center text-center gap-6">
       <div className="w-20 h-20 rounded-2xl flex items-center justify-center text-4xl"
-        style={{ backgroundColor: "rgba(59,158,232,0.1)", border: "1px solid rgba(59,158,232,0.2)" }}>
+        style={{ backgroundColor: "rgba(51,162,219,0.1)", border: "1px solid rgba(51,162,219,0.2)" }}>
         📅
       </div>
       <div>
@@ -225,7 +225,7 @@ function StepWelcome({ onNext, quick }: { onNext: () => void; quick?: boolean })
       <button
         onClick={onNext}
         className="mt-2 px-10 py-3 rounded-xl font-bold text-base transition-all hover:opacity-90 active:scale-[0.98]"
-        style={{ background: "linear-gradient(135deg, #3B9EE8, #2980c9)", color: "#0F2440" }}
+        style={{ background: "linear-gradient(135deg, #33A2DB, #2485b8)", color: "#0F2440" }}
       >
         Let's Get Started →
       </button>
@@ -284,10 +284,10 @@ function StepCoOwnerInvite({
           />
         </div>
         <div className="rounded-xl p-3 flex items-center gap-3"
-          style={{ backgroundColor: "rgba(59,158,232,0.06)", border: "1px solid rgba(59,158,232,0.15)" }}>
-          <span style={{ color: "#3B9EE8" }}>✓</span>
+          style={{ backgroundColor: "rgba(51,162,219,0.06)", border: "1px solid rgba(51,162,219,0.15)" }}>
+          <span style={{ color: "#33A2DB" }}>✓</span>
           <span className="text-sm" style={{ color: "rgba(255,255,255,0.7)" }}>
-            They'll have full co-owner access to <strong style={{ color: "#3B9EE8" }}>{displayBizName}</strong>
+            They'll have full co-owner access to <strong style={{ color: "#33A2DB" }}>{displayBizName}</strong>
           </span>
         </div>
         <TipBox>
@@ -348,8 +348,8 @@ function StepBusinessBasics({
                 onClick={() => onChange({ industry: ind.value, meetingDayPrefs: INDUSTRY_MEETING_DAY_DEFAULTS[ind.value] })}
                 className="flex flex-col items-start p-3 rounded-xl text-left transition-all duration-150"
                 style={{
-                  border: `2px solid ${data.industry === ind.value ? "#3B9EE8" : "rgba(255,255,255,0.1)"}`,
-                  backgroundColor: data.industry === ind.value ? "rgba(59,158,232,0.1)" : "rgba(255,255,255,0.04)",
+                  border: `2px solid ${data.industry === ind.value ? "#33A2DB" : "rgba(255,255,255,0.1)"}`,
+                  backgroundColor: data.industry === ind.value ? "rgba(51,162,219,0.1)" : "rgba(255,255,255,0.04)",
                 }}
               >
                 <span className="font-semibold text-sm text-white">{ind.label}</span>
@@ -450,8 +450,8 @@ function StepWorkSchedule({
               onClick={() => toggle(i)}
               style={{
                 width: "56px", height: "56px", borderRadius: "12px",
-                border: `2px solid ${data.workDays.includes(i) ? "#3B9EE8" : "rgba(255,255,255,0.12)"}`,
-                backgroundColor: data.workDays.includes(i) ? "#3B9EE8" : "rgba(255,255,255,0.05)",
+                border: `2px solid ${data.workDays.includes(i) ? "#33A2DB" : "rgba(255,255,255,0.12)"}`,
+                backgroundColor: data.workDays.includes(i) ? "#33A2DB" : "rgba(255,255,255,0.05)",
                 color: data.workDays.includes(i) ? "#0F2440" : "rgba(255,255,255,0.6)",
                 fontWeight: "600", fontSize: "14px", transition: "all 150ms",
               }}
@@ -533,7 +533,7 @@ function MeetingCadenceStep({
         <button
           onClick={useRecommended}
           className="flex items-center justify-between w-full px-4 py-3 rounded-xl text-left transition-all hover:opacity-90"
-          style={{ background: "linear-gradient(135deg, rgba(59,158,232,0.15), rgba(45,212,191,0.1))", border: "1px solid rgba(59,158,232,0.3)" }}
+          style={{ background: "linear-gradient(135deg, rgba(51,162,219,0.15), rgba(45,212,191,0.1))", border: "1px solid rgba(51,162,219,0.3)" }}
         >
           <div>
             <div className="text-sm font-bold text-white">⚡ Use our recommended schedule</div>
@@ -542,7 +542,7 @@ function MeetingCadenceStep({
             </div>
           </div>
           <span className="text-xs font-bold px-3 py-1 rounded-full ml-3 flex-shrink-0"
-            style={{ backgroundColor: "#3B9EE8", color: "#0F2440" }}>Skip →</span>
+            style={{ backgroundColor: "#33A2DB", color: "#0F2440" }}>Skip →</span>
         </button>
 
         {/* Meeting count summary */}
@@ -565,8 +565,8 @@ function MeetingCadenceStep({
           return (
             <div key={key} className="rounded-xl overflow-hidden transition-all"
               style={{
-                border: `1px solid ${enabled ? "rgba(59,158,232,0.2)" : "rgba(255,255,255,0.08)"}`,
-                backgroundColor: enabled ? "rgba(59,158,232,0.05)" : "rgba(255,255,255,0.03)",
+                border: `1px solid ${enabled ? "rgba(51,162,219,0.2)" : "rgba(255,255,255,0.08)"}`,
+                backgroundColor: enabled ? "rgba(51,162,219,0.05)" : "rgba(255,255,255,0.03)",
                 opacity: enabled ? 1 : 0.65,
               }}>
               {/* Header row */}
@@ -584,7 +584,7 @@ function MeetingCadenceStep({
                     <button
                       onClick={() => setExpandedInfo(isExpanded ? null : key)}
                       className="text-xs mt-0.5 text-left transition-colors"
-                      style={{ color: "#3B9EE8" }}
+                      style={{ color: "#33A2DB" }}
                     >
                       {isExpanded ? "Hide details ▲" : "What is this? ▼"}
                     </button>
@@ -594,7 +594,7 @@ function MeetingCadenceStep({
                 <button
                   onClick={() => upd({ [enabledKey]: !enabled })}
                   className="relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ml-3"
-                  style={{ backgroundColor: enabled ? "#3B9EE8" : "rgba(255,255,255,0.15)" }}
+                  style={{ backgroundColor: enabled ? "#33A2DB" : "rgba(255,255,255,0.15)" }}
                   role="switch"
                   aria-checked={enabled}
                 >
@@ -611,7 +611,7 @@ function MeetingCadenceStep({
                   <div className="rounded-lg p-3 text-sm leading-relaxed"
                     style={{ backgroundColor: "rgba(255,255,255,0.04)", color: "rgba(255,255,255,0.6)" }}>
                     <p className="mb-2">{info.purpose}</p>
-                    <p className="text-xs italic" style={{ color: "rgba(59,158,232,0.7)" }}>💡 {info.tip}</p>
+                    <p className="text-xs italic" style={{ color: "rgba(51,162,219,0.7)" }}>💡 {info.tip}</p>
                   </div>
                 </div>
               )}
@@ -643,8 +643,8 @@ function MeetingCadenceStep({
                           }}
                           style={{
                             width: "40px", height: "34px", borderRadius: "8px",
-                            border: `1px solid ${!allowed ? "rgba(255,255,255,0.06)" : selected ? "#3B9EE8" : "rgba(255,255,255,0.12)"}`,
-                            backgroundColor: !allowed ? "transparent" : selected ? "#3B9EE8" : "rgba(255,255,255,0.05)",
+                            border: `1px solid ${!allowed ? "rgba(255,255,255,0.06)" : selected ? "#33A2DB" : "rgba(255,255,255,0.12)"}`,
+                            backgroundColor: !allowed ? "transparent" : selected ? "#33A2DB" : "rgba(255,255,255,0.05)",
                             color: !allowed ? "rgba(255,255,255,0.15)" : selected ? "#0F2440" : "rgba(255,255,255,0.6)",
                             fontSize: "12px", fontWeight: "600", transition: "all 150ms",
                             cursor: !allowed ? "not-allowed" : "pointer",
@@ -667,8 +667,8 @@ function MeetingCadenceStep({
                       onChange={e => updTime(key as keyof OnboardingData["meetingTimes"], e.target.value)}
                       style={{
                         backgroundColor: "rgba(255,255,255,0.06)",
-                        border: "1px solid rgba(59,158,232,0.25)",
-                        color: "#3B9EE8",
+                        border: "1px solid rgba(51,162,219,0.25)",
+                        color: "#33A2DB",
                         borderRadius: "8px",
                         padding: "5px 10px",
                         fontSize: "13px",
@@ -769,8 +769,8 @@ function StepGoals({
                   disabled={added}
                   className="flex items-center justify-between w-full px-3 py-2.5 rounded-xl text-left transition-all"
                   style={{
-                    border: `1px solid ${added ? "rgba(59,158,232,0.4)" : "rgba(255,255,255,0.1)"}`,
-                    backgroundColor: added ? "rgba(59,158,232,0.08)" : "rgba(255,255,255,0.04)",
+                    border: `1px solid ${added ? "rgba(51,162,219,0.4)" : "rgba(255,255,255,0.1)"}`,
+                    backgroundColor: added ? "rgba(51,162,219,0.08)" : "rgba(255,255,255,0.04)",
                     opacity: added ? 0.7 : 1,
                   }}
                 >
@@ -780,8 +780,8 @@ function StepGoals({
                   </div>
                   <span className="text-xs px-2.5 py-1 rounded-full ml-3 flex-shrink-0 font-medium"
                     style={{
-                      backgroundColor: added ? "rgba(59,158,232,0.15)" : "rgba(255,255,255,0.08)",
-                      color: added ? "#3B9EE8" : "rgba(255,255,255,0.5)",
+                      backgroundColor: added ? "rgba(51,162,219,0.15)" : "rgba(255,255,255,0.08)",
+                      color: added ? "#33A2DB" : "rgba(255,255,255,0.5)",
                     }}>
                     {added ? "✓ Added" : "+ Add"}
                   </span>
@@ -847,8 +847,8 @@ function StepGoals({
         {/* Pending custom goal entry */}
         {pendingGoal && (
           <div className="rounded-xl p-3 flex flex-col gap-2"
-            style={{ backgroundColor: "rgba(59,158,232,0.06)", border: "1px solid rgba(59,158,232,0.25)" }}>
-            <p className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: "#3B9EE8" }}>New custom goal</p>
+            style={{ backgroundColor: "rgba(51,162,219,0.06)", border: "1px solid rgba(51,162,219,0.25)" }}>
+            <p className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: "#33A2DB" }}>New custom goal</p>
             <div className="flex items-center gap-2">
               <input
                 autoFocus
@@ -887,7 +887,7 @@ function StepGoals({
                 disabled={!pendingGoal.label.trim()}
                 className="text-sm font-semibold px-4 py-1.5 rounded-lg transition-all"
                 style={{
-                  backgroundColor: pendingGoal.label.trim() ? "#3B9EE8" : "rgba(59,158,232,0.2)",
+                  backgroundColor: pendingGoal.label.trim() ? "#33A2DB" : "rgba(51,162,219,0.2)",
                   color: pendingGoal.label.trim() ? "#0F2440" : "rgba(255,255,255,0.3)",
                   cursor: pendingGoal.label.trim() ? "pointer" : "not-allowed",
                 }}
@@ -905,7 +905,7 @@ function StepGoals({
           <button
             onClick={addBlank}
             className="text-sm font-medium transition-colors text-left"
-            style={{ color: "#3B9EE8" }}
+            style={{ color: "#33A2DB" }}
           >
             + Add custom goal
           </button>
@@ -965,7 +965,7 @@ function StepKPIs({
           style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)" }}>
           <p className="text-sm font-semibold text-white mb-2">What is a KPI (Key Performance Indicator)?</p>
           <p className="text-sm leading-relaxed" style={{ color: "rgba(255,255,255,0.55)" }}>
-            A <strong style={{ color: "#3B9EE8" }}>Key Performance Indicator</strong> is a specific, measurable number you track regularly to know if your business is on track — without guessing. Think of KPIs as your business's vital signs.
+            A <strong style={{ color: "#33A2DB" }}>Key Performance Indicator</strong> is a specific, measurable number you track regularly to know if your business is on track — without guessing. Think of KPIs as your business's vital signs.
           </p>
           <div className="mt-3 flex flex-col gap-1.5">
             <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: "rgba(255,255,255,0.35)" }}>Examples</p>
@@ -1039,7 +1039,7 @@ function StepKPIs({
         <button
           onClick={addBlank}
           className="text-sm font-medium transition-colors text-left"
-          style={{ color: "#3B9EE8" }}
+          style={{ color: "#33A2DB" }}
         >
           + Add custom KPI
         </button>
@@ -1106,7 +1106,7 @@ function StepEmployeeInvites({
               <button
                 onClick={() => addRow("coowner")}
                 className="text-xs font-medium transition-colors"
-                style={{ color: "#3B9EE8" }}
+                style={{ color: "#33A2DB" }}
               >+ Add co-owner</button>
             </div>
             {coowners.length === 0 ? (
@@ -1154,7 +1154,7 @@ function StepEmployeeInvites({
             <button
               onClick={() => addRow("employee")}
               className="text-xs font-medium transition-colors"
-              style={{ color: "#3B9EE8" }}
+              style={{ color: "#33A2DB" }}
             >+ Add employee</button>
           </div>
           {employees.length === 0 ? (
@@ -1285,9 +1285,9 @@ function StepBusinessHours({
                 onClick={() => toggleDay(idx)}
                 className="w-10 h-10 rounded-lg text-xs font-bold transition-all active:scale-95"
                 style={{
-                  backgroundColor: data.bhWorkDays.includes(idx) ? "rgba(59,158,232,0.2)" : "rgba(255,255,255,0.05)",
-                  border: data.bhWorkDays.includes(idx) ? "1.5px solid rgba(59,158,232,0.5)" : "1.5px solid rgba(255,255,255,0.1)",
-                  color: data.bhWorkDays.includes(idx) ? "#3B9EE8" : "rgba(255,255,255,0.4)",
+                  backgroundColor: data.bhWorkDays.includes(idx) ? "rgba(51,162,219,0.2)" : "rgba(255,255,255,0.05)",
+                  border: data.bhWorkDays.includes(idx) ? "1.5px solid rgba(51,162,219,0.5)" : "1.5px solid rgba(255,255,255,0.1)",
+                  color: data.bhWorkDays.includes(idx) ? "#33A2DB" : "rgba(255,255,255,0.4)",
                 }}
               >
                 {name}
@@ -1361,7 +1361,7 @@ const MONTH_NAMES_SHORT = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug
 
 const MEETING_TYPE_COLORS: Record<string, { bg: string; text: string; label: string }> = {
   daily:     { bg: "rgba(59,130,246,0.3)", text: "#93C5FD", label: "Daily" },
-  weekly:    { bg: "rgba(59,158,232,0.3)", text: "#3B9EE8", label: "Weekly" },
+  weekly:    { bg: "rgba(51,162,219,0.3)", text: "#33A2DB", label: "Weekly" },
   monthly:   { bg: "rgba(167,139,250,0.3)", text: "#C4B5FD", label: "Monthly" },
   quarterly: { bg: "rgba(251,146,60,0.3)", text: "#FED7AA", label: "Quarterly" },
 };
@@ -1446,10 +1446,10 @@ function MiniCalendarPreview({ data }: { data: OnboardingData }) {
                   <div key={i}
                     className="aspect-square flex items-center justify-center rounded-sm text-[8px] font-medium"
                     style={{
-                      backgroundColor: c ? c.bg : isToday ? "rgba(59,158,232,0.15)" : "transparent",
-                      color: c ? c.text : isToday ? "#3B9EE8" : "rgba(255,255,255,0.5)",
+                      backgroundColor: c ? c.bg : isToday ? "rgba(51,162,219,0.15)" : "transparent",
+                      color: c ? c.text : isToday ? "#33A2DB" : "rgba(255,255,255,0.5)",
                       fontWeight: c ? 700 : 400,
-                      outline: isToday ? "1px solid rgba(59,158,232,0.4)" : undefined,
+                      outline: isToday ? "1px solid rgba(51,162,219,0.4)" : undefined,
                     }}
                   >{day}</div>
                 );
@@ -1535,7 +1535,7 @@ function StepPreview({
             onClick={onConfirm}
             disabled={isLoading}
             className="flex-1 py-2.5 rounded-xl text-sm font-bold transition-all active:scale-[0.98] disabled:opacity-50"
-            style={{ background: "linear-gradient(135deg, #3B9EE8, #2980c9)", color: "#0F2440" }}
+            style={{ background: "linear-gradient(135deg, #33A2DB, #2485b8)", color: "#0F2440" }}
           >
             {isLoading ? "Building your command center…" : "Build My Command Center →"}
           </button>
@@ -1551,7 +1551,7 @@ function StepDone({ businessName, invitesSent, coOwnerName, onEnter }: { busines
   return (
     <div className="flex flex-col items-center text-center gap-6">
       <div className="w-20 h-20 rounded-full flex items-center justify-center text-4xl"
-        style={{ backgroundColor: "rgba(59,158,232,0.1)", border: "1px solid rgba(59,158,232,0.2)" }}>
+        style={{ backgroundColor: "rgba(51,162,219,0.1)", border: "1px solid rgba(51,162,219,0.2)" }}>
         🎉
       </div>
       <div>
@@ -1559,29 +1559,29 @@ function StepDone({ businessName, invitesSent, coOwnerName, onEnter }: { busines
           You're all set!
         </h2>
         <p className="text-lg max-w-md" style={{ color: "rgba(255,255,255,0.5)" }}>
-          <strong style={{ color: "#3B9EE8" }}>{businessName}</strong> is ready to run on BusinessCadence.
+          <strong style={{ color: "#33A2DB" }}>{businessName}</strong> is ready to run on BusinessCadence.
         </p>
       </div>
       <div className="flex flex-col gap-2 text-sm w-full max-w-xs" style={{ color: "rgba(255,255,255,0.4)" }}>
-        <div className="flex items-center gap-2"><span style={{ color: "#3B9EE8" }}>✓</span> Meeting cadence built</div>
-        <div className="flex items-center gap-2"><span style={{ color: "#3B9EE8" }}>✓</span> Goals and KPIs configured</div>
-        <div className="flex items-center gap-2"><span style={{ color: "#3B9EE8" }}>✓</span> Business hours set</div>
+        <div className="flex items-center gap-2"><span style={{ color: "#33A2DB" }}>✓</span> Meeting cadence built</div>
+        <div className="flex items-center gap-2"><span style={{ color: "#33A2DB" }}>✓</span> Goals and KPIs configured</div>
+        <div className="flex items-center gap-2"><span style={{ color: "#33A2DB" }}>✓</span> Business hours set</div>
         {coOwnerName && (
           <div className="flex items-center gap-2">
-            <span style={{ color: "#3B9EE8" }}>✓</span> Invite sent to {coOwnerName}
+            <span style={{ color: "#33A2DB" }}>✓</span> Invite sent to {coOwnerName}
           </div>
         )}
         {invitesSent > 0 && (
           <div className="flex items-center gap-2">
-            <span style={{ color: "#3B9EE8" }}>✓</span> {invitesSent} team invite{invitesSent !== 1 ? "s" : ""} sent
+            <span style={{ color: "#33A2DB" }}>✓</span> {invitesSent} team invite{invitesSent !== 1 ? "s" : ""} sent
           </div>
         )}
-        <div className="flex items-center gap-2"><span style={{ color: "#3B9EE8" }}>✓</span> Industry agendas applied</div>
+        <div className="flex items-center gap-2"><span style={{ color: "#33A2DB" }}>✓</span> Industry agendas applied</div>
       </div>
       <button
         onClick={onEnter}
         className="mt-2 px-10 py-3 rounded-xl font-bold text-base transition-all hover:opacity-90 active:scale-[0.98]"
-        style={{ background: "linear-gradient(135deg, #3B9EE8, #2980c9)", color: "#0F2440" }}
+        style={{ background: "linear-gradient(135deg, #33A2DB, #2485b8)", color: "#0F2440" }}
       >
         Open My Command Center →
       </button>
@@ -1665,13 +1665,13 @@ function StepLogoUpload({
             onDrop={handleDrop}
             className="w-full max-w-xs h-40 rounded-2xl flex flex-col items-center justify-center gap-3 cursor-pointer transition-all"
             style={{
-              backgroundColor: isDragging ? "rgba(59,158,232,0.12)" : "rgba(255,255,255,0.04)",
-              border: `2px dashed ${isDragging ? "#3B9EE8" : "rgba(255,255,255,0.15)"}`,
+              backgroundColor: isDragging ? "rgba(51,162,219,0.12)" : "rgba(255,255,255,0.04)",
+              border: `2px dashed ${isDragging ? "#33A2DB" : "rgba(255,255,255,0.15)"}`,
             }}
           >
             <span className="text-4xl">🖼️</span>
             <div className="text-center">
-              <p className="text-sm font-semibold" style={{ color: isDragging ? "#3B9EE8" : "rgba(255,255,255,0.6)" }}>
+              <p className="text-sm font-semibold" style={{ color: isDragging ? "#33A2DB" : "rgba(255,255,255,0.6)" }}>
                 Drop your logo here
               </p>
               <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.3)" }}>or click to browse · PNG, JPG, SVG · max 5 MB</p>
@@ -1692,7 +1692,7 @@ function StepLogoUpload({
             onClick={() => inputRef.current?.click()}
             className="text-sm transition-colors"
             style={{ color: "rgba(255,255,255,0.4)" }}
-            onMouseEnter={e => (e.currentTarget.style.color = "#3B9EE8")}
+            onMouseEnter={e => (e.currentTarget.style.color = "#33A2DB")}
             onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.4)")}
           >
             Choose a different image
@@ -1835,7 +1835,7 @@ export default function Onboarding() {
       const slug = businessSlugMap[data.industry] ?? "general";
       const kpiSlug = data.businessName.trim().toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "").slice(0, 60) || "business";
       const iconMap: Record<string, string> = { healthcare: "🏥", fitness: "💪", realestate: "🏠", restaurant: "🍕", retail: "🛍️", professional: "💼", construction: "🔨", salon: "✂️", other: "🏢" };
-      const colorMap: Record<string, string> = { healthcare: "#10B981", fitness: "#F59E0B", realestate: "#2563EB", restaurant: "#E11D48", retail: "#7C3AED", professional: "#0D9488", construction: "#D97706", salon: "#EC4899", other: "#64748B" };
+      const colorMap: Record<string, string> = { healthcare: "#10B981", fitness: "#F59E0B", realestate: "#2563EB", restaurant: "#E11D48", retail: "#7C3AED", professional: "#25DCF9", construction: "#D97706", salon: "#EC4899", other: "#64748B" };
       let createdBusinessId: number | null = null;
       try {
         const biz = await createBusiness.mutateAsync({
@@ -1987,8 +1987,8 @@ export default function Onboarding() {
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg flex items-center justify-center"
-              style={{ backgroundColor: "rgba(59,158,232,0.15)", border: "1px solid rgba(59,158,232,0.3)" }}>
-              <span className="text-xs font-bold" style={{ color: "#3B9EE8" }}>BC</span>
+              style={{ backgroundColor: "rgba(51,162,219,0.15)", border: "1px solid rgba(51,162,219,0.3)" }}>
+              <span className="text-xs font-bold" style={{ color: "#33A2DB" }}>BC</span>
             </div>
             <span className="font-semibold text-sm" style={{ color: "rgba(255,255,255,0.7)" }}>BusinessCadence</span>
           </div>

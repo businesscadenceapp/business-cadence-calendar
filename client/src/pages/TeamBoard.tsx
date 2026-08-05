@@ -9,7 +9,7 @@
  * Employee view: only their own tasks, announcements addressed to them,
  *                quick KPI entry shortcut, check-in shortcut.
  *
- * Dark navy theme: #0F2440 bg, #3B9EE8 teal accent, white text.
+ * Dark navy theme: #0F2440 bg, #33A2DB teal accent, white text.
  */
 import { useState, useRef, useCallback, useMemo } from "react";
 import { trpc } from "@/lib/trpc";
@@ -125,7 +125,7 @@ function CardComments({ cardId, currentUser, accountId }: {
       <button
         onClick={() => { setOpen(o => !o); }}
         className="text-[11px] font-medium transition-colors flex items-center gap-1"
-        style={{ color: open ? "#3B9EE8" : "rgba(255,255,255,0.35)", fontFamily: "'Space Grotesk', sans-serif" }}
+        style={{ color: open ? "#33A2DB" : "rgba(255,255,255,0.35)", fontFamily: "'Space Grotesk', sans-serif" }}
       >
         {open ? "▲" : "▼"} {open ? "Hide" : "Comments"}{comments.length > 0 && !open ? ` (${comments.length})` : ""}
       </button>
@@ -176,7 +176,7 @@ function CardComments({ cardId, currentUser, accountId }: {
               rows={2}
               className="flex-1 rounded-lg px-3 py-2 text-[12px] placeholder-white/30 resize-none focus:outline-none transition-colors"
               style={{ backgroundColor: "rgba(255,255,255,0.06)", border: "1.5px solid rgba(255,255,255,0.12)", color: "white" }}
-              onFocus={e => (e.target.style.borderColor = "#3B9EE8")}
+              onFocus={e => (e.target.style.borderColor = "#33A2DB")}
               onBlur={e => (e.target.style.borderColor = "rgba(255,255,255,0.12)")}
               onKeyDown={e => { if ((e.ctrlKey || e.metaKey) && e.key === "Enter") { e.preventDefault(); handleSubmit(); } }}
             />
@@ -185,7 +185,7 @@ function CardComments({ cardId, currentUser, accountId }: {
               disabled={!text.trim() || addComment.isPending}
               className="px-3 py-2 rounded-lg text-[11px] font-bold transition-all active:scale-[0.97] self-end"
               style={{
-                background: text.trim() ? "linear-gradient(135deg, #3B9EE8, #0EA5E9)" : "rgba(255,255,255,0.08)",
+                background: text.trim() ? "linear-gradient(135deg, #33A2DB, #0EA5E9)" : "rgba(255,255,255,0.08)",
                 color: text.trim() ? "#0A1929" : "rgba(255,255,255,0.3)",
                 fontFamily: "'Space Grotesk', sans-serif",
               }}
@@ -388,7 +388,7 @@ function AnnouncementCard({ card, currentUser, accountId, onSeen, onArchive, onD
                 {card.author}
               </span>
               <span className="text-[10px] px-2 py-0.5 rounded-full font-medium"
-                style={{ backgroundColor: "rgba(59,158,232,0.12)", color: "#3B9EE8", border: "1px solid rgba(59,158,232,0.25)", fontFamily: "'Space Grotesk', sans-serif" }}>
+                style={{ backgroundColor: "rgba(51,162,219,0.12)", color: "#33A2DB", border: "1px solid rgba(51,162,219,0.25)", fontFamily: "'Space Grotesk', sans-serif" }}>
                 📢 Announcement
               </span>
               <span className="text-[10px] ml-auto flex-shrink-0" style={{ color: "rgba(255,255,255,0.3)", fontFamily: "'JetBrains Mono', monospace" }}>
@@ -564,12 +564,12 @@ function TeamPostForm({ currentUser, accountId, employees, onAdded, allowedBusin
             onClick={() => setType(t.key)}
             className="flex-1 py-2 px-3 rounded-lg text-left transition-all"
             style={{
-              backgroundColor: type === t.key ? (t.key === "task" ? "rgba(124,58,237,0.15)" : "rgba(59,158,232,0.12)") : "rgba(255,255,255,0.04)",
-              border: `1.5px solid ${type === t.key ? (t.key === "task" ? "rgba(124,58,237,0.4)" : "rgba(59,158,232,0.3)") : "rgba(255,255,255,0.1)"}`,
+              backgroundColor: type === t.key ? (t.key === "task" ? "rgba(124,58,237,0.15)" : "rgba(51,162,219,0.12)") : "rgba(255,255,255,0.04)",
+              border: `1.5px solid ${type === t.key ? (t.key === "task" ? "rgba(124,58,237,0.4)" : "rgba(51,162,219,0.3)") : "rgba(255,255,255,0.1)"}`,
               fontFamily: "'Space Grotesk', sans-serif",
             }}
           >
-            <p className="text-[12px] font-semibold" style={{ color: type === t.key ? (t.key === "task" ? "#C4B5FD" : "#3B9EE8") : "rgba(255,255,255,0.5)" }}>{t.label}</p>
+            <p className="text-[12px] font-semibold" style={{ color: type === t.key ? (t.key === "task" ? "#C4B5FD" : "#33A2DB") : "rgba(255,255,255,0.5)" }}>{t.label}</p>
             <p className="text-[10px]" style={{ color: "rgba(255,255,255,0.3)" }}>{t.desc}</p>
           </button>
         ))}
@@ -617,9 +617,9 @@ function TeamPostForm({ currentUser, accountId, employees, onAdded, allowedBusin
                 onClick={() => setBusiness(biz)}
                 className="px-3 py-1.5 rounded-lg text-[11px] font-medium transition-all"
                 style={{
-                  backgroundColor: business === biz ? "rgba(59,158,232,0.12)" : "rgba(255,255,255,0.04)",
-                  border: `1.5px solid ${business === biz ? "rgba(59,158,232,0.3)" : "rgba(255,255,255,0.1)"}`,
-                  color: business === biz ? "#3B9EE8" : "rgba(255,255,255,0.5)",
+                  backgroundColor: business === biz ? "rgba(51,162,219,0.12)" : "rgba(255,255,255,0.04)",
+                  border: `1.5px solid ${business === biz ? "rgba(51,162,219,0.3)" : "rgba(255,255,255,0.1)"}`,
+                  color: business === biz ? "#33A2DB" : "rgba(255,255,255,0.5)",
                   fontFamily: "'Space Grotesk', sans-serif",
                 }}
               >
@@ -668,11 +668,11 @@ function TeamPostForm({ currentUser, accountId, employees, onAdded, allowedBusin
         <div className="flex flex-wrap gap-1.5">
           {attachments.map((a, i) => a.mimeType.startsWith('image/') ? (
             <div key={i} className="relative">
-              <img src={a.url} alt={a.name} className="w-16 h-16 rounded-lg object-cover border" style={{ borderColor: 'rgba(59,158,232,0.3)' }} />
+              <img src={a.url} alt={a.name} className="w-16 h-16 rounded-lg object-cover border" style={{ borderColor: 'rgba(51,162,219,0.3)' }} />
               <button onClick={() => setAttachments(prev => prev.filter((_, j) => j !== i))} className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-[9px]" style={{ backgroundColor: '#F87171', color: 'white' }}>✕</button>
             </div>
           ) : (
-            <div key={i} className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px]" style={{ backgroundColor: 'rgba(59,158,232,0.1)', border: '1px solid rgba(59,158,232,0.25)', color: '#3B9EE8' }}>
+            <div key={i} className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px]" style={{ backgroundColor: 'rgba(51,162,219,0.1)', border: '1px solid rgba(51,162,219,0.25)', color: '#33A2DB' }}>
               📎 {a.name}
               <button onClick={() => setAttachments(prev => prev.filter((_, j) => j !== i))} className="ml-1 text-[9px]" style={{ color: '#F87171' }}>✕</button>
             </div>
@@ -693,7 +693,7 @@ function TeamPostForm({ currentUser, accountId, employees, onAdded, allowedBusin
         disabled={createCard.isPending}
         className="w-full py-2.5 rounded-xl text-[13px] font-bold transition-all active:scale-[0.98]"
         style={{
-          background: "linear-gradient(135deg, #3B9EE8 0%, #0EA5E9 100%)",
+          background: "linear-gradient(135deg, #33A2DB 0%, #0EA5E9 100%)",
           color: "#0A1929",
           fontFamily: "'Space Grotesk', sans-serif",
           opacity: createCard.isPending ? 0.6 : 1,
@@ -719,7 +719,7 @@ function EmployeeQuickActions({ personName, accountId }: { personName: string; a
         <button
           onClick={() => navigate("/app/kpi")}
           className="flex flex-col items-start gap-1.5 p-3 rounded-xl transition-all hover:opacity-90 active:scale-[0.97]"
-          style={{ backgroundColor: "rgba(59,158,232,0.1)", border: "1.5px solid rgba(59,158,232,0.25)" }}
+          style={{ backgroundColor: "rgba(51,162,219,0.1)", border: "1.5px solid rgba(51,162,219,0.25)" }}
         >
           <span className="text-xl">📈</span>
           <p className="text-[12px] font-bold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Submit Numbers</p>
@@ -832,7 +832,7 @@ export default function TeamBoard() {
         className="flex-shrink-0 px-5 pt-6 pb-5"
         style={{
           background: "linear-gradient(135deg, #0D2035 0%, #0F2440 50%, #0D1F38 100%)",
-          borderBottom: "1px solid rgba(59,158,232,0.12)",
+          borderBottom: "1px solid rgba(51,162,219,0.12)",
           position: "relative",
           overflow: "hidden",
         }}
@@ -860,7 +860,7 @@ export default function TeamBoard() {
             <h1 className="text-[22px] font-black text-white leading-tight" style={{ fontFamily: "'Space Grotesk', sans-serif", letterSpacing: "-0.02em" }}>
               {isOwner ? "Your Team," : "Your Board,"}
               <br />
-              <span style={{ background: "linear-gradient(90deg, #A78BFA, #3B9EE8)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+              <span style={{ background: "linear-gradient(90deg, #A78BFA, #33A2DB)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
                 {isOwner ? "In Action." : "In Focus."}
               </span>
             </h1>
@@ -878,8 +878,8 @@ export default function TeamBoard() {
           <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl" style={{ backgroundColor: "rgba(124,58,237,0.15)", border: "1px solid rgba(124,58,237,0.25)" }}>
             <span className="text-[11px] font-bold" style={{ color: "#C4B5FD", fontFamily: "'Space Grotesk', sans-serif" }}>☑ {openTasks.length + donePendingTasks.length} Tasks</span>
           </div>
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl" style={{ backgroundColor: "rgba(59,158,232,0.12)", border: "1px solid rgba(59,158,232,0.25)" }}>
-            <span className="text-[11px] font-bold" style={{ color: "#3B9EE8", fontFamily: "'Space Grotesk', sans-serif" }}>📢 {announcements.length} Announcements</span>
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl" style={{ backgroundColor: "rgba(51,162,219,0.12)", border: "1px solid rgba(51,162,219,0.25)" }}>
+            <span className="text-[11px] font-bold" style={{ color: "#33A2DB", fontFamily: "'Space Grotesk', sans-serif" }}>📢 {announcements.length} Announcements</span>
           </div>
           <div className="ml-auto flex items-center gap-2">
             <button
@@ -894,7 +894,7 @@ export default function TeamBoard() {
                 onClick={() => setFormOpen(o => !o)}
                 className="px-4 py-2 rounded-xl text-[12px] font-bold transition-all active:scale-[0.97]"
                 style={{
-                  background: formOpen ? "rgba(255,255,255,0.08)" : "linear-gradient(135deg, #A78BFA, #3B9EE8)",
+                  background: formOpen ? "rgba(255,255,255,0.08)" : "linear-gradient(135deg, #A78BFA, #33A2DB)",
                   color: formOpen ? "rgba(255,255,255,0.5)" : "#0F2440",
                   fontFamily: "'Space Grotesk', sans-serif",
                   boxShadow: formOpen ? "none" : "0 4px 16px rgba(167,139,250,0.3), 0 2px 6px rgba(0,0,0,0.3)",
@@ -1048,27 +1048,27 @@ export default function TeamBoard() {
             <section
               className="flex flex-col gap-3 rounded-2xl p-4"
               style={{
-                background: "linear-gradient(135deg, rgba(59,158,232,0.07) 0%, rgba(59,158,232,0.03) 100%)",
-                border: "1.5px solid rgba(59,158,232,0.18)",
-                boxShadow: "0 4px 24px rgba(59,158,232,0.06), inset 0 1px 0 rgba(255,255,255,0.04)",
+                background: "linear-gradient(135deg, rgba(51,162,219,0.07) 0%, rgba(51,162,219,0.03) 100%)",
+                border: "1.5px solid rgba(51,162,219,0.18)",
+                boxShadow: "0 4px 24px rgba(51,162,219,0.06), inset 0 1px 0 rgba(255,255,255,0.04)",
               }}
             >
-              <div className="flex items-center gap-3 pb-3 min-w-0" style={{ borderBottom: "1px solid rgba(59,158,232,0.2)" }}>
-                <div className="w-8 h-8 rounded-xl flex items-center justify-center text-sm flex-shrink-0" style={{ background: "linear-gradient(135deg, rgba(59,158,232,0.25), rgba(59,158,232,0.1))", border: "1px solid rgba(59,158,232,0.35)", boxShadow: "0 0 10px rgba(59,158,232,0.15)" }}>📢</div>
+              <div className="flex items-center gap-3 pb-3 min-w-0" style={{ borderBottom: "1px solid rgba(51,162,219,0.2)" }}>
+                <div className="w-8 h-8 rounded-xl flex items-center justify-center text-sm flex-shrink-0" style={{ background: "linear-gradient(135deg, rgba(51,162,219,0.25), rgba(51,162,219,0.1))", border: "1px solid rgba(51,162,219,0.35)", boxShadow: "0 0 10px rgba(51,162,219,0.15)" }}>📢</div>
                 <div className="min-w-0 flex-1">
                   <h2 className="text-sm font-bold text-white leading-tight" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Announcements</h2>
                   <p className="text-[10px]" style={{ color: "rgba(255,255,255,0.4)" }}>Broadcasts from ownership to the team</p>
                 </div>
                 {announcements.length > 0 && (
-                  <span className="ml-auto text-[11px] font-bold px-2.5 py-1 rounded-full" style={{ background: "linear-gradient(135deg, rgba(59,158,232,0.3), rgba(59,158,232,0.15))", color: "#3B9EE8", border: "1px solid rgba(59,158,232,0.35)", fontFamily: "'Space Grotesk', sans-serif" }}>
+                  <span className="ml-auto text-[11px] font-bold px-2.5 py-1 rounded-full" style={{ background: "linear-gradient(135deg, rgba(51,162,219,0.3), rgba(51,162,219,0.15))", color: "#33A2DB", border: "1px solid rgba(51,162,219,0.35)", fontFamily: "'Space Grotesk', sans-serif" }}>
                     {announcements.length}
                   </span>
                 )}
               </div>
 
               {announcements.length === 0 ? (
-                <div className="rounded-xl p-6 text-center flex flex-col items-center gap-2" style={{ backgroundColor: "rgba(59,158,232,0.04)", border: "1px dashed rgba(59,158,232,0.2)" }}>
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl" style={{ backgroundColor: "rgba(59,158,232,0.12)" }}>📢</div>
+                <div className="rounded-xl p-6 text-center flex flex-col items-center gap-2" style={{ backgroundColor: "rgba(51,162,219,0.04)", border: "1px dashed rgba(51,162,219,0.2)" }}>
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl" style={{ backgroundColor: "rgba(51,162,219,0.12)" }}>📢</div>
                   <div>
                     <p className="text-[12px] font-semibold text-white">No announcements yet</p>
                     <p className="text-[10px] mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>{isOwner ? 'Post an announcement to broadcast to your team.' : 'Nothing from ownership yet.'}</p>

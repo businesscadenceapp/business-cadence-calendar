@@ -1,7 +1,7 @@
 /**
  * ManageSchedule — lets owners mark closed days and weeks.
  * Meetings on closed dates are automatically shifted to the next available day.
- * Dark navy theme: #0F2440 bg, #3B9EE8 teal accent
+ * Dark navy theme: #0F2440 bg, #33A2DB teal accent
  */
 
 import { useState, useMemo, useEffect, useCallback } from "react";
@@ -86,12 +86,12 @@ function MiniCalendar({
               className="h-8 w-full rounded-lg text-xs font-medium transition-all duration-100"
               style={{
                 backgroundColor: isClosed ? "rgba(225,29,72,0.2)" : "transparent",
-                color: isClosed ? "#F87171" : isToday ? "#3B9EE8" : "rgba(255,255,255,0.7)",
-                border: isToday && !isClosed ? "1px solid rgba(59,158,232,0.4)" : "1px solid transparent",
+                color: isClosed ? "#F87171" : isToday ? "#33A2DB" : "rgba(255,255,255,0.7)",
+                border: isToday && !isClosed ? "1px solid rgba(51,162,219,0.4)" : "1px solid transparent",
                 fontWeight: isToday ? "700" : "500",
               }}
               onMouseEnter={e => {
-                if (!isClosed) (e.currentTarget as HTMLButtonElement).style.backgroundColor = "rgba(59,158,232,0.1)";
+                if (!isClosed) (e.currentTarget as HTMLButtonElement).style.backgroundColor = "rgba(51,162,219,0.1)";
               }}
               onMouseLeave={e => {
                 if (!isClosed) (e.currentTarget as HTMLButtonElement).style.backgroundColor = "transparent";
@@ -117,7 +117,7 @@ function MiniDayPickerMulti({ value, onChange }: { value: number[]; onChange: (v
           onClick={() => onChange(value.includes(d) ? value.filter(x => x !== d) : [...value, d].sort())}
           className="w-8 h-8 rounded-md text-[11px] font-semibold transition-all"
           style={{
-            backgroundColor: value.includes(d) ? "#3B9EE8" : "rgba(255,255,255,0.08)",
+            backgroundColor: value.includes(d) ? "#33A2DB" : "rgba(255,255,255,0.08)",
             color: value.includes(d) ? "#0F2440" : "rgba(255,255,255,0.5)",
           }}
         >{DAY_NAMES_SHORT[d]}</button>
@@ -133,7 +133,7 @@ function MiniDayPicker({ value, onChange }: { value: number; onChange: (v: numbe
         <button key={d} type="button" onClick={() => onChange(d)}
           className="w-8 h-8 rounded-md text-[11px] font-semibold transition-all"
           style={{
-            backgroundColor: value === d ? "#3B9EE8" : "rgba(255,255,255,0.08)",
+            backgroundColor: value === d ? "#33A2DB" : "rgba(255,255,255,0.08)",
             color: value === d ? "#0F2440" : "rgba(255,255,255,0.5)",
           }}
         >{DAY_NAMES_SHORT[d]}</button>
@@ -146,7 +146,7 @@ function ToggleSwitch({ enabled, onToggle }: { enabled: boolean; onToggle: (v: b
   return (
     <button type="button" onClick={() => onToggle(!enabled)}
       className="relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200"
-      style={{ backgroundColor: enabled ? "#3B9EE8" : "rgba(255,255,255,0.15)" }}
+      style={{ backgroundColor: enabled ? "#33A2DB" : "rgba(255,255,255,0.15)" }}
       role="switch" aria-checked={enabled}>
       <span className={cn("pointer-events-none inline-block h-4 w-4 rounded-full shadow transform transition-transform duration-200",
         enabled ? "translate-x-4" : "translate-x-0")}
@@ -229,8 +229,8 @@ function MeetingScheduleSection({ accountId }: { accountId: number }) {
         onChange={e => updTime(timeKey, e.target.value)}
         style={{
           backgroundColor: "rgba(255,255,255,0.06)",
-          border: "1px solid rgba(59,158,232,0.25)",
-          color: "#3B9EE8",
+          border: "1px solid rgba(51,162,219,0.25)",
+          color: "#33A2DB",
           borderRadius: "6px",
           padding: "3px 8px",
           fontSize: "12px",
@@ -253,8 +253,8 @@ function MeetingScheduleSection({ accountId }: { accountId: number }) {
   const MeetingRow = ({ label, desc, enabledKey, children }: { label: string; desc: string; enabledKey: keyof MeetingPrefs; children: React.ReactNode }) => (
     <div className="rounded-xl p-3 transition-all"
       style={{
-        backgroundColor: prefs[enabledKey] ? "rgba(59,158,232,0.06)" : "rgba(255,255,255,0.03)",
-        border: `1px solid ${prefs[enabledKey] ? "rgba(59,158,232,0.2)" : "rgba(255,255,255,0.08)"}`,
+        backgroundColor: prefs[enabledKey] ? "rgba(51,162,219,0.06)" : "rgba(255,255,255,0.03)",
+        border: `1px solid ${prefs[enabledKey] ? "rgba(51,162,219,0.2)" : "rgba(255,255,255,0.08)"}`,
       }}>
       <div className="flex items-center justify-between">
         <div>
@@ -319,7 +319,7 @@ function MeetingScheduleSection({ accountId }: { accountId: number }) {
         <button onClick={() => { if (prefs) { updatePrefs.mutate({ accountId, meetingDayPrefs: prefs, meetingTimes: times }); setDirty(false); } }}
           disabled={updatePrefs.isPending}
           className="self-start px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
-          style={{ backgroundColor: "#3B9EE8", color: "#0F2440" }}>
+          style={{ backgroundColor: "#33A2DB", color: "#0F2440" }}>
           {updatePrefs.isPending ? "Saving…" : "Save Meeting Schedule"}
         </button>
       )}
@@ -409,7 +409,7 @@ export default function ManageSchedule() {
               onClick={() => navigate("/app")}
               className="text-sm flex items-center gap-1 transition-colors"
               style={{ color: "rgba(255,255,255,0.4)" }}
-              onMouseEnter={e => (e.currentTarget.style.color = "#3B9EE8")}
+              onMouseEnter={e => (e.currentTarget.style.color = "#33A2DB")}
               onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.4)")}
             >
               ← Back to Command Center
@@ -417,7 +417,7 @@ export default function ManageSchedule() {
             <span style={{ color: "rgba(255,255,255,0.15)" }}>|</span>
             <div className="flex items-center gap-2">
               <div className="w-7 h-7 rounded-lg flex items-center justify-center text-sm"
-                style={{ backgroundColor: "rgba(59,158,232,0.15)", border: "1px solid rgba(59,158,232,0.3)" }}>
+                style={{ backgroundColor: "rgba(51,162,219,0.15)", border: "1px solid rgba(51,162,219,0.3)" }}>
                 📅
               </div>
               <h1 className="text-lg font-bold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
@@ -436,7 +436,7 @@ export default function ManageSchedule() {
 
         {/* Left: Add closed period */}
         <div className="rounded-2xl p-6 flex flex-col gap-5"
-          style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(59,158,232,0.15)" }}>
+          style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(51,162,219,0.15)" }}>
           <div>
             <div className="flex items-center gap-2 mb-2">
               <div className="w-6 h-6 rounded-md flex items-center justify-center text-xs"
@@ -456,7 +456,7 @@ export default function ManageSchedule() {
               onClick={() => { setMode("day"); setPendingDate(null); }}
               className="flex-1 py-2 text-sm font-semibold transition-colors"
               style={{
-                backgroundColor: mode === "day" ? "#3B9EE8" : "transparent",
+                backgroundColor: mode === "day" ? "#33A2DB" : "transparent",
                 color: mode === "day" ? "#0F2440" : "rgba(255,255,255,0.5)",
               }}
             >
@@ -466,7 +466,7 @@ export default function ManageSchedule() {
               onClick={() => { setMode("week"); setPendingDate(null); }}
               className="flex-1 py-2 text-sm font-semibold transition-colors"
               style={{
-                backgroundColor: mode === "week" ? "#3B9EE8" : "transparent",
+                backgroundColor: mode === "week" ? "#33A2DB" : "transparent",
                 color: mode === "week" ? "#0F2440" : "rgba(255,255,255,0.5)",
               }}
             >
@@ -502,8 +502,8 @@ export default function ManageSchedule() {
 
           {/* Selected date preview */}
           {pendingDate && (
-            <div className="rounded-xl p-3" style={{ backgroundColor: "rgba(59,158,232,0.08)", border: "1px solid rgba(59,158,232,0.2)" }}>
-              <p className="text-sm font-medium" style={{ color: "#3B9EE8" }}>
+            <div className="rounded-xl p-3" style={{ backgroundColor: "rgba(51,162,219,0.08)", border: "1px solid rgba(51,162,219,0.2)" }}>
+              <p className="text-sm font-medium" style={{ color: "#33A2DB" }}>
                 {mode === "day"
                   ? `Selected: ${formatDate(pendingDate)}`
                   : `Week of: ${formatWeek(getWeekBounds(pendingDate).start, getWeekBounds(pendingDate).end)}`}
@@ -526,7 +526,7 @@ export default function ManageSchedule() {
             onClick={handleAdd}
             disabled={!pendingDate || addPeriod.isPending}
             className="w-full py-3 rounded-xl text-sm font-bold transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-40"
-            style={{ background: "linear-gradient(135deg, #3B9EE8, #2980c9)", color: "#0F2440" }}
+            style={{ background: "linear-gradient(135deg, #33A2DB, #2485b8)", color: "#0F2440" }}
           >
             {addPeriod.isPending ? "Saving…" : `Mark as Closed`}
           </button>

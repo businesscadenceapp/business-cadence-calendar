@@ -158,9 +158,9 @@ export const MEETING_TYPES: Record<MeetingType, Meeting> = {
     shortLabel: "Finance",
     totalDuration: "60 min",
     suggestedTime: "First Tuesday of the month at 1:00 PM — replaces the regular Weekly Review",
-    color: "#14B8A6",
+    color: "#33A2DB",
     bgColor: "rgba(20,184,166,0.15)",
-    textColor: "#3B9EE8",
+    textColor: "#33A2DB",
     overview:
       "A dedicated money meeting. Keeps financial stress out of daily conversations by giving it a proper home once a month. Review the numbers, spot trends, make one financial decision per business.",
     timeBlocks: [

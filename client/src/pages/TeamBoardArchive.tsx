@@ -93,14 +93,14 @@ export default function TeamBoardArchive() {
               color: "white",
               fontFamily: "'Inter', sans-serif",
             }}
-            onFocus={e => (e.target.style.borderColor = "#3B9EE8")}
+            onFocus={e => (e.target.style.borderColor = "#33A2DB")}
             onBlur={e => (e.target.style.borderColor = "rgba(255,255,255,0.12)")}
           />
           <button
             onClick={handleSearch}
             className="px-4 py-2.5 rounded-xl text-[12px] font-bold transition-all active:scale-[0.97]"
             style={{
-              background: "linear-gradient(135deg, #3B9EE8 0%, #0EA5E9 100%)",
+              background: "linear-gradient(135deg, #33A2DB 0%, #0EA5E9 100%)",
               color: "#0A1929",
               fontFamily: "'Space Grotesk', sans-serif",
             }}
@@ -116,9 +116,9 @@ export default function TeamBoardArchive() {
               onClick={() => { setTopicFilter(null); setPage(0); }}
               className="px-3 py-1 rounded-full text-[11px] font-medium transition-all"
               style={{
-                backgroundColor: topicFilter === null ? "rgba(59,158,232,0.2)" : "rgba(255,255,255,0.06)",
-                border: `1px solid ${topicFilter === null ? "rgba(59,158,232,0.4)" : "rgba(255,255,255,0.12)"}`,
-                color: topicFilter === null ? "#3B9EE8" : "rgba(255,255,255,0.5)",
+                backgroundColor: topicFilter === null ? "rgba(51,162,219,0.2)" : "rgba(255,255,255,0.06)",
+                border: `1px solid ${topicFilter === null ? "rgba(51,162,219,0.4)" : "rgba(255,255,255,0.12)"}`,
+                color: topicFilter === null ? "#33A2DB" : "rgba(255,255,255,0.5)",
                 fontFamily: "'Space Grotesk', sans-serif",
               }}
             >
@@ -130,9 +130,9 @@ export default function TeamBoardArchive() {
                 onClick={() => { setTopicFilter(tag); setPage(0); }}
                 className="px-3 py-1 rounded-full text-[11px] font-medium transition-all"
                 style={{
-                  backgroundColor: topicFilter === tag ? "rgba(59,158,232,0.2)" : "rgba(255,255,255,0.06)",
-                  border: `1px solid ${topicFilter === tag ? "rgba(59,158,232,0.4)" : "rgba(255,255,255,0.12)"}`,
-                  color: topicFilter === tag ? "#3B9EE8" : "rgba(255,255,255,0.5)",
+                  backgroundColor: topicFilter === tag ? "rgba(51,162,219,0.2)" : "rgba(255,255,255,0.06)",
+                  border: `1px solid ${topicFilter === tag ? "rgba(51,162,219,0.4)" : "rgba(255,255,255,0.12)"}`,
+                  color: topicFilter === tag ? "#33A2DB" : "rgba(255,255,255,0.5)",
                   fontFamily: "'Space Grotesk', sans-serif",
                 }}
               >
@@ -177,8 +177,8 @@ export default function TeamBoardArchive() {
                       <span
                         className="text-[11px] font-bold px-2 py-0.5 rounded-full"
                         style={{
-                          backgroundColor: card.type === "task" ? "rgba(124,58,237,0.15)" : card.type === "issue" ? "rgba(248,113,113,0.15)" : "rgba(59,158,232,0.12)",
-                          color: card.type === "task" ? "#C4B5FD" : card.type === "issue" ? "#F87171" : "#3B9EE8",
+                          backgroundColor: card.type === "task" ? "rgba(124,58,237,0.15)" : card.type === "issue" ? "rgba(248,113,113,0.15)" : "rgba(51,162,219,0.12)",
+                          color: card.type === "task" ? "#C4B5FD" : card.type === "issue" ? "#F87171" : "#33A2DB",
                           fontFamily: "'Space Grotesk', sans-serif",
                         }}
                       >
@@ -216,12 +216,12 @@ export default function TeamBoardArchive() {
                     <div className="flex flex-wrap gap-1.5 mt-1">
                       {attachments.map((a, i) => a.mimeType.startsWith("image/") ? (
                         <a key={i} href={a.url} target="_blank" rel="noopener noreferrer">
-                          <img src={a.url} alt={a.name} className="w-16 h-16 rounded-lg object-cover border" style={{ borderColor: "rgba(59,158,232,0.2)" }} />
+                          <img src={a.url} alt={a.name} className="w-16 h-16 rounded-lg object-cover border" style={{ borderColor: "rgba(51,162,219,0.2)" }} />
                         </a>
                       ) : (
                         <a key={i} href={a.url} target="_blank" rel="noopener noreferrer"
                           className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-medium"
-                          style={{ backgroundColor: "rgba(59,158,232,0.1)", border: "1px solid rgba(59,158,232,0.25)", color: "#3B9EE8" }}
+                          style={{ backgroundColor: "rgba(51,162,219,0.1)", border: "1px solid rgba(51,162,219,0.25)", color: "#33A2DB" }}
                         >
                           📎 {a.name}
                         </a>
@@ -233,9 +233,9 @@ export default function TeamBoardArchive() {
                   {card.archiveDecision && (
                     <div
                       className="rounded-lg px-3 py-2 mt-1"
-                      style={{ backgroundColor: "rgba(59,158,232,0.08)", border: "1px solid rgba(59,158,232,0.2)" }}
+                      style={{ backgroundColor: "rgba(51,162,219,0.08)", border: "1px solid rgba(51,162,219,0.2)" }}
                     >
-                      <p className="text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color: "#3B9EE8", fontFamily: "'Space Grotesk', sans-serif" }}>
+                      <p className="text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color: "#33A2DB", fontFamily: "'Space Grotesk', sans-serif" }}>
                         ✓ Decision
                       </p>
                       <p className="text-[12px]" style={{ color: "rgba(255,255,255,0.8)" }}>

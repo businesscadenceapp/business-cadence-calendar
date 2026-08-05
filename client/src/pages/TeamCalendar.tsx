@@ -60,16 +60,16 @@ function DayCell({
       className="aspect-square rounded-lg flex flex-col items-center justify-between p-0.5 transition-all"
       style={{
         backgroundColor: isSelected
-          ? "rgba(59,158,232,0.2)"
+          ? "rgba(51,162,219,0.2)"
           : isToday
-          ? "rgba(59,158,232,0.08)"
+          ? "rgba(51,162,219,0.08)"
           : hasMeetings
           ? "rgba(255,255,255,0.05)"
           : "transparent",
         border: isSelected
-          ? "1.5px solid rgba(59,158,232,0.6)"
+          ? "1.5px solid rgba(51,162,219,0.6)"
           : isToday
-          ? "1.5px solid rgba(59,158,232,0.3)"
+          ? "1.5px solid rgba(51,162,219,0.3)"
           : "1.5px solid transparent",
       }}
     >
@@ -77,7 +77,7 @@ function DayCell({
         className="text-[10px] font-semibold leading-none mt-0.5"
         style={{
           color: isToday
-            ? "#3B9EE8"
+            ? "#33A2DB"
             : isSelected
             ? "#fff"
             : hasMeetings
@@ -402,7 +402,7 @@ export default function TeamCalendar() {
             <button
               onClick={goToToday}
               className="px-2.5 py-1 rounded-lg text-[11px] font-semibold"
-              style={{ background: "rgba(59,158,232,0.12)", border: "1px solid rgba(59,158,232,0.3)", color: "#3B9EE8", fontFamily: "'Space Grotesk', sans-serif" }}
+              style={{ background: "rgba(51,162,219,0.12)", border: "1px solid rgba(51,162,219,0.3)", color: "#33A2DB", fontFamily: "'Space Grotesk', sans-serif" }}
             >
               Today
             </button>

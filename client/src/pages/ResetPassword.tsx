@@ -67,8 +67,8 @@ export default function ResetPassword() {
 
   const cardStyle: React.CSSProperties = {
     backgroundColor: "rgba(255,255,255,0.05)",
-    border: "1px solid rgba(59,158,232,0.2)",
-    boxShadow: "0 24px 64px rgba(0,0,0,0.4), 0 4px 16px rgba(0,0,0,0.2), 0 0 0 1px rgba(59,158,232,0.08) inset",
+    border: "1px solid rgba(51,162,219,0.2)",
+    boxShadow: "0 24px 64px rgba(0,0,0,0.4), 0 4px 16px rgba(0,0,0,0.2), 0 0 0 1px rgba(51,162,219,0.08) inset",
     backdropFilter: "blur(16px)",
   };
 
@@ -102,7 +102,7 @@ export default function ResetPassword() {
             {!token && (
               <div className="text-center py-4">
                 <p className="text-white/70 text-sm mb-4">Invalid reset link. Please request a new one.</p>
-                <a href="/forgot-password" className="text-sm font-semibold" style={{ color: "#3B9EE8" }}>
+                <a href="/forgot-password" className="text-sm font-semibold" style={{ color: "#33A2DB" }}>
                   Request new link →
                 </a>
               </div>
@@ -131,7 +131,7 @@ export default function ResetPassword() {
                     ? "This reset link has expired. Reset links are only valid for 1 hour."
                     : "This reset link is not valid. It may have already been used."}
                 </p>
-                <a href="/forgot-password" className="inline-block text-sm font-semibold" style={{ color: "#3B9EE8" }}>
+                <a href="/forgot-password" className="inline-block text-sm font-semibold" style={{ color: "#33A2DB" }}>
                   Request a new link →
                 </a>
               </div>
@@ -166,7 +166,7 @@ export default function ResetPassword() {
                         autoComplete="new-password"
                         className="w-full rounded-xl px-4 py-3 pr-10 text-sm text-white placeholder-white/30 focus:outline-none transition-all"
                         style={inputStyle}
-                        onFocus={e => (e.target.style.borderColor = "#3B9EE8")}
+                        onFocus={e => (e.target.style.borderColor = "#33A2DB")}
                         onBlur={e => (e.target.style.borderColor = "rgba(255,255,255,0.15)")}
                       />
                       <button type="button" onClick={() => setShowPassword(v => !v)}
@@ -193,7 +193,7 @@ export default function ResetPassword() {
                       autoComplete="new-password"
                       className="w-full rounded-xl px-4 py-3 text-sm text-white placeholder-white/30 focus:outline-none transition-all"
                       style={inputStyle}
-                      onFocus={e => (e.target.style.borderColor = "#3B9EE8")}
+                      onFocus={e => (e.target.style.borderColor = "#33A2DB")}
                       onBlur={e => (e.target.style.borderColor = "rgba(255,255,255,0.15)")}
                     />
                     {confirm.length > 0 && password !== confirm && (
@@ -205,7 +205,7 @@ export default function ResetPassword() {
                     type="submit"
                     disabled={isLoading || password.length < 8 || password !== confirm}
                     className="w-full py-3.5 rounded-xl text-sm font-bold transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-40 mt-1"
-                    style={{ backgroundColor: "#3B9EE8", color: "#0F2440", boxShadow: "0 4px 16px rgba(59,158,232,0.25)" }}
+                    style={{ backgroundColor: "#33A2DB", color: "#0F2440", boxShadow: "0 4px 16px rgba(51,162,219,0.25)" }}
                   >
                     {isLoading ? "Updating…" : "Update password →"}
                   </button>
@@ -217,8 +217,8 @@ export default function ResetPassword() {
             {done && (
               <div className="text-center py-4">
                 <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-5"
-                  style={{ backgroundColor: "rgba(59,158,232,0.15)", border: "1.5px solid rgba(59,158,232,0.3)" }}>
-                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#3B9EE8" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  style={{ backgroundColor: "rgba(51,162,219,0.15)", border: "1.5px solid rgba(51,162,219,0.3)" }}>
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#33A2DB" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                     <polyline points="20 6 9 17 4 12"/>
                   </svg>
                 </div>

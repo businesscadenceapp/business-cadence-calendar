@@ -138,7 +138,7 @@ function DemoCardItem({ card }: { card: DemoCard }) {
       {/* Action buttons (disabled in demo) */}
       <div className="flex gap-2 pt-0.5">
         {card.type === "task" && !card.completedAt && (
-          <button onClick={demoToast} className="text-[11px] px-3 py-1.5 rounded-lg font-medium transition-all active:scale-95" style={{ backgroundColor: "rgba(59,158,232,0.1)", color: "#3B9EE8", border: "1px solid rgba(59,158,232,0.2)" }}>
+          <button onClick={demoToast} className="text-[11px] px-3 py-1.5 rounded-lg font-medium transition-all active:scale-95" style={{ backgroundColor: "rgba(51,162,219,0.1)", color: "#33A2DB", border: "1px solid rgba(51,162,219,0.2)" }}>
             Mark Done
           </button>
         )}
@@ -284,14 +284,14 @@ export default function DemoBoard() {
               overflow: "hidden",
             }}
           >
-            <div style={{ position: "absolute", top: "-60px", right: "-60px", width: "240px", height: "240px", background: "radial-gradient(circle, rgba(59,158,232,0.06) 0%, transparent 70%)", pointerEvents: "none" }} />
+            <div style={{ position: "absolute", top: "-60px", right: "-60px", width: "240px", height: "240px", background: "radial-gradient(circle, rgba(51,162,219,0.06) 0%, transparent 70%)", pointerEvents: "none" }} />
             <div className="flex items-center gap-2.5 mb-2">
-              <div style={{ width: 36, height: 36, borderRadius: "12px", background: "linear-gradient(135deg, rgba(59,158,232,0.2) 0%, rgba(59,158,232,0.08) 100%)", border: "1px solid rgba(59,158,232,0.3)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "18px" }}>⚡</div>
-              <span className="text-[11px] font-bold uppercase tracking-[0.15em]" style={{ color: "#3B9EE8", fontFamily: "'Space Grotesk', sans-serif" }}>Command Center</span>
+              <div style={{ width: 36, height: 36, borderRadius: "12px", background: "linear-gradient(135deg, rgba(51,162,219,0.2) 0%, rgba(51,162,219,0.08) 100%)", border: "1px solid rgba(51,162,219,0.3)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "18px" }}>⚡</div>
+              <span className="text-[11px] font-bold uppercase tracking-[0.15em]" style={{ color: "#33A2DB", fontFamily: "'Space Grotesk', sans-serif" }}>Command Center</span>
             </div>
             <h1 className="text-[22px] font-black text-white leading-tight mb-1" style={{ fontFamily: "'Space Grotesk', sans-serif", letterSpacing: "-0.02em" }}>
               Your Business,<br />
-              <span style={{ background: "linear-gradient(90deg, #3B9EE8, #A78BFA)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>In Sync.</span>
+              <span style={{ background: "linear-gradient(90deg, #33A2DB, #A78BFA)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>In Sync.</span>
             </h1>
             <p className="text-[12px]" style={{ color: "rgba(255,255,255,0.45)", lineHeight: "1.4" }}>
               Real-time updates between owners — no more missed conversations.
@@ -318,7 +318,7 @@ export default function DemoBoard() {
                   const r = 112;
                   const x = 170 + r * Math.cos(rad);
                   const y = 170 + r * Math.sin(rad);
-                  return <line key={i} x1="170" y1="170" x2={x} y2={y} stroke="rgba(59,158,232,0.12)" strokeWidth="1.5" strokeDasharray="4 4" />;
+                  return <line key={i} x1="170" y1="170" x2={x} y2={y} stroke="rgba(51,162,219,0.12)" strokeWidth="1.5" strokeDasharray="4 4" />;
                 })}
               </svg>
 
@@ -328,9 +328,9 @@ export default function DemoBoard() {
                   position: "absolute", left: "50%", top: "50%",
                   transform: "translate(-50%, -50%)",
                   width: 68, height: 68, borderRadius: "50%",
-                  background: "linear-gradient(135deg, rgba(59,158,232,0.22) 0%, rgba(59,158,232,0.08) 100%)",
-                  border: "2px solid rgba(59,158,232,0.45)",
-                  boxShadow: "0 0 32px rgba(59,158,232,0.25), 0 0 8px rgba(59,158,232,0.15)",
+                  background: "linear-gradient(135deg, rgba(51,162,219,0.22) 0%, rgba(51,162,219,0.08) 100%)",
+                  border: "2px solid rgba(51,162,219,0.45)",
+                  boxShadow: "0 0 32px rgba(51,162,219,0.25), 0 0 8px rgba(51,162,219,0.15)",
                   display: "flex", alignItems: "center", justifyContent: "center",
                   zIndex: 2, animation: "hubCenterPulse 3s ease-in-out infinite",
                 }}
@@ -344,7 +344,7 @@ export default function DemoBoard() {
                 { cat: CATEGORIES[1], count: counts.updates, angle: -30, onClick: () => setActiveView("updates") },
                 { cat: CATEGORIES[2], count: counts.issues, angle: 30, onClick: () => setActiveView("issues") },
                 { cat: { key: "needs_attention", label: "Needs Attention", icon: "❗", gradient: "linear-gradient(135deg, rgba(251,191,36,0.18) 0%, rgba(251,191,36,0.07) 100%)", border: "rgba(251,191,36,0.38)", glow: "rgba(251,191,36,0.14)", textColor: "#FDE68A" }, count: counts.tasks + counts.issues, angle: 90, onClick: () => { setNeedsAttnSection(counts.tasks > 0 ? "tasks" : "issues"); setActiveView("needs_attention"); } },
-                { cat: { key: "calendar", label: "Calendar", icon: "📅", gradient: "linear-gradient(135deg, rgba(20,184,166,0.18) 0%, rgba(20,184,166,0.07) 100%)", border: "rgba(20,184,166,0.35)", glow: "rgba(20,184,166,0.14)", textColor: "#3B9EE8" }, count: -1, angle: 150, onClick: demoToast },
+                { cat: { key: "calendar", label: "Calendar", icon: "📅", gradient: "linear-gradient(135deg, rgba(20,184,166,0.18) 0%, rgba(20,184,166,0.07) 100%)", border: "rgba(20,184,166,0.35)", glow: "rgba(20,184,166,0.14)", textColor: "#33A2DB" }, count: -1, angle: 150, onClick: demoToast },
                 { cat: { key: "archive", label: "Archive", icon: "📁", gradient: "linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 100%)", border: "rgba(255,255,255,0.15)", glow: "rgba(255,255,255,0.05)", textColor: "rgba(255,255,255,0.7)" }, count: 0, angle: 210, onClick: demoToast },
               ].map(({ cat, count, angle, onClick }, i) => {
                 const rad = (angle * Math.PI) / 180;
@@ -365,9 +365,9 @@ export default function DemoBoard() {
             onClick={demoToast}
             className="fixed bottom-6 right-6 w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-bold transition-all active:scale-[0.9] hover:scale-[1.05] z-40"
             style={{
-              background: "linear-gradient(135deg, #3B9EE8, #38BDF8)",
+              background: "linear-gradient(135deg, #33A2DB, #38BDF8)",
               color: "#0F2440",
-              boxShadow: "0 6px 24px rgba(59,158,232,0.4), 0 2px 8px rgba(0,0,0,0.3)",
+              boxShadow: "0 6px 24px rgba(51,162,219,0.4), 0 2px 8px rgba(0,0,0,0.3)",
             }}
           >+</button>
         </>
@@ -396,7 +396,7 @@ export default function DemoBoard() {
             style={{ minWidth: "56px" }}
           >
             <span className="text-[18px]">{item.icon}</span>
-            <span className="text-[10px] font-semibold" style={{ color: item.active ? "#3B9EE8" : "rgba(255,255,255,0.35)", fontFamily: "'Space Grotesk', sans-serif" }}>
+            <span className="text-[10px] font-semibold" style={{ color: item.active ? "#33A2DB" : "rgba(255,255,255,0.35)", fontFamily: "'Space Grotesk', sans-serif" }}>
               {item.label}
             </span>
           </button>
@@ -409,8 +409,8 @@ export default function DemoBoard() {
           to { opacity: 1; transform: scale(1); }
         }
         @keyframes hubCenterPulse {
-          0%, 100% { box-shadow: 0 0 32px rgba(59,158,232,0.25), 0 0 8px rgba(59,158,232,0.15); }
-          50% { box-shadow: 0 0 48px rgba(59,158,232,0.4), 0 0 16px rgba(59,158,232,0.25); }
+          0%, 100% { box-shadow: 0 0 32px rgba(51,162,219,0.25), 0 0 8px rgba(51,162,219,0.15); }
+          50% { box-shadow: 0 0 48px rgba(51,162,219,0.4), 0 0 16px rgba(51,162,219,0.25); }
         }
         @keyframes tileEnter {
           from { opacity: 0; transform: translateY(12px) scale(0.96); }

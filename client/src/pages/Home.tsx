@@ -1,6 +1,6 @@
 /**
  * Business Cadence Calendar — Home Page
- * Design: Dark Navy Command Center — #0F2440 bg, #3B9EE8 teal accent
+ * Design: Dark Navy Command Center — #0F2440 bg, #33A2DB teal accent
  * Fonts: Space Grotesk (display), Inter (body), JetBrains Mono (numbers)
  */
 
@@ -54,7 +54,7 @@ function GoalsForMeeting({ date, accountId, personId, businessContext }: {
   if (quarterlyGoals.length === 0) return null;
 
   const STATUS_COLORS: Record<string, string> = {
-    active: "#3B9EE8",
+    active: "#33A2DB",
     achieved: "#34D399",
     missed: "#F87171",
     deferred: "#94A3B8",
@@ -67,7 +67,7 @@ function GoalsForMeeting({ date, accountId, personId, businessContext }: {
       </p>
       {quarterlyGoals.map(goal => (
         <div key={goal.id} className="flex items-start gap-2">
-          <span className="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0" style={{ backgroundColor: STATUS_COLORS[goal.status] ?? "#3B9EE8" }} />
+          <span className="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0" style={{ backgroundColor: STATUS_COLORS[goal.status] ?? "#33A2DB" }} />
           <div className="flex flex-col gap-0.5 min-w-0">
             <p className="text-[11px] font-medium text-white leading-snug truncate" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
               {goal.title}
@@ -78,7 +78,7 @@ function GoalsForMeeting({ date, accountId, personId, businessContext }: {
               </p>
             )}
           </div>
-          <span className="text-[9px] font-semibold uppercase px-1.5 py-0.5 rounded flex-shrink-0" style={{ backgroundColor: `${STATUS_COLORS[goal.status] ?? "#3B9EE8"}18`, color: STATUS_COLORS[goal.status] ?? "#3B9EE8" }}>
+          <span className="text-[9px] font-semibold uppercase px-1.5 py-0.5 rounded flex-shrink-0" style={{ backgroundColor: `${STATUS_COLORS[goal.status] ?? "#33A2DB"}18`, color: STATUS_COLORS[goal.status] ?? "#33A2DB" }}>
             {goal.status}
           </span>
         </div>
@@ -126,20 +126,20 @@ function DayCell({
 
   let cellBg = "rgba(255,255,255,0.04)";
   if (isClosed) cellBg = "rgba(255,255,255,0.02)";
-  else if (isSelected) cellBg = "rgba(59,158,232,0.15)";
+  else if (isSelected) cellBg = "rgba(51,162,219,0.15)";
   else if (hasQuarterly) cellBg = "rgba(244,63,94,0.15)";
-  else if (hasMonthly) cellBg = "rgba(13,148,136,0.12)";
+  else if (hasMonthly) cellBg = "rgba(37,220,249,0.12)";
   else if (isHighlighted) cellBg = "rgba(255,255,255,0.08)";
   else if (hasMeetings) cellBg = "rgba(255,255,255,0.07)";
   else if (day.isWeekend) cellBg = "rgba(255,255,255,0.02)";
 
   let cellBorder = "1px solid rgba(255,255,255,0.07)";
   if (isClosed) cellBorder = "1px solid rgba(255,255,255,0.04)";
-  else if (day.isToday) cellBorder = "1.5px solid #3B9EE8";
-  else if (isSelected) cellBorder = "1.5px solid rgba(59,158,232,0.5)";
+  else if (day.isToday) cellBorder = "1.5px solid #33A2DB";
+  else if (isSelected) cellBorder = "1.5px solid rgba(51,162,219,0.5)";
   else if (isHighlighted && highlightType) cellBorder = `1.5px solid ${MEETING_TYPES[highlightType].color}60`;
   else if (hasQuarterly) cellBorder = "1.5px solid rgba(244,63,94,0.4)";
-  else if (hasMonthly) cellBorder = "1.5px solid rgba(13,148,136,0.35)";
+  else if (hasMonthly) cellBorder = "1.5px solid rgba(37,220,249,0.35)";
 
   return (
     <div
@@ -157,9 +157,9 @@ function DayCell({
             className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] leading-none font-bold"
             style={{
               fontFamily: "'JetBrains Mono', monospace",
-              backgroundColor: "#3B9EE8",
+              backgroundColor: "#33A2DB",
               color: "#0A1929",
-              boxShadow: "0 0 8px rgba(59,158,232,0.5)",
+              boxShadow: "0 0 8px rgba(51,162,219,0.5)",
             }}
           >
             {day.dayOfMonth}
@@ -171,7 +171,7 @@ function DayCell({
               fontFamily: "'JetBrains Mono', monospace",
               color: isClosed ? "rgba(255,255,255,0.2)"
                 : hasQuarterly ? "#FDA4AF"
-                : hasMonthly ? "#3B9EE8"
+                : hasMonthly ? "#33A2DB"
                 : day.isWeekend ? "rgba(255,255,255,0.2)"
                 : "rgba(255,255,255,0.7)",
               fontWeight: hasQuarterly || hasMonthly ? 600 : 400,
@@ -255,7 +255,7 @@ function MonthGrid({
             {monthlyDays > 0 && quarterlyDays === 0 && (
               <span
                 className="text-[9px] px-1.5 py-0.5 rounded font-semibold"
-                style={{ backgroundColor: "rgba(13,148,136,0.2)", color: "#3B9EE8", fontFamily: "'Space Grotesk', sans-serif" }}
+                style={{ backgroundColor: "rgba(37,220,249,0.2)", color: "#33A2DB", fontFamily: "'Space Grotesk', sans-serif" }}
               >
                 FINANCE
               </span>
@@ -562,7 +562,7 @@ function MeetingSection({
         <p className="text-[10px] leading-relaxed" style={{ color: "rgba(255,255,255,0.45)" }}>{m.overview}</p>
         <div className="flex items-center gap-1.5 mt-0.5">
           <span className="text-[9px]" style={{ color: "rgba(255,255,255,0.3)" }}>🕐</span>
-          <span className="text-[10px] font-semibold" style={{ color: "rgba(59,158,232,0.7)" }}>
+          <span className="text-[10px] font-semibold" style={{ color: "rgba(51,162,219,0.7)" }}>
             {formatMeetingTime(meetingTimes[MEETING_TYPE_TO_TIME_KEY[type]])}
           </span>
           <span className="text-[10px] italic" style={{ color: "rgba(255,255,255,0.25)" }}>— {m.totalDuration}</span>
@@ -616,7 +616,7 @@ function MeetingSection({
             Meeting Notes
           </p>
           {saveNotes.isPending && <span className="text-[9px] italic" style={{ color: "rgba(255,255,255,0.3)" }}>saving…</span>}
-          {!saveNotes.isPending && notes.length > 0 && <span className="text-[9px]" style={{ color: "#3B9EE8" }}>✓ saved</span>}
+          {!saveNotes.isPending && notes.length > 0 && <span className="text-[9px]" style={{ color: "#33A2DB" }}>✓ saved</span>}
         </div>
         <textarea
           value={notes}
@@ -693,7 +693,7 @@ const CALENDAR_TO_BOARD_MEETING: Record<MeetingType, "daily_huddle" | "weekly_me
 };
 
 const MEETING_TYPE_LABELS: Record<string, { label: string; icon: string; color: string }> = {
-  daily_huddle:     { label: "Daily Huddle",    icon: "🌅", color: "#0D9488" },
+  daily_huddle:     { label: "Daily Huddle",    icon: "🌅", color: "#25DCF9" },
   weekly_meeting:   { label: "Weekly Meeting",  icon: "📅", color: "#7C3AED" },
   quarterly_review: { label: "Quarterly Review",icon: "📊", color: "#D97706" },
 };
@@ -933,11 +933,11 @@ export default function Home() {
         <div className="flex items-center gap-2.5">
           <Link href="/app/board"
             className="flex items-center justify-center w-8 h-8 rounded-lg transition-all active:scale-95"
-            style={{ background: "rgba(59,158,232,0.12)", border: "1px solid rgba(59,158,232,0.3)" }}
+            style={{ background: "rgba(51,162,219,0.12)", border: "1px solid rgba(51,162,219,0.3)" }}
             aria-label="Back to Board"
           >
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M10 3L5 8L10 13" stroke="#3B9EE8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M10 3L5 8L10 13" stroke="#33A2DB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </Link>
           <span className="text-base">📅</span>
@@ -1028,7 +1028,7 @@ export default function Home() {
                 <button
                   onClick={goToToday}
                   className="text-[11px] font-semibold px-3 py-2 rounded-lg transition-all active:scale-95"
-                  style={{ background: "rgba(59,158,232,0.1)", border: "1px solid rgba(59,158,232,0.25)", color: "#3B9EE8", minHeight: "36px" }}
+                  style={{ background: "rgba(51,162,219,0.1)", border: "1px solid rgba(51,162,219,0.25)", color: "#33A2DB", minHeight: "36px" }}
                 >
                   Today
                 </button>

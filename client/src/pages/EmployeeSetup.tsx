@@ -259,7 +259,7 @@ export default function EmployeeSetup() {
           <span style={{ color: "rgba(255,255,255,0.15)" }}>|</span>
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 rounded-lg flex items-center justify-center text-sm"
-              style={{ backgroundColor: "rgba(59,158,232,0.15)", border: "1px solid rgba(59,158,232,0.3)" }}>
+              style={{ backgroundColor: "rgba(51,162,219,0.15)", border: "1px solid rgba(51,162,219,0.3)" }}>
               👥
             </div>
             <h1 className="text-lg font-bold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
@@ -277,12 +277,12 @@ export default function EmployeeSetup() {
         {/* Intro */}
         <div
           className="rounded-xl p-5"
-          style={{ background: "rgba(59,158,232,0.06)", border: "1px solid rgba(59,158,232,0.2)" }}
+          style={{ background: "rgba(51,162,219,0.06)", border: "1px solid rgba(51,162,219,0.2)" }}
         >
           <p className="text-sm leading-relaxed" style={{ color: "rgba(255,255,255,0.6)" }}>
             Define each employee's name, role, business assignment, and the metrics they report every week. Owners enter
             numbers on their behalf — no spreadsheets needed. Reports appear inside the{" "}
-            <strong style={{ color: "#3B9EE8" }}>Team Weekly Review</strong> meeting on the calendar.
+            <strong style={{ color: "#33A2DB" }}>Team Weekly Review</strong> meeting on the calendar.
           </p>
         </div>
 
@@ -374,7 +374,7 @@ export default function EmployeeSetup() {
                             <button
                               onClick={() => addMetricToDraft(idx)}
                               className="mt-2 text-xs font-medium transition-colors"
-                              style={{ color: "#3B9EE8" }}
+                              style={{ color: "#33A2DB" }}
                             >+ Add metric</button>
                           </div>
 
@@ -384,7 +384,7 @@ export default function EmployeeSetup() {
                               onClick={() => handleSaveDraft(idx)}
                               disabled={saveEmployee.isPending}
                               className="px-4 py-2 rounded-lg text-sm font-semibold transition-all active:scale-95"
-                              style={{ background: "linear-gradient(135deg, #3B9EE8, #2980c9)", color: "#0F2440" }}
+                              style={{ background: "linear-gradient(135deg, #33A2DB, #2485b8)", color: "#0F2440" }}
                             >
                               {saveEmployee.isPending ? "Saving…" : "Save Employee"}
                             </button>
@@ -402,7 +402,7 @@ export default function EmployeeSetup() {
                               <span className="text-base font-semibold text-white">{draft.name}</span>
                               <span
                                 className="text-xs px-2 py-0.5 rounded-full font-medium"
-                                style={{ background: "rgba(59,158,232,0.12)", color: "#3B9EE8", border: "1px solid rgba(59,158,232,0.2)" }}
+                                style={{ background: "rgba(51,162,219,0.12)", color: "#33A2DB", border: "1px solid rgba(51,162,219,0.2)" }}
                               >{draft.role}</span>
                             </div>
                             <div className="flex flex-wrap gap-1.5 mt-2">
@@ -473,7 +473,7 @@ export default function EmployeeSetup() {
                         <div className="flex items-center gap-2 mb-1">
                           <span className="text-base font-semibold text-white">{draft.name}</span>
                           <span className="text-xs px-2 py-0.5 rounded-full font-medium"
-                            style={{ background: "rgba(59,158,232,0.12)", color: "#3B9EE8", border: "1px solid rgba(59,158,232,0.2)" }}>
+                            style={{ background: "rgba(51,162,219,0.12)", color: "#33A2DB", border: "1px solid rgba(51,162,219,0.2)" }}>
                             {draft.role}
                           </span>
                         </div>
@@ -505,7 +505,7 @@ export default function EmployeeSetup() {
                         <div className="flex items-center gap-2">
                           <button onClick={() => handleSaveDraft(idx)} disabled={saveEmployee.isPending}
                             className="px-4 py-2 rounded-lg text-sm font-semibold active:scale-95"
-                            style={{ background: "linear-gradient(135deg, #3B9EE8, #2980c9)", color: "#0F2440" }}>
+                            style={{ background: "linear-gradient(135deg, #33A2DB, #2485b8)", color: "#0F2440" }}>
                             {saveEmployee.isPending ? "Saving…" : "Save"}
                           </button>
                           <button onClick={() => updateDraft(idx, { isEditing: false })}
@@ -525,11 +525,11 @@ export default function EmployeeSetup() {
         {showAddForm ? (
           <div
             className="rounded-xl overflow-hidden"
-            style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(59,158,232,0.3)" }}
+            style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(51,162,219,0.3)" }}
           >
             <div className="px-5 py-3 flex items-center gap-2"
-              style={{ borderBottom: "1px solid rgba(255,255,255,0.08)", background: "rgba(59,158,232,0.05)" }}>
-              <span className="text-sm font-semibold" style={{ color: "#3B9EE8" }}>New Employee</span>
+              style={{ borderBottom: "1px solid rgba(255,255,255,0.08)", background: "rgba(51,162,219,0.05)" }}>
+              <span className="text-sm font-semibold" style={{ color: "#33A2DB" }}>New Employee</span>
             </div>
             <div className="p-5 flex flex-col gap-4">
               <div className="grid grid-cols-3 gap-3">
@@ -608,7 +608,7 @@ export default function EmployeeSetup() {
                 <button
                   onClick={() => setNewDraft((d) => ({ ...d, metrics: [...d.metrics, { label: "", unit: "#" }] }))}
                   className="mt-2 text-xs font-medium transition-colors"
-                  style={{ color: "#3B9EE8" }}
+                  style={{ color: "#33A2DB" }}
                 >+ Add metric</button>
               </div>
 
@@ -617,7 +617,7 @@ export default function EmployeeSetup() {
                   onClick={handleSaveNew}
                   disabled={saveEmployee.isPending}
                   className="px-4 py-2 rounded-lg text-sm font-semibold transition-all active:scale-95"
-                  style={{ background: "linear-gradient(135deg, #3B9EE8, #2980c9)", color: "#0F2440" }}
+                  style={{ background: "linear-gradient(135deg, #33A2DB, #2485b8)", color: "#0F2440" }}
                 >
                   {saveEmployee.isPending ? "Saving…" : "Add Employee"}
                 </button>
@@ -637,9 +637,9 @@ export default function EmployeeSetup() {
             onClick={() => setShowAddForm(true)}
             className="flex items-center justify-center gap-2 w-full py-3.5 rounded-xl text-sm font-semibold transition-all hover:opacity-90 active:scale-95"
             style={{
-              background: "rgba(59,158,232,0.06)",
-              border: "2px dashed rgba(59,158,232,0.3)",
-              color: "#3B9EE8",
+              background: "rgba(51,162,219,0.06)",
+              border: "2px dashed rgba(51,162,219,0.3)",
+              color: "#33A2DB",
             }}
           >
             + Add Employee

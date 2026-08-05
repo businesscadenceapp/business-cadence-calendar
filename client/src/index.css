@@ -45,14 +45,14 @@
 
   /* ── Brand palette ── */
   --navy:       #1E3A5F;   /* Slate navy — primary brand, headers, CTAs */
-  --teal:       #3B9EE8;   /* Brand blue — highlights, CTAs */
+  --teal:       #33A2DB;   /* Heart cyan-blue — primary accent */
   --teal-light: #0D2D4A;   /* Dark teal tint — hover states */
   --cream:      #0F2440;   /* Deep navy — page background */
   --cream-dark: #162d4a;   /* Mid navy — card/panel backgrounds */
 
   /* ── Urgency / alert accent ── */
-  --amber:       #F59E0B;   /* Warm amber — overdue, alerts, urgency */
-  --amber-muted: #D97706;   /* Darker amber — hover/pressed states */
+  --amber:       #F16801;   /* Heart orange — overdue, alerts, urgency */
+  --amber-muted: #C35D08;   /* Darker heart orange — hover/pressed states */
 
   /* ── Semantic tokens (dark navy theme) ── */
   --background:            oklch(0.13 0.04 240);    /* #0F2440 deep navy */
@@ -61,7 +61,7 @@
   --card-foreground:       oklch(0.97 0.005 220);
   --popover:               oklch(0.19 0.038 240);
   --popover-foreground:    oklch(0.97 0.005 220);
-  --primary:               oklch(0.65 0.18 220);    /* #3B9EE8 teal */
+  --primary:               oklch(0.63 0.16 212);    /* #33A2DB heart cyan-blue */
   --primary-foreground:    oklch(0.13 0.04 240);    /* dark navy text on teal */
   --secondary:             oklch(0.22 0.04 240);    /* #1E3A5F mid navy */
   --secondary-foreground:  oklch(0.97 0.005 220);
@@ -73,16 +73,16 @@
   --destructive-foreground: oklch(0.99 0 0);
   --border:                oklch(1 0 0 / 13%);      /* slightly more visible border for depth */
   --input:                 oklch(1 0 0 / 12%);      /* white/12 */
-  --ring:                  oklch(0.65 0.18 220);    /* blue ring */
+  --ring:                  oklch(0.63 0.16 212);    /* heart blue ring */
 
   /* ── Calendar app business colors (preserved) ── */
   --chiro-color:    #10B981;
-  --crossfit-color: #F59E0B;
+  --crossfit-color: #F16801;
 
   /* ── Calendar app meeting type colors (preserved) ── */
   --daily-color:     #8B5CF6;
   --weekly-color:    #0EA5E9;
-  --monthly-color:   #14B8A6;
+  --monthly-color:   #33A2DB;
   --quarterly-color: #F43F5E;
 }
 
@@ -94,7 +94,7 @@
   --card-foreground:       oklch(0.93 0.01 220);
   --popover:               oklch(0.17 0.022 240);
   --popover-foreground:    oklch(0.93 0.01 220);
-  --primary:               oklch(0.60 0.18 220);
+  --primary:               oklch(0.58 0.16 212);
   --primary-foreground:    oklch(0.13 0.025 240);
   --secondary:             oklch(0.22 0.02 240);
   --secondary-foreground:  oklch(0.85 0.01 220);
@@ -106,7 +106,7 @@
   --destructive-foreground: oklch(0.98 0 0);
   --border:                oklch(1 0 0 / 10%);
   --input:                 oklch(1 0 0 / 12%);
-  --ring:                  oklch(0.65 0.18 220);    /* blue ring */
+  --ring:                  oklch(0.63 0.16 212);    /* heart blue ring */
 }
 
 @layer base {

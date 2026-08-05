@@ -1,6 +1,6 @@
 /**
  * Settings page — Customize agenda items per business per meeting type.
- * Dark navy theme: #0F2440 bg, #3B9EE8 teal accent, white text
+ * Dark navy theme: #0F2440 bg, #33A2DB teal accent, white text
  */
 
 import { useState, useEffect, useMemo, useRef } from "react";
@@ -50,7 +50,7 @@ const BUSINESSES_LIST: { key: DbBusiness; bizKey: BusinessKey; label: string; co
 const MEETING_LIST: { key: DbMeetingType; label: string; color: string }[] = [
   { key: "daily", label: "Daily Huddle", color: "#8B5CF6" },
   { key: "weekly", label: "Weekly Review", color: "#0EA5E9" },
-  { key: "monthly", label: "Monthly Financial Review", color: "#14B8A6" },
+  { key: "monthly", label: "Monthly Financial Review", color: "#33A2DB" },
   { key: "quarterly", label: "Quarterly Offsite", color: "#F43F5E" },
 ];
 
@@ -130,7 +130,7 @@ function PasswordModal({ onConfirm, onCancel, isPending, ownerNames }: {
             onClick={() => { if (pw.trim()) onConfirm(pw.trim(), author); }}
             disabled={isPending || !pw.trim()}
             className="flex-1 py-2.5 rounded-xl text-[13px] font-bold text-white transition-all hover:opacity-90 disabled:opacity-40"
-            style={{ background: "linear-gradient(135deg, #1E3A5F 0%, #0D9488 100%)", fontFamily: "'Space Grotesk', sans-serif" }}
+            style={{ background: "linear-gradient(135deg, #1E3A5F 0%, #25DCF9 100%)", fontFamily: "'Space Grotesk', sans-serif" }}
           >
             {isPending ? "Saving…" : "Save Changes →"}
           </button>
@@ -224,7 +224,7 @@ function AgendaEditor({ biz, mt, savedItems, onSaveRequest }: {
               placeholder="Agenda item…"
               className="flex-1 rounded-lg px-3 py-2 text-[13px] placeholder-white/30 focus:outline-none transition-all"
               style={darkInput}
-              onFocus={(e) => (e.target.style.borderColor = "#3B9EE8")}
+              onFocus={(e) => (e.target.style.borderColor = "#33A2DB")}
               onBlur={(e) => (e.target.style.borderColor = "rgba(255,255,255,0.12)")}
             />
 
@@ -270,7 +270,7 @@ function AgendaEditor({ biz, mt, savedItems, onSaveRequest }: {
           disabled={!dirty}
           className="px-4 py-1.5 rounded-lg text-[12px] font-bold text-white transition-all hover:opacity-90 disabled:opacity-30"
           style={{
-            background: dirty ? "linear-gradient(135deg, #1E3A5F 0%, #0D9488 100%)" : "rgba(255,255,255,0.08)",
+            background: dirty ? "linear-gradient(135deg, #1E3A5F 0%, #25DCF9 100%)" : "rgba(255,255,255,0.08)",
             fontFamily: "'Space Grotesk', sans-serif",
           }}
         >
@@ -352,7 +352,7 @@ function BusinessLogoSection({
       <div className="flex items-center gap-3 mb-4">
         <div
           className="w-8 h-8 rounded-lg flex items-center justify-center text-sm"
-          style={{ backgroundColor: "rgba(59,158,232,0.15)", border: "1px solid rgba(59,158,232,0.3)" }}
+          style={{ backgroundColor: "rgba(51,162,219,0.15)", border: "1px solid rgba(51,162,219,0.3)" }}
         >
           🖼️
         </div>
@@ -411,7 +411,7 @@ function BusinessLogoSection({
       {preview && selectedBizId && (
         <div
           className="mt-4 rounded-xl p-4 flex items-center gap-4"
-          style={{ backgroundColor: "rgba(59,158,232,0.06)", border: "1px solid rgba(59,158,232,0.2)" }}
+          style={{ backgroundColor: "rgba(51,162,219,0.06)", border: "1px solid rgba(51,162,219,0.2)" }}
         >
           <img
             src={preview}
@@ -437,7 +437,7 @@ function BusinessLogoSection({
               onClick={handleUpload}
               disabled={uploading}
               className="px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all hover:opacity-90 active:scale-[0.97] disabled:opacity-40"
-              style={{ backgroundColor: "#3B9EE8", color: "#0A1929" }}
+              style={{ backgroundColor: "#33A2DB", color: "#0A1929" }}
             >
               {uploading ? "Uploading…" : "Save Logo"}
             </button>
@@ -561,7 +561,7 @@ export default function Settings() {
       {/* Hero header */}
       <div style={{
         background: "linear-gradient(135deg, #0D2035 0%, #0F2440 50%, #0D1F38 100%)",
-        borderBottom: "1px solid rgba(59,158,232,0.12)",
+        borderBottom: "1px solid rgba(51,162,219,0.12)",
         padding: "20px 20px 16px",
         position: "relative",
         overflow: "hidden",
@@ -569,13 +569,13 @@ export default function Settings() {
         <div style={{
           position: "absolute", top: "-30px", right: "-30px",
           width: "160px", height: "160px",
-          background: "radial-gradient(circle, rgba(59,158,232,0.07) 0%, transparent 70%)",
+          background: "radial-gradient(circle, rgba(51,162,219,0.07) 0%, transparent 70%)",
           pointerEvents: "none",
         }} />
         <button
           onClick={() => window.history.back()}
           className="flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-lg mb-3 transition-all active:scale-[0.97]"
-          style={{ color: "#3B9EE8", backgroundColor: "rgba(59,158,232,0.1)", border: "1px solid rgba(59,158,232,0.25)" }}
+          style={{ color: "#33A2DB", backgroundColor: "rgba(51,162,219,0.1)", border: "1px solid rgba(51,162,219,0.25)" }}
         >
           <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M9 2L4 7L9 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
           Back to Hub
@@ -583,10 +583,10 @@ export default function Settings() {
         <div className="flex items-center gap-2.5">
           <div style={{
             width: 30, height: 30, borderRadius: "9px",
-            background: "linear-gradient(135deg, rgba(59,158,232,0.25) 0%, rgba(59,158,232,0.1) 100%)",
-            border: "1px solid rgba(59,158,232,0.35)",
+            background: "linear-gradient(135deg, rgba(51,162,219,0.25) 0%, rgba(51,162,219,0.1) 100%)",
+            border: "1px solid rgba(51,162,219,0.35)",
             display: "flex", alignItems: "center", justifyContent: "center",
-            fontSize: "15px", boxShadow: "0 0 10px rgba(59,158,232,0.12)",
+            fontSize: "15px", boxShadow: "0 0 10px rgba(51,162,219,0.12)",
           }}>⚙️</div>
           <div>
             <h1 className="font-black text-[20px] text-white leading-tight" style={{ fontFamily: "'Space Grotesk', sans-serif", letterSpacing: "-0.02em" }}>Settings</h1>
@@ -598,13 +598,13 @@ export default function Settings() {
       {/* ── App Tour ─────────────────────────────────────────────────────────── */}
       <div
         className="mx-4 sm:mx-6 mt-6 mb-2 rounded-2xl px-5 py-4 flex items-center justify-between gap-4"
-        style={{ backgroundColor: "rgba(59,158,232,0.05)", border: "1px solid rgba(59,158,232,0.15)" }}
+        style={{ backgroundColor: "rgba(51,162,219,0.05)", border: "1px solid rgba(51,162,219,0.15)" }}
       >
         <div className="flex items-center gap-3 min-w-0">
           <div style={{
             width: 36, height: 36, borderRadius: "10px", flexShrink: 0,
-            background: "linear-gradient(135deg, rgba(59,158,232,0.2) 0%, rgba(59,158,232,0.08) 100%)",
-            border: "1px solid rgba(59,158,232,0.3)",
+            background: "linear-gradient(135deg, rgba(51,162,219,0.2) 0%, rgba(51,162,219,0.08) 100%)",
+            border: "1px solid rgba(51,162,219,0.3)",
             display: "flex", alignItems: "center", justifyContent: "center", fontSize: "17px",
           }}>🗺️</div>
           <div className="min-w-0">
@@ -621,9 +621,9 @@ export default function Settings() {
           }}
           className="flex-shrink-0 px-4 py-2 rounded-xl text-[12px] font-bold transition-all active:scale-[0.97]"
           style={{
-            background: "linear-gradient(135deg, rgba(59,158,232,0.2) 0%, rgba(59,158,232,0.1) 100%)",
-            border: "1px solid rgba(59,158,232,0.35)",
-            color: "#3B9EE8",
+            background: "linear-gradient(135deg, rgba(51,162,219,0.2) 0%, rgba(51,162,219,0.1) 100%)",
+            border: "1px solid rgba(51,162,219,0.35)",
+            color: "#33A2DB",
             fontFamily: "'Space Grotesk', sans-serif",
           }}
         >
@@ -674,7 +674,7 @@ export default function Settings() {
           </div>
 
           {/* Right: Editor */}
-          <div className="rounded-2xl p-6" style={{ background: "linear-gradient(135deg, rgba(59,158,232,0.06) 0%, rgba(59,158,232,0.02) 100%)", border: "1.5px solid rgba(59,158,232,0.18)", boxShadow: "0 4px 20px rgba(59,158,232,0.05)" }}>
+          <div className="rounded-2xl p-6" style={{ background: "linear-gradient(135deg, rgba(51,162,219,0.06) 0%, rgba(51,162,219,0.02) 100%)", border: "1.5px solid rgba(51,162,219,0.18)", boxShadow: "0 4px 20px rgba(51,162,219,0.05)" }}>
             <div className="flex items-center gap-3 mb-5">
               <span className="text-xl">{selectedBizInfo.icon}</span>
               <div>
@@ -687,7 +687,7 @@ export default function Settings() {
                 </div>
               </div>
               {getSavedItems(effectiveSelectedBiz, selectedMt) && (
-                <span className="ml-auto text-[10px] px-2 py-0.5 rounded-full" style={{ backgroundColor: "rgba(13,148,136,0.2)", color: "#3B9EE8" }}>
+                <span className="ml-auto text-[10px] px-2 py-0.5 rounded-full" style={{ backgroundColor: "rgba(37,220,249,0.2)", color: "#33A2DB" }}>
                   Custom
                 </span>
               )}
@@ -757,7 +757,7 @@ export default function Settings() {
             <Link
               href="/app/schedule"
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all active:scale-[0.97]"
-              style={{ backgroundColor: "rgba(59,158,232,0.12)", border: "1px solid rgba(59,158,232,0.25)", color: "#3B9EE8", fontFamily: "'Space Grotesk', sans-serif" }}
+              style={{ backgroundColor: "rgba(51,162,219,0.12)", border: "1px solid rgba(51,162,219,0.25)", color: "#33A2DB", fontFamily: "'Space Grotesk', sans-serif" }}
             >
               Edit Schedule →
             </Link>
@@ -787,7 +787,7 @@ export default function Settings() {
             {([
               { key: "showDaily" as const, label: "Daily Huddle", color: "#8B5CF6", desc: "Every workday — quick team sync" },
               { key: "showWeekly" as const, label: "Weekly Review", color: "#0EA5E9", desc: "Weekly team performance review" },
-              { key: "showMonthly" as const, label: "Monthly Meeting", color: "#14B8A6", desc: "Monthly financial & business review" },
+              { key: "showMonthly" as const, label: "Monthly Meeting", color: "#33A2DB", desc: "Monthly financial & business review" },
               { key: "showQuarterly" as const, label: "Quarterly / Annual", color: "#F43F5E", desc: "Quarterly offsite or end-of-year" },
             ] as const).map(({ key, label, color, desc }) => (
               <div
@@ -813,9 +813,9 @@ export default function Settings() {
                     width: "44px",
                     height: "24px",
                     borderRadius: "12px",
-                    backgroundColor: teamCalToggles[key] ? "#3B9EE8" : "rgba(255,255,255,0.12)",
+                    backgroundColor: teamCalToggles[key] ? "#33A2DB" : "rgba(255,255,255,0.12)",
                     border: teamCalToggles[key] ? "none" : "1.5px solid rgba(255,255,255,0.2)",
-                    boxShadow: teamCalToggles[key] ? "0 0 8px rgba(59,158,232,0.3)" : "none",
+                    boxShadow: teamCalToggles[key] ? "0 0 8px rgba(51,162,219,0.3)" : "none",
                     transition: "background-color 0.2s, box-shadow 0.2s",
                     cursor: "pointer",
                     minWidth: "44px",
@@ -845,7 +845,7 @@ export default function Settings() {
             onClick={() => updateTeamCal.mutate({ accountId: accountId ?? 0, ...teamCalToggles })}
             disabled={updateTeamCal.isPending || accountId === undefined}
             className="w-full py-2.5 rounded-xl text-sm font-bold transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-40"
-            style={{ backgroundColor: "#3B9EE8", color: "#0A1929", fontFamily: "'Space Grotesk', sans-serif" }}
+            style={{ backgroundColor: "#33A2DB", color: "#0A1929", fontFamily: "'Space Grotesk', sans-serif" }}
           >
             {updateTeamCal.isPending ? "Saving…" : "Save Team Schedule Settings"}
           </button>
@@ -967,7 +967,7 @@ function EmployeeInvitePanel({ accountId }: { accountId: number }) {
               <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Colleen"
                 className="w-full rounded-xl px-4 py-2.5 text-sm placeholder-white/30 focus:outline-none transition-all"
                 style={darkInput}
-                onFocus={e => (e.target.style.borderColor = "#3B9EE8")}
+                onFocus={e => (e.target.style.borderColor = "#33A2DB")}
                 onBlur={e => (e.target.style.borderColor = "rgba(255,255,255,0.12)")} />
             </div>
             <div className="flex flex-col gap-1.5">
@@ -975,7 +975,7 @@ function EmployeeInvitePanel({ accountId }: { accountId: number }) {
               <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="employee@email.com"
                 className="w-full rounded-xl px-4 py-2.5 text-sm placeholder-white/30 focus:outline-none transition-all"
                 style={darkInput}
-                onFocus={e => (e.target.style.borderColor = "#3B9EE8")}
+                onFocus={e => (e.target.style.borderColor = "#33A2DB")}
                 onBlur={e => (e.target.style.borderColor = "rgba(255,255,255,0.12)")} />
             </div>
           </div>
@@ -1082,7 +1082,7 @@ function ReportQuestionsPanel({ accountId, businesses }: { accountId: number; bu
               style={{
                 backgroundColor: selectedBizId === b.id ? "#1E3A5F" : "rgba(255,255,255,0.05)",
                 color: selectedBizId === b.id ? "white" : "rgba(255,255,255,0.5)",
-                border: `1.5px solid ${selectedBizId === b.id ? "#3B9EE8" : "rgba(255,255,255,0.1)"}`,
+                border: `1.5px solid ${selectedBizId === b.id ? "#33A2DB" : "rgba(255,255,255,0.1)"}`,
                 fontFamily: "'Space Grotesk', sans-serif",
               }}>
               {b.icon} {b.label}
@@ -1183,7 +1183,7 @@ function PartnerAccessSection() {
         <div className="flex items-center gap-3 mb-4">
           <div
             className="w-8 h-8 rounded-lg flex items-center justify-center text-sm"
-            style={{ backgroundColor: "rgba(59,158,232,0.15)", border: "1px solid rgba(59,158,232,0.3)" }}
+            style={{ backgroundColor: "rgba(51,162,219,0.15)", border: "1px solid rgba(51,162,219,0.3)" }}
           >
             👥
           </div>
@@ -1199,7 +1199,7 @@ function PartnerAccessSection() {
 
         <div
           className="rounded-xl p-4 mb-4"
-          style={{ backgroundColor: "rgba(59,158,232,0.06)", border: "1px solid rgba(59,158,232,0.15)" }}
+          style={{ backgroundColor: "rgba(51,162,219,0.06)", border: "1px solid rgba(51,162,219,0.15)" }}
         >
           <p className="text-[12px]" style={{ color: "rgba(255,255,255,0.65)" }}>
             <span className="font-semibold text-white">One subscription covers both of you.</span>{" "}
@@ -1212,9 +1212,9 @@ function PartnerAccessSection() {
           onClick={() => setSheetOpen(true)}
           className="w-full py-3 rounded-xl text-[13px] font-bold transition-all active:scale-[0.98] hover:opacity-90"
           style={{
-            background: "linear-gradient(135deg, rgba(59,158,232,0.2), rgba(45,212,191,0.15))",
-            border: "1px solid rgba(59,158,232,0.35)",
-            color: "#3B9EE8",
+            background: "linear-gradient(135deg, rgba(51,162,219,0.2), rgba(45,212,191,0.15))",
+            border: "1px solid rgba(51,162,219,0.35)",
+            color: "#33A2DB",
             fontFamily: "'Space Grotesk', sans-serif",
           }}
         >
@@ -1308,9 +1308,9 @@ function MyBusinessHoursSection({ personId, accountId }: { personId: string; acc
                 onClick={() => toggleDay(idx)}
                 className="px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all active:scale-[0.97]"
                 style={{
-                  backgroundColor: active ? "rgba(59,158,232,0.15)" : "rgba(255,255,255,0.04)",
-                  border: `1.5px solid ${active ? "rgba(59,158,232,0.4)" : "rgba(255,255,255,0.08)"}`,
-                  color: active ? "#3B9EE8" : "rgba(255,255,255,0.35)",
+                  backgroundColor: active ? "rgba(51,162,219,0.15)" : "rgba(255,255,255,0.04)",
+                  border: `1.5px solid ${active ? "rgba(51,162,219,0.4)" : "rgba(255,255,255,0.08)"}`,
+                  color: active ? "#33A2DB" : "rgba(255,255,255,0.35)",
                   fontFamily: "'Space Grotesk', sans-serif",
                 }}
               >
@@ -1364,7 +1364,7 @@ function MyBusinessHoursSection({ personId, accountId }: { personId: string; acc
         onClick={handleSave}
         disabled={updateMutation.isPending}
         className="w-full py-2.5 rounded-xl text-sm font-bold transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-40"
-        style={{ backgroundColor: "#3B9EE8", color: "#0A1929", fontFamily: "'Space Grotesk', sans-serif" }}
+        style={{ backgroundColor: "#33A2DB", color: "#0A1929", fontFamily: "'Space Grotesk', sans-serif" }}
       >
         {updateMutation.isPending ? "Saving…" : "Save My Hours"}
       </button>

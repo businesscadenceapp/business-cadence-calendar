@@ -17,3 +17,8 @@
 - [x] Replace teal (#5EEAD4) with new brand blue (#3B9EE8) across index.css, Landing.tsx, AppShell.tsx, and all other UI files
 - [x] Redesign hero section: large centered heart, "BusinessCadence" stacked below it, tagline below that — distinct from the nav lockup
 - [x] Align pricing section colors to heart logo: orange badge → #F16801, "Most Popular" badge → #33A2DB (heart blue), CTA buttons match
+- [x] Generate new app icon: crystal heart centered on deep navy, all iOS/Android sizes exported
+- [x] Update index.css CSS variables: primary → #33A2DB (heart cyan-blue), amber → #F16801 (heart orange)
+- [x] Update AppShell.tsx active nav colors and sidebar accent to new blue
+- [x] Update in-app pages (Board, Calendar, Login, Onboarding) accent colors from old teal to new heart blue/orange
+- [x] Upload new app icon to webdev storage and update manifest.json + index.html apple-touch-icon

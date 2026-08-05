@@ -52,12 +52,12 @@ function PlanCard({
       className={[
         "relative w-full text-left rounded-2xl border-2 p-5 transition-all duration-200 active:scale-[0.98]",
         selected
-          ? "border-[#3B9EE8] bg-[#3B9EE8]/8"
+          ? "border-[#33A2DB] bg-[#33A2DB]/8"
           : "border-white/10 bg-white/4 hover:border-white/20",
       ].join(" ")}
     >
       {plan.popular && (
-        <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-[#3B9EE8] to-[#0D9488] text-[#0A1628] text-xs font-bold px-4 py-1 rounded-full uppercase tracking-wide whitespace-nowrap">
+        <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-[#33A2DB] to-[#25DCF9] text-[#0A1628] text-xs font-bold px-4 py-1 rounded-full uppercase tracking-wide whitespace-nowrap">
           Most Popular
         </div>
       )}
@@ -71,7 +71,7 @@ function PlanCard({
           <div className="flex items-center gap-2 mb-1">
             <span className="text-white font-bold text-base">{plan.label}</span>
             {savingsLabel && (
-              <span className="text-[#3B9EE8] text-xs font-semibold bg-[#3B9EE8]/10 px-2 py-0.5 rounded-full">
+              <span className="text-[#33A2DB] text-xs font-semibold bg-[#33A2DB]/10 px-2 py-0.5 rounded-full">
                 {savingsLabel}
               </span>
             )}
@@ -91,7 +91,7 @@ function PlanCard({
           className={[
             "w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all",
             selected
-              ? "border-[#3B9EE8] bg-[#3B9EE8]"
+              ? "border-[#33A2DB] bg-[#33A2DB]"
               : "border-white/25 bg-transparent",
           ].join(" ")}
         >
@@ -119,7 +119,7 @@ function BillingToggle({
           className={[
             "flex-1 py-2 px-3 rounded-lg text-sm font-semibold transition-all duration-200",
             billing === b
-              ? "bg-[#3B9EE8] text-[#0A1628]"
+              ? "bg-[#33A2DB] text-[#0A1628]"
               : "text-white/45 hover:text-white/70",
           ].join(" ")}
         >
@@ -243,13 +243,13 @@ export default function Paywall({ dismissible, onSubscribe, onDismiss }: Paywall
         className="absolute inset-0 pointer-events-none"
         style={{
           backgroundImage:
-            "linear-gradient(rgba(59,158,232,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(59,158,232,0.025) 1px, transparent 1px)",
+            "linear-gradient(rgba(51,162,219,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(51,162,219,0.025) 1px, transparent 1px)",
           backgroundSize: "48px 48px",
         }}
       />
       <div
         className="absolute top-0 left-0 right-0 h-64 pointer-events-none"
-        style={{ background: "linear-gradient(180deg, rgba(59,158,232,0.08) 0%, transparent 100%)" }}
+        style={{ background: "linear-gradient(180deg, rgba(51,162,219,0.08) 0%, transparent 100%)" }}
       />
 
       {dismissible && (
@@ -268,7 +268,7 @@ export default function Paywall({ dismissible, onSubscribe, onDismiss }: Paywall
           <div className="mb-6 flex items-center gap-2">
             <BrandIcon size={32} />
             <span className="text-white font-bold text-lg tracking-tight">
-              Business<span className="text-[#3B9EE8]">Cadence</span>
+              Business<span className="text-[#33A2DB]">Cadence</span>
             </span>
           </div>
 
@@ -279,7 +279,7 @@ export default function Paywall({ dismissible, onSubscribe, onDismiss }: Paywall
             </p>
             <h1 className="text-3xl font-bold text-white leading-tight tracking-tight mb-3">
               Try free for{" "}
-              <span className="text-[#3B9EE8]">14 days</span>
+              <span className="text-[#33A2DB]">14 days</span>
             </h1>
             <p className="text-white/55 text-base leading-relaxed">
               Full access to everything. Cancel anytime — no charge until your trial ends.
@@ -309,8 +309,8 @@ export default function Paywall({ dismissible, onSubscribe, onDismiss }: Paywall
           <div className="w-full flex flex-col gap-3 mb-8">
             {FEATURES.map((feat) => (
               <div key={feat} className="flex items-center gap-3">
-                <div className="w-6 h-6 rounded-full bg-[#3B9EE8]/15 border border-[#3B9EE8]/30 flex items-center justify-center flex-shrink-0">
-                  <Check className="w-3.5 h-3.5 text-[#3B9EE8]" strokeWidth={2.5} />
+                <div className="w-6 h-6 rounded-full bg-[#33A2DB]/15 border border-[#33A2DB]/30 flex items-center justify-center flex-shrink-0">
+                  <Check className="w-3.5 h-3.5 text-[#33A2DB]" strokeWidth={2.5} />
                 </div>
                 <span className="text-white/75 text-sm">{feat}</span>
               </div>
@@ -321,7 +321,7 @@ export default function Paywall({ dismissible, onSubscribe, onDismiss }: Paywall
           <button
             onClick={handleSubscribe}
             disabled={isLoading}
-            className="w-full bg-gradient-to-r from-[#3B9EE8] to-[#0D9488] text-[#0A1628] font-bold text-lg py-4 px-8 rounded-2xl transition-all duration-200 active:scale-[0.97] disabled:opacity-60 shadow-lg shadow-[#3B9EE8]/20 mb-3"
+            className="w-full bg-gradient-to-r from-[#33A2DB] to-[#25DCF9] text-[#0A1628] font-bold text-lg py-4 px-8 rounded-2xl transition-all duration-200 active:scale-[0.97] disabled:opacity-60 shadow-lg shadow-[#33A2DB]/20 mb-3"
           >
             {isLoading ? (
               <span className="flex items-center justify-center gap-2">

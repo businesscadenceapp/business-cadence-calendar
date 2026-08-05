@@ -39,18 +39,18 @@ const STEPS: OnboardingStep[] = [
     headline: (
       <>
         Running a business with someone you love is{" "}
-        <span className="text-[#3B9EE8]">one of the hardest things</span> you'll
+        <span className="text-[#33A2DB]">one of the hardest things</span> you'll
         ever do.
       </>
     ),
     body: "The late-night strategy sessions. The disagreements that follow you to dinner. The feeling that you're always either business partners or life partners — never both at once.",
     icon: (
-      <svg className="w-14 h-14 text-[#3B9EE8]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg className="w-14 h-14 text-[#33A2DB]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.3}
           d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
       </svg>
     ),
-    accentColor: "#3B9EE8",
+    accentColor: "#33A2DB",
   },
   // Step 1 — The Problem
   {
@@ -77,17 +77,17 @@ const STEPS: OnboardingStep[] = [
     headline: (
       <>
         Your business has a place to live.{" "}
-        <span className="text-[#3B9EE8]">Your relationship has room to breathe.</span>
+        <span className="text-[#33A2DB]">Your relationship has room to breathe.</span>
       </>
     ),
     body: "Drop ideas into the shared hub the moment they hit you — no interrupting your partner. Set your business hours so notifications only arrive when you're in work mode. You choose when business mode goes quiet and you can focus the two of you.",
     icon: (
-      <svg className="w-14 h-14 text-[#3B9EE8]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg className="w-14 h-14 text-[#33A2DB]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.3}
           d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />
       </svg>
     ),
-    accentColor: "#3B9EE8",
+    accentColor: "#33A2DB",
   },
   // Step 3 — The Promise
   {
@@ -95,17 +95,17 @@ const STEPS: OnboardingStep[] = [
     headline: (
       <>
         Your business stays in the boardroom.{" "}
-        <span className="text-[#3B9EE8]">Your relationship stays protected.</span>
+        <span className="text-[#33A2DB]">Your relationship stays protected.</span>
       </>
     ),
     body: "BusinessCadence gives your work a structured time and place — so it stops spilling into everything else. Run the business together. Live your life together.",
     icon: (
-      <svg className="w-14 h-14 text-[#3B9EE8]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg className="w-14 h-14 text-[#33A2DB]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.3}
           d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
       </svg>
     ),
-    accentColor: "#3B9EE8",
+    accentColor: "#33A2DB",
   },
 ];
 
@@ -121,7 +121,7 @@ function ProgressDots({ total, current }: { total: number; current: number }) {
           style={{
             width: i === current ? 24 : 8,
             height: 8,
-            backgroundColor: i === current ? "#3B9EE8" : "rgba(255,255,255,0.18)",
+            backgroundColor: i === current ? "#33A2DB" : "rgba(255,255,255,0.18)",
           }}
         />
       ))}
@@ -236,7 +236,7 @@ export default function SubscriptionOnboarding() {
         className="absolute inset-0 pointer-events-none"
         style={{
           backgroundImage:
-            "linear-gradient(rgba(59,158,232,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(59,158,232,0.02) 1px, transparent 1px)",
+            "linear-gradient(rgba(51,162,219,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(51,162,219,0.02) 1px, transparent 1px)",
           backgroundSize: "48px 48px",
         }}
       />
@@ -257,9 +257,9 @@ export default function SubscriptionOnboarding() {
           <div
             className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold"
             style={{
-              backgroundColor: "rgba(59,158,232,0.10)",
-              border: "1px solid rgba(59,158,232,0.22)",
-              color: "#3B9EE8",
+              backgroundColor: "rgba(51,162,219,0.10)",
+              border: "1px solid rgba(51,162,219,0.22)",
+              color: "#33A2DB",
             }}
           >
             <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -326,7 +326,7 @@ export default function SubscriptionOnboarding() {
         {isLastStep ? (
           <button
             onClick={goNext}
-            className="w-full bg-gradient-to-r from-[#3B9EE8] to-[#0D9488] text-[#0A1628] font-bold text-lg py-4 px-8 rounded-2xl transition-all duration-200 active:scale-[0.97] shadow-lg shadow-[#3B9EE8]/20"
+            className="w-full bg-gradient-to-r from-[#33A2DB] to-[#25DCF9] text-[#0A1628] font-bold text-lg py-4 px-8 rounded-2xl transition-all duration-200 active:scale-[0.97] shadow-lg shadow-[#33A2DB]/20"
           >
             {finalCtaLabel}
           </button>
