@@ -121,7 +121,7 @@ export default function ClientLogin() {
 
   return (
     <div
-      className="fixed inset-0 flex flex-col"
+      className="min-h-screen flex flex-col"
       style={{
         background: "linear-gradient(160deg, #0A1929 0%, #0F2440 60%, #0D2D4A 100%)",
         fontFamily: "'Inter', sans-serif",

@@ -19,3 +19,7 @@
 - [x] Move haptic heartbeat to fire on app launch (SubscriptionOnboarding mount), not login success
 
 - [x] Add haptic double-beat on mount + beating heart animation to ClientLogin page (matches onboarding experience after logout)
+
+- [ ] Fix floating heart overlay bug — heart persists over business selector screen after login
+- [x] Fix floating heart overlay bug — heart persists over business selector screen after login
+- [x] Fix BusinessSelector sign-out to properly clear all auth state (was leaving bcc_auth_v1 set)
