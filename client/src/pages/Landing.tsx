@@ -3,14 +3,13 @@ import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 
 // ─── Logo ─────────────────────────────────────────────────────────────────
+import BrandLogo from "@/components/BrandLogo";
+
 function Logo({ className = "", height = 40 }: { className?: string; height?: number }) {
+  // Map pixel height to BrandLogo size prop
+  const size = height >= 160 ? "xl" : height >= 80 ? "lg" : height >= 50 ? "md" : "sm";
   return (
-    <img
-      src="/manus-storage/wordmark-dark-v2_e9c10769.png"
-      alt="BusinessCadence — App for Couples Who Own a Business Together"
-      style={{ height, width: "auto", objectFit: "contain", display: "block" }}
-      className={className}
-    />
+    <BrandLogo size={size} theme="dark" showTagline={height >= 80} className={className} />
   );
 }
 

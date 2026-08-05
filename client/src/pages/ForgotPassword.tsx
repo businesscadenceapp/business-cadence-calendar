@@ -6,6 +6,7 @@
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { BrandIcon } from "@/components/BrandLogo";
+import BrandLogo from "@/components/BrandLogo";
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
@@ -47,12 +48,7 @@ export default function ForgotPassword() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-20">
             <a href="/">
-              <img
-                src="/manus-storage/wordmark-dark-v2_e9c10769.png"
-                alt="BusinessCadence"
-                height={80}
-                style={{ height: 80, width: "auto", filter: "drop-shadow(0 2px 0px rgba(255,255,255,0.15)) drop-shadow(0 5px 10px rgba(0,0,0,0.40)) saturate(1.2) brightness(1.05)" }}
-              />
+              <BrandLogo size="md" theme="dark" showTagline={false} />
             </a>
             <a href="/login" className="text-sm transition-colors" style={{ color: "rgba(255,255,255,0.5)" }}
               onMouseEnter={e => (e.currentTarget.style.color = "white")}

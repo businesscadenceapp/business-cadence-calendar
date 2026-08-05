@@ -11,3 +11,6 @@
 - [x] Update client/public/manifest.json — new icon references
 - [x] Update Landing.tsx logo src to new crystal heart wordmark
 - [x] Update ForgotPassword.tsx and ResetPassword.tsx nav logo
+- [x] Rebuild BrandLogo as transparent inline component — heart PNG + HTML/CSS text, no background box
+- [x] Update Landing.tsx Logo component to use transparent inline BrandLogo (no PNG wordmark)
+- [x] Update nav, hero, ForgotPassword, ResetPassword to use transparent component

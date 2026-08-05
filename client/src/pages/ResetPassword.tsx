@@ -7,6 +7,7 @@ import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { BrandIcon } from "@/components/BrandLogo";
+import BrandLogo from "@/components/BrandLogo";
 
 function getTokenFromUrl(): string {
   const params = new URLSearchParams(window.location.search);
@@ -86,12 +87,7 @@ export default function ResetPassword() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-20">
             <a href="/">
-              <img
-                src="/manus-storage/wordmark-dark-v2_e9c10769.png"
-                alt="BusinessCadence"
-                height={80}
-                style={{ height: 80, width: "auto", filter: "drop-shadow(0 2px 0px rgba(255,255,255,0.15)) drop-shadow(0 5px 10px rgba(0,0,0,0.40)) saturate(1.2) brightness(1.05)" }}
-              />
+              <BrandLogo size="md" theme="dark" showTagline={false} />
             </a>
           </div>
         </div>
