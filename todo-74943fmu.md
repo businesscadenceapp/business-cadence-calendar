@@ -23,3 +23,6 @@
 - [ ] Fix floating heart overlay bug — heart persists over business selector screen after login
 - [x] Fix floating heart overlay bug — heart persists over business selector screen after login
 - [x] Fix BusinessSelector sign-out to properly clear all auth state (was leaving bcc_auth_v1 set)
+
+- [x] Fix BusinessSelector: prevent vertical rubber-band scrolling (overflow-hidden, fixed height)
+- [x] Add large beating heart + haptic double-beat on mount to BusinessSelector (match login screen)

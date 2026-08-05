@@ -16,6 +16,19 @@ import { usePerson } from "@/contexts/PersonContext";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { clearAuth } from "@/components/PasswordGate";
+import { Haptics, ImpactStyle } from "@capacitor/haptics";
+import { Capacitor } from "@capacitor/core";
+
+const HEART_SRC = "/manus-storage/heart-transparent-clean_14235c91.png";
+
+async function fireHeartbeatHaptic() {
+  if (!Capacitor.isNativePlatform()) return;
+  try {
+    await Haptics.impact({ style: ImpactStyle.Medium });
+    await new Promise(r => setTimeout(r, 160));
+    await Haptics.impact({ style: ImpactStyle.Light });
+  } catch { /* ignore */ }
+}
 
 // ─── Dynamic business card shape ─────────────────────────────────────────────
 
@@ -123,6 +136,23 @@ export default function BusinessSelector() {
   const [dragStartX, setDragStartX] = useState(0);
   const [dragOffset, setDragOffset] = useState(0);
 
+  // Haptic heartbeat on mount
+  useEffect(() => {
+    const t = setTimeout(() => fireHeartbeatHaptic(), 400);
+    return () => clearTimeout(t);
+  }, []);
+
+  // Prevent iOS rubber-band / overscroll on this screen
+  useEffect(() => {
+    const prevent = (e: TouchEvent) => e.preventDefault();
+    document.body.style.overflow = "hidden";
+    document.addEventListener("touchmove", prevent, { passive: false });
+    return () => {
+      document.body.style.overflow = "";
+      document.removeEventListener("touchmove", prevent);
+    };
+  }, []);
+
   const accountId = Number(
     typeof window !== "undefined" ? localStorage.getItem("bcc_account_id") ?? "0" : "0"
   );
@@ -227,22 +257,48 @@ export default function BusinessSelector() {
 
   return (
     <div
-      className="min-h-screen flex flex-col items-center justify-center overflow-hidden"
+      className="fixed inset-0 flex flex-col items-center justify-center overflow-hidden"
       style={{
         background: "linear-gradient(160deg, #0A1929 0%, #0F2440 50%, #0A1929 100%)",
         fontFamily: "'Inter', sans-serif",
+        paddingTop: "env(safe-area-inset-top)",
+        paddingBottom: "env(safe-area-inset-bottom)",
       }}
     >
-      {/* Header */}
-      <div className="text-center mb-8 px-4">
-        <p
-          className="text-[11px] font-bold uppercase tracking-[0.2em] mb-3"
-          style={{ color: "rgba(51,162,219,0.7)" }}
-        >
-          BusinessCadence
-        </p>
+      {/* Header — large beating heart + name + greeting */}
+      <div className="flex flex-col items-center mb-6 px-4">
+        <img
+          src={HEART_SRC}
+          alt="Business Cadence"
+          style={{
+            width: 110,
+            height: 110,
+            objectFit: "contain",
+            animation: "bc-heartbeat 2.4s ease-in-out infinite",
+            marginBottom: 10,
+          }}
+        />
+        <style>{`
+          @keyframes bc-heartbeat {
+            0%   { transform: scale(1); }
+            14%  { transform: scale(1.13); }
+            28%  { transform: scale(1); }
+            42%  { transform: scale(1.08); }
+            56%  { transform: scale(1); }
+            100% { transform: scale(1); }
+          }
+          @media (prefers-reduced-motion: reduce) {
+            @keyframes bc-heartbeat { 0%, 100% { transform: scale(1); } }
+          }
+        `}</style>
+        <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 22, fontWeight: 700, color: "#fff", letterSpacing: "-0.3px", lineHeight: 1.1 }}>
+          Business Cadence
+        </span>
+        <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 11, color: "rgba(180,210,235,0.85)", letterSpacing: "0.2px", textAlign: "center", lineHeight: 1.3, marginTop: 3 }}>
+          Run your business while protecting your relationship
+        </span>
         <h1
-          className="text-2xl sm:text-3xl font-bold text-white mb-2"
+          className="text-xl font-bold text-white mt-5 mb-1"
           style={{ fontFamily: "'Space Grotesk', sans-serif" }}
         >
           Welcome back, {person.name.split(" ")[0]}
