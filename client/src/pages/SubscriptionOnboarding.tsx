@@ -22,6 +22,19 @@ import { BrandLogoStacked } from "@/components/BrandLogo";
 import { ONBOARDING_STEP_BADGES } from "@shared/subscriptionPlans";
 import { trpc } from "@/lib/trpc";
 
+const HEART_SRC = "/manus-storage/heart-transparent-clean_14235c91.png";
+
+/** Real heart icon — used on steps 0 and 3 (emotional/relationship framing) */
+function HeartIcon({ size = 56 }: { size?: number }) {
+  return (
+    <img
+      src={HEART_SRC}
+      alt=""
+      style={{ width: size, height: size, objectFit: "contain" }}
+    />
+  );
+}
+
 // ─── Step data ────────────────────────────────────────────────────────────────
 
 interface OnboardingStep {
@@ -44,12 +57,7 @@ const STEPS: OnboardingStep[] = [
       </>
     ),
     body: "The late-night strategy sessions. The disagreements that follow you to dinner. The feeling that you're always either business partners or life partners — never both at once.",
-    icon: (
-      <svg className="w-14 h-14 text-[#33A2DB]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.3}
-          d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-      </svg>
-    ),
+    icon: <HeartIcon size={72} />,
     accentColor: "#33A2DB",
   },
   // Step 1 — The Problem
@@ -99,12 +107,7 @@ const STEPS: OnboardingStep[] = [
       </>
     ),
     body: "BusinessCadence gives your work a structured time and place — so it stops spilling into everything else. Run the business together. Live your life together.",
-    icon: (
-      <svg className="w-14 h-14 text-[#33A2DB]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.3}
-          d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-      </svg>
-    ),
+    icon: <HeartIcon size={72} />,
     accentColor: "#33A2DB",
   },
 ];

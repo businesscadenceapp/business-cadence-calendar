@@ -15,6 +15,18 @@ import { usePerson } from "@/contexts/PersonContext";
 import { toast } from "sonner";
 import { BrandLogoStacked } from "@/components/BrandLogo";
 import { TEAM_ENABLED } from "@/featureFlags";
+import { Haptics, ImpactStyle } from "@capacitor/haptics";
+import { Capacitor } from "@capacitor/core";
+
+async function triggerHaptic() {
+  try {
+    if (Capacitor.isNativePlatform()) {
+      await Haptics.impact({ style: ImpactStyle.Medium });
+    }
+  } catch {
+    // silently ignore on web
+  }
+}
 
 export default function ClientLogin() {
   const [, navigate] = useLocation();
@@ -42,6 +54,7 @@ export default function ClientLogin() {
           localStorage.setItem("bcc_account_id", String(data.person.accountId));
           localStorage.setItem("bcc_auth_v1", "granted");
         } catch { /* ignore */ }
+        await triggerHaptic();
         toast.success(`Welcome back, ${data.person.name}!`);
         // Route based on role:
         // - Employees go straight to the team schedule (no business selector)

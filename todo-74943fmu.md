@@ -11,3 +11,7 @@
 - [x] Add heartbeat pulse animation to the heart icon on SubscriptionOnboarding
 - [x] Apply BrandLogoStacked to the ClientLogin page header
 - [x] Fix squished username/password fields on the login page
+
+- [x] Replace outline SVG heart icons on onboarding step cards with real transparent heart asset
+- [x] Add haptic feedback on successful login using @capacitor/haptics
+- [x] Increase splash screen duration from 2000ms to 2500ms in capacitor.config.json
