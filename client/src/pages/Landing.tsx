@@ -6,7 +6,7 @@ import { toast } from "sonner";
 function Logo({ className = "", height = 40 }: { className?: string; height?: number }) {
   return (
     <img
-      src="/manus-storage/businesscadence-logo-final-clean_3f67cebb.webp"
+      src="/manus-storage/wordmark-dark-v2_e9c10769.png"
       alt="BusinessCadence — App for Couples Who Own a Business Together"
       style={{ height, width: "auto", objectFit: "contain", display: "block" }}
       className={className}

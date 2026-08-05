@@ -1,13 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
-  <rect width="32" height="32" rx="8" fill="#0F2440"/>
-  <!-- Beam -->
-  <rect x="10" y="7" width="13" height="3" rx="1.5" fill="#5EEAD4" transform="rotate(-8, 10, 7)"/>
-  <!-- Left stem -->
-  <rect x="10" y="9" width="2.5" height="14" rx="1" fill="#5EEAD4"/>
-  <!-- Right stem -->
-  <rect x="20" y="6" width="2.5" height="14" rx="1" fill="#5EEAD4"/>
-  <!-- Left note head -->
-  <ellipse cx="9" cy="24" rx="4" ry="3" fill="#5EEAD4" transform="rotate(-15, 9, 24)"/>
-  <!-- Right note head -->
-  <ellipse cx="19" cy="21" rx="4" ry="3" fill="#5EEAD4" transform="rotate(-15, 19, 21)"/>
+  <!-- Navy rounded square background -->
+  <rect width="32" height="32" rx="7" fill="#0F2440"/>
+  <!-- Crystal heart: left half (blue/cyan) -->
+  <path d="M16 26 C16 26 5 18 5 11.5 C5 8.4 7.5 6 10.5 6 C12.5 6 14.2 7.1 15.2 8.7 L16 10 L16 26Z" fill="#3B9EE8"/>
+  <!-- Crystal heart: right half (orange/amber) -->
+  <path d="M16 26 C16 26 27 18 27 11.5 C27 8.4 24.5 6 21.5 6 C19.5 6 17.8 7.1 16.8 8.7 L16 10 L16 26Z" fill="#F59E0B"/>
+  <!-- Center highlight facet -->
+  <path d="M16 10 L14 14 L16 26 L18 14 Z" fill="rgba(255,255,255,0.15)"/>
 </svg>
