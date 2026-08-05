@@ -514,7 +514,7 @@ function PricingSection() {
   const plans = [
     {
       id: "founding",
-      badge: { text: foundingFull ? "Sold Out" : `${spotsRemaining} of 100 spots left`, color: "bg-gradient-to-r from-[#F59E0B] to-[#D97706] text-[#0A1628]" },
+      badge: { text: foundingFull ? "Sold Out" : `${spotsRemaining} of 100 spots left`, color: "bg-gradient-to-r from-[#F16801] to-[#C35D08] text-white" },
       name: "Founding Member",
       tagline: "Early adopter rate — locked in forever",
       monthly: "$39",
@@ -532,8 +532,8 @@ function PricingSection() {
         "Rate locked in — never increases",
       ],
       cta: "Claim Founding Rate →",
-      cardClass: "bg-[#F59E0B]/8 border border-[#F59E0B]/30",
-      ctaClass: "bg-gradient-to-r from-[#F59E0B] to-[#D97706] text-[#0A1628] hover:opacity-90",
+      cardClass: "bg-[#F16801]/8 border border-[#F16801]/30",
+      ctaClass: "bg-gradient-to-r from-[#F16801] to-[#C35D08] text-white hover:opacity-90",
       popular: false,
     },
     {
@@ -561,7 +561,7 @@ function PricingSection() {
     },
     {
       id: "co_owner_team",
-      badge: { text: "Most Popular", color: "bg-gradient-to-r from-[#3B9EE8] to-[#0D9488] text-[#0A1628]" },
+      badge: { text: "Most Popular", color: "bg-gradient-to-r from-[#33A2DB] to-[#25DCF9] text-[#0A1628]" },
       name: "Co-Owner + Team",
       tagline: "For couples running multiple businesses with a team",
       monthly: "$79",
@@ -577,8 +577,8 @@ function PricingSection() {
         "Priority support",
       ],
       cta: "Start 14-Day Free Trial →",
-      cardClass: "bg-[#3B9EE8]/8 border border-[#3B9EE8]/30",
-      ctaClass: "bg-[#3B9EE8] text-[#0F2440] hover:bg-[#2980c9]",
+      cardClass: "bg-[#33A2DB]/8 border border-[#33A2DB]/30",
+      ctaClass: "bg-gradient-to-r from-[#33A2DB] to-[#25DCF9] text-[#0A1628] hover:opacity-90",
       popular: true,
     },
   ];
