@@ -266,16 +266,16 @@ export default function BusinessSelector() {
       }}
     >
       {/* Header — large beating heart + name + greeting */}
-      <div className="flex flex-col items-center mb-6 px-4">
+      <div className="flex flex-col items-center mb-4 px-4">
         <img
           src={HEART_SRC}
           alt="Business Cadence"
           style={{
-            width: 110,
-            height: 110,
+            width: 80,
+            height: 80,
             objectFit: "contain",
             animation: "bc-heartbeat 2.4s ease-in-out infinite",
-            marginBottom: 10,
+            marginBottom: 6,
           }}
         />
         <style>{`
@@ -291,21 +291,15 @@ export default function BusinessSelector() {
             @keyframes bc-heartbeat { 0%, 100% { transform: scale(1); } }
           }
         `}</style>
-        <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 22, fontWeight: 700, color: "#fff", letterSpacing: "-0.3px", lineHeight: 1.1 }}>
+        <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 20, fontWeight: 700, color: "#fff", letterSpacing: "-0.3px", lineHeight: 1.1 }}>
           Business Cadence
         </span>
-        <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 11, color: "rgba(180,210,235,0.85)", letterSpacing: "0.2px", textAlign: "center", lineHeight: 1.3, marginTop: 3 }}>
-          Run your business while protecting your relationship
-        </span>
         <h1
-          className="text-xl font-bold text-white mt-5 mb-1"
+          className="text-base font-semibold text-white mt-3 mb-0"
           style={{ fontFamily: "'Space Grotesk', sans-serif" }}
         >
           Welcome back, {person.name.split(" ")[0]}
         </h1>
-        <p className="text-sm" style={{ color: "rgba(255,255,255,0.45)" }}>
-          {cards.length > 1 ? "Select a business to get started" : "Tap your business card to enter your dashboard"}
-        </p>
       </div>
 
       {/* Card carousel */}
