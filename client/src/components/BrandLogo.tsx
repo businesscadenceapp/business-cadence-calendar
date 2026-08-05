@@ -7,7 +7,7 @@
  * BrandLogo — Full logo with heart icon + "BusinessCadence" text.
  */
 
-const LOGO_SRC = "/manus-storage/bc-logo-icon-1024_9039afef.png";
+const LOGO_SRC = "/manus-storage/bc-logo-icon-1024_ceff2fb9.png";
 
 // ---------------------------------------------------------------------------
 // BrandIcon — circular icon only, no text
