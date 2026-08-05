@@ -1,7 +1,7 @@
 /**
  * Owner Board — Card-Navigation Command Center
  * Premium card-based UX: Home card → slide-in sub-cards for Tasks, Updates, Issues, Archive
- * Dark navy theme: #0F2440 bg, #5EEAD4 teal accent, white text
+ * Dark navy theme: #0F2440 bg, #3B9EE8 teal accent, white text
  */
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
@@ -90,7 +90,7 @@ function sortByPriority(cards: Card[]): Card[] {
 const PRIORITY_BADGE: Record<Priority, { label: string; bg: string; text: string; border: string }> = {
   high:   { label: "High",   bg: "rgba(225,29,72,0.15)",   text: "#FDA4AF", border: "rgba(225,29,72,0.3)" },
   medium: { label: "Medium", bg: "rgba(217,119,6,0.15)",   text: "#FCD34D", border: "rgba(217,119,6,0.3)" },
-  low:    { label: "Low",    bg: "rgba(94,234,212,0.1)",   text: "#5EEAD4", border: "rgba(94,234,212,0.2)" },
+  low:    { label: "Low",    bg: "rgba(59,158,232,0.1)",   text: "#3B9EE8", border: "rgba(59,158,232,0.2)" },
 };
 
 // ─── Card Comments ──────────────────────────────────────────────────────────────
@@ -181,9 +181,9 @@ function CardComments({ cardId, currentUser, accountId }: {
         onClick={() => setOpen(o => !o)}
         className="flex items-center gap-1.5 text-[11px] px-2 py-1 rounded-lg transition-all"
         style={{
-          color: "#5EEAD4",
-          backgroundColor: open ? "rgba(94,234,212,0.12)" : "rgba(94,234,212,0.06)",
-          border: `1px solid ${open ? "rgba(94,234,212,0.3)" : "rgba(94,234,212,0.15)"}`,
+          color: "#3B9EE8",
+          backgroundColor: open ? "rgba(59,158,232,0.12)" : "rgba(59,158,232,0.06)",
+          border: `1px solid ${open ? "rgba(59,158,232,0.3)" : "rgba(59,158,232,0.15)"}`,
           fontFamily: "'Space Grotesk', sans-serif",
         }}
       >
@@ -196,7 +196,7 @@ function CardComments({ cardId, currentUser, accountId }: {
       {open && (
         <div
           className="mt-2 flex flex-col gap-2 rounded-xl p-3"
-          style={{ backgroundColor: "rgba(0,0,0,0.2)", border: "1px solid rgba(94,234,212,0.12)" }}
+          style={{ backgroundColor: "rgba(0,0,0,0.2)", border: "1px solid rgba(59,158,232,0.12)" }}
         >
           {comments.length > 0 && (
             <div className="flex flex-col gap-2">
@@ -233,11 +233,11 @@ function CardComments({ cardId, currentUser, accountId }: {
                         return atts.length > 0 ? (
                           <div className="flex flex-wrap gap-1.5 mt-1.5">
                             {atts.map(att => att.mimeType.startsWith('image/') ? (
-                              <a key={att.key} href={att.url} target="_blank" rel="noopener noreferrer" className="block w-16 h-16 rounded-lg overflow-hidden" style={{ border: '1px solid rgba(94,234,212,0.2)' }}>
+                              <a key={att.key} href={att.url} target="_blank" rel="noopener noreferrer" className="block w-16 h-16 rounded-lg overflow-hidden" style={{ border: '1px solid rgba(59,158,232,0.2)' }}>
                                 <img src={att.url} alt={att.name} className="w-full h-full object-cover" />
                               </a>
                             ) : (
-                              <a key={att.key} href={att.url} target="_blank" rel="noopener noreferrer" className="text-[10px] px-2 py-1 rounded-md" style={{ backgroundColor: 'rgba(255,255,255,0.06)', color: '#5EEAD4', border: '1px solid rgba(255,255,255,0.1)' }}>
+                              <a key={att.key} href={att.url} target="_blank" rel="noopener noreferrer" className="text-[10px] px-2 py-1 rounded-md" style={{ backgroundColor: 'rgba(255,255,255,0.06)', color: '#3B9EE8', border: '1px solid rgba(255,255,255,0.1)' }}>
                                 📎 {att.name}
                               </a>
                             ))}
@@ -266,19 +266,19 @@ function CardComments({ cardId, currentUser, accountId }: {
               onClick={() => fileInputRef.current?.click()}
               disabled={uploading}
               className="text-[11px] px-2 py-1.5 rounded-lg transition-all"
-              style={{ color: "#5EEAD4", backgroundColor: "rgba(94,234,212,0.08)" }}
+              style={{ color: "#3B9EE8", backgroundColor: "rgba(59,158,232,0.08)" }}
             >📎</button>
             <button
               onClick={handleSubmit}
               disabled={!text.trim() && commentAttachments.length === 0}
               className="text-[11px] px-3 py-1.5 rounded-lg font-bold transition-all disabled:opacity-30"
-              style={{ backgroundColor: "#5EEAD4", color: "#0F2440" }}
+              style={{ backgroundColor: "#3B9EE8", color: "#0F2440" }}
             >Send</button>
           </div>
           {commentAttachments.length > 0 && (
             <div className="flex gap-1.5 flex-wrap">
               {commentAttachments.map((att, i) => (
-                <span key={att.key} className="text-[10px] px-2 py-0.5 rounded-md flex items-center gap-1" style={{ backgroundColor: "rgba(94,234,212,0.1)", color: "#5EEAD4" }}>
+                <span key={att.key} className="text-[10px] px-2 py-0.5 rounded-md flex items-center gap-1" style={{ backgroundColor: "rgba(59,158,232,0.1)", color: "#3B9EE8" }}>
                   📎 {att.name}
                   <button onClick={() => setCommentAttachments(prev => prev.filter((_, j) => j !== i))} className="ml-0.5" style={{ color: "#F87171" }}>✕</button>
                 </span>
@@ -551,13 +551,13 @@ function BoardCard({ card, currentUser, accountId, onSeen, onArchive, onDelete }
                 return (
                   <div className="flex flex-wrap gap-2 mt-2">
                     {atts.map(att => att.mimeType.startsWith('image/') ? (
-                      <a key={att.key} href={att.url} target="_blank" rel="noopener noreferrer" className="block w-20 h-20 rounded-lg overflow-hidden" style={{ border: '1px solid rgba(94,234,212,0.2)' }}>
+                      <a key={att.key} href={att.url} target="_blank" rel="noopener noreferrer" className="block w-20 h-20 rounded-lg overflow-hidden" style={{ border: '1px solid rgba(59,158,232,0.2)' }}>
                         <img src={att.url} alt={att.name} className="w-full h-full object-cover" />
                       </a>
                     ) : (
                       <a key={att.key} href={att.url} target="_blank" rel="noopener noreferrer"
                         className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] transition-opacity hover:opacity-80"
-                        style={{ backgroundColor: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#5EEAD4' }}>
+                        style={{ backgroundColor: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#3B9EE8' }}>
                         📎 <span className="max-w-[100px] truncate">{att.name}</span>
                       </a>
                     ))}
@@ -812,7 +812,7 @@ function AddCardForm({ currentUser, onAdded, activeBusiness: activeBusinessProp,
           <p className="text-[10px] uppercase tracking-wider font-medium" style={{ color: "rgba(255,255,255,0.4)", fontFamily: "'Space Grotesk', sans-serif" }}>Date <span className="normal-case" style={{ color: "rgba(255,255,255,0.3)" }}>(optional)</span></p>
           <input type="date" value={updateDate} onChange={e => setUpdateDate(e.target.value)}
             className="w-full rounded-lg px-3 py-2 text-[12px] focus:outline-none transition-colors" style={{ ...inputStyle, boxSizing: "border-box" }}
-            onFocus={e => (e.target.style.borderColor = "#5EEAD4")} onBlur={e => (e.target.style.borderColor = "rgba(255,255,255,0.12)")} />
+            onFocus={e => (e.target.style.borderColor = "#3B9EE8")} onBlur={e => (e.target.style.borderColor = "rgba(255,255,255,0.12)")} />
         </div>
       )}
 
@@ -890,7 +890,7 @@ function AddCardForm({ currentUser, onAdded, activeBusiness: activeBusinessProp,
           <input ref={fileInputRef} type="file" accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx,.csv" className="hidden" onChange={handleFileSelect} />
           <button type="button" onClick={() => fileInputRef.current?.click()} disabled={uploadingFile}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-medium transition-all active:scale-[0.97] disabled:opacity-50"
-            style={{ backgroundColor: "rgba(94,234,212,0.08)", border: "1.5px solid rgba(94,234,212,0.2)", color: "#5EEAD4", fontFamily: "'Space Grotesk', sans-serif" }}>
+            style={{ backgroundColor: "rgba(59,158,232,0.08)", border: "1.5px solid rgba(59,158,232,0.2)", color: "#3B9EE8", fontFamily: "'Space Grotesk', sans-serif" }}>
             📎 {uploadingFile ? "Uploading…" : "Attach photo or file"}
           </button>
           {pendingAttachments.length > 0 && (
@@ -902,7 +902,7 @@ function AddCardForm({ currentUser, onAdded, activeBusiness: activeBusinessProp,
             {pendingAttachments.map((att, i) => (
               <div key={att.key} className="relative group">
                 {att.mimeType.startsWith('image/') ? (
-                  <div className="relative w-16 h-16 rounded-lg overflow-hidden" style={{ border: "1px solid rgba(94,234,212,0.2)" }}>
+                  <div className="relative w-16 h-16 rounded-lg overflow-hidden" style={{ border: "1px solid rgba(59,158,232,0.2)" }}>
                     <img src={att.url} alt={att.name} className="w-full h-full object-cover" />
                     <button type="button" onClick={() => setPendingAttachments(prev => prev.filter((_, j) => j !== i))}
                       className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full flex items-center justify-center text-[9px] opacity-0 group-hover:opacity-100 transition-opacity"
@@ -934,7 +934,7 @@ function AddCardForm({ currentUser, onAdded, activeBusiness: activeBusinessProp,
                 <button key={p.id} type="button"
                   onClick={() => setNotifyPersonIds(prev => selected ? prev.filter(id => id !== p.id) : [...prev, p.id])}
                   className="px-4 py-2 rounded-full text-[13px] font-semibold transition-all active:scale-[0.96]"
-                  style={{ backgroundColor: selected ? "rgba(94,234,212,0.15)" : "rgba(255,255,255,0.07)", color: selected ? "#5EEAD4" : "rgba(255,255,255,0.7)", border: selected ? "1.5px solid rgba(94,234,212,0.4)" : "1.5px solid rgba(255,255,255,0.15)", fontFamily: "'Space Grotesk', sans-serif" }}>
+                  style={{ backgroundColor: selected ? "rgba(59,158,232,0.15)" : "rgba(255,255,255,0.07)", color: selected ? "#3B9EE8" : "rgba(255,255,255,0.7)", border: selected ? "1.5px solid rgba(59,158,232,0.4)" : "1.5px solid rgba(255,255,255,0.15)", fontFamily: "'Space Grotesk', sans-serif" }}>
                   {selected ? "✓ " : ""}{p.name}
                 </button>
               );
@@ -965,9 +965,9 @@ function AddCardForm({ currentUser, onAdded, activeBusiness: activeBusinessProp,
             width: "44px",
             height: "24px",
             borderRadius: "12px",
-            backgroundColor: toneCheckEnabled ? "#5EEAD4" : "rgba(255,255,255,0.12)",
+            backgroundColor: toneCheckEnabled ? "#3B9EE8" : "rgba(255,255,255,0.12)",
             border: toneCheckEnabled ? "none" : "1.5px solid rgba(255,255,255,0.2)",
-            boxShadow: toneCheckEnabled ? "0 0 8px rgba(94,234,212,0.3)" : "none",
+            boxShadow: toneCheckEnabled ? "0 0 8px rgba(59,158,232,0.3)" : "none",
             transition: "background-color 0.2s, box-shadow 0.2s",
             cursor: "pointer",
             minWidth: "44px",
@@ -1010,7 +1010,7 @@ function AddCardForm({ currentUser, onAdded, activeBusiness: activeBusinessProp,
               width: "100%",
               maxWidth: "480px",
               backgroundColor: "#0D2035",
-              border: "1.5px solid rgba(94,234,212,0.25)",
+              border: "1.5px solid rgba(59,158,232,0.25)",
               borderBottom: "none",
               borderRadius: "24px 24px 0 0",
               padding: "24px 20px calc(env(safe-area-inset-bottom,16px) + 24px)",
@@ -1030,8 +1030,8 @@ function AddCardForm({ currentUser, onAdded, activeBusiness: activeBusinessProp,
             <p style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: "13px", color: "rgba(255,255,255,0.55)", margin: 0, lineHeight: 1.5 }}>
               {toneCheckResult.reason}
             </p>
-            <div style={{ backgroundColor: "rgba(94,234,212,0.07)", border: "1.5px solid rgba(94,234,212,0.2)", borderRadius: "12px", padding: "16px" }}>
-              <p style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.08em", color: "#5EEAD4", marginBottom: "8px", marginTop: 0 }}>Suggested rewrite</p>
+            <div style={{ backgroundColor: "rgba(59,158,232,0.07)", border: "1.5px solid rgba(59,158,232,0.2)", borderRadius: "12px", padding: "16px" }}>
+              <p style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.08em", color: "#3B9EE8", marginBottom: "8px", marginTop: 0 }}>Suggested rewrite</p>
               <p style={{ fontFamily: "'Inter', sans-serif", fontSize: "14px", color: "rgba(255,255,255,0.88)", lineHeight: 1.6, margin: 0 }}>{toneCheckResult.suggestion}</p>
             </div>
             <p style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: "11px", color: "rgba(255,255,255,0.3)", textAlign: "center", margin: 0 }}>
@@ -1047,7 +1047,7 @@ function AddCardForm({ currentUser, onAdded, activeBusiness: activeBusinessProp,
                   // Auto-post with the suggested rewrite — no second tap needed
                   doPost(suggested);
                 }}
-                style={{ width: "100%", padding: "14px", borderRadius: "12px", backgroundColor: "#5EEAD4", color: "#0D2035", fontFamily: "'Space Grotesk', sans-serif", fontSize: "14px", fontWeight: 700, border: "none", cursor: "pointer" }}
+                style={{ width: "100%", padding: "14px", borderRadius: "12px", backgroundColor: "#3B9EE8", color: "#0D2035", fontFamily: "'Space Grotesk', sans-serif", fontSize: "14px", fontWeight: 700, border: "none", cursor: "pointer" }}
               >
                 Use Suggested Rewrite
               </button>
@@ -1073,7 +1073,7 @@ function AddCardForm({ currentUser, onAdded, activeBusiness: activeBusinessProp,
       <button onClick={handleSubmit}
         disabled={createCard.isPending || isCheckingTone || !currentUser || !content.trim() || (type === "task" && !assignedTo)}
         className="w-full py-3 rounded-xl text-[13px] font-bold transition-all hover:opacity-90 disabled:opacity-40 active:scale-[0.97]"
-        style={{ backgroundColor: "#5EEAD4", color: "#0F2440", fontFamily: "'Space Grotesk', sans-serif", boxShadow: !createCard.isPending ? "0 4px 14px rgba(94,234,212,0.25)" : "none", letterSpacing: "0.02em" }}>
+        style={{ backgroundColor: "#3B9EE8", color: "#0F2440", fontFamily: "'Space Grotesk', sans-serif", boxShadow: !createCard.isPending ? "0 4px 14px rgba(59,158,232,0.25)" : "none", letterSpacing: "0.02em" }}>
         {isCheckingTone ? "🧠 Checking tone…" : createCard.isPending ? "Posting…" : "📤 Post to Board"}
       </button>
     </div>
@@ -1288,16 +1288,16 @@ function SubCardView({ title, icon, accentColor, onBack, currentKey, onNavigate,
           onClick={onBack}
           className="flex items-center gap-1.5 px-3 py-2 rounded-xl transition-all active:scale-[0.95] flex-shrink-0"
           style={{
-            backgroundColor: "rgba(94,234,212,0.08)",
-            border: "1px solid rgba(94,234,212,0.25)",
-            color: "#5EEAD4",
+            backgroundColor: "rgba(59,158,232,0.08)",
+            border: "1px solid rgba(59,158,232,0.25)",
+            color: "#3B9EE8",
             fontFamily: "'Space Grotesk', sans-serif",
             fontSize: "13px",
             fontWeight: 600,
           }}
           aria-label="Back to hub"
         >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5EEAD4" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3B9EE8" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <polyline points="15 18 9 12 15 6"/>
           </svg>
           Back
@@ -1665,9 +1665,9 @@ export default function Board() {
             onClick={() => setSheetOpen(true)}
             className="fixed bottom-24 right-6 w-14 h-14 rounded-2xl flex items-center justify-center text-2xl font-bold transition-all active:scale-[0.9] hover:scale-[1.05] z-40"
             style={{
-              background: "linear-gradient(135deg, #5EEAD4, #38BDF8)",
+              background: "linear-gradient(135deg, #3B9EE8, #38BDF8)",
               color: "#0F2440",
-              boxShadow: "0 6px 24px rgba(94,234,212,0.4), 0 2px 8px rgba(0,0,0,0.3)",
+              boxShadow: "0 6px 24px rgba(59,158,232,0.4), 0 2px 8px rgba(0,0,0,0.3)",
             }}
           >+</button>,
           document.body
@@ -1707,29 +1707,29 @@ export default function Board() {
         }}
       >
         {/* Ambient glow */}
-        <div style={{ position: "absolute", top: "-60px", right: "-60px", width: "240px", height: "240px", background: "radial-gradient(circle, rgba(94,234,212,0.06) 0%, transparent 70%)", pointerEvents: "none" }} />
+        <div style={{ position: "absolute", top: "-60px", right: "-60px", width: "240px", height: "240px", background: "radial-gradient(circle, rgba(59,158,232,0.06) 0%, transparent 70%)", pointerEvents: "none" }} />
         <div style={{ position: "absolute", bottom: "-40px", left: "-40px", width: "180px", height: "180px", background: "radial-gradient(circle, rgba(124,58,237,0.05) 0%, transparent 70%)", pointerEvents: "none" }} />
 
         <div className="flex items-center gap-2.5 mb-2">
           <div style={{
             width: 36, height: 36, borderRadius: "12px",
             background: activeHub === 0
-              ? "linear-gradient(135deg, rgba(94,234,212,0.2) 0%, rgba(94,234,212,0.08) 100%)"
+              ? "linear-gradient(135deg, rgba(59,158,232,0.2) 0%, rgba(59,158,232,0.08) 100%)"
               : "linear-gradient(135deg, rgba(167,139,250,0.2) 0%, rgba(167,139,250,0.08) 100%)",
-            border: activeHub === 0 ? "1px solid rgba(94,234,212,0.3)" : "1px solid rgba(167,139,250,0.3)",
+            border: activeHub === 0 ? "1px solid rgba(59,158,232,0.3)" : "1px solid rgba(167,139,250,0.3)",
             display: "flex", alignItems: "center", justifyContent: "center", fontSize: "18px",
-            boxShadow: activeHub === 0 ? "0 0 16px rgba(94,234,212,0.15)" : "0 0 16px rgba(167,139,250,0.15)",
+            boxShadow: activeHub === 0 ? "0 0 16px rgba(59,158,232,0.15)" : "0 0 16px rgba(167,139,250,0.15)",
             transition: "all 0.3s ease",
           }}>{activeHub === 0 ? "⚡" : "📈"}</div>
           <span
             className="text-[11px] font-bold uppercase tracking-[0.15em]"
-            style={{ color: activeHub === 0 ? "#5EEAD4" : "#A78BFA", fontFamily: "'Space Grotesk', sans-serif", transition: "color 0.3s ease" }}
+            style={{ color: activeHub === 0 ? "#3B9EE8" : "#A78BFA", fontFamily: "'Space Grotesk', sans-serif", transition: "color 0.3s ease" }}
           >{activeHub === 0 ? "Command Center" : "Performance Hub"}</span>
         </div>
 
         <h1 className="text-[22px] font-black text-white leading-tight mb-1" style={{ fontFamily: "'Space Grotesk', sans-serif", letterSpacing: "-0.02em" }}>
           Your Business,<br />
-          <span style={{ background: "linear-gradient(90deg, #5EEAD4, #A78BFA)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>In Sync.</span>
+          <span style={{ background: "linear-gradient(90deg, #3B9EE8, #A78BFA)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>In Sync.</span>
         </h1>
         <p className="text-[12px]" style={{ color: "rgba(255,255,255,0.45)", lineHeight: "1.4" }}>
           Real-time updates between owners — no more missed conversations.
@@ -1743,8 +1743,8 @@ export default function Board() {
           <div
             className="mb-4 rounded-2xl p-4 relative overflow-hidden"
             style={{
-              background: "linear-gradient(135deg, rgba(94,234,212,0.12), rgba(56,189,248,0.08))",
-              border: "1px solid rgba(94,234,212,0.3)",
+              background: "linear-gradient(135deg, rgba(59,158,232,0.12), rgba(56,189,248,0.08))",
+              border: "1px solid rgba(59,158,232,0.3)",
             }}
           >
             <button
@@ -1755,7 +1755,7 @@ export default function Board() {
             >✕</button>
             <div className="flex items-start gap-3 pr-8">
               <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl flex-shrink-0"
-                style={{ backgroundColor: "rgba(94,234,212,0.15)", border: "1px solid rgba(94,234,212,0.3)" }}>
+                style={{ backgroundColor: "rgba(59,158,232,0.15)", border: "1px solid rgba(59,158,232,0.3)" }}>
                 🎯
               </div>
               <div>
@@ -1768,7 +1768,7 @@ export default function Board() {
                 <button
                   onClick={() => { window.location.href = "/onboarding?full=1"; }}
                   className="px-4 py-2 rounded-xl text-[12px] font-bold transition-all active:scale-[0.97]"
-                  style={{ background: "linear-gradient(135deg, #5EEAD4, #2DD4BF)", color: "#0F2440" }}
+                  style={{ background: "linear-gradient(135deg, #3B9EE8, #2980c9)", color: "#0F2440" }}
                 >
                   Finish Setup →
                 </button>
@@ -1779,7 +1779,7 @@ export default function Board() {
         {isLoading ? (
           <div className="flex items-center justify-center h-40">
             <div className="flex flex-col items-center gap-3">
-              <div className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: "rgba(94,234,212,0.5)", borderTopColor: "transparent" }} />
+              <div className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: "rgba(59,158,232,0.5)", borderTopColor: "transparent" }} />
               <span className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>Loading…</span>
             </div>
           </div>
@@ -1829,7 +1829,7 @@ export default function Board() {
                     {[-90, -30, 30, 90, 150, 210].map((angle, i) => {
                       const rad = (angle * Math.PI) / 180;
                       const r = 118;
-                      return <line key={i} x1="180" y1="180" x2={180 + r * Math.cos(rad)} y2={180 + r * Math.sin(rad)} stroke="rgba(94,234,212,0.12)" strokeWidth="1.5" strokeDasharray="4 4" />;
+                      return <line key={i} x1="180" y1="180" x2={180 + r * Math.cos(rad)} y2={180 + r * Math.sin(rad)} stroke="rgba(59,158,232,0.12)" strokeWidth="1.5" strokeDasharray="4 4" />;
                     })}
                   </svg>
                   <div
@@ -1838,9 +1838,9 @@ export default function Board() {
                       position: "absolute", left: "50%", top: "50%",
                       transform: "translate(-50%, -50%)",
                       width: 72, height: 72, borderRadius: "50%",
-                      background: "linear-gradient(135deg, rgba(94,234,212,0.22) 0%, rgba(94,234,212,0.08) 100%)",
-                      border: "2px solid rgba(94,234,212,0.45)",
-                      boxShadow: "0 0 32px rgba(94,234,212,0.25), 0 0 8px rgba(94,234,212,0.15)",
+                      background: "linear-gradient(135deg, rgba(59,158,232,0.22) 0%, rgba(59,158,232,0.08) 100%)",
+                      border: "2px solid rgba(59,158,232,0.45)",
+                      boxShadow: "0 0 32px rgba(59,158,232,0.25), 0 0 8px rgba(59,158,232,0.15)",
                       display: "flex", alignItems: "center", justifyContent: "center",
                       zIndex: 2, animation: "hubCenterPulse 3s ease-in-out infinite",
                     }}
@@ -1852,7 +1852,7 @@ export default function Board() {
                     { cat: CATEGORIES.find(c => c.key === "updates")!, count: counts.updates, angle: -30, onClick: () => setActiveView("updates"), tourId: "tour-hub-updates", extra: {} },
                     { cat: CATEGORIES.find(c => c.key === "issues")!, count: counts.issues, angle: 30, onClick: () => setActiveView("issues"), tourId: "tour-hub-issues", extra: { hasHighPriority: issues.some(c => c.priority === "high") } },
                     { cat: NEEDS_ATTENTION_META as unknown as TileMeta, count: (counts.tasks ?? 0) + (counts.issues ?? 0), angle: 90, onClick: () => { setNeedsAttnSection((counts.tasks ?? 0) > 0 ? "tasks" : "issues"); setActiveView("needs_attention"); }, tourId: "tour-hub-needs-attention", extra: {} },
-                    { cat: { key: "calendar", label: "Calendar", icon: "📅", gradient: "linear-gradient(135deg, rgba(20,184,166,0.18) 0%, rgba(20,184,166,0.07) 100%)", border: "rgba(20,184,166,0.35)", glow: "rgba(20,184,166,0.14)", textColor: "#5EEAD4", countBg: "rgba(20,184,166,0.25)" }, count: -1, angle: 150, onClick: () => navigate("/app/calendar"), tourId: "tour-hub-calendar", extra: {} },
+                    { cat: { key: "calendar", label: "Calendar", icon: "📅", gradient: "linear-gradient(135deg, rgba(20,184,166,0.18) 0%, rgba(20,184,166,0.07) 100%)", border: "rgba(20,184,166,0.35)", glow: "rgba(20,184,166,0.14)", textColor: "#3B9EE8", countBg: "rgba(20,184,166,0.25)" }, count: -1, angle: 150, onClick: () => navigate("/app/calendar"), tourId: "tour-hub-calendar", extra: {} },
                     { cat: { key: "archive", label: "Archive", icon: "📂", gradient: "linear-gradient(135deg, rgba(217,119,6,0.18) 0%, rgba(217,119,6,0.07) 100%)", border: "rgba(251,191,36,0.38)", glow: "rgba(251,191,36,0.14)", textColor: "#FDE68A", countBg: "rgba(217,119,6,0.28)" }, count: archivedCards.length, angle: 210, onClick: () => setActiveView("archive"), tourId: "tour-hub-archive", extra: {} },
                   ].map(({ cat, count, angle, onClick, tourId, extra }, i) => {
                     const rad = (angle * Math.PI) / 180;
@@ -1911,7 +1911,7 @@ export default function Board() {
                     { key: "kpis", label: "KPIs", icon: "📊", gradient: "linear-gradient(135deg, rgba(37,99,235,0.18) 0%, rgba(37,99,235,0.07) 100%)", border: "rgba(37,99,235,0.35)", glow: "rgba(37,99,235,0.14)", textColor: "#93C5FD", countBg: "rgba(37,99,235,0.25)", angle: 30, onClick: () => navigate("/app/kpi"), tourId: "tour-kpis" },
                     { key: "reports", label: "Reports", icon: "📝", gradient: "linear-gradient(135deg, rgba(5,150,105,0.18) 0%, rgba(5,150,105,0.07) 100%)", border: "rgba(5,150,105,0.35)", glow: "rgba(5,150,105,0.14)", textColor: "#6EE7B7", countBg: "rgba(5,150,105,0.25)", angle: 150, onClick: () => navigate("/app/reports"), tourId: "tour-reports" },
                     { key: "refer", label: "Refer a Friend", icon: "🎁", gradient: "linear-gradient(135deg, rgba(217,119,6,0.22) 0%, rgba(217,119,6,0.08) 100%)", border: "rgba(251,191,36,0.45)", glow: "rgba(251,191,36,0.18)", textColor: "#FCD34D", countBg: "rgba(217,119,6,0.25)", angle: 90, onClick: () => setReferralOpen(true), tourId: "tour-refer" },
-                    { key: "inbox", label: "Co-Owner Inbox", icon: "💬", gradient: "linear-gradient(135deg, rgba(20,184,166,0.18) 0%, rgba(20,184,166,0.07) 100%)", border: "rgba(94,234,212,0.35)", glow: "rgba(94,234,212,0.14)", textColor: "#5EEAD4", countBg: "rgba(20,184,166,0.25)", angle: -30, onClick: () => navigate("/app/messages"), tourId: "tour-inbox" },
+                    { key: "inbox", label: "Co-Owner Inbox", icon: "💬", gradient: "linear-gradient(135deg, rgba(20,184,166,0.18) 0%, rgba(20,184,166,0.07) 100%)", border: "rgba(59,158,232,0.35)", glow: "rgba(59,158,232,0.14)", textColor: "#3B9EE8", countBg: "rgba(20,184,166,0.25)", angle: -30, onClick: () => navigate("/app/messages"), tourId: "tour-inbox" },
                     { key: "settings", label: "Settings", icon: "⚙️", gradient: "linear-gradient(135deg, rgba(100,116,139,0.18) 0%, rgba(100,116,139,0.07) 100%)", border: "rgba(148,163,184,0.35)", glow: "rgba(148,163,184,0.12)", textColor: "#CBD5E1", countBg: "rgba(100,116,139,0.25)", angle: -150, onClick: () => navigate("/app/settings"), tourId: "tour-settings" },
                   ].map(({ angle, onClick, tourId, ...cat }, i) => {
                     const rad = (angle * Math.PI) / 180;
@@ -1931,7 +1931,7 @@ export default function Board() {
 
             {/* Hub indicator dots */}
             <div className="flex items-center justify-center gap-2 mt-2 mb-1">
-              <div style={{ width: activeHub === 0 ? 20 : 6, height: 5, borderRadius: 3, backgroundColor: activeHub === 0 ? "rgba(94,234,212,0.7)" : "rgba(255,255,255,0.2)", transition: "all 0.3s ease" }} />
+              <div style={{ width: activeHub === 0 ? 20 : 6, height: 5, borderRadius: 3, backgroundColor: activeHub === 0 ? "rgba(59,158,232,0.7)" : "rgba(255,255,255,0.2)", transition: "all 0.3s ease" }} />
               <div style={{ width: activeHub === 1 ? 20 : 6, height: 5, borderRadius: 3, backgroundColor: activeHub === 1 ? "rgba(167,139,250,0.7)" : "rgba(255,255,255,0.2)", transition: "all 0.3s ease" }} />
             </div>
           </div>
@@ -1947,9 +1947,9 @@ export default function Board() {
           onClick={() => setSheetOpen(true)}
           className="fixed bottom-24 right-6 w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-bold transition-all active:scale-[0.9] hover:scale-[1.05] z-40"
           style={{
-            background: "linear-gradient(135deg, #5EEAD4, #38BDF8)",
+            background: "linear-gradient(135deg, #3B9EE8, #38BDF8)",
             color: "#0F2440",
-            boxShadow: "0 6px 24px rgba(94,234,212,0.4), 0 2px 8px rgba(0,0,0,0.3)",
+            boxShadow: "0 6px 24px rgba(59,158,232,0.4), 0 2px 8px rgba(0,0,0,0.3)",
             animation: "fabPulse 3s ease-in-out infinite",
           }}
         >+</button>,
@@ -2061,8 +2061,8 @@ export default function Board() {
           to { opacity: 1; transform: scale(1); }
         }
         @keyframes hubCenterPulse {
-          0%, 100% { box-shadow: 0 0 32px rgba(94,234,212,0.25), 0 0 8px rgba(94,234,212,0.15); }
-          50% { box-shadow: 0 0 48px rgba(94,234,212,0.4), 0 0 16px rgba(94,234,212,0.25); }
+          0%, 100% { box-shadow: 0 0 32px rgba(59,158,232,0.25), 0 0 8px rgba(59,158,232,0.15); }
+          50% { box-shadow: 0 0 48px rgba(59,158,232,0.4), 0 0 16px rgba(59,158,232,0.25); }
         }
         @keyframes hubCenterPulse2 {
           0%, 100% { box-shadow: 0 0 32px rgba(167,139,250,0.25), 0 0 8px rgba(167,139,250,0.15); }
@@ -2089,8 +2089,8 @@ export default function Board() {
           to { opacity: 1; transform: translateY(0); }
         }
         @keyframes fabPulse {
-          0%, 100% { box-shadow: 0 6px 24px rgba(94,234,212,0.4), 0 2px 8px rgba(0,0,0,0.3); }
-          50% { box-shadow: 0 6px 32px rgba(94,234,212,0.55), 0 2px 12px rgba(0,0,0,0.3); }
+          0%, 100% { box-shadow: 0 6px 24px rgba(59,158,232,0.4), 0 2px 8px rgba(0,0,0,0.3); }
+          50% { box-shadow: 0 6px 32px rgba(59,158,232,0.55), 0 2px 12px rgba(0,0,0,0.3); }
         }
       `}</style>
     </div>

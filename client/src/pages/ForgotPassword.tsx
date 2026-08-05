@@ -67,8 +67,8 @@ export default function ForgotPassword() {
             className="rounded-2xl p-8"
             style={{
               backgroundColor: "rgba(255,255,255,0.05)",
-              border: "1px solid rgba(94,234,212,0.2)",
-              boxShadow: "0 24px 64px rgba(0,0,0,0.4), 0 4px 16px rgba(0,0,0,0.2), 0 0 0 1px rgba(94,234,212,0.08) inset",
+              border: "1px solid rgba(59,158,232,0.2)",
+              boxShadow: "0 24px 64px rgba(0,0,0,0.4), 0 4px 16px rgba(0,0,0,0.2), 0 0 0 1px rgba(59,158,232,0.08) inset",
               backdropFilter: "blur(16px)",
             }}
           >
@@ -103,7 +103,7 @@ export default function ForgotPassword() {
                         backgroundColor: "rgba(255,255,255,0.08)",
                         border: "1.5px solid rgba(255,255,255,0.15)",
                       }}
-                      onFocus={e => (e.target.style.borderColor = "#5EEAD4")}
+                      onFocus={e => (e.target.style.borderColor = "#3B9EE8")}
                       onBlur={e => (e.target.style.borderColor = "rgba(255,255,255,0.15)")}
                     />
                   </div>
@@ -112,9 +112,9 @@ export default function ForgotPassword() {
                     disabled={isLoading || !email.trim()}
                     className="w-full py-3.5 rounded-xl text-sm font-bold transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-40 mt-1"
                     style={{
-                      backgroundColor: "#5EEAD4",
+                      backgroundColor: "#3B9EE8",
                       color: "#0F2440",
-                      boxShadow: "0 4px 16px rgba(94,234,212,0.25)",
+                      boxShadow: "0 4px 16px rgba(59,158,232,0.25)",
                     }}
                   >
                     {isLoading ? "Sending…" : "Send reset link →"}
@@ -125,8 +125,8 @@ export default function ForgotPassword() {
               /* Success state */
               <div className="text-center py-4">
                 <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-5"
-                  style={{ backgroundColor: "rgba(94,234,212,0.15)", border: "1.5px solid rgba(94,234,212,0.3)" }}>
-                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#5EEAD4" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  style={{ backgroundColor: "rgba(59,158,232,0.15)", border: "1.5px solid rgba(59,158,232,0.3)" }}>
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#3B9EE8" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13.5a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 2.69h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 10.1a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
                   </svg>
                 </div>
@@ -142,7 +142,7 @@ export default function ForgotPassword() {
                 <a
                   href="/login"
                   className="inline-block text-sm font-semibold transition-colors"
-                  style={{ color: "#5EEAD4" }}
+                  style={{ color: "#3B9EE8" }}
                   onMouseEnter={e => (e.currentTarget.style.opacity = "0.8")}
                   onMouseLeave={e => (e.currentTarget.style.opacity = "1")}
                 >

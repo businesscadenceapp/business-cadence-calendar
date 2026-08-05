@@ -4,7 +4,7 @@
  * - Employee invite: sets password, gets access to Team Board
  * - Partner invite (?partner=1): sets password, gets linked to owner's subscription,
  *   bypasses paywall entirely — access is granted server-side.
- * Dark navy theme: #0F2440 bg, #5EEAD4 teal accent, white text
+ * Dark navy theme: #0F2440 bg, #3B9EE8 teal accent, white text
  */
 
 import { useState, useEffect } from "react";
@@ -142,7 +142,7 @@ export default function AcceptInvite() {
       <div
         className="fixed inset-0 pointer-events-none"
         style={{
-          background: "radial-gradient(ellipse 80% 50% at 50% 0%, rgba(94,234,212,0.06) 0%, transparent 70%)",
+          background: "radial-gradient(ellipse 80% 50% at 50% 0%, rgba(59,158,232,0.06) 0%, transparent 70%)",
         }}
       />
 
@@ -181,7 +181,7 @@ export default function AcceptInvite() {
             <a
               href="/login"
               className="inline-block py-2.5 px-6 rounded-xl text-sm font-bold transition-all hover:opacity-90"
-              style={{ backgroundColor: "#5EEAD4", color: "#0F2440" }}
+              style={{ backgroundColor: "#3B9EE8", color: "#0F2440" }}
             >
               Go to Login
             </a>
@@ -193,9 +193,9 @@ export default function AcceptInvite() {
                 <>
                   {/* Partner invite badge */}
                   <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-4"
-                    style={{ backgroundColor: "rgba(94,234,212,0.12)", border: "1px solid rgba(94,234,212,0.25)" }}>
-                    <Users size={12} style={{ color: "#5EEAD4" }} />
-                    <span className="text-xs font-semibold" style={{ color: "#5EEAD4" }}>Partner Invite</span>
+                    style={{ backgroundColor: "rgba(59,158,232,0.12)", border: "1px solid rgba(59,158,232,0.25)" }}>
+                    <Users size={12} style={{ color: "#3B9EE8" }} />
+                    <span className="text-xs font-semibold" style={{ color: "#3B9EE8" }}>Partner Invite</span>
                   </div>
                   <h1 className="text-3xl font-bold text-white mb-2" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
                     {partnerName ? `${partnerName} invited you!` : "You're Invited!"}
@@ -205,9 +205,9 @@ export default function AcceptInvite() {
                   </p>
                   <div
                     className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg mt-1"
-                    style={{ backgroundColor: "rgba(94,234,212,0.08)", border: "1px solid rgba(94,234,212,0.2)" }}
+                    style={{ backgroundColor: "rgba(59,158,232,0.08)", border: "1px solid rgba(59,158,232,0.2)" }}
                   >
-                    <span className="text-xs" style={{ color: "rgba(94,234,212,0.9)" }}>
+                    <span className="text-xs" style={{ color: "rgba(59,158,232,0.9)" }}>
                       ✓ Full access included — no payment required
                     </span>
                   </div>
@@ -216,8 +216,8 @@ export default function AcceptInvite() {
                 <>
                   {/* Employee invite badge */}
                   <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-4"
-                    style={{ backgroundColor: "rgba(94,234,212,0.12)", border: "1px solid rgba(94,234,212,0.25)" }}>
-                    <span className="text-xs font-semibold" style={{ color: "#5EEAD4" }}>✉ You've been invited</span>
+                    style={{ backgroundColor: "rgba(59,158,232,0.12)", border: "1px solid rgba(59,158,232,0.25)" }}>
+                    <span className="text-xs font-semibold" style={{ color: "#3B9EE8" }}>✉ You've been invited</span>
                   </div>
                   <h1 className="text-3xl font-bold text-white mb-2" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
                     {inviteData?.name ? `Welcome, ${inviteData.name}!` : "You're Invited!"}
@@ -233,8 +233,8 @@ export default function AcceptInvite() {
               className="rounded-2xl p-8"
               style={{
                 backgroundColor: "rgba(255,255,255,0.04)",
-                border: "1px solid rgba(94,234,212,0.2)",
-                boxShadow: "0 8px 32px rgba(0,0,0,0.3), 0 0 0 1px rgba(94,234,212,0.05)",
+                border: "1px solid rgba(59,158,232,0.2)",
+                boxShadow: "0 8px 32px rgba(0,0,0,0.3), 0 0 0 1px rgba(59,158,232,0.05)",
               }}
             >
               <form onSubmit={handleSubmit} className="flex flex-col gap-5">
@@ -254,7 +254,7 @@ export default function AcceptInvite() {
                       backgroundColor: "rgba(255,255,255,0.06)",
                       border: "1.5px solid rgba(255,255,255,0.12)",
                     }}
-                    onFocus={e => (e.target.style.borderColor = "#5EEAD4")}
+                    onFocus={e => (e.target.style.borderColor = "#3B9EE8")}
                     onBlur={e => (e.target.style.borderColor = "rgba(255,255,255,0.12)")}
                   />
                 </div>
@@ -275,7 +275,7 @@ export default function AcceptInvite() {
                       backgroundColor: "rgba(255,255,255,0.06)",
                       border: "1.5px solid rgba(255,255,255,0.12)",
                     }}
-                    onFocus={e => (e.target.style.borderColor = "#5EEAD4")}
+                    onFocus={e => (e.target.style.borderColor = "#3B9EE8")}
                     onBlur={e => (e.target.style.borderColor = "rgba(255,255,255,0.12)")}
                   />
                 </div>
@@ -285,9 +285,9 @@ export default function AcceptInvite() {
                   disabled={isLoading || !password || !confirm}
                   className="w-full py-3.5 rounded-xl text-sm font-bold transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-40 mt-1"
                   style={{
-                    background: "linear-gradient(135deg, #5EEAD4, #2DD4BF)",
+                    background: "linear-gradient(135deg, #3B9EE8, #2980c9)",
                     color: "#0F2440",
-                    boxShadow: "0 4px 16px rgba(94,234,212,0.25)",
+                    boxShadow: "0 4px 16px rgba(59,158,232,0.25)",
                     fontFamily: "'Space Grotesk', sans-serif",
                   }}
                 >
@@ -298,7 +298,7 @@ export default function AcceptInvite() {
 
             <p className="text-center text-xs mt-6" style={{ color: "rgba(255,255,255,0.3)" }}>
               Already have an account?{" "}
-              <a href="/login" className="underline" style={{ color: "rgba(94,234,212,0.7)" }}>Sign in</a>
+              <a href="/login" className="underline" style={{ color: "rgba(59,158,232,0.7)" }}>Sign in</a>
             </p>
           </>
         )}

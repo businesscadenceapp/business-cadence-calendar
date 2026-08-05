@@ -102,13 +102,13 @@ export default function InvitePartnerSetup() {
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <div
           className="absolute -top-32 left-1/2 -translate-x-1/2 w-[400px] h-[400px] rounded-full"
-          style={{ background: "radial-gradient(circle, rgba(94,234,212,0.10) 0%, transparent 70%)" }}
+          style={{ background: "radial-gradient(circle, rgba(59,158,232,0.10) 0%, transparent 70%)" }}
         />
         <div
           className="absolute inset-0"
           style={{
             backgroundImage:
-              "linear-gradient(rgba(94,234,212,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(94,234,212,0.025) 1px, transparent 1px)",
+              "linear-gradient(rgba(59,158,232,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(59,158,232,0.025) 1px, transparent 1px)",
             backgroundSize: "48px 48px",
           }}
         />
@@ -119,7 +119,7 @@ export default function InvitePartnerSetup() {
         <div className="flex items-center gap-2">
           <BrandIcon size={28} variant="teal" />
           <span className="text-white/50 text-sm font-medium">
-            Business<span className="text-[#5EEAD4]">Cadence</span>
+            Business<span className="text-[#3B9EE8]">Cadence</span>
           </span>
         </div>
       </div>
@@ -130,12 +130,12 @@ export default function InvitePartnerSetup() {
         <div
           className="w-16 h-16 rounded-2xl flex items-center justify-center mb-5"
           style={{
-            background: "linear-gradient(135deg, rgba(94,234,212,0.12) 0%, rgba(13,148,136,0.06) 100%)",
-            border: "1px solid rgba(94,234,212,0.22)",
-            boxShadow: "0 0 40px rgba(94,234,212,0.10)",
+            background: "linear-gradient(135deg, rgba(59,158,232,0.12) 0%, rgba(13,148,136,0.06) 100%)",
+            border: "1px solid rgba(59,158,232,0.22)",
+            boxShadow: "0 0 40px rgba(59,158,232,0.10)",
           }}
         >
-          <svg className="w-8 h-8 text-[#5EEAD4]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-8 h-8 text-[#3B9EE8]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
               d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
           </svg>
@@ -166,7 +166,7 @@ export default function InvitePartnerSetup() {
                 background: "rgba(255,255,255,0.06)",
                 border: "1.5px solid rgba(255,255,255,0.10)",
               }}
-              onFocus={(e) => (e.target.style.borderColor = "rgba(94,234,212,0.5)")}
+              onFocus={(e) => (e.target.style.borderColor = "rgba(59,158,232,0.5)")}
               onBlur={(e) => (e.target.style.borderColor = "rgba(255,255,255,0.10)")}
             />
           </div>
@@ -194,7 +194,7 @@ export default function InvitePartnerSetup() {
                 background: "rgba(255,255,255,0.06)",
                 border: "1.5px solid rgba(255,255,255,0.10)",
               }}
-              onFocus={(e) => (e.target.style.borderColor = "rgba(94,234,212,0.5)")}
+              onFocus={(e) => (e.target.style.borderColor = "rgba(59,158,232,0.5)")}
               onBlur={(e) => (e.target.style.borderColor = "rgba(255,255,255,0.10)")}
             />
           </div>
@@ -215,7 +215,7 @@ export default function InvitePartnerSetup() {
                 background: "rgba(255,255,255,0.06)",
                 border: "1.5px solid rgba(255,255,255,0.10)",
               }}
-              onFocus={(e) => (e.target.style.borderColor = "rgba(94,234,212,0.5)")}
+              onFocus={(e) => (e.target.style.borderColor = "rgba(59,158,232,0.5)")}
               onBlur={(e) => (e.target.style.borderColor = "rgba(255,255,255,0.10)")}
             />
           </div>
@@ -227,8 +227,8 @@ export default function InvitePartnerSetup() {
               disabled={isSending || !businessName.trim() || !partnerName.trim() || !partnerEmail.trim()}
               className="w-full py-3.5 rounded-xl font-bold text-[#0A1628] text-base transition-all duration-200 active:scale-[0.97] disabled:opacity-50"
               style={{
-                background: "linear-gradient(135deg, #5EEAD4 0%, #0D9488 100%)",
-                boxShadow: "0 4px 24px rgba(94,234,212,0.22)",
+                background: "linear-gradient(135deg, #3B9EE8 0%, #0D9488 100%)",
+                boxShadow: "0 4px 24px rgba(59,158,232,0.22)",
               }}
             >
               {isSending ? "Sending…" : "Send Invite →"}

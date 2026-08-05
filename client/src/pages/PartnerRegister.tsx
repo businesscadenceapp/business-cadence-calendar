@@ -165,14 +165,14 @@ export default function PartnerRegister() {
       <div
         className="fixed inset-0 pointer-events-none"
         style={{
-          background: "radial-gradient(ellipse 80% 50% at 50% 0%, rgba(94,234,212,0.06) 0%, transparent 70%)",
+          background: "radial-gradient(ellipse 80% 50% at 50% 0%, rgba(59,158,232,0.06) 0%, transparent 70%)",
         }}
       />
 
       <div className="w-full max-w-md relative z-10">
         {tokenLoading ? (
           <div className="flex justify-center py-16">
-            <div className="w-8 h-8 rounded-full border-2 border-[#5EEAD4]/30 border-t-[#5EEAD4] animate-spin" />
+            <div className="w-8 h-8 rounded-full border-2 border-[#3B9EE8]/30 border-t-[#3B9EE8] animate-spin" />
           </div>
         ) : tokenError ? (
           /* ── Invalid token ── */
@@ -191,7 +191,7 @@ export default function PartnerRegister() {
             <a
               href="/login"
               className="inline-block py-2.5 px-6 rounded-xl text-sm font-bold"
-              style={{ backgroundColor: "#5EEAD4", color: "#0F2440" }}
+              style={{ backgroundColor: "#3B9EE8", color: "#0F2440" }}
             >
               Go to Login
             </a>
@@ -202,13 +202,13 @@ export default function PartnerRegister() {
             <div className="text-center mb-7">
               <div
                 className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-4"
-                style={{ backgroundColor: "rgba(94,234,212,0.12)", border: "1px solid rgba(94,234,212,0.25)" }}
+                style={{ backgroundColor: "rgba(59,158,232,0.12)", border: "1px solid rgba(59,158,232,0.25)" }}
               >
-                <svg className="w-3 h-3" style={{ color: "#5EEAD4" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-3 h-3" style={{ color: "#3B9EE8" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                     d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
-                <span className="text-xs font-semibold" style={{ color: "#5EEAD4" }}>Partner Invite</span>
+                <span className="text-xs font-semibold" style={{ color: "#3B9EE8" }}>Partner Invite</span>
               </div>
               <h1 className="text-2xl font-bold text-white mb-2">
                 {mode === "register"
@@ -223,9 +223,9 @@ export default function PartnerRegister() {
               {mode === "register" && (
                 <div
                   className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg mt-3"
-                  style={{ backgroundColor: "rgba(94,234,212,0.08)", border: "1px solid rgba(94,234,212,0.2)" }}
+                  style={{ backgroundColor: "rgba(59,158,232,0.08)", border: "1px solid rgba(59,158,232,0.2)" }}
                 >
-                  <span className="text-xs" style={{ color: "rgba(94,234,212,0.9)" }}>
+                  <span className="text-xs" style={{ color: "rgba(59,158,232,0.9)" }}>
                     ✓ Full access included — no payment required
                   </span>
                 </div>
@@ -335,7 +335,7 @@ export default function PartnerRegister() {
                   <button
                     onClick={() => setMode("login")}
                     className="underline"
-                    style={{ color: "rgba(94,234,212,0.7)" }}
+                    style={{ color: "rgba(59,158,232,0.7)" }}
                   >
                     Sign in
                   </button>
@@ -346,7 +346,7 @@ export default function PartnerRegister() {
                   <button
                     onClick={() => setMode("register")}
                     className="underline"
-                    style={{ color: "rgba(94,234,212,0.7)" }}
+                    style={{ color: "rgba(59,158,232,0.7)" }}
                   >
                     Create an account
                   </button>
@@ -367,7 +367,7 @@ const inputCls =
   + " bg-white/[0.06] border border-white/[0.12]";
 
 const focusBorder = (e: React.FocusEvent<HTMLInputElement>) => {
-  e.target.style.borderColor = "#5EEAD4";
+  e.target.style.borderColor = "#3B9EE8";
 };
 const blurBorder = (e: React.FocusEvent<HTMLInputElement>) => {
   e.target.style.borderColor = "rgba(255,255,255,0.12)";
@@ -391,9 +391,9 @@ function SubmitButton({ loading, disabled, children }: { loading: boolean; disab
       disabled={loading || disabled}
       className="w-full py-3.5 rounded-xl text-sm font-bold transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-40 mt-1"
       style={{
-        background: "linear-gradient(135deg, #5EEAD4, #2DD4BF)",
+        background: "linear-gradient(135deg, #3B9EE8, #2980c9)",
         color: "#0F2440",
-        boxShadow: "0 4px 16px rgba(94,234,212,0.25)",
+        boxShadow: "0 4px 16px rgba(59,158,232,0.25)",
       }}
     >
       {loading ? "Please wait…" : children}

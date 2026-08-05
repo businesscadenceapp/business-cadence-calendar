@@ -14,3 +14,5 @@
 - [x] Rebuild BrandLogo as transparent inline component — heart PNG + HTML/CSS text, no background box
 - [x] Update Landing.tsx Logo component to use transparent inline BrandLogo (no PNG wordmark)
 - [x] Update nav, hero, ForgotPassword, ResetPassword to use transparent component
+- [ ] Replace teal (#5EEAD4) with new brand blue (#3B9EE8) across index.css, Landing.tsx, AppShell.tsx, and all other UI files
+- [ ] Redesign hero section: large centered heart, "BusinessCadence" stacked below it, tagline below that — distinct from the nav lockup

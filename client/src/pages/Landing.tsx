@@ -88,7 +88,7 @@ function Nav() {
             </button>
             <button
               onClick={() => scrollTo("download")}
-              className="bg-[#5EEAD4] text-[#0F2440] text-sm font-semibold px-5 py-2 rounded-lg hover:bg-[#2dd4bf] transition-colors active:scale-[0.97]"
+              className="bg-[#3B9EE8] text-[#0F2440] text-sm font-semibold px-5 py-2 rounded-lg hover:bg-[#2980c9] transition-colors active:scale-[0.97]"
             >
               Download Free
             </button>
@@ -120,7 +120,7 @@ function Nav() {
             <button onClick={() => scrollTo("story")} className="text-sm text-white/60 text-left px-2">Our Story</button>
             <button
               onClick={() => scrollTo("download")}
-              className="bg-[#5EEAD4] text-[#0F2440] text-sm font-semibold px-5 py-2 rounded-lg mx-2"
+              className="bg-[#3B9EE8] text-[#0F2440] text-sm font-semibold px-5 py-2 rounded-lg mx-2"
             >
               Download Free
             </button>
@@ -164,8 +164,8 @@ function WaitlistForm({ variant = "default" }: { variant?: "default" | "hero" | 
   if (submitted) {
     return (
       <div className={`flex items-center gap-3 ${variant === "hero" ? "justify-center" : ""}`}>
-        <div className="w-10 h-10 rounded-full bg-[#5EEAD4]/20 flex items-center justify-center flex-shrink-0">
-          <svg className="w-5 h-5 text-[#5EEAD4]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+        <div className="w-10 h-10 rounded-full bg-[#3B9EE8]/20 flex items-center justify-center flex-shrink-0">
+          <svg className="w-5 h-5 text-[#3B9EE8]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
           </svg>
         </div>
@@ -185,12 +185,12 @@ function WaitlistForm({ variant = "default" }: { variant?: "default" | "hero" | 
         placeholder="Enter your email address"
         required
         aria-label="Email address for waitlist"
-        className="flex-1 px-4 py-3 rounded-lg border bg-white/10 border-white/20 text-white placeholder:text-white/40 focus:border-[#5EEAD4]/60 focus:ring-2 focus:ring-[#5EEAD4]/20 outline-none transition-all text-sm"
+        className="flex-1 px-4 py-3 rounded-lg border bg-white/10 border-white/20 text-white placeholder:text-white/40 focus:border-[#3B9EE8]/60 focus:ring-2 focus:ring-[#3B9EE8]/20 outline-none transition-all text-sm"
       />
       <button
         type="submit"
         disabled={join.isPending}
-        className="px-6 py-3 rounded-lg text-sm font-semibold transition-all active:scale-[0.97] whitespace-nowrap bg-[#5EEAD4] text-[#0F2440] hover:bg-[#2dd4bf] disabled:opacity-60"
+        className="px-6 py-3 rounded-lg text-sm font-semibold transition-all active:scale-[0.97] whitespace-nowrap bg-[#3B9EE8] text-[#0F2440] hover:bg-[#2980c9] disabled:opacity-60"
       >
         {join.isPending ? "Joining..." : "Join the Waitlist"}
       </button>
@@ -205,27 +205,59 @@ function Hero() {
   return (
     <section className="pt-32 pb-28 px-4" style={{ background: "linear-gradient(160deg, #0F2440 0%, #1E3A5F 60%, #0D2D4A 100%)" }} aria-labelledby="hero-heading">
       <div className="max-w-4xl mx-auto">
-        {/* Logo */}
-        <div className="flex justify-center mb-10 animate-fade-in">
-          <div style={{
-            filter:
-              "drop-shadow(0 2px 0px rgba(255,255,255,0.15)) " +
-              "drop-shadow(0 8px 24px rgba(0,0,0,0.40)) " +
-              "saturate(1.2) brightness(1.05)"
-          }}>
-            <Logo height={220} />
+        {/* Hero brand block: large heart centered, stacked wordmark below */}
+        <div className="flex flex-col items-center mb-12 animate-fade-in">
+          <img
+            src="/manus-storage/heart-transparent-clean_14235c91.png"
+            alt="BusinessCadence"
+            style={{
+              width: 180,
+              height: 180,
+              objectFit: "contain",
+              filter: "drop-shadow(0 12px 40px rgba(59,158,232,0.40)) drop-shadow(0 4px 12px rgba(0,0,0,0.50))",
+            }}
+          />
+          <div className="mt-6 text-center">
+            <div style={{ display: "flex", justifyContent: "center", alignItems: "baseline" }}>
+              <span style={{
+                fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
+                fontSize: "clamp(32px, 6vw, 52px)",
+                fontWeight: 300,
+                letterSpacing: "-0.03em",
+                color: "#FFFFFF",
+                lineHeight: 1.1,
+              }}>Business</span>
+              <span style={{
+                fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
+                fontSize: "clamp(32px, 6vw, 52px)",
+                fontWeight: 800,
+                letterSpacing: "-0.03em",
+                color: "#3B9EE8",
+                lineHeight: 1.1,
+              }}>Cadence</span>
+            </div>
+            <p style={{
+              fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
+              fontSize: "clamp(13px, 1.5vw, 16px)",
+              fontWeight: 400,
+              color: "rgba(255,255,255,0.52)",
+              letterSpacing: "0.02em",
+              marginTop: 8,
+            }}>
+              Run your business while protecting your relationship.
+            </p>
           </div>
         </div>
 
         <div className="text-center animate-fade-up">
-          <div className="inline-flex items-center gap-2 bg-white/10 text-[#5EEAD4] text-xs font-semibold px-4 py-1.5 rounded-full mb-8 border border-white/10">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#5EEAD4] animate-pulse" aria-hidden="true" />
+          <div className="inline-flex items-center gap-2 bg-white/10 text-[#3B9EE8] text-xs font-semibold px-4 py-1.5 rounded-full mb-8 border border-white/10">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#3B9EE8] animate-pulse" aria-hidden="true" />
             Now Available on iOS &amp; Android
           </div>
 
           <h1 id="hero-heading" className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight mb-6">
             Stop Bringing the Boardroom{" "}
-            <span className="text-[#5EEAD4]">to the Dinner Table.</span>
+            <span className="text-[#3B9EE8]">to the Dinner Table.</span>
           </h1>
 
           <p className="text-lg sm:text-xl text-white/70 max-w-2xl mx-auto mb-10 leading-relaxed">
@@ -291,7 +323,7 @@ function ProblemSection() {
     <section id="problem" className="py-20 px-4" style={{ background: "linear-gradient(180deg, #0D2D4A 0%, #0F2440 100%)" }} aria-labelledby="problem-heading">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-14">
-          <p className="text-[#5EEAD4] text-sm font-semibold uppercase tracking-widest mb-3">Sound Familiar?</p>
+          <p className="text-[#3B9EE8] text-sm font-semibold uppercase tracking-widest mb-3">Sound Familiar?</p>
           <h2 id="problem-heading" className="text-3xl sm:text-4xl font-bold text-white mb-4">
             The 5 Mistakes Most Co-Owner Couples Make
           </h2>
@@ -304,7 +336,7 @@ function ProblemSection() {
           {PROBLEMS.map((p, i) => (
             <div
               key={i}
-              className="bg-white/5 rounded-2xl p-6 border border-white/10 hover:border-[#5EEAD4]/30 hover:bg-white/8 transition-all duration-200"
+              className="bg-white/5 rounded-2xl p-6 border border-white/10 hover:border-[#3B9EE8]/30 hover:bg-white/8 transition-all duration-200"
             >
               <div className="text-3xl mb-4" aria-hidden="true">{p.icon}</div>
               <h3 className="font-semibold text-white mb-2 text-lg">{p.title}</h3>
@@ -312,17 +344,17 @@ function ProblemSection() {
             </div>
           ))}
           {/* CTA card */}
-          <div className="bg-[#5EEAD4]/10 rounded-2xl p-6 border border-[#5EEAD4]/20 flex flex-col justify-between">
+          <div className="bg-[#3B9EE8]/10 rounded-2xl p-6 border border-[#3B9EE8]/20 flex flex-col justify-between">
             <div>
               <div className="text-3xl mb-4" aria-hidden="true">✅</div>
               <h3 className="font-semibold text-white mb-2 text-lg">There's a better way</h3>
-              <p className="text-[#5EEAD4]/80 text-sm leading-relaxed">
+              <p className="text-[#3B9EE8]/80 text-sm leading-relaxed">
                 BusinessCadence gives you a proven meeting rhythm that keeps business conversations structured, productive, and out of your personal time.
               </p>
             </div>
             <button
               onClick={() => document.getElementById("download")?.scrollIntoView({ behavior: "smooth" })}
-              className="mt-6 bg-[#5EEAD4] text-[#0F2440] text-sm font-semibold px-5 py-2.5 rounded-lg hover:bg-[#2dd4bf] transition-colors active:scale-[0.97]"
+              className="mt-6 bg-[#3B9EE8] text-[#0F2440] text-sm font-semibold px-5 py-2.5 rounded-lg hover:bg-[#2980c9] transition-colors active:scale-[0.97]"
             >
               Download the App →
             </button>
@@ -405,7 +437,7 @@ function FeaturesSection() {
     <section id="features" className="py-20 px-4 bg-[#0F2440]" aria-labelledby="features-heading">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-14">
-          <p className="text-[#5EEAD4] text-sm font-semibold uppercase tracking-widest mb-3">What's Inside</p>
+          <p className="text-[#3B9EE8] text-sm font-semibold uppercase tracking-widest mb-3">What's Inside</p>
           <h2 id="features-heading" className="text-3xl sm:text-4xl font-bold text-white mb-4">
             Everything a Co-Owner Couple Needs
           </h2>
@@ -418,9 +450,9 @@ function FeaturesSection() {
           {FEATURES.map((f, i) => (
             <div
               key={i}
-              className="bg-white/5 rounded-2xl p-6 border border-white/10 hover:border-[#5EEAD4]/30 hover:bg-white/8 transition-all duration-200 group"
+              className="bg-white/5 rounded-2xl p-6 border border-white/10 hover:border-[#3B9EE8]/30 hover:bg-white/8 transition-all duration-200 group"
             >
-              <div className="w-11 h-11 rounded-xl bg-[#1E3A5F] text-[#5EEAD4] flex items-center justify-center mb-4 group-hover:bg-[#5EEAD4]/20 transition-colors border border-white/10">
+              <div className="w-11 h-11 rounded-xl bg-[#1E3A5F] text-[#3B9EE8] flex items-center justify-center mb-4 group-hover:bg-[#3B9EE8]/20 transition-colors border border-white/10">
                 {f.icon}
               </div>
               <h3 className="font-semibold text-white mb-2 text-lg">{f.title}</h3>
@@ -437,7 +469,7 @@ function FeaturesSection() {
 const CADENCE = [
   { freq: "Daily", time: "10–15 min", color: "#8B5CF6", desc: "A quick morning check-in to align on the day's priorities and flag anything urgent before it becomes a fire." },
   { freq: "Weekly", time: "90 min", color: "#0EA5E9", desc: "A structured Weekly Review to review scorecard, discuss issues, and make decisions. Every week, same time, same agenda." },
-  { freq: "Monthly", time: "60 min", color: "#5EEAD4", desc: "A financial review to go over the numbers, check progress against goals, and course-correct before the quarter ends." },
+  { freq: "Monthly", time: "60 min", color: "#3B9EE8", desc: "A financial review to go over the numbers, check progress against goals, and course-correct before the quarter ends." },
   { freq: "Quarterly", time: "Half day", color: "#F43F5E", desc: "A strategic offsite to review the past quarter, set 90-day priorities, and reconnect as business partners — not just co-workers." },
 ];
 
@@ -446,7 +478,7 @@ function HowItWorksSection() {
     <section className="py-20 px-4" style={{ background: "linear-gradient(180deg, #1E3A5F 0%, #162d4a 100%)" }} aria-labelledby="cadence-heading">
       <div className="max-w-5xl mx-auto">
         <div className="text-center mb-14">
-          <p className="text-[#5EEAD4] text-sm font-semibold uppercase tracking-widest mb-3">The Cadence</p>
+          <p className="text-[#3B9EE8] text-sm font-semibold uppercase tracking-widest mb-3">The Cadence</p>
           <h2 id="cadence-heading" className="text-3xl sm:text-4xl font-bold text-white mb-4">
             Four Meeting Types. One Proven Rhythm.
           </h2>
@@ -460,7 +492,7 @@ function HowItWorksSection() {
             <div key={i} className="bg-white/5 rounded-2xl p-6 border border-white/10 hover:bg-white/10 transition-colors">
               <div className="w-3 h-3 rounded-full mb-4" style={{ backgroundColor: c.color }} aria-hidden="true" />
               <div className="text-white font-bold text-xl mb-1">{c.freq}</div>
-              <div className="text-[#5EEAD4]/80 text-sm font-medium mb-3">{c.time}</div>
+              <div className="text-[#3B9EE8]/80 text-sm font-medium mb-3">{c.time}</div>
               <p className="text-white/60 text-sm leading-relaxed">{c.desc}</p>
             </div>
           ))}
@@ -524,12 +556,12 @@ function PricingSection() {
       ],
       cta: "Start 14-Day Free Trial →",
       cardClass: "bg-white/5 border border-white/10",
-      ctaClass: "bg-[#5EEAD4] text-[#0F2440] hover:bg-[#2dd4bf]",
+      ctaClass: "bg-[#3B9EE8] text-[#0F2440] hover:bg-[#2980c9]",
       popular: false,
     },
     {
       id: "co_owner_team",
-      badge: { text: "Most Popular", color: "bg-gradient-to-r from-[#5EEAD4] to-[#0D9488] text-[#0A1628]" },
+      badge: { text: "Most Popular", color: "bg-gradient-to-r from-[#3B9EE8] to-[#0D9488] text-[#0A1628]" },
       name: "Co-Owner + Team",
       tagline: "For couples running multiple businesses with a team",
       monthly: "$79",
@@ -545,8 +577,8 @@ function PricingSection() {
         "Priority support",
       ],
       cta: "Start 14-Day Free Trial →",
-      cardClass: "bg-[#5EEAD4]/8 border border-[#5EEAD4]/30",
-      ctaClass: "bg-[#5EEAD4] text-[#0F2440] hover:bg-[#2dd4bf]",
+      cardClass: "bg-[#3B9EE8]/8 border border-[#3B9EE8]/30",
+      ctaClass: "bg-[#3B9EE8] text-[#0F2440] hover:bg-[#2980c9]",
       popular: true,
     },
   ];
@@ -556,7 +588,7 @@ function PricingSection() {
       <div className="max-w-5xl mx-auto">
         {/* Header */}
         <div className="text-center mb-10">
-          <p className="text-[#5EEAD4] text-sm font-bold uppercase tracking-widest mb-3">Pricing</p>
+          <p className="text-[#3B9EE8] text-sm font-bold uppercase tracking-widest mb-3">Pricing</p>
           <h2 id="pricing-heading" className="text-3xl sm:text-4xl font-bold text-white mb-4">
             One flat rate. Both owners included.
           </h2>
@@ -565,9 +597,9 @@ function PricingSection() {
           </p>
 
           {/* Trial banner */}
-          <div className="inline-flex items-center gap-3 bg-[#5EEAD4]/10 border border-[#5EEAD4]/25 rounded-2xl px-6 py-3 text-sm mb-8">
-            <span className="w-2 h-2 rounded-full bg-[#5EEAD4] animate-pulse flex-shrink-0" aria-hidden="true" />
-            <span className="text-[#5EEAD4] font-semibold">14-day free trial on all plans</span>
+          <div className="inline-flex items-center gap-3 bg-[#3B9EE8]/10 border border-[#3B9EE8]/25 rounded-2xl px-6 py-3 text-sm mb-8">
+            <span className="w-2 h-2 rounded-full bg-[#3B9EE8] animate-pulse flex-shrink-0" aria-hidden="true" />
+            <span className="text-[#3B9EE8] font-semibold">14-day free trial on all plans</span>
             <span className="text-white/30 hidden sm:inline">·</span>
             <span className="text-white/50 hidden sm:inline">No credit card required</span>
           </div>
@@ -581,7 +613,7 @@ function PricingSection() {
                 className={[
                   "flex-1 py-2 px-4 rounded-lg text-sm font-semibold transition-all duration-200",
                   billing === b
-                    ? "bg-[#5EEAD4] text-[#0F2440]"
+                    ? "bg-[#3B9EE8] text-[#0F2440]"
                     : "text-white/50 hover:text-white/80",
                 ].join(" ")}
               >
@@ -631,18 +663,18 @@ function PricingSection() {
                 {billing === "annual" ? (
                   <p className="text-white/40 text-xs mt-1">Billed {plan.annualBilled}/year</p>
                 ) : (
-                  <p className="text-[#5EEAD4]/60 text-xs mt-1 font-medium">
+                  <p className="text-[#3B9EE8]/60 text-xs mt-1 font-medium">
                     Switch to annual and save {plan.id === "founding" ? "$120" : plan.id === "co_owner" ? "$204" : "$240"}/yr
                   </p>
                 )}
-                <p className="text-[#5EEAD4]/70 text-xs mt-0.5 font-medium">Both owners included — no per-seat fees</p>
+                <p className="text-[#3B9EE8]/70 text-xs mt-0.5 font-medium">Both owners included — no per-seat fees</p>
               </div>
 
               {/* Features */}
               <ul className="space-y-2.5 mb-8 flex-1">
                 {plan.features.map((item, i) => (
                   <li key={i} className="flex items-start gap-2.5 text-sm text-white/70">
-                    <span className={`mt-0.5 flex-shrink-0 font-bold ${plan.id === "founding" ? "text-[#F59E0B]" : "text-[#5EEAD4]"}`}>✓</span>
+                    <span className={`mt-0.5 flex-shrink-0 font-bold ${plan.id === "founding" ? "text-[#F59E0B]" : "text-[#3B9EE8]"}`}>✓</span>
                     {item}
                   </li>
                 ))}
@@ -666,7 +698,7 @@ function PricingSection() {
           <div className="mt-4 inline-flex items-center gap-3 bg-white/5 border border-white/10 rounded-2xl px-6 py-3 text-sm">
             <span className="text-white/40 line-through">Other tools: $30–$40/mo per person</span>
             <span className="text-white/30">vs</span>
-            <span className="text-[#5EEAD4] font-bold">BusinessCadence: one price for both</span>
+            <span className="text-[#3B9EE8] font-bold">BusinessCadence: one price for both</span>
           </div>
         </div>
       </div>
@@ -680,14 +712,14 @@ function StorySection() {
     <section id="story" className="py-20 px-4 bg-[#0F2440]" aria-labelledby="story-heading">
       <div className="max-w-3xl mx-auto">
         <div className="text-center mb-10">
-          <p className="text-[#5EEAD4] text-sm font-semibold uppercase tracking-widest mb-3">Our Story</p>
+          <p className="text-[#3B9EE8] text-sm font-semibold uppercase tracking-widest mb-3">Our Story</p>
           <h2 id="story-heading" className="text-3xl sm:text-4xl font-bold text-white">
             We built this because we needed it.
           </h2>
         </div>
 
         <div className="bg-white/5 rounded-2xl p-8 sm:p-10 border border-white/10">
-          <div className="text-[#5EEAD4] text-6xl font-serif leading-none mb-4 opacity-30 select-none" aria-hidden="true">"</div>
+          <div className="text-[#3B9EE8] text-6xl font-serif leading-none mb-4 opacity-30 select-none" aria-hidden="true">"</div>
 
           <div className="space-y-5 text-white/70 leading-relaxed">
             <p>
@@ -711,7 +743,7 @@ function StorySection() {
           </div>
 
           <div className="mt-8 pt-6 border-t border-white/10 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-[#1E3A5F] border border-white/20 flex items-center justify-center text-[#5EEAD4] font-bold text-lg flex-shrink-0" aria-hidden="true">BC</div>
+            <div className="w-12 h-12 rounded-full bg-[#1E3A5F] border border-white/20 flex items-center justify-center text-[#3B9EE8] font-bold text-lg flex-shrink-0" aria-hidden="true">BC</div>
             <div>
               <p className="font-semibold text-white">The Founders</p>
               <p className="text-sm text-white/50">Co-owners of three businesses, married 20+ years</p>
@@ -730,14 +762,14 @@ function DownloadSection() {
   return (
     <section className="py-24 px-4" style={{ background: "linear-gradient(180deg, #162d4a 0%, #0F2440 100%)" }} aria-labelledby="download-heading">
       <div className="max-w-2xl mx-auto text-center">
-        <div className="inline-flex items-center gap-2 bg-white/10 text-[#5EEAD4] text-xs font-semibold px-4 py-1.5 rounded-full mb-8 border border-white/10">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#5EEAD4] animate-pulse" aria-hidden="true" />
+        <div className="inline-flex items-center gap-2 bg-white/10 text-[#3B9EE8] text-xs font-semibold px-4 py-1.5 rounded-full mb-8 border border-white/10">
+          <span className="w-1.5 h-1.5 rounded-full bg-[#3B9EE8] animate-pulse" aria-hidden="true" />
           Available Now on iOS &amp; Android
         </div>
 
         <h2 id="download-heading" className="text-3xl sm:text-4xl font-bold text-white mb-5">
           Stop being out of sync.<br />
-          <span className="text-[#5EEAD4]">Start building a rhythm.</span>
+          <span className="text-[#3B9EE8]">Start building a rhythm.</span>
         </h2>
         <p className="text-white/60 text-lg mb-10 leading-relaxed">
           Download BusinessCadence free today. Start your trial, invite your co-owner, and have your first structured meeting this week.
@@ -752,7 +784,7 @@ function DownloadSection() {
             { label: "Cancel anytime", icon: "✓" },
           ].map((item, i) => (
             <div key={i} className="flex items-center gap-3">
-              <div className="w-6 h-6 rounded-full bg-[#5EEAD4]/20 flex items-center justify-center text-[#5EEAD4] text-xs font-bold flex-shrink-0" aria-hidden="true">
+              <div className="w-6 h-6 rounded-full bg-[#3B9EE8]/20 flex items-center justify-center text-[#3B9EE8] text-xs font-bold flex-shrink-0" aria-hidden="true">
                 {item.icon}
               </div>
               <span className="text-white/60 text-sm">{item.label}</span>
@@ -762,7 +794,7 @@ function DownloadSection() {
 
         {data && data.count > 0 && (
           <p className="mt-8 text-sm text-white/40">
-            <span className="text-[#5EEAD4] font-semibold">{data.count} business owners</span> are already on the waitlist.
+            <span className="text-[#3B9EE8] font-semibold">{data.count} business owners</span> are already on the waitlist.
           </p>
         )}
 

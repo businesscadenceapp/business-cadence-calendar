@@ -3,7 +3,7 @@
  *
  * Employees answer the owner-configured questions for the current week.
  * Answers are auto-saved per question (upsert). Shows a completion summary.
- * Dark navy theme: #0F2440 bg, #5EEAD4 teal accent, #C4B5FD purple accent
+ * Dark navy theme: #0F2440 bg, #3B9EE8 teal accent, #C4B5FD purple accent
  */
 
 import { useState, useMemo, useEffect } from "react";
@@ -233,7 +233,7 @@ export default function WeeklyCheckin() {
               <span className="text-[11px] uppercase tracking-widest font-semibold" style={{ color: "rgba(255,255,255,0.35)", fontFamily: "'Space Grotesk', sans-serif" }}>
                 Progress
               </span>
-              <span className="text-[11px] font-bold" style={{ color: allDone ? "#5EEAD4" : "rgba(255,255,255,0.5)", fontFamily: "'JetBrains Mono', monospace" }}>
+              <span className="text-[11px] font-bold" style={{ color: allDone ? "#3B9EE8" : "rgba(255,255,255,0.5)", fontFamily: "'JetBrains Mono', monospace" }}>
                 {answeredCount}/{totalCount}
               </span>
             </div>
@@ -243,7 +243,7 @@ export default function WeeklyCheckin() {
                 style={{
                   width: totalCount > 0 ? `${(answeredCount / totalCount) * 100}%` : "0%",
                   background: allDone
-                    ? "linear-gradient(90deg, #5EEAD4, #2DD4BF)"
+                    ? "linear-gradient(90deg, #3B9EE8, #2980c9)"
                     : "linear-gradient(90deg, #C4B5FD, #A78BFA)",
                 }}
               />
@@ -282,12 +282,12 @@ export default function WeeklyCheckin() {
         {allDone && (
           <div
             className="rounded-2xl p-5 text-center mb-6"
-            style={{ backgroundColor: "rgba(94,234,212,0.08)", border: "1.5px solid rgba(94,234,212,0.25)" }}
+            style={{ backgroundColor: "rgba(59,158,232,0.08)", border: "1.5px solid rgba(59,158,232,0.25)" }}
           >
-            <p className="text-[15px] font-bold" style={{ color: "#5EEAD4", fontFamily: "'Space Grotesk', sans-serif" }}>
+            <p className="text-[15px] font-bold" style={{ color: "#3B9EE8", fontFamily: "'Space Grotesk', sans-serif" }}>
               ✓ All questions answered for this week!
             </p>
-            <p className="text-[12px] mt-1" style={{ color: "rgba(94,234,212,0.7)" }}>
+            <p className="text-[12px] mt-1" style={{ color: "rgba(59,158,232,0.7)" }}>
               Great work. Your responses have been saved.
             </p>
           </div>
@@ -307,7 +307,7 @@ export default function WeeklyCheckin() {
                   className="rounded-2xl p-5 flex flex-col gap-3 transition-all"
                   style={{
                     backgroundColor: "rgba(255,255,255,0.04)",
-                    border: `1.5px solid ${isSaved ? "rgba(94,234,212,0.25)" : "rgba(255,255,255,0.08)"}`,
+                    border: `1.5px solid ${isSaved ? "rgba(59,158,232,0.25)" : "rgba(255,255,255,0.08)"}`,
                   }}
                 >
                   {/* Question header */}
@@ -315,8 +315,8 @@ export default function WeeklyCheckin() {
                     <span
                       className="w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold flex-shrink-0 mt-0.5"
                       style={{
-                        backgroundColor: isSaved ? "rgba(94,234,212,0.15)" : "rgba(196,181,253,0.15)",
-                        color: isSaved ? "#5EEAD4" : "#C4B5FD",
+                        backgroundColor: isSaved ? "rgba(59,158,232,0.15)" : "rgba(196,181,253,0.15)",
+                        color: isSaved ? "#3B9EE8" : "#C4B5FD",
                       }}
                     >
                       {isSaved ? "✓" : idx + 1}
@@ -338,7 +338,7 @@ export default function WeeklyCheckin() {
                     className="w-full rounded-xl px-4 py-3 text-[13px] resize-none focus:outline-none transition-all"
                     style={{
                       backgroundColor: "rgba(255,255,255,0.05)",
-                      border: `1.5px solid ${isSaved ? "rgba(94,234,212,0.2)" : "rgba(255,255,255,0.1)"}`,
+                      border: `1.5px solid ${isSaved ? "rgba(59,158,232,0.2)" : "rgba(255,255,255,0.1)"}`,
                       color: "rgba(255,255,255,0.85)",
                       fontFamily: "'Inter', sans-serif",
                     }}
@@ -349,7 +349,7 @@ export default function WeeklyCheckin() {
                   {/* Save button */}
                   <div className="flex items-center justify-between">
                     {isSaved ? (
-                      <span className="text-[11px] font-semibold" style={{ color: "#5EEAD4" }}>✓ Saved</span>
+                      <span className="text-[11px] font-semibold" style={{ color: "#3B9EE8" }}>✓ Saved</span>
                     ) : (
                       <span className="text-[11px]" style={{ color: "rgba(255,255,255,0.3)" }}>Unsaved changes</span>
                     )}
@@ -358,9 +358,9 @@ export default function WeeklyCheckin() {
                       disabled={isSaving || !hasText}
                       className="px-4 py-1.5 rounded-lg text-[12px] font-bold transition-all hover:opacity-90 active:scale-[0.97] disabled:opacity-40"
                       style={{
-                        backgroundColor: isSaved ? "rgba(94,234,212,0.1)" : "#C4B5FD",
-                        color: isSaved ? "#5EEAD4" : "#0F2440",
-                        border: isSaved ? "1px solid rgba(94,234,212,0.25)" : "none",
+                        backgroundColor: isSaved ? "rgba(59,158,232,0.1)" : "#C4B5FD",
+                        color: isSaved ? "#3B9EE8" : "#0F2440",
+                        border: isSaved ? "1px solid rgba(59,158,232,0.25)" : "none",
                         fontFamily: "'Space Grotesk', sans-serif",
                       }}
                     >

@@ -214,7 +214,7 @@ export default function BusinessSelector() {
         <div className="flex flex-col items-center gap-3">
           <div
             className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin"
-            style={{ borderColor: "rgba(94,234,212,0.4)", borderTopColor: "transparent" }}
+            style={{ borderColor: "rgba(59,158,232,0.4)", borderTopColor: "transparent" }}
           />
           <p className="text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>Loading…</p>
         </div>
@@ -236,7 +236,7 @@ export default function BusinessSelector() {
       <div className="text-center mb-8 px-4">
         <p
           className="text-[11px] font-bold uppercase tracking-[0.2em] mb-3"
-          style={{ color: "rgba(94,234,212,0.7)" }}
+          style={{ color: "rgba(59,158,232,0.7)" }}
         >
           BusinessCadence
         </p>
@@ -503,7 +503,7 @@ export default function BusinessSelector() {
                 height: "8px",
                 borderRadius: "4px",
                 backgroundColor: i === activeIndex
-                  ? cards[activeIndex]?.color ?? "#5EEAD4"
+                  ? cards[activeIndex]?.color ?? "#3B9EE8"
                   : "rgba(255,255,255,0.2)",
               }}
             >

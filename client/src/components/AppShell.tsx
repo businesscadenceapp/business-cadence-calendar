@@ -56,18 +56,18 @@ interface NavItem {
 }
 
 const OWNER_NAV: NavItem[] = [
-  { path: "/app/board",    label: "Board",    icon: "📋", activeColor: "#5EEAD4" },
+  { path: "/app/board",    label: "Board",    icon: "📋", activeColor: "#3B9EE8" },
   // Goals, KPIs, Reports now live in the Performance Hub (swipe left on Board)
-  { path: "/app/calendar", label: "Calendar", icon: "📅", activeColor: "#5EEAD4" },
+  { path: "/app/calendar", label: "Calendar", icon: "📅", activeColor: "#3B9EE8" },
   { path: "/app/admin",    label: "Admin",    icon: "🔑", activeColor: "#F87171" },
 ];
 
 const EMPLOYEE_NAV: NavItem[] = [
   { path: "/app/team",          label: "My Board",  icon: "👥", activeColor: "#A78BFA" },
-  { path: "/app/team/calendar", label: "Schedule",  icon: "📅", activeColor: "#5EEAD4" },
-  { path: "/app/kpi",           label: "KPIs",      icon: "📈", activeColor: "#5EEAD4" },
-  { path: "/app/messages",      label: "Messages",  icon: "💬", activeColor: "#5EEAD4" },
-  { path: "/app/checkin",       label: "Check-in",  icon: "✅", activeColor: "#5EEAD4" },
+  { path: "/app/team/calendar", label: "Schedule",  icon: "📅", activeColor: "#3B9EE8" },
+  { path: "/app/kpi",           label: "KPIs",      icon: "📈", activeColor: "#3B9EE8" },
+  { path: "/app/messages",      label: "Messages",  icon: "💬", activeColor: "#3B9EE8" },
+  { path: "/app/checkin",       label: "Check-in",  icon: "✅", activeColor: "#3B9EE8" },
 ];
 
 // Mobile bottom bar: show first 4 items + "More" for the rest
@@ -189,15 +189,15 @@ function MoreSheet({
                 onClick={onClose}
                 className="flex items-center gap-4 px-4 py-3 rounded-xl text-sm font-semibold transition-all"
                 style={{
-                  backgroundColor: isActive ? "rgba(94,234,212,0.12)" : "transparent",
-                  color: isActive ? "#5EEAD4" : "rgba(255,255,255,0.7)",
+                  backgroundColor: isActive ? "rgba(59,158,232,0.12)" : "transparent",
+                  color: isActive ? "#3B9EE8" : "rgba(255,255,255,0.7)",
                   fontFamily: "'Space Grotesk', sans-serif",
                 }}
               >
                 <span className="text-xl w-7 text-center">{item.icon}</span>
                 {item.label}
                 {isActive && (
-                  <div className="ml-auto w-2 h-2 rounded-full" style={{ backgroundColor: "#5EEAD4" }} />
+                  <div className="ml-auto w-2 h-2 rounded-full" style={{ backgroundColor: "#3B9EE8" }} />
                 )}
               </Link>
             );
@@ -209,9 +209,9 @@ function MoreSheet({
               onClick={() => { onClose(); onGoToSelector(); }}
               className="flex items-center gap-2 w-full px-4 py-3 rounded-xl text-sm font-semibold transition-all active:scale-[0.98]"
               style={{
-                backgroundColor: "rgba(94,234,212,0.08)",
-                border: "1px solid rgba(94,234,212,0.2)",
-                color: "#5EEAD4",
+                backgroundColor: "rgba(59,158,232,0.08)",
+                border: "1px solid rgba(59,158,232,0.2)",
+                color: "#3B9EE8",
                 fontFamily: "'Space Grotesk', sans-serif",
               }}
             >
@@ -355,7 +355,7 @@ export default function AppShell({ children }: AppShellProps) {
                 onClick={() => navigate("/select-business")}
                 className="flex items-center gap-1.5 text-[10px] font-semibold transition-colors w-fit"
                 style={{ color: "rgba(255,255,255,0.35)" }}
-                onMouseEnter={e => (e.currentTarget.style.color = "#5EEAD4")}
+                onMouseEnter={e => (e.currentTarget.style.color = "#3B9EE8")}
                 onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.35)")}
                 title="Back to business selector"
               >
@@ -378,8 +378,8 @@ export default function AppShell({ children }: AppShellProps) {
                   href="/app/board"
                   className="flex-1 py-2 text-center text-[11px] font-bold transition-all"
                   style={{
-                    backgroundColor: !activePath.startsWith("/app/team") ? "rgba(94,234,212,0.18)" : "transparent",
-                    color: !activePath.startsWith("/app/team") ? "#5EEAD4" : "rgba(255,255,255,0.4)",
+                    backgroundColor: !activePath.startsWith("/app/team") ? "rgba(59,158,232,0.18)" : "transparent",
+                    color: !activePath.startsWith("/app/team") ? "#3B9EE8" : "rgba(255,255,255,0.4)",
                     fontFamily: "'Space Grotesk', sans-serif",
                     borderRadius: "10px 0 0 10px",
                   }}
@@ -437,8 +437,8 @@ export default function AppShell({ children }: AppShellProps) {
                       data-tour={item.path === "/app/calendar" ? "tour-calendar" : item.path === "/app/goals" ? "tour-goals" : undefined}
                       className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-semibold transition-all duration-150"
                       style={{
-                        backgroundColor: isActive ? "rgba(94,234,212,0.12)" : "transparent",
-                        color: isActive ? "#5EEAD4" : "rgba(255,255,255,0.55)",
+                        backgroundColor: isActive ? "rgba(59,158,232,0.12)" : "transparent",
+                        color: isActive ? "#3B9EE8" : "rgba(255,255,255,0.55)",
                         fontFamily: "'Space Grotesk', sans-serif",
                       }}
                     >
@@ -447,7 +447,7 @@ export default function AppShell({ children }: AppShellProps) {
                       {isActive && (
                         <div
                           className="ml-auto w-1.5 h-1.5 rounded-full flex-shrink-0"
-                          style={{ backgroundColor: "#5EEAD4" }}
+                          style={{ backgroundColor: "#3B9EE8" }}
                         />
                       )}
                     </Link>
@@ -514,7 +514,7 @@ export default function AppShell({ children }: AppShellProps) {
               <button
                 onClick={() => navigate("/login")}
                 className="w-full text-[11px] font-semibold text-center"
-                style={{ color: "#5EEAD4" }}
+                style={{ color: "#3B9EE8" }}
               >
                 Sign in
               </button>
@@ -559,8 +559,8 @@ export default function AppShell({ children }: AppShellProps) {
                   href="/app/board"
                   className="flex-1 min-w-0 flex items-center justify-center gap-1 px-2 py-2 text-[11px] font-bold transition-all whitespace-nowrap"
                   style={{
-                    backgroundColor: !activePath.startsWith("/app/team") ? "rgba(94,234,212,0.2)" : "transparent",
-                    color: !activePath.startsWith("/app/team") ? "#5EEAD4" : "rgba(255,255,255,0.4)",
+                    backgroundColor: !activePath.startsWith("/app/team") ? "rgba(59,158,232,0.2)" : "transparent",
+                    color: !activePath.startsWith("/app/team") ? "#3B9EE8" : "rgba(255,255,255,0.4)",
                     fontFamily: "'Space Grotesk', sans-serif",
                     borderRadius: "10px 0 0 10px",
                     minHeight: "36px",
@@ -612,8 +612,8 @@ export default function AppShell({ children }: AppShellProps) {
                 onClick={() => setMoreOpen(true)}
                 className="w-8 h-8 rounded-lg flex items-center justify-center transition-all active:scale-95"
                 style={{
-                  backgroundColor: moreIsActive ? "rgba(94,234,212,0.18)" : "rgba(255,255,255,0.06)",
-                  border: moreIsActive ? "1px solid rgba(94,234,212,0.4)" : "1px solid rgba(255,255,255,0.1)",
+                  backgroundColor: moreIsActive ? "rgba(59,158,232,0.18)" : "rgba(255,255,255,0.06)",
+                  border: moreIsActive ? "1px solid rgba(59,158,232,0.4)" : "1px solid rgba(255,255,255,0.1)",
                 }}
                 title="Menu"
               >

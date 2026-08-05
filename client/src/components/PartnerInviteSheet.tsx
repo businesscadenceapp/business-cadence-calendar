@@ -5,7 +5,7 @@
  * The partner downloads the app free, taps the link, creates an account,
  * and gets full access without ever seeing a paywall.
  *
- * Design: dark navy theme (#0F2440 bg, #5EEAD4 teal accent)
+ * Design: dark navy theme (#0F2440 bg, #3B9EE8 teal accent)
  */
 
 import { useState } from "react";
@@ -97,7 +97,7 @@ export default function PartnerInviteSheet({ open, onClose, businessName }: Part
         className="fixed bottom-0 left-0 right-0 z-50 rounded-t-3xl"
         style={{
           background: "linear-gradient(180deg, #0F2440 0%, #0A1929 100%)",
-          border: "1px solid rgba(94,234,212,0.2)",
+          border: "1px solid rgba(59,158,232,0.2)",
           borderBottom: "none",
           boxShadow: "0 -8px 40px rgba(0,0,0,0.5)",
           paddingBottom: "env(safe-area-inset-bottom, 24px)",
@@ -124,9 +124,9 @@ export default function PartnerInviteSheet({ open, onClose, businessName }: Part
           <div className="flex items-center gap-3 mb-6">
             <div
               className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0"
-              style={{ backgroundColor: "rgba(94,234,212,0.12)", border: "1px solid rgba(94,234,212,0.25)" }}
+              style={{ backgroundColor: "rgba(59,158,232,0.12)", border: "1px solid rgba(59,158,232,0.25)" }}
             >
-              <Users size={22} style={{ color: "#5EEAD4" }} />
+              <Users size={22} style={{ color: "#3B9EE8" }} />
             </div>
             <div>
               <h2 className="text-xl font-bold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
@@ -141,9 +141,9 @@ export default function PartnerInviteSheet({ open, onClose, businessName }: Part
           {/* How it works */}
           <div
             className="rounded-2xl p-4 mb-6"
-            style={{ backgroundColor: "rgba(94,234,212,0.06)", border: "1px solid rgba(94,234,212,0.15)" }}
+            style={{ backgroundColor: "rgba(59,158,232,0.06)", border: "1px solid rgba(59,158,232,0.15)" }}
           >
-            <p className="text-xs font-semibold mb-3" style={{ color: "#5EEAD4" }}>HOW IT WORKS</p>
+            <p className="text-xs font-semibold mb-3" style={{ color: "#3B9EE8" }}>HOW IT WORKS</p>
             <div className="flex flex-col gap-2.5">
               {[
                 { step: "1", text: "Generate your unique invite link below" },
@@ -154,9 +154,9 @@ export default function PartnerInviteSheet({ open, onClose, businessName }: Part
                 <div key={step} className="flex items-start gap-3">
                   <div
                     className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
-                    style={{ backgroundColor: "rgba(94,234,212,0.2)", border: "1px solid rgba(94,234,212,0.4)" }}
+                    style={{ backgroundColor: "rgba(59,158,232,0.2)", border: "1px solid rgba(59,158,232,0.4)" }}
                   >
-                    <span className="text-xs font-bold" style={{ color: "#5EEAD4" }}>{step}</span>
+                    <span className="text-xs font-bold" style={{ color: "#3B9EE8" }}>{step}</span>
                   </div>
                   <p className="text-sm" style={{ color: "rgba(255,255,255,0.75)" }}>{text}</p>
                 </div>
@@ -171,9 +171,9 @@ export default function PartnerInviteSheet({ open, onClose, businessName }: Part
               disabled={generateLink.isPending}
               className="w-full py-4 rounded-2xl font-bold text-base transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2"
               style={{
-                background: "linear-gradient(135deg, #5EEAD4, #2DD4BF)",
+                background: "linear-gradient(135deg, #3B9EE8, #2980c9)",
                 color: "#0F2440",
-                boxShadow: "0 4px 20px rgba(94,234,212,0.3)",
+                boxShadow: "0 4px 20px rgba(59,158,232,0.3)",
                 fontFamily: "'Space Grotesk', sans-serif",
               }}
             >
@@ -202,9 +202,9 @@ export default function PartnerInviteSheet({ open, onClose, businessName }: Part
                   onClick={handleCopy}
                   className="flex-1 py-3.5 rounded-xl font-bold text-sm transition-all active:scale-[0.98] flex items-center justify-center gap-2"
                   style={{
-                    backgroundColor: copied ? "rgba(94,234,212,0.15)" : "rgba(255,255,255,0.08)",
-                    border: `1px solid ${copied ? "rgba(94,234,212,0.4)" : "rgba(255,255,255,0.15)"}`,
-                    color: copied ? "#5EEAD4" : "rgba(255,255,255,0.8)",
+                    backgroundColor: copied ? "rgba(59,158,232,0.15)" : "rgba(255,255,255,0.08)",
+                    border: `1px solid ${copied ? "rgba(59,158,232,0.4)" : "rgba(255,255,255,0.15)"}`,
+                    color: copied ? "#3B9EE8" : "rgba(255,255,255,0.8)",
                   }}
                 >
                   {copied ? <Check size={16} /> : <Copy size={16} />}
@@ -214,9 +214,9 @@ export default function PartnerInviteSheet({ open, onClose, businessName }: Part
                   onClick={handleShare}
                   className="flex-1 py-3.5 rounded-xl font-bold text-sm transition-all active:scale-[0.98] flex items-center justify-center gap-2"
                   style={{
-                    background: "linear-gradient(135deg, #5EEAD4, #2DD4BF)",
+                    background: "linear-gradient(135deg, #3B9EE8, #2980c9)",
                     color: "#0F2440",
-                    boxShadow: "0 4px 16px rgba(94,234,212,0.25)",
+                    boxShadow: "0 4px 16px rgba(59,158,232,0.25)",
                     fontFamily: "'Space Grotesk', sans-serif",
                   }}
                 >

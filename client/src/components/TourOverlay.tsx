@@ -181,10 +181,10 @@ export default function TourOverlay() {
     left: cardLeft,
     width: cardWidth,
     backgroundColor: "#0F2440",
-    border: "1.5px solid rgba(94,234,212,0.3)",
+    border: "1.5px solid rgba(59,158,232,0.3)",
     borderRadius: "20px",
     padding: "20px",
-    boxShadow: "0 8px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(94,234,212,0.08)",
+    boxShadow: "0 8px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(59,158,232,0.08)",
     transition: "all 300ms cubic-bezier(0.23, 1, 0.32, 1)",
     zIndex: 1,
   };
@@ -246,8 +246,8 @@ export default function TourOverlay() {
           width: s.width + 6,
           height: s.height + 6,
           borderRadius: s.radius + 3,
-          border: "2px solid rgba(94,234,212,0.7)",
-          boxShadow: "0 0 0 4px rgba(94,234,212,0.15), 0 0 24px rgba(94,234,212,0.3)",
+          border: "2px solid rgba(59,158,232,0.7)",
+          boxShadow: "0 0 0 4px rgba(59,158,232,0.15), 0 0 24px rgba(59,158,232,0.3)",
           pointerEvents: "none",
           transition: "all 300ms cubic-bezier(0.23, 1, 0.32, 1)",
         }}
@@ -281,7 +281,7 @@ export default function TourOverlay() {
               height: 0,
               borderLeft: "10px solid transparent",
               borderRight: "10px solid transparent",
-              borderBottom: "10px solid rgba(94,234,212,0.3)",
+              borderBottom: "10px solid rgba(59,158,232,0.3)",
             }}
           />
         )}
@@ -309,7 +309,7 @@ export default function TourOverlay() {
               height: 0,
               borderLeft: "10px solid transparent",
               borderRight: "10px solid transparent",
-              borderTop: "10px solid rgba(94,234,212,0.3)",
+              borderTop: "10px solid rgba(59,158,232,0.3)",
             }}
           />
         )}
@@ -338,7 +338,7 @@ export default function TourOverlay() {
                   width: i === stepIndex ? 20 : 6,
                   height: 6,
                   borderRadius: 3,
-                  backgroundColor: i === stepIndex ? "#5EEAD4" : "rgba(255,255,255,0.2)",
+                  backgroundColor: i === stepIndex ? "#3B9EE8" : "rgba(255,255,255,0.2)",
                   transition: "all 300ms cubic-bezier(0.23, 1, 0.32, 1)",
                 }}
               />
@@ -371,14 +371,14 @@ export default function TourOverlay() {
               width: 40,
               height: 40,
               borderRadius: "12px",
-              background: "linear-gradient(135deg, rgba(94,234,212,0.2) 0%, rgba(94,234,212,0.08) 100%)",
-              border: "1px solid rgba(94,234,212,0.3)",
+              background: "linear-gradient(135deg, rgba(59,158,232,0.2) 0%, rgba(59,158,232,0.08) 100%)",
+              border: "1px solid rgba(59,158,232,0.3)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               fontSize: "20px",
               flexShrink: 0,
-              boxShadow: "0 0 12px rgba(94,234,212,0.12)",
+              boxShadow: "0 0 12px rgba(59,158,232,0.12)",
             }}
           >
             {currentStep.icon}
@@ -417,7 +417,7 @@ export default function TourOverlay() {
             width: "100%",
             padding: "12px 20px",
             borderRadius: "14px",
-            background: "linear-gradient(135deg, #5EEAD4, #38BDF8)",
+            background: "linear-gradient(135deg, #3B9EE8, #38BDF8)",
             color: "#0F2440",
             fontFamily: "'Space Grotesk', sans-serif",
             fontWeight: 800,
@@ -430,7 +430,7 @@ export default function TourOverlay() {
             justifyContent: "center",
             gap: "6px",
             transition: "transform 160ms cubic-bezier(0.23, 1, 0.32, 1), box-shadow 160ms ease-out",
-            boxShadow: "0 4px 16px rgba(94,234,212,0.3)",
+            boxShadow: "0 4px 16px rgba(59,158,232,0.3)",
           }}
           onMouseDown={e => { (e.currentTarget as HTMLButtonElement).style.transform = "scale(0.97)"; }}
           onMouseUp={e => { (e.currentTarget as HTMLButtonElement).style.transform = "scale(1)"; }}

@@ -77,7 +77,7 @@ function ArchiveCard({
         {/* Author avatar */}
         <div
           className="w-8 h-8 rounded-full flex items-center justify-center text-[12px] font-bold flex-shrink-0 mt-0.5"
-          style={{ backgroundColor: "rgba(94,234,212,0.15)", color: "#5EEAD4" }}
+          style={{ backgroundColor: "rgba(59,158,232,0.15)", color: "#3B9EE8" }}
         >
           {card.author?.[0] ?? "?"}
         </div>
@@ -97,7 +97,7 @@ function ArchiveCard({
             {card.archiveTopicTag && (
               <span
                 className="text-[10px] px-2 py-0.5 rounded-full font-medium"
-                style={{ backgroundColor: "rgba(94,234,212,0.1)", color: "#5EEAD4", border: "1px solid rgba(94,234,212,0.25)" }}
+                style={{ backgroundColor: "rgba(59,158,232,0.1)", color: "#3B9EE8", border: "1px solid rgba(59,158,232,0.25)" }}
               >
                 #{card.archiveTopicTag}
               </span>
@@ -119,7 +119,7 @@ function ArchiveCard({
             <button
               onClick={() => setExpanded(e => !e)}
               className="text-[11px] mt-0.5 transition-opacity hover:opacity-80"
-              style={{ color: "#5EEAD4" }}
+              style={{ color: "#3B9EE8" }}
             >
               {expanded ? "Show less" : "Read more"}
             </button>
@@ -131,14 +131,14 @@ function ArchiveCard({
               {attachments.map(att => att.mimeType.startsWith("image/") ? (
                 <a key={att.key} href={att.url} target="_blank" rel="noopener noreferrer"
                   className="block w-16 h-16 rounded-lg overflow-hidden flex-shrink-0"
-                  style={{ border: "1.5px solid rgba(94,234,212,0.25)" }}
+                  style={{ border: "1.5px solid rgba(59,158,232,0.25)" }}
                 >
                   <img src={att.url} alt={att.name} className="w-full h-full object-cover" />
                 </a>
               ) : (
                 <a key={att.key} href={att.url} target="_blank" rel="noopener noreferrer"
                   className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] transition-opacity hover:opacity-80"
-                  style={{ backgroundColor: "rgba(255,255,255,0.06)", border: "1.5px solid rgba(255,255,255,0.12)", color: "#5EEAD4" }}
+                  style={{ backgroundColor: "rgba(255,255,255,0.06)", border: "1.5px solid rgba(255,255,255,0.12)", color: "#3B9EE8" }}
                 >
                   <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
@@ -153,9 +153,9 @@ function ArchiveCard({
           {card.archiveDecision && (
             <div
               className="mt-2 rounded-lg px-3 py-2 flex items-start gap-2"
-              style={{ backgroundColor: "rgba(94,234,212,0.08)", border: "1px solid rgba(94,234,212,0.2)" }}
+              style={{ backgroundColor: "rgba(59,158,232,0.08)", border: "1px solid rgba(59,158,232,0.2)" }}
             >
-              <span className="text-[11px] font-bold flex-shrink-0 mt-0.5" style={{ color: "#5EEAD4" }}>✓ Decision:</span>
+              <span className="text-[11px] font-bold flex-shrink-0 mt-0.5" style={{ color: "#3B9EE8" }}>✓ Decision:</span>
               <p className="text-[12px] leading-relaxed" style={{ color: "rgba(255,255,255,0.8)" }}>{card.archiveDecision}</p>
             </div>
           )}
@@ -275,7 +275,7 @@ export default function BoardArchive() {
               color: "white",
               fontFamily: "'Inter', sans-serif",
             }}
-            onFocus={e => (e.target.style.borderColor = "#5EEAD4")}
+            onFocus={e => (e.target.style.borderColor = "#3B9EE8")}
             onBlur={e => (e.target.style.borderColor = "rgba(255,255,255,0.12)")}
           />
         </div>
@@ -290,9 +290,9 @@ export default function BoardArchive() {
                 onClick={() => { setSelectedTag(null); setPage(0); }}
                 className="text-[11px] px-2.5 py-1 rounded-full font-medium transition-all"
                 style={{
-                  backgroundColor: !selectedTag ? "rgba(94,234,212,0.15)" : "rgba(255,255,255,0.05)",
-                  border: !selectedTag ? "1px solid rgba(94,234,212,0.35)" : "1px solid rgba(255,255,255,0.1)",
-                  color: !selectedTag ? "#5EEAD4" : "rgba(255,255,255,0.4)",
+                  backgroundColor: !selectedTag ? "rgba(59,158,232,0.15)" : "rgba(255,255,255,0.05)",
+                  border: !selectedTag ? "1px solid rgba(59,158,232,0.35)" : "1px solid rgba(255,255,255,0.1)",
+                  color: !selectedTag ? "#3B9EE8" : "rgba(255,255,255,0.4)",
                 }}
               >All</button>
               {tags.map(tag => (
@@ -301,9 +301,9 @@ export default function BoardArchive() {
                   onClick={() => { setSelectedTag(tag === selectedTag ? null : tag); setPage(0); }}
                   className="text-[11px] px-2.5 py-1 rounded-full font-medium transition-all"
                   style={{
-                    backgroundColor: selectedTag === tag ? "rgba(94,234,212,0.15)" : "rgba(255,255,255,0.05)",
-                    border: selectedTag === tag ? "1px solid rgba(94,234,212,0.35)" : "1px solid rgba(255,255,255,0.1)",
-                    color: selectedTag === tag ? "#5EEAD4" : "rgba(255,255,255,0.4)",
+                    backgroundColor: selectedTag === tag ? "rgba(59,158,232,0.15)" : "rgba(255,255,255,0.05)",
+                    border: selectedTag === tag ? "1px solid rgba(59,158,232,0.35)" : "1px solid rgba(255,255,255,0.1)",
+                    color: selectedTag === tag ? "#3B9EE8" : "rgba(255,255,255,0.4)",
                   }}
                 >#{tag}</button>
               ))}
@@ -316,7 +316,7 @@ export default function BoardArchive() {
       <div className="px-4 py-4 flex flex-col gap-3">
         {isLoading && (
           <div className="flex items-center justify-center py-12">
-            <div className="w-6 h-6 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: "#5EEAD4", borderTopColor: "transparent" }} />
+            <div className="w-6 h-6 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: "#3B9EE8", borderTopColor: "transparent" }} />
           </div>
         )}
 
@@ -324,9 +324,9 @@ export default function BoardArchive() {
           <div className="flex flex-col items-center justify-center py-16 gap-3">
             <div
               className="w-14 h-14 rounded-2xl flex items-center justify-center"
-              style={{ backgroundColor: "rgba(94,234,212,0.08)", border: "1.5px solid rgba(94,234,212,0.15)" }}
+              style={{ backgroundColor: "rgba(59,158,232,0.08)", border: "1.5px solid rgba(59,158,232,0.15)" }}
             >
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#5EEAD4" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3B9EE8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M5 8h14M5 8a2 2 0 1 0 0-4h14a2 2 0 1 0 0 4M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8m-9 4h4"/>
               </svg>
             </div>

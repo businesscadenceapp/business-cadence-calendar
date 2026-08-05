@@ -109,7 +109,7 @@ export default function ClientLogin() {
     >
       {/* Subtle ambient glow */}
       <div className="absolute inset-0 pointer-events-none" style={{
-        background: "radial-gradient(ellipse 70% 40% at 50% 20%, rgba(94,234,212,0.06) 0%, transparent 70%)",
+        background: "radial-gradient(ellipse 70% 40% at 50% 20%, rgba(59,158,232,0.06) 0%, transparent 70%)",
       }} />
 
       {/* Content — centered vertically */}
@@ -140,14 +140,14 @@ export default function ClientLogin() {
                 backgroundColor: "rgba(255,255,255,0.07)",
                 border: "1.5px solid rgba(255,255,255,0.12)",
               }}
-              onFocus={e => (e.target.style.borderColor = "#5EEAD4")}
+              onFocus={e => (e.target.style.borderColor = "#3B9EE8")}
               onBlur={e => (e.target.style.borderColor = "rgba(255,255,255,0.12)")}
             />
           </div>
           <div className="flex flex-col gap-2">
             <div className="flex items-center justify-between">
               <label className="text-xs font-semibold uppercase tracking-wide" style={{ color: "rgba(255,255,255,0.4)" }} htmlFor="password">Password</label>
-              <a href="/forgot-password" className="text-xs font-medium" style={{ color: "#5EEAD4" }}>Forgot?</a>
+              <a href="/forgot-password" className="text-xs font-medium" style={{ color: "#3B9EE8" }}>Forgot?</a>
             </div>
             <input
               id="password"
@@ -161,7 +161,7 @@ export default function ClientLogin() {
                 backgroundColor: "rgba(255,255,255,0.07)",
                 border: "1.5px solid rgba(255,255,255,0.12)",
               }}
-              onFocus={e => (e.target.style.borderColor = "#5EEAD4")}
+              onFocus={e => (e.target.style.borderColor = "#3B9EE8")}
               onBlur={e => (e.target.style.borderColor = "rgba(255,255,255,0.12)")}
             />
           </div>
@@ -170,9 +170,9 @@ export default function ClientLogin() {
             disabled={isLoading || !email.trim() || !password.trim()}
             className="w-full py-4 rounded-2xl text-base font-bold transition-all active:scale-[0.97] disabled:opacity-40 mt-1"
             style={{
-              background: "linear-gradient(135deg, #5EEAD4 0%, #0D9488 100%)",
+              background: "linear-gradient(135deg, #3B9EE8 0%, #0D9488 100%)",
               color: "#0A1628",
-              boxShadow: "0 4px 24px rgba(94,234,212,0.22)",
+              boxShadow: "0 4px 24px rgba(59,158,232,0.22)",
             }}
           >
             {isLoading ? "Signing in…" : "Sign In"}

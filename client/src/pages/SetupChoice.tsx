@@ -23,14 +23,14 @@ export default function SetupChoice() {
         {/* Radial teal glow top-center */}
         <div
           className="absolute -top-32 left-1/2 -translate-x-1/2 w-[500px] h-[500px] rounded-full pointer-events-none"
-          style={{ background: "radial-gradient(circle, rgba(94,234,212,0.12) 0%, transparent 70%)" }}
+          style={{ background: "radial-gradient(circle, rgba(59,158,232,0.12) 0%, transparent 70%)" }}
         />
         {/* Subtle grid */}
         <div
           className="absolute inset-0"
           style={{
             backgroundImage:
-              "linear-gradient(rgba(94,234,212,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(94,234,212,0.025) 1px, transparent 1px)",
+              "linear-gradient(rgba(59,158,232,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(59,158,232,0.025) 1px, transparent 1px)",
             backgroundSize: "48px 48px",
           }}
         />
@@ -41,7 +41,7 @@ export default function SetupChoice() {
         <div className="flex items-center gap-2">
           <BrandIcon size={28} variant="teal" />
           <span className="text-white/50 text-sm font-medium tracking-wide">
-            Business<span className="text-[#5EEAD4]">Cadence</span>
+            Business<span className="text-[#3B9EE8]">Cadence</span>
           </span>
         </div>
       </div>
@@ -52,13 +52,13 @@ export default function SetupChoice() {
         <div
           className="w-24 h-24 rounded-3xl flex items-center justify-center mb-8"
           style={{
-            background: "linear-gradient(135deg, rgba(94,234,212,0.15) 0%, rgba(13,148,136,0.08) 100%)",
-            border: "1px solid rgba(94,234,212,0.25)",
-            boxShadow: "0 0 48px rgba(94,234,212,0.12), inset 0 1px 0 rgba(94,234,212,0.2)",
+            background: "linear-gradient(135deg, rgba(59,158,232,0.15) 0%, rgba(13,148,136,0.08) 100%)",
+            border: "1px solid rgba(59,158,232,0.25)",
+            boxShadow: "0 0 48px rgba(59,158,232,0.12), inset 0 1px 0 rgba(59,158,232,0.2)",
           }}
         >
           {/* Two interlocking rings — partnership */}
-          <svg className="w-12 h-12 text-[#5EEAD4]" fill="none" stroke="currentColor" viewBox="0 0 48 48">
+          <svg className="w-12 h-12 text-[#3B9EE8]" fill="none" stroke="currentColor" viewBox="0 0 48 48">
             <circle cx="18" cy="24" r="10" strokeWidth="2" strokeOpacity="0.9" />
             <circle cx="30" cy="24" r="10" strokeWidth="2" strokeOpacity="0.9" />
           </svg>
@@ -80,8 +80,8 @@ export default function SetupChoice() {
           onClick={() => navigate("/onboarding")}
           className="w-full py-4 rounded-2xl font-bold text-[#0A1628] text-base transition-all duration-200 active:scale-[0.97]"
           style={{
-            background: "linear-gradient(135deg, #5EEAD4 0%, #0D9488 100%)",
-            boxShadow: "0 4px 24px rgba(94,234,212,0.25), 0 1px 0 rgba(255,255,255,0.15) inset",
+            background: "linear-gradient(135deg, #3B9EE8 0%, #0D9488 100%)",
+            boxShadow: "0 4px 24px rgba(59,158,232,0.25), 0 1px 0 rgba(255,255,255,0.15) inset",
           }}
         >
           Set up now →

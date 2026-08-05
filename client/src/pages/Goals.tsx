@@ -1,6 +1,6 @@
 /**
  * Goals — Quarterly & Annual goal tracking per business.
- * Dark navy theme: #0F2440 bg, #5EEAD4 teal accent, white text
+ * Dark navy theme: #0F2440 bg, #3B9EE8 teal accent, white text
  */
 import { useState, useMemo } from "react";
 import { trpc } from "@/lib/trpc";
@@ -23,7 +23,7 @@ const BIZ_COLOR_POOL = [
   { color: "#C4B5FD", bg: "rgba(124,58,237,0.15)", border: "rgba(124,58,237,0.3)" },
   { color: "#93C5FD", bg: "rgba(37,99,235,0.15)", border: "rgba(37,99,235,0.3)" },
   { color: "#FDA4AF", bg: "rgba(225,29,72,0.15)", border: "rgba(225,29,72,0.3)" },
-  { color: "#5EEAD4", bg: "rgba(20,184,166,0.15)", border: "rgba(20,184,166,0.3)" },
+  { color: "#3B9EE8", bg: "rgba(20,184,166,0.15)", border: "rgba(20,184,166,0.3)" },
 ];
 
 function getBizStyle(idx: number) {
@@ -45,7 +45,7 @@ const OWNER_COLORS = [
   { color: "#C4B5FD", bg: "rgba(124,58,237,0.15)" },
 ];
 function getOwnerStyle(owner: string, ownerNames: string[]): { label: string; color: string; bg: string } {
-  if (owner === "both") return { label: "Both", color: "#5EEAD4", bg: "rgba(20,184,166,0.15)" };
+  if (owner === "both") return { label: "Both", color: "#3B9EE8", bg: "rgba(20,184,166,0.15)" };
   const idx = ownerNames.indexOf(owner);
   const style = OWNER_COLORS[(idx >= 0 ? idx : 0) % OWNER_COLORS.length];
   return { label: owner, color: style.color, bg: style.bg };
@@ -534,7 +534,7 @@ export default function Goals() {
           <button
             onClick={() => navigate("/app/board")}
             className="flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-lg transition-all active:scale-[0.97]"
-            style={{ color: "#5EEAD4", backgroundColor: "rgba(94,234,212,0.1)", border: "1px solid rgba(94,234,212,0.25)" }}
+            style={{ color: "#3B9EE8", backgroundColor: "rgba(59,158,232,0.1)", border: "1px solid rgba(59,158,232,0.25)" }}
           >
             <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M9 2L4 7L9 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
             Hub

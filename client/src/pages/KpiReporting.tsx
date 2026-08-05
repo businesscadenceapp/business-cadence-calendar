@@ -1,5 +1,5 @@
 /**
- * KPI Reporting Page — dark navy theme (#0F2440 bg, #5EEAD4 teal accent)
+ * KPI Reporting Page — dark navy theme (#0F2440 bg, #3B9EE8 teal accent)
  */
 
 import { useState, useMemo, useEffect } from "react";
@@ -520,7 +520,7 @@ function OwnerKpiDashboard({ accountId, forcedBusiness }: { accountId: number; f
               style={{
                 backgroundColor: selectedBusiness === b.slug ? "#1E3A5F" : "rgba(255,255,255,0.05)",
                 color: selectedBusiness === b.slug ? "white" : "rgba(255,255,255,0.5)",
-                border: `1.5px solid ${selectedBusiness === b.slug ? "#5EEAD4" : "rgba(255,255,255,0.1)"}`,
+                border: `1.5px solid ${selectedBusiness === b.slug ? "#3B9EE8" : "rgba(255,255,255,0.1)"}`,
                 fontFamily: "'Space Grotesk', sans-serif",
               }}>
               {b.icon} {b.label}
@@ -531,10 +531,10 @@ function OwnerKpiDashboard({ accountId, forcedBusiness }: { accountId: number; f
 
       {/* Monthly Totals vs Goals */}
       <div className="rounded-2xl p-5 flex flex-col gap-4"
-        style={{ background: "linear-gradient(135deg, rgba(94,234,212,0.07) 0%, rgba(94,234,212,0.03) 100%)", border: "1.5px solid rgba(94,234,212,0.2)", boxShadow: "0 4px 24px rgba(94,234,212,0.06)" }}>
+        style={{ background: "linear-gradient(135deg, rgba(59,158,232,0.07) 0%, rgba(59,158,232,0.03) 100%)", border: "1.5px solid rgba(59,158,232,0.2)", boxShadow: "0 4px 24px rgba(59,158,232,0.06)" }}>
         <div className="flex items-center justify-between flex-wrap gap-3">
           <div className="flex items-center gap-3">
-            <div style={{ width: 28, height: 28, borderRadius: 8, background: "rgba(94,234,212,0.18)", border: "1px solid rgba(94,234,212,0.3)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>📈</div>
+            <div style={{ width: 28, height: 28, borderRadius: 8, background: "rgba(59,158,232,0.18)", border: "1px solid rgba(59,158,232,0.3)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>📈</div>
             <div>
               <h3 className="text-[15px] font-bold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Monthly Totals</h3>
               <p className="text-[11px] mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>Running totals for the month, compared to your goals</p>
@@ -762,7 +762,7 @@ export default function KpiReporting() {
         <button
           onClick={() => window.history.back()}
           className="flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-lg mb-3 transition-all active:scale-[0.97]"
-          style={{ color: "#5EEAD4", backgroundColor: "rgba(94,234,212,0.1)", border: "1px solid rgba(94,234,212,0.25)" }}
+          style={{ color: "#3B9EE8", backgroundColor: "rgba(59,158,232,0.1)", border: "1px solid rgba(59,158,232,0.25)" }}
         >
           <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M9 2L4 7L9 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
           Back to Hub

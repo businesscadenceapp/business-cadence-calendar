@@ -34,7 +34,7 @@ export default function NotFound() {
         <button
           onClick={() => setLocation("/")}
           className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl font-semibold transition-all hover:opacity-90 active:scale-[0.98]"
-          style={{ background: "linear-gradient(135deg, #5EEAD4, #2DD4BF)", color: "#0F2440" }}
+          style={{ background: "linear-gradient(135deg, #3B9EE8, #2980c9)", color: "#0F2440" }}
         >
           <Home className="w-4 h-4" />
           Go Home

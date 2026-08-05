@@ -53,11 +53,11 @@ const INDUSTRY_SLUG_MAP: Record<string, "chiropractic" | "crossfit" | "general">
 // ─── Shared styles ────────────────────────────────────────────────────────────
 
 const BG = "linear-gradient(160deg, #0A1929 0%, #0F2440 60%, #0D2D4A 100%)";
-const TEAL = "#5EEAD4";
+const TEAL = "#3B9EE8";
 const BTN_STYLE: React.CSSProperties = {
-  background: "linear-gradient(135deg, #5EEAD4 0%, #0D9488 100%)",
+  background: "linear-gradient(135deg, #3B9EE8 0%, #0D9488 100%)",
   color: "#0A1628",
-  boxShadow: "0 4px 24px rgba(94,234,212,0.22)",
+  boxShadow: "0 4px 24px rgba(59,158,232,0.22)",
 };
 const INPUT_STYLE: React.CSSProperties = {
   backgroundColor: "rgba(255,255,255,0.08)",
@@ -80,7 +80,7 @@ function ProgressBar({ step, total }: { step: number; total: number }) {
         <div className="flex-1 h-1 rounded-full overflow-hidden" style={{ backgroundColor: "rgba(255,255,255,0.1)" }}>
           <div
             className="h-full rounded-full transition-all duration-500"
-            style={{ width: `${pct}%`, background: "linear-gradient(90deg, #5EEAD4, #2DD4BF)" }}
+            style={{ width: `${pct}%`, background: "linear-gradient(90deg, #3B9EE8, #2980c9)" }}
           />
         </div>
         <span className="text-xs font-medium tabular-nums" style={{ color: "rgba(255,255,255,0.35)" }}>
@@ -263,7 +263,7 @@ export default function SwipeOnboarding() {
                 onClick={() => { setIndustry(ind.value as IndustryType); advance(); }}
                 className="flex items-center gap-4 w-full text-left rounded-2xl px-4 py-4 transition-all duration-150 active:scale-[0.97]"
                 style={{
-                  backgroundColor: industry === ind.value ? "rgba(94,234,212,0.12)" : "rgba(255,255,255,0.05)",
+                  backgroundColor: industry === ind.value ? "rgba(59,158,232,0.12)" : "rgba(255,255,255,0.05)",
                   border: `1.5px solid ${industry === ind.value ? TEAL : "rgba(255,255,255,0.1)"}`,
                 }}
               >
