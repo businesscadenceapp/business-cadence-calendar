@@ -18,3 +18,6 @@
 
 - [ ] Move haptic heartbeat to fire on app launch (SubscriptionOnboarding mount), not login success
 - [x] Move haptic heartbeat to fire on app launch (SubscriptionOnboarding mount), not login success
+
+- [ ] Add haptic double-beat on mount + beating heart animation to ClientLogin page (matches onboarding experience after logout)
+- [x] Add haptic double-beat on mount + beating heart animation to ClientLogin page (matches onboarding experience after logout)

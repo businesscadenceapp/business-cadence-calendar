@@ -28,6 +28,18 @@ async function triggerHaptic() {
   }
 }
 
+/** Fire a double-beat haptic pattern that mirrors the heartbeat animation */
+async function fireHeartbeatHaptic() {
+  if (!Capacitor.isNativePlatform()) return;
+  try {
+    await Haptics.impact({ style: ImpactStyle.Medium });
+    await new Promise(r => setTimeout(r, 160));
+    await Haptics.impact({ style: ImpactStyle.Light });
+  } catch {
+    // silently ignore
+  }
+}
+
 export default function ClientLogin() {
   const [, navigate] = useLocation();
   const { setPerson } = usePerson();
@@ -41,6 +53,14 @@ export default function ClientLogin() {
 
   useEffect(() => {
     emailRef.current?.focus();
+  }, []);
+
+  // Fire haptic heartbeat on mount — same experience as onboarding
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      fireHeartbeatHaptic();
+    }, 400);
+    return () => clearTimeout(timer);
   }, []);
 
   const loginMutation = trpc.person.login.useMutation({
@@ -130,8 +150,8 @@ export default function ClientLogin() {
         <div className="flex flex-col min-h-full justify-center px-8 py-10 w-full max-w-sm mx-auto">
 
           {/* Logo — stacked with tagline */}
-          <div className="mb-10 flex justify-center">
-            <BrandLogoStacked iconSize={88} showTagline={true} />
+          <div className="mb-8 flex justify-center">
+            <BrandLogoStacked iconSize={110} showTagline={true} />
           </div>
 
           {/* Title */}
