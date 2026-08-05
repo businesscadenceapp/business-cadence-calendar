@@ -13,7 +13,7 @@ import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { usePerson } from "@/contexts/PersonContext";
 import { toast } from "sonner";
-import { BrandIcon } from "@/components/BrandLogo";
+import { BrandLogoStacked } from "@/components/BrandLogo";
 import { TEAM_ENABLED } from "@/featureFlags";
 
 export default function ClientLogin() {
@@ -112,83 +112,96 @@ export default function ClientLogin() {
         background: "radial-gradient(ellipse 70% 40% at 50% 20%, rgba(51,162,219,0.06) 0%, transparent 70%)",
       }} />
 
-      {/* Content — centered vertically */}
-      <div className="relative z-10 flex-1 flex flex-col justify-center px-8 w-full max-w-sm mx-auto">
-        {/* Logo */}
-        <div className="mb-10 flex flex-col items-center gap-3">
-          <BrandIcon size={96} />
-          <div className="text-center">
-            <div className="text-xl font-bold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif", letterSpacing: "-0.5px" }}>
-              Business<span style={{ color: "#33A2DB" }}>Cadence</span>
-            </div>
-            <div className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.35)" }}>Run your business. Protect your relationship.</div>
-          </div>
-        </div>
+      {/* Scrollable content — prevents squish when keyboard appears */}
+      <div className="relative z-10 flex-1 overflow-y-auto">
+        <div className="flex flex-col min-h-full justify-center px-8 py-10 w-full max-w-sm mx-auto">
 
-        {/* Title */}
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-white mb-1" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-            Welcome back
-          </h1>
-          <p className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>
-            Sign in to your account
-          </p>
-        </div>
+          {/* Logo — stacked with tagline */}
+          <div className="mb-10 flex justify-center">
+            <BrandLogoStacked iconSize={88} showTagline={true} />
+          </div>
 
-        <form onSubmit={handleLogin} className="flex flex-col gap-5">
-          <div className="flex flex-col gap-2">
-            <label className="text-xs font-semibold uppercase tracking-wide" style={{ color: "rgba(255,255,255,0.4)" }} htmlFor="email">Email</label>
-            <input
-              ref={emailRef}
-              id="email"
-              type="email"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              placeholder="your@email.com"
-              autoComplete="email"
-              className="w-full rounded-2xl px-5 py-4 text-base text-white placeholder-white/25 focus:outline-none transition-all"
-              style={{
-                backgroundColor: "rgba(255,255,255,0.07)",
-                border: "1.5px solid rgba(255,255,255,0.12)",
-              }}
-              onFocus={e => (e.target.style.borderColor = "#33A2DB")}
-              onBlur={e => (e.target.style.borderColor = "rgba(255,255,255,0.12)")}
-            />
+          {/* Title */}
+          <div className="mb-8">
+            <h1 className="text-2xl font-bold text-white mb-1" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+              Welcome back
+            </h1>
+            <p className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>
+              Sign in to your account
+            </p>
           </div>
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center justify-between">
-              <label className="text-xs font-semibold uppercase tracking-wide" style={{ color: "rgba(255,255,255,0.4)" }} htmlFor="password">Password</label>
-              <a href="/forgot-password" className="text-xs font-medium" style={{ color: "#33A2DB" }}>Forgot?</a>
+
+          <form onSubmit={handleLogin} className="flex flex-col gap-5">
+            {/* Email */}
+            <div className="flex flex-col gap-2">
+              <label className="text-xs font-semibold uppercase tracking-wide" style={{ color: "rgba(255,255,255,0.4)" }} htmlFor="email">
+                Email
+              </label>
+              <input
+                ref={emailRef}
+                id="email"
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                placeholder="your@email.com"
+                autoComplete="email"
+                className="w-full rounded-2xl px-5 text-base text-white placeholder-white/25 focus:outline-none transition-all"
+                style={{
+                  height: 56,
+                  minHeight: 56,
+                  backgroundColor: "rgba(255,255,255,0.07)",
+                  border: "1.5px solid rgba(255,255,255,0.12)",
+                  boxSizing: "border-box",
+                }}
+                onFocus={e => (e.target.style.borderColor = "#33A2DB")}
+                onBlur={e => (e.target.style.borderColor = "rgba(255,255,255,0.12)")}
+              />
             </div>
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              placeholder="••••••••"
-              autoComplete="current-password"
-              className={`w-full rounded-2xl px-5 py-4 text-base text-white placeholder-white/25 focus:outline-none transition-all ${shake ? "animate-[shake_0.5s_ease-in-out]" : ""}`}
+
+            {/* Password */}
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-semibold uppercase tracking-wide" style={{ color: "rgba(255,255,255,0.4)" }} htmlFor="password">
+                  Password
+                </label>
+                <a href="/forgot-password" className="text-xs font-medium" style={{ color: "#33A2DB" }}>Forgot?</a>
+              </div>
+              <input
+                id="password"
+                type="password"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                placeholder="••••••••"
+                autoComplete="current-password"
+                className={`w-full rounded-2xl px-5 text-base text-white placeholder-white/25 focus:outline-none transition-all ${shake ? "animate-[shake_0.5s_ease-in-out]" : ""}`}
+                style={{
+                  height: 56,
+                  minHeight: 56,
+                  backgroundColor: "rgba(255,255,255,0.07)",
+                  border: "1.5px solid rgba(255,255,255,0.12)",
+                  boxSizing: "border-box",
+                }}
+                onFocus={e => (e.target.style.borderColor = "#33A2DB")}
+                onBlur={e => (e.target.style.borderColor = "rgba(255,255,255,0.12)")}
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={isLoading || !email.trim() || !password.trim()}
+              className="w-full rounded-2xl text-base font-bold transition-all active:scale-[0.97] disabled:opacity-40 mt-1"
               style={{
-                backgroundColor: "rgba(255,255,255,0.07)",
-                border: "1.5px solid rgba(255,255,255,0.12)",
+                height: 56,
+                minHeight: 56,
+                background: "linear-gradient(135deg, #33A2DB 0%, #25DCF9 100%)",
+                color: "#0A1628",
+                boxShadow: "0 4px 24px rgba(51,162,219,0.22)",
               }}
-              onFocus={e => (e.target.style.borderColor = "#33A2DB")}
-              onBlur={e => (e.target.style.borderColor = "rgba(255,255,255,0.12)")}
-            />
-          </div>
-          <button
-            type="submit"
-            disabled={isLoading || !email.trim() || !password.trim()}
-            className="w-full py-4 rounded-2xl text-base font-bold transition-all active:scale-[0.97] disabled:opacity-40 mt-1"
-            style={{
-              background: "linear-gradient(135deg, #33A2DB 0%, #25DCF9 100%)",
-              color: "#0A1628",
-              boxShadow: "0 4px 24px rgba(51,162,219,0.22)",
-            }}
-          >
-            {isLoading ? "Signing in…" : "Sign In"}
-          </button>
-        </form>
+            >
+              {isLoading ? "Signing in…" : "Sign In"}
+            </button>
+          </form>
+        </div>
       </div>
 
       <style>{`

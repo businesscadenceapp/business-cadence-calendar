@@ -170,8 +170,22 @@ export function BrandLogoStacked({
           width: iconSize,
           height: iconSize,
           objectFit: "contain",
+          animation: "bc-heartbeat 2.4s ease-in-out infinite",
         }}
       />
+      <style>{`
+        @keyframes bc-heartbeat {
+          0%   { transform: scale(1); }
+          14%  { transform: scale(1.13); }
+          28%  { transform: scale(1); }
+          42%  { transform: scale(1.08); }
+          56%  { transform: scale(1); }
+          100% { transform: scale(1); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          @keyframes bc-heartbeat { 0%, 100% { transform: scale(1); } }
+        }
+      `}</style>
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
         <span
           style={{
