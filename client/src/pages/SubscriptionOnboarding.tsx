@@ -16,38 +16,11 @@
  *   → /onboarding (business profile setup)
  */
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback } from "react";
 import { useLocation } from "wouter";
-import { BrandLogoStacked } from "@/components/BrandLogo";
+import { BrandIcon } from "@/components/BrandLogo";
 import { ONBOARDING_STEP_BADGES } from "@shared/subscriptionPlans";
 import { trpc } from "@/lib/trpc";
-import { Haptics, ImpactStyle } from "@capacitor/haptics";
-import { Capacitor } from "@capacitor/core";
-
-/** Fire a double-beat haptic pattern that mirrors the heartbeat animation */
-async function fireHeartbeatHaptic() {
-  if (!Capacitor.isNativePlatform()) return;
-  try {
-    await Haptics.impact({ style: ImpactStyle.Medium });
-    await new Promise(r => setTimeout(r, 160));
-    await Haptics.impact({ style: ImpactStyle.Light });
-  } catch {
-    // silently ignore
-  }
-}
-
-const HEART_SRC = "/manus-storage/heart-transparent-clean_14235c91.png";
-
-/** Real heart icon — used on steps 0 and 3 (emotional/relationship framing) */
-function HeartIcon({ size = 56 }: { size?: number }) {
-  return (
-    <img
-      src={HEART_SRC}
-      alt=""
-      style={{ width: size, height: size, objectFit: "contain" }}
-    />
-  );
-}
 
 // ─── Step data ────────────────────────────────────────────────────────────────
 
@@ -71,7 +44,12 @@ const STEPS: OnboardingStep[] = [
       </>
     ),
     body: "The late-night strategy sessions. The disagreements that follow you to dinner. The feeling that you're always either business partners or life partners — never both at once.",
-    icon: <HeartIcon size={72} />,
+    icon: (
+      <svg className="w-14 h-14 text-[#33A2DB]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.3}
+          d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+      </svg>
+    ),
     accentColor: "#33A2DB",
   },
   // Step 1 — The Problem
@@ -121,7 +99,12 @@ const STEPS: OnboardingStep[] = [
       </>
     ),
     body: "BusinessCadence gives your work a structured time and place — so it stops spilling into everything else. Run the business together. Live your life together.",
-    icon: <HeartIcon size={72} />,
+    icon: (
+      <svg className="w-14 h-14 text-[#33A2DB]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.3}
+          d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+      </svg>
+    ),
     accentColor: "#33A2DB",
   },
 ];
@@ -154,14 +137,6 @@ export default function SubscriptionOnboarding() {
   const [isAnimating, setIsAnimating] = useState(false);
   const [direction, setDirection] = useState<"forward" | "back">("forward");
   const [touchStart, setTouchStart] = useState<number | null>(null);
-
-  // Fire haptic heartbeat once when the welcome screen first mounts
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      fireHeartbeatHaptic();
-    }, 400); // slight delay so splash has fully dismissed
-    return () => clearTimeout(timer);
-  }, []);
 
   // ─── Partner invite detection ────────────────────────────────────────────────
   // Read query params once (stable — no re-render side effects)
@@ -267,15 +242,7 @@ export default function SubscriptionOnboarding() {
       />
 
       {/* Skip — top-right only, no logo */}
-      {/* Brand header — logo + name + tagline */}
-      <div className="relative z-10 flex flex-col items-center pt-6 pb-2 px-6">
-        <BrandLogoStacked iconSize={72} showTagline={true} />
-      </div>
-
-      {/* Skip — top-right absolute */}
-      <div className="absolute top-0 right-0 z-20 flex items-center justify-end px-6 pt-4"
-        style={{ paddingTop: "calc(env(safe-area-inset-top) + 16px)" }}
-      >
+      <div className="relative z-10 flex items-center justify-end px-6 pt-4">
         <button
           onClick={handleSkip}
           className="text-sm text-white/35 hover:text-white/60 transition-colors py-2 px-3"

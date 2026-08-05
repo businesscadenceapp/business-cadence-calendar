@@ -15,7 +15,6 @@ import { useLocation } from "wouter";
 import { usePerson } from "@/contexts/PersonContext";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
-import { clearAuth } from "@/components/PasswordGate";
 
 // ─── Dynamic business card shape ─────────────────────────────────────────────
 
@@ -115,7 +114,7 @@ function NotificationBadge({ tasks, unseen, accentColor }: BadgeProps) {
 
 export default function BusinessSelector() {
   const [, navigate] = useLocation();
-  const { person, setPerson } = usePerson();
+  const { person } = usePerson();
 
   // Active card index for swipe/scroll
   const [activeIndex, setActiveIndex] = useState(0);
@@ -550,15 +549,7 @@ export default function BusinessSelector() {
         onMouseEnter={e => (e.currentTarget.style.color = "#F87171")}
         onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.25)")}
         onClick={() => {
-          try {
-            clearAuth();
-            localStorage.removeItem("bcc_person_v1");
-            localStorage.removeItem("bcc_active_business_slug");
-            localStorage.removeItem("bcc_active_business_id");
-            localStorage.removeItem("bcc_active_business");
-            localStorage.removeItem("bcc_account_id");
-          } catch { /* ignore */ }
-          setPerson(null);
+          try { localStorage.removeItem("bcc_person_v1"); } catch { /* ignore */ }
           navigate("/login");
         }}
       >
