@@ -25,3 +25,7 @@
 
 - [x] Fix BusinessSelector: prevent vertical rubber-band scrolling (overflow-hidden, fixed height)
 - [x] Add large beating heart + haptic double-beat on mount to BusinessSelector (match login screen)
+
+- [x] Regenerate static splash PNG with large heart only (no text) for iOS/Android
+- [x] Add AnimatedLaunchScreen React component — full-screen beating heart + haptic beats on app open
+- [x] Increase business selector heart to 120px

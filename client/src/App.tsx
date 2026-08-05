@@ -1,5 +1,6 @@
 import React from "react";
 import { Toaster } from "@/components/ui/sonner";
+import { useState } from "react";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
 import { Route, Switch, Redirect } from "wouter";
@@ -33,6 +34,7 @@ import BusinessSelector from "@/pages/BusinessSelector";
 import { Capacitor } from "@capacitor/core";
 import Paywall from "@/pages/Paywall";
 import SubscriptionOnboarding from "@/pages/SubscriptionOnboarding";
+import AnimatedLaunchScreen from "@/components/AnimatedLaunchScreen";
 import InvitePartnerSetup from "@/pages/InvitePartnerSetup";
 import WaitingForPartner from "@/pages/WaitingForPartner";
 import PartnerRegister from "@/pages/PartnerRegister";
@@ -96,6 +98,12 @@ function NativeHome() {
 
 function Router() {
   const native = detectNative();
+  const [launchDone, setLaunchDone] = useState(false);
+
+  // Show animated launch screen on native only, once per app open
+  if (native && !launchDone) {
+    return <AnimatedLaunchScreen onDone={() => setLaunchDone(true)} />;
+  }
 
   return (
     <Switch>

@@ -271,8 +271,8 @@ export default function BusinessSelector() {
           src={HEART_SRC}
           alt="Business Cadence"
           style={{
-            width: 80,
-            height: 80,
+            width: 120,
+            height: 120,
             objectFit: "contain",
             animation: "bc-heartbeat 2.4s ease-in-out infinite",
             marginBottom: 6,
