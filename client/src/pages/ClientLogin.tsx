@@ -115,8 +115,14 @@ export default function ClientLogin() {
       {/* Content — centered vertically */}
       <div className="relative z-10 flex-1 flex flex-col justify-center px-8 w-full max-w-sm mx-auto">
         {/* Logo */}
-        <div className="mb-8 flex flex-col items-center">
-          <BrandIcon size={72} />
+        <div className="mb-8 flex flex-col items-center gap-4">
+          <BrandIcon size={120} />
+          <div className="text-center">
+            <div className="text-2xl font-bold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif", letterSpacing: "-0.5px" }}>
+              Business<span style={{ color: "#33A2DB" }}>Cadence</span>
+            </div>
+            <div className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.35)" }}>Run your business. Protect your relationship.</div>
+          </div>
         </div>
 
         {/* Title */}
@@ -125,7 +131,7 @@ export default function ClientLogin() {
             Welcome back
           </h1>
           <p className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>
-            Sign in to your BusinessCadence account
+            Sign in to your account
           </p>
         </div>
 
