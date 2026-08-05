@@ -5,9 +5,15 @@
  * Use this for compact spaces like login cards and sidebar headers.
  *
  * BrandLogo — Full logo with heart icon + "BusinessCadence" text.
+ *
+ * BrandLogoStacked — Vertical layout: heart on top, name + tagline below.
+ * Use this for splash screens, onboarding headers, and full-screen welcome views.
  */
 
-const LOGO_SRC = "/manus-storage/bc-logo-icon-1024_ceff2fb9.png";
+/** Transparent-background heart — used on the website and splash screens */
+const HEART_SRC = "/manus-storage/heart-transparent-clean_14235c91.png";
+/** Square icon with navy bg — used in compact/sidebar contexts */
+const ICON_SRC = "/manus-storage/bc-logo-icon-1024_ceff2fb9.png";
 
 // ---------------------------------------------------------------------------
 // BrandIcon — circular icon only, no text
@@ -40,7 +46,7 @@ export function BrandIcon({
       aria-label="BusinessCadence"
     >
       <img
-        src={LOGO_SRC}
+        src={ICON_SRC}
         alt="BusinessCadence"
         style={{ width: "100%", height: "100%", objectFit: "cover" }}
       />
@@ -50,7 +56,7 @@ export function BrandIcon({
 
 // ---------------------------------------------------------------------------
 // BrandLogo — icon + "BusinessCadence" text side by side
-// Accepts theme and showTagline props for backward compatibility
+// Accepts theme and showTagline props
 // ---------------------------------------------------------------------------
 interface BrandLogoProps {
   size?: "sm" | "md" | "lg" | "xl";
@@ -70,7 +76,7 @@ export default function BrandLogo({
   size = "md",
   className = "",
   theme: _theme,
-  showTagline: _showTagline,
+  showTagline = false,
 }: BrandLogoProps) {
   const s = sizes[size];
   return (
@@ -89,31 +95,127 @@ export default function BrandLogo({
         style={{
           width: s.iconSize,
           height: s.iconSize,
-          borderRadius: "22%",
-          background: "#0F2440",
-          overflow: "hidden",
           flexShrink: 0,
         }}
       >
         <img
-          src={LOGO_SRC}
+          src={HEART_SRC}
           alt=""
-          style={{ width: "100%", height: "100%", objectFit: "cover" }}
+          style={{ width: "100%", height: "100%", objectFit: "contain" }}
         />
       </div>
-      <span
+      <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+        <span
+          style={{
+            fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
+            fontSize: s.fontSize,
+            fontWeight: 700,
+            color: "#FFFFFF",
+            letterSpacing: "-0.3px",
+            lineHeight: 1,
+          }}
+        >
+          Business Cadence
+        </span>
+        {showTagline && (
+        <span
+          style={{
+            fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
+            fontSize: Math.max(10, s.fontSize * 0.55),
+            fontWeight: 400,
+            color: "rgba(180,210,235,0.85)",
+            letterSpacing: "0.1px",
+            lineHeight: 1.3,
+          }}
+        >
+          Run your business while protecting your relationship
+        </span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// BrandLogoStacked — vertical layout for splash / onboarding headers
+// ---------------------------------------------------------------------------
+interface BrandLogoStackedProps {
+  iconSize?: number;
+  className?: string;
+  showTagline?: boolean;
+}
+
+export function BrandLogoStacked({
+  iconSize = 72,
+  className = "",
+  showTagline = true,
+}: BrandLogoStackedProps) {
+  return (
+    <div
+      className={className}
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        gap: 8,
+        userSelect: "none",
+      }}
+      role="img"
+      aria-label="Business Cadence"
+    >
+      <img
+        src={HEART_SRC}
+        alt=""
         style={{
-          fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
-          fontSize: s.fontSize,
-          fontWeight: 400,
-          color: "#FFFFFF",
-          letterSpacing: "-0.3px",
-          lineHeight: 1,
+          width: iconSize,
+          height: iconSize,
+          objectFit: "contain",
+          animation: "bc-heartbeat 2.4s ease-in-out infinite",
         }}
-      >
-        Business
-        <span style={{ fontWeight: 700 }}>Cadence</span>
-      </span>
+      />
+      <style>{`
+        @keyframes bc-heartbeat {
+          0%   { transform: scale(1); }
+          14%  { transform: scale(1.13); }
+          28%  { transform: scale(1); }
+          42%  { transform: scale(1.08); }
+          56%  { transform: scale(1); }
+          100% { transform: scale(1); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          @keyframes bc-heartbeat { 0%, 100% { transform: scale(1); } }
+        }
+      `}</style>
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
+        <span
+          style={{
+            fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
+            fontSize: 22,
+            fontWeight: 700,
+            color: "#FFFFFF",
+            letterSpacing: "-0.3px",
+            lineHeight: 1.1,
+            textAlign: "center",
+          }}
+        >
+          Business Cadence
+        </span>
+        {showTagline && (
+          <span
+            style={{
+              fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
+              fontSize: 11,
+              fontWeight: 400,
+              color: "rgba(180,210,235,0.85)",
+              letterSpacing: "0.2px",
+              textAlign: "center",
+              lineHeight: 1.3,
+            }}
+          >
+            Run your business while protecting your relationship
+          </span>
+        )}
+      </div>
     </div>
   );
 }
