@@ -115,10 +115,10 @@ export default function ClientLogin() {
       {/* Content — centered vertically */}
       <div className="relative z-10 flex-1 flex flex-col justify-center px-8 w-full max-w-sm mx-auto">
         {/* Logo */}
-        <div className="mb-8 flex flex-col items-center gap-4">
-          <BrandIcon size={120} />
+        <div className="mb-10 flex flex-col items-center gap-3">
+          <BrandIcon size={96} />
           <div className="text-center">
-            <div className="text-2xl font-bold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif", letterSpacing: "-0.5px" }}>
+            <div className="text-xl font-bold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif", letterSpacing: "-0.5px" }}>
               Business<span style={{ color: "#33A2DB" }}>Cadence</span>
             </div>
             <div className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.35)" }}>Run your business. Protect your relationship.</div>
@@ -126,8 +126,8 @@ export default function ClientLogin() {
         </div>
 
         {/* Title */}
-        <div className="mb-10">
-          <h1 className="text-3xl font-bold text-white mb-2" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+        <div className="mb-8">
+          <h1 className="text-2xl font-bold text-white mb-1" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
             Welcome back
           </h1>
           <p className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>
