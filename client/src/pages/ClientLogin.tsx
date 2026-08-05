@@ -114,6 +114,11 @@ export default function ClientLogin() {
 
       {/* Content — centered vertically */}
       <div className="relative z-10 flex-1 flex flex-col justify-center px-8 w-full max-w-sm mx-auto">
+        {/* Logo */}
+        <div className="mb-8 flex flex-col items-center">
+          <BrandIcon size={72} />
+        </div>
+
         {/* Title */}
         <div className="mb-10">
           <h1 className="text-3xl font-bold text-white mb-2" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
