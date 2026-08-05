@@ -18,7 +18,7 @@
 
 import { useState, useCallback } from "react";
 import { useLocation } from "wouter";
-import { BrandIcon } from "@/components/BrandLogo";
+import { BrandLogoStacked } from "@/components/BrandLogo";
 import { ONBOARDING_STEP_BADGES } from "@shared/subscriptionPlans";
 import { trpc } from "@/lib/trpc";
 
@@ -242,7 +242,15 @@ export default function SubscriptionOnboarding() {
       />
 
       {/* Skip — top-right only, no logo */}
-      <div className="relative z-10 flex items-center justify-end px-6 pt-4">
+      {/* Brand header — logo + name + tagline */}
+      <div className="relative z-10 flex flex-col items-center pt-6 pb-2 px-6">
+        <BrandLogoStacked iconSize={72} showTagline={true} />
+      </div>
+
+      {/* Skip — top-right absolute */}
+      <div className="absolute top-0 right-0 z-20 flex items-center justify-end px-6 pt-4"
+        style={{ paddingTop: "calc(env(safe-area-inset-top) + 16px)" }}
+      >
         <button
           onClick={handleSkip}
           className="text-sm text-white/35 hover:text-white/60 transition-colors py-2 px-3"
