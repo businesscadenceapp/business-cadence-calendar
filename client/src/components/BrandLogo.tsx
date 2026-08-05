@@ -1,12 +1,13 @@
 /**
- * BrandLogo — Transparent inline logo: crystal heart icon + "BusinessCadence" wordmark.
- * No background. Floats cleanly on any surface (navy, white, gradient).
+ * BrandLogo — Transparent inline logo lockup.
+ * Uses the clean transparent crystal heart PNG + pure CSS text.
+ * Floats on any background — no box, no border, no background color.
  *
- * BrandIcon — Just the crystal heart in a circle, no text.
+ * BrandIcon — Compact circular icon only (no text).
  */
 
 // ---------------------------------------------------------------------------
-// BrandIcon — compact circular icon, no text
+// BrandIcon — small circular icon for sidebar / compact spaces
 // ---------------------------------------------------------------------------
 export function BrandIcon({
   size = 48,
@@ -15,7 +16,7 @@ export function BrandIcon({
 }: {
   size?: number;
   className?: string;
-  /** @deprecated kept for API compatibility — no longer changes appearance */
+  /** @deprecated kept for API compatibility */
   variant?: string;
 }) {
   return (
@@ -29,37 +30,38 @@ export function BrandIcon({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
+        background: 'none',
       }}
       className={className}
       role="img"
       aria-label="BusinessCadence"
     >
       <img
-        src="/manus-storage/app-icon_a22c8062.png"
+        src="/manus-storage/heart-transparent-clean_14235c91.png"
         alt="BusinessCadence"
-        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+        style={{ width: '100%', height: '100%', objectFit: 'contain' }}
       />
     </div>
   );
 }
 
 // ---------------------------------------------------------------------------
-// BrandLogo — transparent horizontal lockup (heart + wordmark + tagline)
+// BrandLogo — full horizontal lockup: heart + wordmark + optional tagline
 // ---------------------------------------------------------------------------
 interface BrandLogoProps {
   size?: "sm" | "md" | "lg" | "xl";
   className?: string;
-  /** "dark" = white text (for navy/dark backgrounds); "light" = navy text (for white/light backgrounds) */
+  /** "dark" = white text (navy/dark bg); "light" = navy text (white/light bg) */
   theme?: "dark" | "light";
-  /** Show the tagline below the wordmark. Hidden on "sm". */
   showTagline?: boolean;
 }
 
 const SIZES = {
-  sm: { iconSize: 28, fontSize: 16, tagSize: 0,  gap: 8  },
-  md: { iconSize: 36, fontSize: 20, tagSize: 11, gap: 10 },
-  lg: { iconSize: 50, fontSize: 27, tagSize: 13, gap: 12 },
-  xl: { iconSize: 68, fontSize: 36, tagSize: 16, gap: 16 },
+  //          icon  name  tag   gap
+  sm: { icon: 28,  name: 16,  tag: 0,   gap: 8  },
+  md: { icon: 38,  name: 21,  tag: 11,  gap: 10 },
+  lg: { icon: 54,  name: 29,  tag: 13,  gap: 13 },
+  xl: { icon: 72,  name: 38,  tag: 16,  gap: 16 },
 };
 
 export default function BrandLogo({
@@ -69,9 +71,9 @@ export default function BrandLogo({
   showTagline = true,
 }: BrandLogoProps) {
   const s = SIZES[size];
-  const businessColor = theme === "dark" ? "#FFFFFF" : "#1E3A5F";
-  const cadenceColor  = "#3B9EE8";
-  const tagColor      = theme === "dark" ? "rgba(255,255,255,0.50)" : "rgba(30,58,95,0.55)";
+  const nameColor    = theme === "dark" ? "#FFFFFF"              : "#1E3A5F";
+  const cadenceColor = "#3B9EE8";
+  const tagColor     = theme === "dark" ? "rgba(255,255,255,0.50)" : "rgba(30,58,95,0.55)";
 
   return (
     <div
@@ -82,18 +84,19 @@ export default function BrandLogo({
         gap: s.gap,
         background: 'none',
         userSelect: 'none',
+        lineHeight: 1,
       }}
       role="img"
-      aria-label="BusinessCadence"
+      aria-label="BusinessCadence — Run your business while protecting your relationship."
     >
-      {/* Crystal heart — no background, just the image */}
+      {/* Clean transparent crystal heart — no background */}
       <img
-        src="/manus-storage/heart-transparent_d96be877.png"
+        src="/manus-storage/heart-transparent-clean_14235c91.png"
         alt=""
         aria-hidden="true"
         style={{
-          width: s.iconSize,
-          height: s.iconSize,
+          width: s.icon,
+          height: s.icon,
           objectFit: 'contain',
           flexShrink: 0,
           display: 'block',
@@ -101,46 +104,40 @@ export default function BrandLogo({
       />
 
       {/* Text column */}
-      <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.15 }}>
-        {/* Wordmark */}
+      <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.2 }}>
+        {/* Wordmark: Business (regular) + Cadence (bold) */}
         <div style={{ display: 'flex', alignItems: 'baseline' }}>
-          <span
-            style={{
-              fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
-              fontSize: s.fontSize,
-              fontWeight: 400,
-              letterSpacing: '-0.025em',
-              color: businessColor,
-            }}
-          >
+          <span style={{
+            fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
+            fontSize: s.name,
+            fontWeight: 400,
+            letterSpacing: '-0.025em',
+            color: nameColor,
+          }}>
             Business
           </span>
-          <span
-            style={{
-              fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
-              fontSize: s.fontSize,
-              fontWeight: 700,
-              letterSpacing: '-0.025em',
-              color: cadenceColor,
-            }}
-          >
+          <span style={{
+            fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
+            fontSize: s.name,
+            fontWeight: 700,
+            letterSpacing: '-0.025em',
+            color: cadenceColor,
+          }}>
             Cadence
           </span>
         </div>
 
         {/* Tagline */}
-        {showTagline && size !== 'sm' && s.tagSize > 0 && (
-          <span
-            style={{
-              fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
-              fontSize: s.tagSize,
-              fontWeight: 400,
-              letterSpacing: '0.005em',
-              color: tagColor,
-              marginTop: 2,
-              whiteSpace: 'nowrap',
-            }}
-          >
+        {showTagline && size !== 'sm' && s.tag > 0 && (
+          <span style={{
+            fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
+            fontSize: s.tag,
+            fontWeight: 400,
+            letterSpacing: '0.005em',
+            color: tagColor,
+            marginTop: 3,
+            whiteSpace: 'nowrap',
+          }}>
             Run your business while protecting your relationship.
           </span>
         )}
