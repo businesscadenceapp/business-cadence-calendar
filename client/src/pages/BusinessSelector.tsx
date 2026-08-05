@@ -291,9 +291,6 @@ export default function BusinessSelector() {
             @keyframes bc-heartbeat { 0%, 100% { transform: scale(1); } }
           }
         `}</style>
-        <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 20, fontWeight: 700, color: "#fff", letterSpacing: "-0.3px", lineHeight: 1.1 }}>
-          Business Cadence
-        </span>
         <h1
           className="text-base font-semibold text-white mt-3 mb-0"
           style={{ fontFamily: "'Space Grotesk', sans-serif" }}
