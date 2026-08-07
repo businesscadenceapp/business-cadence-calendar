@@ -1717,13 +1717,13 @@ export default function Board() {
   return (
     <div
       className="flex flex-col h-full overflow-hidden"
-      style={{ backgroundColor: "#0A1929", fontFamily: "'Inter', sans-serif" }}
+      style={{ backgroundColor: "#050A15", fontFamily: "'Inter', sans-serif" }}
     >
       {/* Hero */}
       <div
         className="flex-shrink-0 px-5 pt-4 pb-4"
         style={{
-          background: "linear-gradient(160deg, #0D2035 0%, #0F2440 40%, #0D1F38 100%)",
+          background: "linear-gradient(160deg, #050A15 0%, #080E1A 40%, #050A15 100%)",
           position: "relative",
           overflow: "hidden",
         }}
