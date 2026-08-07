@@ -1719,47 +1719,12 @@ export default function Board() {
       className="flex flex-col h-full overflow-hidden"
       style={{ backgroundColor: "#050A15", fontFamily: "'Inter', sans-serif" }}
     >
-      {/* Hero */}
-      <div
-        className="flex-shrink-0 px-5 pt-4 pb-4"
-        style={{
-          background: "linear-gradient(160deg, #050A15 0%, #080E1A 40%, #050A15 100%)",
-          position: "relative",
-          overflow: "hidden",
-        }}
-      >
-        {/* Ambient glow */}
-        <div style={{ position: "absolute", top: "-60px", right: "-60px", width: "240px", height: "240px", background: "radial-gradient(circle, rgba(51,162,219,0.06) 0%, transparent 70%)", pointerEvents: "none" }} />
-        <div style={{ position: "absolute", bottom: "-40px", left: "-40px", width: "180px", height: "180px", background: "radial-gradient(circle, rgba(124,58,237,0.05) 0%, transparent 70%)", pointerEvents: "none" }} />
-
-        <div className="flex items-center gap-2.5 mb-2">
-          <div style={{
-            width: 36, height: 36, borderRadius: "12px",
-            background: activeHub === 0
-              ? "linear-gradient(135deg, rgba(51,162,219,0.2) 0%, rgba(51,162,219,0.08) 100%)"
-              : "linear-gradient(135deg, rgba(167,139,250,0.2) 0%, rgba(167,139,250,0.08) 100%)",
-            border: activeHub === 0 ? "1px solid rgba(51,162,219,0.3)" : "1px solid rgba(167,139,250,0.3)",
-            display: "flex", alignItems: "center", justifyContent: "center", fontSize: "18px",
-            boxShadow: activeHub === 0 ? "0 0 16px rgba(51,162,219,0.15)" : "0 0 16px rgba(167,139,250,0.15)",
-            transition: "all 0.3s ease",
-          }}>{activeHub === 0 ? "⚡" : "📈"}</div>
-          <span
-            className="text-[11px] font-bold uppercase tracking-[0.15em]"
-            style={{ color: activeHub === 0 ? "#33A2DB" : "#A78BFA", fontFamily: "'Space Grotesk', sans-serif", transition: "color 0.3s ease" }}
-          >{activeHub === 0 ? "Command Center" : "Performance Hub"}</span>
-        </div>
-
-        <h1 className="text-[22px] font-black text-white leading-tight mb-1" style={{ fontFamily: "'Space Grotesk', sans-serif", letterSpacing: "-0.02em" }}>
-          Your Business,<br />
-          <span style={{ background: "linear-gradient(90deg, #33A2DB, #A78BFA)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>In Sync.</span>
-        </h1>
-        <p className="text-[12px]" style={{ color: "rgba(255,255,255,0.45)", lineHeight: "1.4" }}>
-          Real-time updates between owners — no more missed conversations.
-        </p>
+      {/* Minimal header */}
+      <div className="flex-shrink-0 px-5 pt-3 pb-1 flex items-center" style={{ background: "#050A15" }}>
+        <span className="text-[11px] font-bold uppercase tracking-[0.15em]" style={{ color: activeHub === 0 ? "#33A2DB" : "#A78BFA", fontFamily: "'Space Grotesk', sans-serif", transition: "color 0.3s ease" }}>{activeHub === 0 ? "Command Center" : "Performance Hub"}</span>
       </div>
-
       {/* Category Tiles Grid */}
-      <div className="flex-1 px-5 py-3 overflow-hidden flex flex-col">
+      <div className="flex-1 px-0 py-0 overflow-hidden flex flex-col items-center justify-center">
         {/* Complete your profile prompt (quick onboarding deferred full setup) */}
         {profileDeferred && (
           <div
@@ -1807,7 +1772,7 @@ export default function Board() {
           </div>
         ) : (
           /* ── Swipeable Dual-Hub Layout ── */
-          <div style={{ position: "relative", marginLeft: "-20px", marginRight: "-20px" }}>
+          <div style={{ position: "relative", width: "100%" }}>
             {/* Swipe container — negative margin breaks out of parent px-5 padding */}
             <div
               ref={(el) => { registerRef("tour-hub-swipe", el); (hubScrollRef as React.MutableRefObject<HTMLDivElement | null>).current = el; }}

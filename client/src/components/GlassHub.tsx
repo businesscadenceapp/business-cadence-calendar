@@ -138,12 +138,13 @@ const SVG_ICONS: Record<string, (color: string) => ReactElement> = {
   ),
 };
 
-/* ── Constants — LARGE to fill the screen ── */
-const HUB_SIZE = 380;
-const CENTER_SIZE = 130;
-const NODE_SIZE = 90;
-const ORBIT_RADIUS = 140;
-const MAGNETIC_STRENGTH = 12;
+/* ── Constants — viewport-based to fill the screen ── */
+// These are used for SVG viewBox calculations only; actual CSS uses vw units
+const HUB_SIZE = 400;
+const CENTER_SIZE = 140;
+const NODE_SIZE = 96;
+const ORBIT_RADIUS = 148;
+const MAGNETIC_STRENGTH = 14;
 
 /* ── Ripple Particle ── */
 interface Particle {
@@ -200,8 +201,8 @@ export function GlassHub({ nodes, isOffTheClock, onToggleOffTheClock, registerRe
       ref={containerRef}
       className="relative flex items-center justify-center"
       style={{
-        width: HUB_SIZE,
-        height: HUB_SIZE,
+        width: "min(92vw, 420px)",
+        height: "min(92vw, 420px)",
         margin: "0 auto",
       }}
       onPointerMove={handlePointerMove}
