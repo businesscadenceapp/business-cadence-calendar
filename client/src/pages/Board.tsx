@@ -12,7 +12,8 @@ import { usePerson } from "@/contexts/PersonContext";
 import { useIdentity } from "@/components/AppShell";
 import { useActiveBusiness } from "@/components/BusinessSwitcher";
 import { useTour, TOUR_STORAGE_KEY, TOUR_PENDING_KEY } from "@/contexts/TourContext";
-import { GlassHub, type GlassNodeData } from "@/components/GlassHub";
+import { ImageHub, type ImageHubNode } from "@/components/ImageHub";
+import { GlassHub, type GlassNodeData } from "@/components/GlassHub"; // kept for hub2
 import { useOffTheClock } from "@/contexts/OffTheClockContext";
 
 type Author = string;
@@ -1504,6 +1505,14 @@ export default function Board() {
   };
 
   // ── Glass Hub Node Data ──
+  const hub1NodesImg: ImageHubNode[] = [
+    { key: "tasks", label: "Tasks", onClick: () => setActiveView("tasks"), tourId: "tour-hub-tasks" },
+    { key: "updates", label: "Updates", onClick: () => setActiveView("updates"), tourId: "tour-hub-updates" },
+    { key: "issues", label: "Issues", onClick: () => setActiveView("issues"), tourId: "tour-hub-issues" },
+    { key: "needs_attention", label: "Needs Attention", onClick: () => { setNeedsAttnSection((counts.tasks ?? 0) > 0 ? "tasks" : "issues"); setActiveView("needs_attention"); }, tourId: "tour-hub-needs-attention" },
+    { key: "calendar", label: "Calendar", onClick: () => navigate("/app/calendar"), tourId: "tour-hub-calendar" },
+    { key: "archive", label: "Archive", onClick: () => setActiveView("archive"), tourId: "tour-hub-archive" },
+  ];
   const hub1Nodes: GlassNodeData[] = [
     { key: "tasks", label: "Tasks", icon: "☑", glowColor: "rgba(251,191,36,0.6)", ringColor: "rgba(251,191,36,0.7)", textColor: "#FCD34D", count: counts.tasks, angle: -60, onClick: () => setActiveView("tasks"), tourId: "tour-hub-tasks" },
     { key: "updates", label: "Updates", icon: "✅", glowColor: "rgba(20,184,166,0.6)", ringColor: "rgba(20,184,166,0.7)", textColor: "#5EEAD4", count: counts.updates, angle: 0, onClick: () => setActiveView("updates"), tourId: "tour-hub-updates" },
@@ -1799,12 +1808,12 @@ export default function Board() {
             >
               {/* ── Hub 1: Command Board (default) ── */}
               <div style={{ flex: "0 0 100%", scrollSnapAlign: "start", width: "100%", display: "flex", flexDirection: "column", alignItems: "center" }}>
-                <GlassHub
+                <ImageHub
                   isOffTheClock={offTheClock}
                   onToggleOffTheClock={toggleOffTheClock}
                   registerRef={registerRef}
                   centerTourId="tour-hub-center"
-                  nodes={hub1Nodes}
+                  nodes={hub1NodesImg}
                 />
               </div>
               {/* ── Hub 2: Performance Hub ── */}
