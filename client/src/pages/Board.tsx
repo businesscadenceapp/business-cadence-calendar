@@ -12,6 +12,8 @@ import { usePerson } from "@/contexts/PersonContext";
 import { useIdentity } from "@/components/AppShell";
 import { useActiveBusiness } from "@/components/BusinessSwitcher";
 import { useTour, TOUR_STORAGE_KEY, TOUR_PENDING_KEY } from "@/contexts/TourContext";
+import { GlassHub, type GlassNodeData } from "@/components/GlassHub";
+import { useOffTheClock } from "@/contexts/OffTheClockContext";
 
 type Author = string;
 type CardType = "update" | "issue" | "task";
@@ -1326,6 +1328,7 @@ function bizKeyToEnum(key: string): Business | "all" {
 export default function Board() {
   const [, navigate] = useLocation();
   const { currentUser } = useIdentity();
+  const { isOffTheClock: offTheClock, toggleOffTheClock } = useOffTheClock();
   const { person } = usePerson();
   const { activeBusiness } = useActiveBusiness(person?.businessScope);
   const filterBusiness: Business | "all" = bizKeyToEnum(activeBusiness);
@@ -1499,6 +1502,25 @@ export default function Board() {
     issues: issues.length,
     archive: archivedCards.length,
   };
+
+  // ── Glass Hub Node Data ──
+  const hub1Nodes: GlassNodeData[] = [
+    { key: "tasks", label: "Tasks", icon: "☑", glowColor: "rgba(251,191,36,0.6)", ringColor: "rgba(251,191,36,0.7)", textColor: "#FCD34D", count: counts.tasks, angle: -60, onClick: () => setActiveView("tasks"), tourId: "tour-hub-tasks" },
+    { key: "updates", label: "Updates", icon: "✅", glowColor: "rgba(20,184,166,0.6)", ringColor: "rgba(20,184,166,0.7)", textColor: "#5EEAD4", count: counts.updates, angle: 0, onClick: () => setActiveView("updates"), tourId: "tour-hub-updates" },
+    { key: "issues", label: "Issues", icon: "🔥", glowColor: "rgba(225,29,72,0.6)", ringColor: "rgba(225,29,72,0.7)", textColor: "#FDA4AF", count: counts.issues, angle: 60, onClick: () => setActiveView("issues"), tourId: "tour-hub-issues" },
+    { key: "needs_attention", label: "Needs Attention", icon: "❗", glowColor: "rgba(167,139,250,0.6)", ringColor: "rgba(167,139,250,0.7)", textColor: "#C4B5FD", count: (counts.tasks ?? 0) + (counts.issues ?? 0), angle: 120, onClick: () => { setNeedsAttnSection((counts.tasks ?? 0) > 0 ? "tasks" : "issues"); setActiveView("needs_attention"); }, tourId: "tour-hub-needs-attention" },
+    { key: "calendar", label: "Calendar", icon: "📅", glowColor: "rgba(20,184,166,0.6)", ringColor: "rgba(20,184,166,0.7)", textColor: "#33A2DB", count: -1, angle: 180, onClick: () => navigate("/app/calendar"), tourId: "tour-hub-calendar" },
+    { key: "archive", label: "Archive", icon: "📂", glowColor: "rgba(217,119,6,0.6)", ringColor: "rgba(251,191,36,0.7)", textColor: "#FDE68A", count: archivedCards.length, angle: 240, onClick: () => setActiveView("archive"), tourId: "tour-hub-archive" },
+  ];
+
+  const hub2Nodes: GlassNodeData[] = [
+    { key: "goals", label: "Goals", icon: "🎯", glowColor: "rgba(124,58,237,0.6)", ringColor: "rgba(124,58,237,0.7)", textColor: "#C4B5FD", count: -1, angle: -60, onClick: () => navigate("/app/goals"), tourId: "tour-goals" },
+    { key: "kpis", label: "KPIs", icon: "📊", glowColor: "rgba(37,99,235,0.6)", ringColor: "rgba(37,99,235,0.7)", textColor: "#93C5FD", count: -1, angle: 0, onClick: () => navigate("/app/kpi"), tourId: "tour-kpis" },
+    { key: "reports", label: "Reports", icon: "📝", glowColor: "rgba(5,150,105,0.6)", ringColor: "rgba(5,150,105,0.7)", textColor: "#6EE7B7", count: -1, angle: 60, onClick: () => navigate("/app/reports"), tourId: "tour-reports" },
+    { key: "refer", label: "Refer a Friend", icon: "🎁", glowColor: "rgba(251,191,36,0.6)", ringColor: "rgba(251,191,36,0.7)", textColor: "#FCD34D", count: -1, angle: 120, onClick: () => setReferralOpen(true), tourId: "tour-refer" },
+    { key: "settings", label: "Settings", icon: "⚙️", glowColor: "rgba(148,163,184,0.5)", ringColor: "rgba(148,163,184,0.6)", textColor: "#CBD5E1", count: -1, angle: 180, onClick: () => navigate("/app/settings"), tourId: "tour-settings" },
+    { key: "off_the_clock", label: "Off the Clock", icon: "🌙", glowColor: "rgba(200,210,230,0.5)", ringColor: "rgba(200,210,230,0.6)", textColor: "#C8D4E8", count: -1, angle: 240, onClick: toggleOffTheClock, tourId: "tour-off-clock" },
+  ];
 
   // ── Render ──
 
@@ -1811,124 +1833,26 @@ export default function Board() {
               className="[&::-webkit-scrollbar]:hidden"
             >
               {/* ── Hub 1: Command Board (default) ── */}
-              <div
-                style={{
-                  flex: "0 0 100%",
-                  scrollSnapAlign: "start",
-                  width: "100%",
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                }}
-              >
-                <div
-                  className="relative flex items-center justify-center"
-                  style={{ width: "100%", aspectRatio: "1 / 1", maxWidth: 360, margin: "0 auto" }}
-                >
-                  <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none" }} viewBox="0 0 360 360">
-                    {[-90, -30, 30, 90, 150, 210].map((angle, i) => {
-                      const rad = (angle * Math.PI) / 180;
-                      const r = 118;
-                      return <line key={i} x1="180" y1="180" x2={180 + r * Math.cos(rad)} y2={180 + r * Math.sin(rad)} stroke="rgba(51,162,219,0.12)" strokeWidth="1.5" strokeDasharray="4 4" />;
-                    })}
-                  </svg>
-                  <div
-                    ref={(el) => registerRef("tour-hub-center", el)}
-                    style={{
-                      position: "absolute", left: "50%", top: "50%",
-                      transform: "translate(-50%, -50%)",
-                      width: 72, height: 72, borderRadius: "50%",
-                      background: "linear-gradient(135deg, rgba(51,162,219,0.22) 0%, rgba(51,162,219,0.08) 100%)",
-                      border: "2px solid rgba(51,162,219,0.45)",
-                      boxShadow: "0 0 32px rgba(51,162,219,0.25), 0 0 8px rgba(51,162,219,0.15)",
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      zIndex: 2, animation: "hubCenterPulse 3s ease-in-out infinite",
-                    }}
-                  >
-                    <span style={{ fontSize: 28 }}>⚡</span>
-                  </div>
-                  {[
-                    { cat: CATEGORIES.find(c => c.key === "tasks")!, count: counts.tasks, angle: -90, onClick: () => setActiveView("tasks"), tourId: "tour-hub-tasks", extra: {} },
-                    { cat: CATEGORIES.find(c => c.key === "updates")!, count: counts.updates, angle: -30, onClick: () => setActiveView("updates"), tourId: "tour-hub-updates", extra: {} },
-                    { cat: CATEGORIES.find(c => c.key === "issues")!, count: counts.issues, angle: 30, onClick: () => setActiveView("issues"), tourId: "tour-hub-issues", extra: { hasHighPriority: issues.some(c => c.priority === "high") } },
-                    { cat: NEEDS_ATTENTION_META as unknown as TileMeta, count: (counts.tasks ?? 0) + (counts.issues ?? 0), angle: 90, onClick: () => { setNeedsAttnSection((counts.tasks ?? 0) > 0 ? "tasks" : "issues"); setActiveView("needs_attention"); }, tourId: "tour-hub-needs-attention", extra: {} },
-                    { cat: { key: "calendar", label: "Calendar", icon: "📅", gradient: "linear-gradient(135deg, rgba(20,184,166,0.18) 0%, rgba(20,184,166,0.07) 100%)", border: "rgba(20,184,166,0.35)", glow: "rgba(20,184,166,0.14)", textColor: "#33A2DB", countBg: "rgba(20,184,166,0.25)" }, count: -1, angle: 150, onClick: () => navigate("/app/calendar"), tourId: "tour-hub-calendar", extra: {} },
-                    { cat: { key: "archive", label: "Archive", icon: "📂", gradient: "linear-gradient(135deg, rgba(217,119,6,0.18) 0%, rgba(217,119,6,0.07) 100%)", border: "rgba(251,191,36,0.38)", glow: "rgba(251,191,36,0.14)", textColor: "#FDE68A", countBg: "rgba(217,119,6,0.28)" }, count: archivedCards.length, angle: 210, onClick: () => setActiveView("archive"), tourId: "tour-hub-archive", extra: {} },
-                  ].map(({ cat, count, angle, onClick, tourId, extra }, i) => {
-                    const rad = (angle * Math.PI) / 180;
-                    const r = 118;
-                    const cx = 50 + (r / 360) * 100 * Math.cos(rad);
-                    const cy = 50 + (r / 360) * 100 * Math.sin(rad);
-                    return (
-                      <div key={cat.key} style={{ position: "absolute", left: `${cx}%`, top: `${cy}%`, transform: "translate(-50%, -50%)", zIndex: 3 }}>
-                        <HubNode cat={cat} count={count} onClick={onClick} delay={i * 70} size={76} tourId={tourId} registerRef={registerRef} {...extra} />
-                      </div>
-                    );
-                  })}
-                </div>
+              <div style={{ flex: "0 0 100%", scrollSnapAlign: "start", width: "100%", display: "flex", flexDirection: "column", alignItems: "center" }}>
+                <GlassHub
+                  isOffTheClock={offTheClock}
+                  onToggleOffTheClock={toggleOffTheClock}
+                  registerRef={registerRef}
+                  centerTourId="tour-hub-center"
+                  nodes={hub1Nodes}
+                />
               </div>
-
               {/* ── Hub 2: Performance Hub ── */}
-              <div
-                style={{
-                  flex: "0 0 100%",
-                  scrollSnapAlign: "start",
-                  width: "100%",
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                }}
-              >
-                <div
-                  className="relative flex items-center justify-center"
-                  style={{ width: "100%", aspectRatio: "1 / 1", maxWidth: 360, margin: "0 auto" }}
-                >
-                  <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none" }} viewBox="0 0 360 360">
-                    {[-90, -30, 30, 90, 150, -150].map((angle, i) => {
-                      const rad = (angle * Math.PI) / 180;
-                      const r = 118;
-                      return <line key={i} x1="180" y1="180" x2={180 + r * Math.cos(rad)} y2={180 + r * Math.sin(rad)} stroke="rgba(167,139,250,0.12)" strokeWidth="1.5" strokeDasharray="4 4" />;
-                    })}
-                  </svg>
-                  {/* Performance hub center */}
-                  <div
-                    ref={(el) => registerRef("tour-perf-center", el)}
-                    style={{
-                      position: "absolute", left: "50%", top: "50%",
-                      transform: "translate(-50%, -50%)",
-                      width: 72, height: 72, borderRadius: "50%",
-                      background: "linear-gradient(135deg, rgba(167,139,250,0.22) 0%, rgba(167,139,250,0.08) 100%)",
-                      border: "2px solid rgba(167,139,250,0.45)",
-                      boxShadow: "0 0 32px rgba(167,139,250,0.25), 0 0 8px rgba(167,139,250,0.15)",
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      zIndex: 2, animation: "hubCenterPulse2 3s ease-in-out infinite",
-                    }}
-                  >
-                    <span style={{ fontSize: 28 }}>📈</span>
-                  </div>
-                  {[
-                    { key: "goals", label: "Goals", icon: "🎯", gradient: "linear-gradient(135deg, rgba(124,58,237,0.18) 0%, rgba(124,58,237,0.07) 100%)", border: "rgba(124,58,237,0.35)", glow: "rgba(124,58,237,0.14)", textColor: "#C4B5FD", countBg: "rgba(124,58,237,0.25)", angle: -90, onClick: () => navigate("/app/goals"), tourId: "tour-goals" },
-                    { key: "kpis", label: "KPIs", icon: "📊", gradient: "linear-gradient(135deg, rgba(37,99,235,0.18) 0%, rgba(37,99,235,0.07) 100%)", border: "rgba(37,99,235,0.35)", glow: "rgba(37,99,235,0.14)", textColor: "#93C5FD", countBg: "rgba(37,99,235,0.25)", angle: 30, onClick: () => navigate("/app/kpi"), tourId: "tour-kpis" },
-                    { key: "reports", label: "Reports", icon: "📝", gradient: "linear-gradient(135deg, rgba(5,150,105,0.18) 0%, rgba(5,150,105,0.07) 100%)", border: "rgba(5,150,105,0.35)", glow: "rgba(5,150,105,0.14)", textColor: "#6EE7B7", countBg: "rgba(5,150,105,0.25)", angle: 150, onClick: () => navigate("/app/reports"), tourId: "tour-reports" },
-                    { key: "refer", label: "Refer a Friend", icon: "🎁", gradient: "linear-gradient(135deg, rgba(217,119,6,0.22) 0%, rgba(217,119,6,0.08) 100%)", border: "rgba(251,191,36,0.45)", glow: "rgba(251,191,36,0.18)", textColor: "#FCD34D", countBg: "rgba(217,119,6,0.25)", angle: 90, onClick: () => setReferralOpen(true), tourId: "tour-refer" },
-                    { key: "inbox", label: "Co-Owner Inbox", icon: "💬", gradient: "linear-gradient(135deg, rgba(20,184,166,0.18) 0%, rgba(20,184,166,0.07) 100%)", border: "rgba(51,162,219,0.35)", glow: "rgba(51,162,219,0.14)", textColor: "#33A2DB", countBg: "rgba(20,184,166,0.25)", angle: -30, onClick: () => navigate("/app/messages"), tourId: "tour-inbox" },
-                    { key: "settings", label: "Settings", icon: "⚙️", gradient: "linear-gradient(135deg, rgba(100,116,139,0.18) 0%, rgba(100,116,139,0.07) 100%)", border: "rgba(148,163,184,0.35)", glow: "rgba(148,163,184,0.12)", textColor: "#CBD5E1", countBg: "rgba(100,116,139,0.25)", angle: -150, onClick: () => navigate("/app/settings"), tourId: "tour-settings" },
-                  ].map(({ angle, onClick, tourId, ...cat }, i) => {
-                    const rad = (angle * Math.PI) / 180;
-                    const r = 118;
-                    const cx = 50 + (r / 360) * 100 * Math.cos(rad);
-                    const cy = 50 + (r / 360) * 100 * Math.sin(rad);
-                    return (
-                      <div key={cat.key} style={{ position: "absolute", left: `${cx}%`, top: `${cy}%`, transform: "translate(-50%, -50%)", zIndex: 3 }}>
-                        <HubNode cat={cat as TileMeta} count={-1} onClick={onClick} delay={i * 70} size={76} tourId={tourId} registerRef={registerRef} />
-                      </div>
-                    );
-                  })}
-                </div>
+              <div style={{ flex: "0 0 100%", scrollSnapAlign: "start", width: "100%", display: "flex", flexDirection: "column", alignItems: "center" }}>
+                <GlassHub
+                  isOffTheClock={offTheClock}
+                  onToggleOffTheClock={toggleOffTheClock}
+                  registerRef={registerRef}
+                  centerTourId="tour-perf-center"
+                  nodes={hub2Nodes}
+                />
               </div>
-
             </div>
-
             {/* Hub indicator dots */}
             <div className="flex items-center justify-center gap-2 mt-2 mb-1">
               <div style={{ width: activeHub === 0 ? 20 : 6, height: 5, borderRadius: 3, backgroundColor: activeHub === 0 ? "rgba(51,162,219,0.7)" : "rgba(255,255,255,0.2)", transition: "all 0.3s ease" }} />

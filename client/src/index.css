@@ -346,3 +346,24 @@ body {
     min-width: 44px;
   }
 }
+
+/* ── Glass Hub Animations ── */
+@keyframes hubOrbitalPulse {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+  50% { transform: translate(-50%, -50%) scale(1.06); opacity: 0.7; }
+}
+
+@keyframes liquidFill {
+  0% { transform: scaleY(0); transform-origin: bottom; }
+  100% { transform: scaleY(1); transform-origin: bottom; }
+}
+
+@keyframes rippleParticle {
+  0% { transform: translate(-50%, -50%) translate(0, 0); opacity: 1; }
+  100% { transform: translate(-50%, -50%) translate(var(--ripple-dx), var(--ripple-dy)); opacity: 0; }
+}
+
+@keyframes glassNodeEnter {
+  0% { opacity: 0; transform: scale(0.7); }
+  100% { opacity: 1; transform: scale(1); }
+}

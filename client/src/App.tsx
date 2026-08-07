@@ -5,6 +5,7 @@ import NotFound from "@/pages/NotFound";
 import { Route, Switch, Redirect } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
+import { OffTheClockProvider } from "./contexts/OffTheClockContext";
 import PasswordGate from "./components/PasswordGate";
 import EntitlementGuard from "./components/EntitlementGuard";
 import Landing from "./pages/Landing";
@@ -180,6 +181,7 @@ function App() {
   return (
     <ErrorBoundary>
       <ThemeProvider defaultTheme="dark">
+        <OffTheClockProvider>
         <TourProvider>
         <TooltipProvider>
           <Toaster />
@@ -188,6 +190,7 @@ function App() {
           <TourOverlay />
         </TooltipProvider>
         </TourProvider>
+        </OffTheClockProvider>
       </ThemeProvider>
     </ErrorBoundary>
   );
