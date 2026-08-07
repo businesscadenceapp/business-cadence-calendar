@@ -1,11 +1,10 @@
 import React from "react";
 import { Toaster } from "@/components/ui/sonner";
- import { TooltipProvider } from "@/components/ui/tooltip";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
 import { Route, Switch, Redirect } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
-import { OffTheClockProvider } from "./contexts/OffTheClockContext";
 import PasswordGate from "./components/PasswordGate";
 import EntitlementGuard from "./components/EntitlementGuard";
 import Landing from "./pages/Landing";
@@ -34,7 +33,7 @@ import BusinessSelector from "@/pages/BusinessSelector";
 import { Capacitor } from "@capacitor/core";
 import Paywall from "@/pages/Paywall";
 import SubscriptionOnboarding from "@/pages/SubscriptionOnboarding";
- import InvitePartnerSetup from "@/pages/InvitePartnerSetup";
+import InvitePartnerSetup from "@/pages/InvitePartnerSetup";
 import WaitingForPartner from "@/pages/WaitingForPartner";
 import PartnerRegister from "@/pages/PartnerRegister";
 import { TourProvider } from "@/contexts/TourContext";
@@ -97,6 +96,7 @@ function NativeHome() {
 
 function Router() {
   const native = detectNative();
+
   return (
     <Switch>
       {/* Root route: marketing site on web, native welcome on mobile */}
@@ -181,7 +181,6 @@ function App() {
   return (
     <ErrorBoundary>
       <ThemeProvider defaultTheme="dark">
-        <OffTheClockProvider>
         <TourProvider>
         <TooltipProvider>
           <Toaster />
@@ -190,7 +189,6 @@ function App() {
           <TourOverlay />
         </TooltipProvider>
         </TourProvider>
-        </OffTheClockProvider>
       </ThemeProvider>
     </ErrorBoundary>
   );

@@ -15,20 +15,6 @@ import { useLocation } from "wouter";
 import { usePerson } from "@/contexts/PersonContext";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
-import { clearAuth } from "@/components/PasswordGate";
-import { Haptics, ImpactStyle } from "@capacitor/haptics";
-import { Capacitor } from "@capacitor/core";
-
-const HEART_SRC = "/manus-storage/heart-transparent-clean_14235c91.png";
-
-async function fireHeartbeatHaptic() {
-  if (!Capacitor.isNativePlatform()) return;
-  try {
-    await Haptics.impact({ style: ImpactStyle.Medium });
-    await new Promise(r => setTimeout(r, 160));
-    await Haptics.impact({ style: ImpactStyle.Light });
-  } catch { /* ignore */ }
-}
 
 // ─── Dynamic business card shape ─────────────────────────────────────────────
 
@@ -128,30 +114,13 @@ function NotificationBadge({ tasks, unseen, accentColor }: BadgeProps) {
 
 export default function BusinessSelector() {
   const [, navigate] = useLocation();
-  const { person, setPerson } = usePerson();
+  const { person } = usePerson();
 
   // Active card index for swipe/scroll
   const [activeIndex, setActiveIndex] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [dragStartX, setDragStartX] = useState(0);
   const [dragOffset, setDragOffset] = useState(0);
-
-  // Haptic heartbeat on mount
-  useEffect(() => {
-    const t = setTimeout(() => fireHeartbeatHaptic(), 400);
-    return () => clearTimeout(t);
-  }, []);
-
-  // Prevent iOS rubber-band / overscroll on this screen
-  useEffect(() => {
-    const prevent = (e: TouchEvent) => e.preventDefault();
-    document.body.style.overflow = "hidden";
-    document.addEventListener("touchmove", prevent, { passive: false });
-    return () => {
-      document.body.style.overflow = "";
-      document.removeEventListener("touchmove", prevent);
-    };
-  }, []);
 
   const accountId = Number(
     typeof window !== "undefined" ? localStorage.getItem("bcc_account_id") ?? "0" : "0"
@@ -257,46 +226,29 @@ export default function BusinessSelector() {
 
   return (
     <div
-      className="fixed inset-0 flex flex-col items-center justify-center overflow-hidden"
+      className="min-h-screen flex flex-col items-center justify-center overflow-hidden"
       style={{
         background: "linear-gradient(160deg, #0A1929 0%, #0F2440 50%, #0A1929 100%)",
         fontFamily: "'Inter', sans-serif",
-        paddingTop: "env(safe-area-inset-top)",
-        paddingBottom: "env(safe-area-inset-bottom)",
       }}
     >
-      {/* Header — large beating heart + name + greeting */}
-      <div className="flex flex-col items-center mb-4 px-4">
-        <img
-          src={HEART_SRC}
-          alt="Business Cadence"
-          style={{
-            width: 120,
-            height: 120,
-            objectFit: "contain",
-            animation: "bc-heartbeat 2.4s ease-in-out infinite",
-            marginBottom: 6,
-          }}
-        />
-        <style>{`
-          @keyframes bc-heartbeat {
-            0%   { transform: scale(1); }
-            14%  { transform: scale(1.13); }
-            28%  { transform: scale(1); }
-            42%  { transform: scale(1.08); }
-            56%  { transform: scale(1); }
-            100% { transform: scale(1); }
-          }
-          @media (prefers-reduced-motion: reduce) {
-            @keyframes bc-heartbeat { 0%, 100% { transform: scale(1); } }
-          }
-        `}</style>
+      {/* Header */}
+      <div className="text-center mb-8 px-4">
+        <p
+          className="text-[11px] font-bold uppercase tracking-[0.2em] mb-3"
+          style={{ color: "rgba(51,162,219,0.7)" }}
+        >
+          BusinessCadence
+        </p>
         <h1
-          className="text-base font-semibold text-white mt-3 mb-0"
+          className="text-2xl sm:text-3xl font-bold text-white mb-2"
           style={{ fontFamily: "'Space Grotesk', sans-serif" }}
         >
           Welcome back, {person.name.split(" ")[0]}
         </h1>
+        <p className="text-sm" style={{ color: "rgba(255,255,255,0.45)" }}>
+          {cards.length > 1 ? "Select a business to get started" : "Tap your business card to enter your dashboard"}
+        </p>
       </div>
 
       {/* Card carousel */}
@@ -597,15 +549,7 @@ export default function BusinessSelector() {
         onMouseEnter={e => (e.currentTarget.style.color = "#F87171")}
         onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.25)")}
         onClick={() => {
-          try {
-            clearAuth();
-            localStorage.removeItem("bcc_person_v1");
-            localStorage.removeItem("bcc_active_business_slug");
-            localStorage.removeItem("bcc_active_business_id");
-            localStorage.removeItem("bcc_active_business");
-            localStorage.removeItem("bcc_account_id");
-          } catch { /* ignore */ }
-          setPerson(null);
+          try { localStorage.removeItem("bcc_person_v1"); } catch { /* ignore */ }
           navigate("/login");
         }}
       >
