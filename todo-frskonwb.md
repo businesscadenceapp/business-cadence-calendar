@@ -25,3 +25,15 @@
 - [x] Retain a clear fill-and-burst animation before an active app opens.
 - [x] Validate the fixed reference layout at mobile and desktop sizes and rebuild hybrid assets.
 - [x] Save a checkpoint for the reference-aligned hub revision.
+- [x] Create a static, reference-faithful sun hub mockup without changing app code.
+- [x] Create a matching shutdown crystal-ball hub mockup with identical app positions.
+- [x] Present both mockups for explicit approval before any further implementation.
+- [x] Create a corrected active mockup with Tasks matching the other five app-bubble diameters.
+- [x] Create a corrected shutdown mockup with a clean, uncluttered silver crystal-ball center.
+- [x] Present the corrected static mockups for approval before any app-code changes.
+- [x] Render the crystal hub as an immersive edge-to-edge game canvas behind the iPhone safe-area regions.
+- [x] Preserve the corrected 9:16 sun and shutdown crystal-ball proportions on all phone aspect ratios.
+- [x] Extend the matching dark starfield and glow atmosphere into all extra viewport space without stretching the crystal layout.
+- [x] Integrate the approved active and shutdown visual treatments with the existing fill-and-burst and shutdown-gating behavior.
+- [x] Validate iPhone-sized, tall-phone, and desktop rendering; then rebuild and synchronize iOS and Android assets.
+- [x] Save a checkpoint for the immersive full-screen crystal-hub implementation.

@@ -22,7 +22,7 @@ export type ImageHubImages = {
 type ImageHubProps = {
   label: string;
   mode: HubMode;
-  images?: ImageHubImages;
+  images: ImageHubImages;
   nodes: ImageHubNode[];
   layout?: "portrait" | "fullscreen";
   onToggleMode: () => void;
@@ -30,29 +30,25 @@ type ImageHubProps = {
   centerTourId?: string;
 };
 
-const FALLBACK_COLORS = ["#F6C74D", "#32D7D2", "#F6C74D", "#F36A64", "#32D7D2", "#C084FC"];
 const MINIMUM_FILL_MS = 170;
 
 function triggerLightFeedback() {
-  if (typeof navigator !== "undefined" && typeof navigator.vibrate === "function") {
-    navigator.vibrate(8);
-  }
+  if (typeof navigator !== "undefined" && typeof navigator.vibrate === "function") navigator.vibrate(8);
 }
 
 function triggerBurstFeedback() {
-  if (typeof navigator !== "undefined" && typeof navigator.vibrate === "function") {
-    navigator.vibrate([10, 38, 16]);
-  }
+  if (typeof navigator !== "undefined" && typeof navigator.vibrate === "function") navigator.vibrate([10, 38, 16]);
 }
 
 /**
- * Reference-aligned hub: both sun and moon preserve the same six fixed app
- * locations. Moon state visually shuts the apps down and gates navigation;
- * active app crystals fill and burst before opening their destination.
+ * The approved 9:16 visual is used as a proportional scene, never stretched.
+ * Transparent touch targets preserve the real app destinations and the requested
+ * fill-and-burst activation while the complete graphic remains the visual source.
  */
 export function ImageHub({
   label,
   mode,
+  images,
   nodes,
   layout = "fullscreen",
   onToggleMode,
@@ -121,57 +117,51 @@ export function ImageHub({
   const stateLabel = isShutdown ? "Off the Clock. Apps are shut down." : "Business Active. Apps are available.";
 
   return (
-    <section className={`image-hub image-hub--${layout} image-hub--${mode} image-hub--fixed`} aria-label={`${label}. ${stateLabel}`}>
-      <div className="image-hub__field" aria-hidden="true" />
+    <section className={`image-hub image-hub--${layout} image-hub--${mode} image-hub--immersive`} aria-label={`${label}. ${stateLabel}`}>
+      <div className="image-hub__immersive-atmosphere" aria-hidden="true" />
+      <div className="image-hub__scene" aria-hidden="true">
+        <img src={images.sun} alt="" className={`image-hub__scene-art ${mode === "sun" ? "is-active" : ""}`} />
+        <img src={images.moon} alt="" className={`image-hub__scene-art ${mode === "moon" ? "is-active" : ""}`} />
 
-      {nodes.map((node, index) => {
-        const isPressing = pressingId === node.id;
-        const isBursting = burstingId === node.id;
-        const color = node.color ?? FALLBACK_COLORS[index % FALLBACK_COLORS.length];
-        const nodeStyle = {
-          left: `${node.x}%`,
-          top: `${node.y}%`,
-          "--node-color": color,
-        } as CSSProperties;
+        {nodes.map((node) => {
+          const isPressing = pressingId === node.id;
+          const isBursting = burstingId === node.id;
+          const nodeStyle = { left: `${node.x}%`, top: `${node.y}%` } as CSSProperties;
+          return (
+            <button
+              key={node.id}
+              ref={node.tourId && registerRef ? (element) => registerRef(node.tourId!, element) : undefined}
+              type="button"
+              className={`image-hub__scene-node ${isPressing ? "is-pressing" : ""} ${isBursting ? "is-bursting" : ""}`}
+              style={nodeStyle}
+              aria-label={isShutdown ? `${node.label} is unavailable while Off the Clock` : (node.ariaLabel ?? node.label)}
+              aria-disabled={isShutdown}
+              disabled={isShutdown}
+              aria-busy={isBursting}
+              onPointerDown={(event) => startNodePress(event, node.id)}
+              onPointerUp={(event) => finishNodePress(event, node)}
+              onPointerCancel={clearPending}
+              onClick={(event) => event.preventDefault()}
+            >
+              <span className="image-hub__scene-fill" aria-hidden="true" />
+              <span className="sr-only">{node.label}</span>
+            </button>
+          );
+        })}
 
-        return (
-          <button
-            key={node.id}
-            ref={node.tourId && registerRef ? (element) => registerRef(node.tourId!, element) : undefined}
-            type="button"
-            className={`image-hub__bubble ${isPressing ? "is-pressing" : ""} ${isBursting ? "is-bursting" : ""}`}
-            style={nodeStyle}
-            aria-label={isShutdown ? `${node.label} is unavailable while Off the Clock` : (node.ariaLabel ?? node.label)}
-            aria-disabled={isShutdown}
-            disabled={isShutdown}
-            aria-busy={isBursting}
-            onPointerDown={(event) => startNodePress(event, node.id)}
-            onPointerUp={(event) => finishNodePress(event, node)}
-            onPointerCancel={clearPending}
-            onClick={(event) => event.preventDefault()}
-          >
-            <span className="image-hub__bubble-glass" aria-hidden="true" />
-            <span className="image-hub__bubble-fill" aria-hidden="true" />
-            <span className="image-hub__bubble-icon" aria-hidden="true">{node.icon ?? "✦"}</span>
-            <span className="image-hub__bubble-label">{node.label}</span>
-          </button>
-        );
-      })}
-
-      <button
-        ref={centerTourId && registerRef ? (element) => registerRef(centerTourId, element) : undefined}
-        type="button"
-        className="image-hub__core"
-        aria-label={isShutdown ? "Turn business apps back on" : "Shut down all business apps for Off the Clock"}
-        aria-pressed={isShutdown}
-        onPointerUp={handleCenterTap}
-        onPointerCancel={clearPending}
-        onClick={(event) => event.preventDefault()}
-      >
-        <span className="image-hub__core-facet" aria-hidden="true" />
-        <span className="sr-only">{stateLabel}</span>
-      </button>
-
+        <button
+          ref={centerTourId && registerRef ? (element) => registerRef(centerTourId, element) : undefined}
+          type="button"
+          className="image-hub__scene-core"
+          aria-label={isShutdown ? "Turn business apps back on" : "Shut down all business apps for Off the Clock"}
+          aria-pressed={isShutdown}
+          onPointerUp={handleCenterTap}
+          onPointerCancel={clearPending}
+          onClick={(event) => event.preventDefault()}
+        >
+          <span className="sr-only">{stateLabel}</span>
+        </button>
+      </div>
       <p className="sr-only" aria-live="polite">{stateLabel}</p>
     </section>
   );

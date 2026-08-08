@@ -1738,16 +1738,8 @@ export default function Board() {
     ];
 
     return (
-      <div className="flex flex-col h-full min-h-0 overflow-hidden" style={{ backgroundColor: "#050A15", fontFamily: "'Inter', sans-serif" }}>
+      <div className="fixed inset-0 z-[60] flex flex-col overflow-hidden" style={{ backgroundColor: "#020713", fontFamily: "'Inter', sans-serif" }}>
         <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
-          {profileDeferred && (
-            <div className="mb-3 rounded-2xl p-3.5 relative overflow-hidden" style={{ background: "linear-gradient(135deg, rgba(51,162,219,0.12), rgba(56,189,248,0.06))", border: "1px solid rgba(51,162,219,0.28)" }}>
-              <button onClick={dismissProfilePrompt} aria-label="Dismiss profile reminder" className="absolute top-2 right-2 w-7 h-7 rounded-full flex items-center justify-center text-sm active:scale-95" style={{ color: "rgba(255,255,255,0.55)", backgroundColor: "rgba(255,255,255,0.06)" }}>×</button>
-              <p className="text-[13px] font-bold text-white pr-7" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Finish your business profile</p>
-              <p className="text-[11px] mt-1 pr-5" style={{ color: "rgba(255,255,255,0.55)" }}>Add your goals, KPIs, and meeting rhythm to make this command center yours.</p>
-              <button onClick={() => { window.location.href = "/onboarding?full=1"; }} className="mt-2.5 px-3 py-2 rounded-xl text-[11px] font-bold active:scale-[0.97]" style={{ background: "rgba(51,162,219,0.18)", border: "1px solid rgba(51,162,219,0.32)", color: "#7DD3FC" }}>Finish setup</button>
-            </div>
-          )}
           {isLoading ? (
             <div className="flex flex-1 items-center justify-center">
               <div className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: "rgba(51,162,219,0.5)", borderTopColor: "transparent" }} />
@@ -1769,7 +1761,7 @@ export default function Board() {
                   <ImageHub
                     label="Command Center"
                     mode={hubMode}
-                    images={{ sun: "/manus-storage/businesscadence-command-sun-screen_1e514bf0.png", moon: "/manus-storage/businesscadence-command-moon_a160eb9b.png" }}
+                    images={{ sun: "/manus-storage/businesscadence-sun-reference-mockup-corrected_092616e8.png", moon: "/manus-storage/businesscadence-moon-ball-reference-mockup-corrected_0f768b56.png" }}
                     nodes={commandNodes}
                     layout="fullscreen"
                     onToggleMode={toggleHubMode}
@@ -1781,7 +1773,7 @@ export default function Board() {
                   <ImageHub
                     label="Performance Hub"
                     mode={hubMode}
-                    images={{ sun: "/manus-storage/businesscadence-performance-sun_943166b9.png", moon: "/manus-storage/businesscadence-performance-moon_cea7ab85.png" }}
+                    images={{ sun: "/manus-storage/businesscadence-performance-sun-immersive_3a48d577.png", moon: "/manus-storage/businesscadence-performance-moon-immersive_5a2c329c.png" }}
                     nodes={performanceNodes}
                     layout="fullscreen"
                     onToggleMode={toggleHubMode}
@@ -1790,24 +1782,13 @@ export default function Board() {
                   />
                 </div>
               </div>
-              <div className="absolute bottom-3 left-0 right-0 flex items-center justify-center gap-2 pointer-events-none">
+              <div className="absolute bottom-[max(1.25rem,env(safe-area-inset-bottom))] left-0 right-0 flex items-center justify-center gap-2 pointer-events-none">
                 <div aria-hidden="true" style={{ width: activeHub === 0 ? 20 : 6, height: 5, borderRadius: 3, backgroundColor: activeHub === 0 ? "rgba(51,162,219,0.8)" : "rgba(255,255,255,0.2)", transition: "all 0.3s ease" }} />
                 <div aria-hidden="true" style={{ width: activeHub === 1 ? 20 : 6, height: 5, borderRadius: 3, backgroundColor: activeHub === 1 ? "rgba(167,139,250,0.85)" : "rgba(255,255,255,0.2)", transition: "all 0.3s ease" }} />
               </div>
             </div>
           )}
         </div>
-        {!sheetOpen && createPortal(
-          <button
-            ref={(element) => registerRef("tour-hub", element)}
-            data-tour="tour-hub"
-            onClick={() => setSheetOpen(true)}
-            className="fixed bottom-24 right-6 w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-bold transition-all active:scale-[0.9] hover:scale-[1.05] z-40"
-            style={{ background: "linear-gradient(135deg, #33A2DB, #38BDF8)", color: "#0F2440", boxShadow: "0 6px 24px rgba(51,162,219,0.4), 0 2px 8px rgba(0,0,0,0.3)" }}
-            aria-label="Add an update, issue, or task"
-          >+</button>,
-          document.body
-        )}
         {sheetOpen && createPortal(
           <BottomSheet open={sheetOpen} onClose={() => setSheetOpen(false)}>
             <AddCardForm currentUser={currentUser} onAdded={() => { refetch(); setSheetOpen(false); }} activeBusiness={filterBusiness === "all" ? (allowedBusinesses[0] ?? "general" as Business) : filterBusiness} bizLabels={dynamicBizLabels} assignablePersons={allPersons} accountId={accountId} />

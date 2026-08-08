@@ -281,7 +281,7 @@ export default function DemoBoard() {
             <ImageHub
               label="Command Center demo"
               mode={hubMode}
-              images={{ sun: "/manus-storage/businesscadence-command-sun-screen_1e514bf0.png", moon: "/manus-storage/businesscadence-command-moon_a160eb9b.png" }}
+              images={{ sun: "/manus-storage/businesscadence-sun-reference-mockup-corrected_092616e8.png", moon: "/manus-storage/businesscadence-moon-ball-reference-mockup-corrected_0f768b56.png" }}
               nodes={[
                 { id: "tasks", label: `Tasks — ${counts.tasks} sample items`, icon: "☑", color: "#F6C74D", x: 27, y: 27, onActivate: () => setActiveView("tasks") },
                 { id: "updates", label: `Updates — ${counts.updates} sample items`, icon: "✦", color: "#32D7D2", x: 73, y: 27, onActivate: () => setActiveView("updates") },
