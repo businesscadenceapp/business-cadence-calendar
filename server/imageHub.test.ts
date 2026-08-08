@@ -3,6 +3,7 @@ import {
   COMMAND_HUB_DESTINATIONS,
   PERFORMANCE_HUB_DESTINATIONS,
   modeFromDndState,
+  orbitVelocityForMode,
 } from "../client/src/components/ImageHub";
 
 describe("premium image hub configuration", () => {
@@ -31,5 +32,9 @@ describe("premium image hub configuration", () => {
   it("maps the existing off-the-clock state to the shared moon treatment", () => {
     expect(modeFromDndState(false)).toBe("sun");
     expect(modeFromDndState(true)).toBe("moon");
+  });
+
+  it("uses a slower orbital speed while owners are off the clock", () => {
+    expect(orbitVelocityForMode("sun")).toBeGreaterThan(orbitVelocityForMode("moon"));
   });
 });

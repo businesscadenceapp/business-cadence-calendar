@@ -281,7 +281,7 @@ export default function DemoBoard() {
             <ImageHub
               label="Command Center demo"
               mode={hubMode}
-              images={{ sun: "/manus-storage/businesscadence-command-sun-screen_1e514bf0.png", moon: "/manus-storage/businesscadence-command-moon-portrait_9ed8e680.png" }}
+              images={{ sun: "/manus-storage/businesscadence-command-sun-screen_1e514bf0.png", moon: "/manus-storage/businesscadence-command-moon_a160eb9b.png" }}
               nodes={[
                 { id: "tasks", label: `Tasks — ${counts.tasks} sample items`, x: 27, y: 26, onActivate: () => setActiveView("tasks") },
                 { id: "updates", label: `Updates — ${counts.updates} sample items`, x: 73, y: 30, onActivate: () => setActiveView("updates") },
@@ -290,7 +290,7 @@ export default function DemoBoard() {
                 { id: "calendar", label: "Calendar", x: 27, y: 74, onActivate: demoToast },
                 { id: "archive", label: "Archive", x: 18, y: 50, onActivate: demoToast },
               ] satisfies ImageHubNode[]}
-              layout="portrait"
+              layout="fullscreen"
               onToggleMode={() => setHubMode(current => current === "sun" ? "moon" : "sun")}
             />
           </div>

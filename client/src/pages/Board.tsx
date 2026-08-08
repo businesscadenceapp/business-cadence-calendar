@@ -1721,25 +1721,25 @@ export default function Board() {
   // ── Premium Image Hub Home ──────────────────────────────────────────────
   if (!activeView) {
     const commandNodes: ImageHubNode[] = [
-      { id: COMMAND_HUB_DESTINATIONS[0], label: "Tasks", x: 27, y: 26, onActivate: () => setActiveView("tasks"), ariaLabel: `Tasks, ${counts.tasks} open`, tourId: "tour-hub-tasks" },
-      { id: COMMAND_HUB_DESTINATIONS[1], label: "Updates", x: 73, y: 30, onActivate: () => setActiveView("updates"), ariaLabel: `Updates, ${counts.updates} unread`, tourId: "tour-hub-updates" },
-      { id: COMMAND_HUB_DESTINATIONS[2], label: "Issues", x: 82, y: 50, onActivate: () => setActiveView("issues"), ariaLabel: `Issues, ${counts.issues}${issues.some(c => c.priority === "high") ? ", including high priority items" : ""}`, tourId: "tour-hub-issues" },
-      { id: COMMAND_HUB_DESTINATIONS[3], label: "Needs Attention", x: 73, y: 75, onActivate: () => { setNeedsAttnSection((counts.tasks ?? 0) > 0 ? "tasks" : "issues"); setActiveView("needs_attention"); }, ariaLabel: `Needs attention, ${(counts.tasks ?? 0) + (counts.issues ?? 0)} items`, tourId: "tour-hub-needs-attention" },
-      { id: COMMAND_HUB_DESTINATIONS[4], label: "Calendar", x: 27, y: 74, onActivate: () => navigate("/app/calendar"), tourId: "tour-hub-calendar" },
-      { id: COMMAND_HUB_DESTINATIONS[5], label: "Archive", x: 18, y: 50, onActivate: () => setActiveView("archive"), ariaLabel: `Archive, ${archivedCards.length} items`, tourId: "tour-hub-archive" },
+      { id: COMMAND_HUB_DESTINATIONS[0], label: "Tasks", icon: "☑", color: "#F6C74D", x: 27, y: 26, onActivate: () => setActiveView("tasks"), ariaLabel: `Tasks, ${counts.tasks} open`, tourId: "tour-hub-tasks" },
+      { id: COMMAND_HUB_DESTINATIONS[1], label: "Updates", icon: "✦", color: "#32D7D2", x: 73, y: 30, onActivate: () => setActiveView("updates"), ariaLabel: `Updates, ${counts.updates} unread`, tourId: "tour-hub-updates" },
+      { id: COMMAND_HUB_DESTINATIONS[2], label: "Issues", icon: "!", color: "#F36A64", x: 82, y: 50, onActivate: () => setActiveView("issues"), ariaLabel: `Issues, ${counts.issues}${issues.some(c => c.priority === "high") ? ", including high priority items" : ""}`, tourId: "tour-hub-issues" },
+      { id: COMMAND_HUB_DESTINATIONS[3], label: "Needs Attention", icon: "◌", color: "#C084FC", x: 73, y: 75, onActivate: () => { setNeedsAttnSection((counts.tasks ?? 0) > 0 ? "tasks" : "issues"); setActiveView("needs_attention"); }, ariaLabel: `Needs attention, ${(counts.tasks ?? 0) + (counts.issues ?? 0)} items`, tourId: "tour-hub-needs-attention" },
+      { id: COMMAND_HUB_DESTINATIONS[4], label: "Calendar", icon: "▣", color: "#32D7D2", x: 27, y: 74, onActivate: () => navigate("/app/calendar"), tourId: "tour-hub-calendar" },
+      { id: COMMAND_HUB_DESTINATIONS[5], label: "Archive", icon: "▱", color: "#F6C74D", x: 18, y: 50, onActivate: () => setActiveView("archive"), ariaLabel: `Archive, ${archivedCards.length} items`, tourId: "tour-hub-archive" },
     ];
     const performanceNodes: ImageHubNode[] = [
-      { id: PERFORMANCE_HUB_DESTINATIONS[0], label: "Goals", x: 27, y: 26, onActivate: () => navigate("/app/goals"), tourId: "tour-goals" },
-      { id: PERFORMANCE_HUB_DESTINATIONS[1], label: "Co-Owner Inbox", x: 73, y: 30, onActivate: () => navigate("/app/messages"), tourId: "tour-inbox" },
-      { id: PERFORMANCE_HUB_DESTINATIONS[2], label: "KPIs", x: 82, y: 50, onActivate: () => navigate("/app/kpi"), tourId: "tour-kpis" },
-      { id: PERFORMANCE_HUB_DESTINATIONS[3], label: "Reports", x: 73, y: 75, onActivate: () => navigate("/app/reports"), tourId: "tour-reports" },
-      { id: PERFORMANCE_HUB_DESTINATIONS[4], label: "Refer a Friend", x: 27, y: 74, onActivate: () => setReferralOpen(true), tourId: "tour-refer" },
-      { id: PERFORMANCE_HUB_DESTINATIONS[5], label: "Settings", x: 18, y: 50, onActivate: () => navigate("/app/settings"), tourId: "tour-settings" },
+      { id: PERFORMANCE_HUB_DESTINATIONS[0], label: "Goals", icon: "✦", color: "#C084FC", x: 27, y: 26, onActivate: () => navigate("/app/goals"), tourId: "tour-goals" },
+      { id: PERFORMANCE_HUB_DESTINATIONS[1], label: "Co-Owner Inbox", icon: "◌", color: "#56B8FF", x: 73, y: 30, onActivate: () => navigate("/app/messages"), tourId: "tour-inbox" },
+      { id: PERFORMANCE_HUB_DESTINATIONS[2], label: "KPIs", icon: "↗", color: "#47D7EB", x: 82, y: 50, onActivate: () => navigate("/app/kpi"), tourId: "tour-kpis" },
+      { id: PERFORMANCE_HUB_DESTINATIONS[3], label: "Reports", icon: "≡", color: "#62D9B4", x: 73, y: 75, onActivate: () => navigate("/app/reports"), tourId: "tour-reports" },
+      { id: PERFORMANCE_HUB_DESTINATIONS[4], label: "Refer a Friend", icon: "✦", color: "#F6C74D", x: 27, y: 74, onActivate: () => setReferralOpen(true), tourId: "tour-refer" },
+      { id: PERFORMANCE_HUB_DESTINATIONS[5], label: "Settings", icon: "◈", color: "#CBD5E1", x: 18, y: 50, onActivate: () => navigate("/app/settings"), tourId: "tour-settings" },
     ];
 
     return (
-      <div className="flex flex-col h-full overflow-hidden" style={{ backgroundColor: "#050A15", fontFamily: "'Inter', sans-serif" }}>
-        <div className="flex-1 px-4 py-3 overflow-hidden flex flex-col">
+      <div className="flex flex-col h-full min-h-0 overflow-hidden" style={{ backgroundColor: "#050A15", fontFamily: "'Inter', sans-serif" }}>
+        <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
           {profileDeferred && (
             <div className="mb-3 rounded-2xl p-3.5 relative overflow-hidden" style={{ background: "linear-gradient(135deg, rgba(51,162,219,0.12), rgba(56,189,248,0.06))", border: "1px solid rgba(51,162,219,0.28)" }}>
               <button onClick={dismissProfilePrompt} aria-label="Dismiss profile reminder" className="absolute top-2 right-2 w-7 h-7 rounded-full flex items-center justify-center text-sm active:scale-95" style={{ color: "rgba(255,255,255,0.55)", backgroundColor: "rgba(255,255,255,0.06)" }}>×</button>
@@ -1753,7 +1753,7 @@ export default function Board() {
               <div className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: "rgba(51,162,219,0.5)", borderTopColor: "transparent" }} />
             </div>
           ) : (
-            <div style={{ position: "relative", marginLeft: "-16px", marginRight: "-16px" }}>
+            <div className="flex-1 min-h-0 relative">
               <div
                 ref={(element) => { registerRef("tour-hub-swipe", element); (hubScrollRef as React.MutableRefObject<HTMLDivElement | null>).current = element; }}
                 onScroll={(event) => {
@@ -1763,34 +1763,34 @@ export default function Board() {
                   try { sessionStorage.setItem("bcc_active_hub", String(hub)); } catch { /* ignore */ }
                 }}
                 className="[&::-webkit-scrollbar]:hidden"
-                style={{ display: "flex", overflowX: "auto", overflowY: "hidden", scrollSnapType: "x mandatory", scrollBehavior: "smooth", WebkitOverflowScrolling: "touch", msOverflowStyle: "none", scrollbarWidth: "none", width: "100%", overscrollBehavior: "none", touchAction: "pan-x" }}
+                style={{ display: "flex", height: "100%", overflowX: "auto", overflowY: "hidden", scrollSnapType: "x mandatory", scrollBehavior: "smooth", WebkitOverflowScrolling: "touch", msOverflowStyle: "none", scrollbarWidth: "none", width: "100%", overscrollBehavior: "none", touchAction: "pan-x" }}
               >
-                <div style={{ flex: "0 0 100%", scrollSnapAlign: "start", width: "100%", display: "flex", flexDirection: "column", alignItems: "center" }}>
+                <div style={{ flex: "0 0 100%", scrollSnapAlign: "start", width: "100%", minHeight: 0, display: "flex", flexDirection: "column", alignItems: "center" }}>
                   <ImageHub
                     label="Command Center"
                     mode={hubMode}
-                    images={{ sun: "/manus-storage/businesscadence-command-sun-screen_1e514bf0.png", moon: "/manus-storage/businesscadence-command-moon-portrait_9ed8e680.png" }}
+                    images={{ sun: "/manus-storage/businesscadence-command-sun-screen_1e514bf0.png", moon: "/manus-storage/businesscadence-command-moon_a160eb9b.png" }}
                     nodes={commandNodes}
-                    layout="portrait"
+                    layout="fullscreen"
                     onToggleMode={toggleHubMode}
                     registerRef={registerRef}
                     centerTourId="tour-hub-center"
                   />
                 </div>
-                <div style={{ flex: "0 0 100%", scrollSnapAlign: "start", width: "100%", display: "flex", flexDirection: "column", alignItems: "center" }}>
+                <div style={{ flex: "0 0 100%", scrollSnapAlign: "start", width: "100%", minHeight: 0, display: "flex", flexDirection: "column", alignItems: "center" }}>
                   <ImageHub
                     label="Performance Hub"
                     mode={hubMode}
-                    images={{ sun: "/manus-storage/businesscadence-performance-sun-portrait_7e755a04.png", moon: "/manus-storage/businesscadence-performance-moon-portrait_a8c3e371.png" }}
+                    images={{ sun: "/manus-storage/businesscadence-performance-sun_943166b9.png", moon: "/manus-storage/businesscadence-performance-moon_cea7ab85.png" }}
                     nodes={performanceNodes}
-                    layout="portrait"
+                    layout="fullscreen"
                     onToggleMode={toggleHubMode}
                     registerRef={registerRef}
                     centerTourId="tour-perf-center"
                   />
                 </div>
               </div>
-              <div className="flex items-center justify-center gap-2 mt-1">
+              <div className="absolute bottom-3 left-0 right-0 flex items-center justify-center gap-2 pointer-events-none">
                 <div aria-hidden="true" style={{ width: activeHub === 0 ? 20 : 6, height: 5, borderRadius: 3, backgroundColor: activeHub === 0 ? "rgba(51,162,219,0.8)" : "rgba(255,255,255,0.2)", transition: "all 0.3s ease" }} />
                 <div aria-hidden="true" style={{ width: activeHub === 1 ? 20 : 6, height: 5, borderRadius: 3, backgroundColor: activeHub === 1 ? "rgba(167,139,250,0.85)" : "rgba(255,255,255,0.2)", transition: "all 0.3s ease" }} />
               </div>
