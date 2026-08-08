@@ -277,18 +277,18 @@ export default function DemoBoard() {
         </div>
       ) : (
         <>
-          <div className="flex-1 px-4 py-3 flex items-center justify-center">
+          <div className="flex-1 min-h-0 px-0 py-0 flex flex-col">
             <ImageHub
               label="Command Center demo"
               mode={hubMode}
               images={{ sun: "/manus-storage/businesscadence-command-sun-screen_1e514bf0.png", moon: "/manus-storage/businesscadence-command-moon_a160eb9b.png" }}
               nodes={[
-                { id: "tasks", label: `Tasks — ${counts.tasks} sample items`, x: 27, y: 26, onActivate: () => setActiveView("tasks") },
-                { id: "updates", label: `Updates — ${counts.updates} sample items`, x: 73, y: 30, onActivate: () => setActiveView("updates") },
-                { id: "issues", label: `Issues — ${counts.issues} sample items`, x: 82, y: 50, onActivate: () => setActiveView("issues") },
-                { id: "needs_attention", label: "Needs Attention", x: 73, y: 75, onActivate: () => { setNeedsAttnSection(counts.tasks > 0 ? "tasks" : "issues"); setActiveView("needs_attention"); } },
-                { id: "calendar", label: "Calendar", x: 27, y: 74, onActivate: demoToast },
-                { id: "archive", label: "Archive", x: 18, y: 50, onActivate: demoToast },
+                { id: "tasks", label: `Tasks — ${counts.tasks} sample items`, icon: "☑", color: "#F6C74D", x: 27, y: 27, onActivate: () => setActiveView("tasks") },
+                { id: "updates", label: `Updates — ${counts.updates} sample items`, icon: "✦", color: "#32D7D2", x: 73, y: 27, onActivate: () => setActiveView("updates") },
+                { id: "archive", label: "Archive", icon: "▱", color: "#F6C74D", x: 18, y: 52, onActivate: demoToast },
+                { id: "issues", label: `Issues — ${counts.issues} sample items`, icon: "!", color: "#F36A64", x: 82, y: 52, onActivate: () => setActiveView("issues") },
+                { id: "calendar", label: "Calendar", icon: "▣", color: "#32D7D2", x: 27, y: 75, onActivate: demoToast },
+                { id: "needs_attention", label: "Needs Attention", icon: "◌", color: "#C084FC", x: 73, y: 75, onActivate: () => { setNeedsAttnSection(counts.tasks > 0 ? "tasks" : "issues"); setActiveView("needs_attention"); } },
               ] satisfies ImageHubNode[]}
               layout="fullscreen"
               onToggleMode={() => setHubMode(current => current === "sun" ? "moon" : "sun")}

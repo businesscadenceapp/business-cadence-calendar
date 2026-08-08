@@ -353,6 +353,7 @@ body {
 .image-hub--fullscreen {
   width: 100%;
   height: 100%;
+  flex: 1 1 auto;
   min-height: min(72dvh, 44rem);
 }
 
@@ -613,6 +614,96 @@ body {
   .image-hub__bubble-ring,
   .image-hub__core-halo,
   .image-hub__bubble.is-bursting { animation: none; }
+}
+
+/* ── Reference-aligned fixed sun / crystal-ball shutdown hub ─────────────── */
+.image-hub--fixed {
+  touch-action: pan-x;
+}
+
+.image-hub--fixed .image-hub__field {
+  background:
+    radial-gradient(circle at 50% 52%, rgba(20, 58, 105, 0.17) 0%, transparent 36%),
+    radial-gradient(circle at 18% 16%, rgba(26, 73, 113, 0.10) 0%, transparent 25%),
+    linear-gradient(180deg, #020713 0%, #061427 55%, #020713 100%);
+}
+
+.image-hub--fixed .image-hub__orbit,
+.image-hub--fixed .image-hub__bubble-ring,
+.image-hub--fixed .image-hub__core-halo,
+.image-hub--fixed .image-hub__core-image {
+  display: none;
+}
+
+.image-hub--fixed .image-hub__bubble {
+  width: clamp(4.8rem, 20vw, 9.4rem);
+  transition: none;
+  will-change: auto;
+}
+
+.image-hub--fixed .image-hub__bubble-glass {
+  background: radial-gradient(circle at 32% 22%, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.045) 27%, rgba(2, 11, 25, 0.78) 74%);
+  border-color: color-mix(in srgb, var(--node-color) 82%, white);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--node-color) 9%, transparent), 0 0 24px color-mix(in srgb, var(--node-color) 47%, transparent), inset 0 0 22px rgba(255, 255, 255, 0.06);
+}
+
+.image-hub--fixed .image-hub__bubble-fill {
+  background: radial-gradient(circle at 35% 25%, color-mix(in srgb, var(--node-color) 94%, white), var(--node-color) 60%, transparent 73%);
+  transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1), opacity 160ms ease-out;
+}
+
+.image-hub--fixed .image-hub__bubble.is-pressing .image-hub__bubble-fill {
+  opacity: 0.96;
+  transform: scale(1);
+}
+
+.image-hub--fixed .image-hub__bubble.is-bursting {
+  animation: hub-bubble-burst 410ms cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+
+.image-hub--fixed.image-hub--moon .image-hub__bubble {
+  opacity: 0.28;
+  filter: grayscale(0.8) saturate(0.15);
+  cursor: not-allowed;
+}
+
+.image-hub--fixed .image-hub__core {
+  top: 52%;
+  width: clamp(9.5rem, 31vw, 15.6rem);
+  background:
+    conic-gradient(from 18deg, #fff3b9, #f1a622 18%, #ffd96a 35%, #754005 56%, #ffe69b 74%, #e99813 90%, #fff3b9),
+    radial-gradient(circle at 34% 23%, rgba(255, 247, 195, 0.97), rgba(255, 169, 20, 0.76) 37%, #6d3405 78%);
+  box-shadow: 0 0 0 8px rgba(255, 184, 34, 0.12), 0 0 54px rgba(255, 163, 14, 0.52), inset 0 0 30px rgba(255, 251, 208, 0.46);
+}
+
+.image-hub--fixed.image-hub--moon .image-hub__core {
+  background:
+    conic-gradient(from 18deg, #ffffff, #b7c8e5 18%, #e9f1ff 35%, #536888 56%, #f7faff 74%, #aabbd8 90%, #ffffff),
+    radial-gradient(circle at 34% 23%, rgba(255, 255, 255, 0.98), rgba(186, 205, 235, 0.76) 37%, #3e516f 78%);
+  border-color: rgba(224, 235, 255, 0.92);
+  box-shadow: 0 0 0 8px rgba(204, 221, 255, 0.09), 0 0 46px rgba(184, 208, 249, 0.38), inset 0 0 30px rgba(255, 255, 255, 0.46);
+}
+
+.image-hub--fixed .image-hub__core-facet {
+  position: absolute;
+  inset: 8%;
+  border-radius: 50%;
+  background:
+    linear-gradient(42deg, transparent 46%, rgba(255, 255, 255, 0.58) 47%, transparent 49%),
+    linear-gradient(116deg, transparent 45%, rgba(255, 255, 255, 0.38) 46%, transparent 48%),
+    linear-gradient(182deg, transparent 47%, rgba(255, 255, 255, 0.35) 48%, transparent 50%),
+    linear-gradient(258deg, transparent 46%, rgba(255, 255, 255, 0.43) 47%, transparent 49%);
+  opacity: 0.8;
+  pointer-events: none;
+}
+
+.image-hub--fixed .image-hub__core:active {
+  transform: translate(-50%, -50%) scale(0.97);
+}
+
+@media (min-width: 768px) {
+  .image-hub--fixed .image-hub__bubble { width: clamp(6rem, 13vw, 11.2rem); }
+  .image-hub--fixed .image-hub__core { width: clamp(12rem, 18vw, 18rem); }
 }
 
 /* Minimum tap target size for mobile (WCAG 2.5.5) */

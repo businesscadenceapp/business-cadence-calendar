@@ -3,7 +3,7 @@ import {
   COMMAND_HUB_DESTINATIONS,
   PERFORMANCE_HUB_DESTINATIONS,
   modeFromDndState,
-  orbitVelocityForMode,
+  hubIsInteractive,
 } from "../client/src/components/ImageHub";
 
 describe("premium image hub configuration", () => {
@@ -34,7 +34,8 @@ describe("premium image hub configuration", () => {
     expect(modeFromDndState(true)).toBe("moon");
   });
 
-  it("uses a slower orbital speed while owners are off the clock", () => {
-    expect(orbitVelocityForMode("sun")).toBeGreaterThan(orbitVelocityForMode("moon"));
+  it("shuts down destination activation while owners are off the clock", () => {
+    expect(hubIsInteractive("sun")).toBe(true);
+    expect(hubIsInteractive("moon")).toBe(false);
   });
 });

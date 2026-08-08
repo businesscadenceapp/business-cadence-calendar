@@ -17,3 +17,11 @@
 - [x] Preserve accessible tap targets, reduced-motion behavior, and sun/moon state integration.
 - [x] Validate the animated hub on mobile and desktop viewports, then rebuild and sync iOS/Android assets.
 - [x] Save a checkpoint for the animated-hub upgrade.
+- [x] Remove orbital, pointer-attraction, and other invented motion from the hub.
+- [x] Align sun and moon views to the supplied identical six-app positions: tasks, updates, archive, issues, calendar, and needs attention.
+- [x] Render the central sun and shutdown crystal ball at the same size and placement.
+- [x] Make center activation change the global app state between active and shut-down.
+- [x] Prevent app navigation while the shutdown crystal-ball state is active.
+- [x] Retain a clear fill-and-burst animation before an active app opens.
+- [x] Validate the fixed reference layout at mobile and desktop sizes and rebuild hybrid assets.
+- [x] Save a checkpoint for the reference-aligned hub revision.

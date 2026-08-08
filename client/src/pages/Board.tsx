@@ -1721,20 +1721,20 @@ export default function Board() {
   // ── Premium Image Hub Home ──────────────────────────────────────────────
   if (!activeView) {
     const commandNodes: ImageHubNode[] = [
-      { id: COMMAND_HUB_DESTINATIONS[0], label: "Tasks", icon: "☑", color: "#F6C74D", x: 27, y: 26, onActivate: () => setActiveView("tasks"), ariaLabel: `Tasks, ${counts.tasks} open`, tourId: "tour-hub-tasks" },
-      { id: COMMAND_HUB_DESTINATIONS[1], label: "Updates", icon: "✦", color: "#32D7D2", x: 73, y: 30, onActivate: () => setActiveView("updates"), ariaLabel: `Updates, ${counts.updates} unread`, tourId: "tour-hub-updates" },
-      { id: COMMAND_HUB_DESTINATIONS[2], label: "Issues", icon: "!", color: "#F36A64", x: 82, y: 50, onActivate: () => setActiveView("issues"), ariaLabel: `Issues, ${counts.issues}${issues.some(c => c.priority === "high") ? ", including high priority items" : ""}`, tourId: "tour-hub-issues" },
+      { id: COMMAND_HUB_DESTINATIONS[0], label: "Tasks", icon: "☑", color: "#F6C74D", x: 27, y: 27, onActivate: () => setActiveView("tasks"), ariaLabel: `Tasks, ${counts.tasks} open`, tourId: "tour-hub-tasks" },
+      { id: COMMAND_HUB_DESTINATIONS[1], label: "Updates", icon: "✦", color: "#32D7D2", x: 73, y: 27, onActivate: () => setActiveView("updates"), ariaLabel: `Updates, ${counts.updates} unread`, tourId: "tour-hub-updates" },
+      { id: COMMAND_HUB_DESTINATIONS[5], label: "Archive", icon: "▱", color: "#F6C74D", x: 18, y: 52, onActivate: () => setActiveView("archive"), ariaLabel: `Archive, ${archivedCards.length} items`, tourId: "tour-hub-archive" },
+      { id: COMMAND_HUB_DESTINATIONS[2], label: "Issues", icon: "!", color: "#F36A64", x: 82, y: 52, onActivate: () => setActiveView("issues"), ariaLabel: `Issues, ${counts.issues}${issues.some(c => c.priority === "high") ? ", including high priority items" : ""}`, tourId: "tour-hub-issues" },
+      { id: COMMAND_HUB_DESTINATIONS[4], label: "Calendar", icon: "▣", color: "#32D7D2", x: 27, y: 75, onActivate: () => navigate("/app/calendar"), tourId: "tour-hub-calendar" },
       { id: COMMAND_HUB_DESTINATIONS[3], label: "Needs Attention", icon: "◌", color: "#C084FC", x: 73, y: 75, onActivate: () => { setNeedsAttnSection((counts.tasks ?? 0) > 0 ? "tasks" : "issues"); setActiveView("needs_attention"); }, ariaLabel: `Needs attention, ${(counts.tasks ?? 0) + (counts.issues ?? 0)} items`, tourId: "tour-hub-needs-attention" },
-      { id: COMMAND_HUB_DESTINATIONS[4], label: "Calendar", icon: "▣", color: "#32D7D2", x: 27, y: 74, onActivate: () => navigate("/app/calendar"), tourId: "tour-hub-calendar" },
-      { id: COMMAND_HUB_DESTINATIONS[5], label: "Archive", icon: "▱", color: "#F6C74D", x: 18, y: 50, onActivate: () => setActiveView("archive"), ariaLabel: `Archive, ${archivedCards.length} items`, tourId: "tour-hub-archive" },
     ];
     const performanceNodes: ImageHubNode[] = [
-      { id: PERFORMANCE_HUB_DESTINATIONS[0], label: "Goals", icon: "✦", color: "#C084FC", x: 27, y: 26, onActivate: () => navigate("/app/goals"), tourId: "tour-goals" },
-      { id: PERFORMANCE_HUB_DESTINATIONS[1], label: "Co-Owner Inbox", icon: "◌", color: "#56B8FF", x: 73, y: 30, onActivate: () => navigate("/app/messages"), tourId: "tour-inbox" },
-      { id: PERFORMANCE_HUB_DESTINATIONS[2], label: "KPIs", icon: "↗", color: "#47D7EB", x: 82, y: 50, onActivate: () => navigate("/app/kpi"), tourId: "tour-kpis" },
+      { id: PERFORMANCE_HUB_DESTINATIONS[0], label: "Goals", icon: "✦", color: "#C084FC", x: 27, y: 27, onActivate: () => navigate("/app/goals"), tourId: "tour-goals" },
+      { id: PERFORMANCE_HUB_DESTINATIONS[1], label: "Co-Owner Inbox", icon: "◌", color: "#56B8FF", x: 73, y: 27, onActivate: () => navigate("/app/messages"), tourId: "tour-inbox" },
+      { id: PERFORMANCE_HUB_DESTINATIONS[5], label: "Settings", icon: "◈", color: "#CBD5E1", x: 18, y: 52, onActivate: () => navigate("/app/settings"), tourId: "tour-settings" },
+      { id: PERFORMANCE_HUB_DESTINATIONS[2], label: "KPIs", icon: "↗", color: "#47D7EB", x: 82, y: 52, onActivate: () => navigate("/app/kpi"), tourId: "tour-kpis" },
+      { id: PERFORMANCE_HUB_DESTINATIONS[4], label: "Refer a Friend", icon: "✦", color: "#F6C74D", x: 27, y: 75, onActivate: () => setReferralOpen(true), tourId: "tour-refer" },
       { id: PERFORMANCE_HUB_DESTINATIONS[3], label: "Reports", icon: "≡", color: "#62D9B4", x: 73, y: 75, onActivate: () => navigate("/app/reports"), tourId: "tour-reports" },
-      { id: PERFORMANCE_HUB_DESTINATIONS[4], label: "Refer a Friend", icon: "✦", color: "#F6C74D", x: 27, y: 74, onActivate: () => setReferralOpen(true), tourId: "tour-refer" },
-      { id: PERFORMANCE_HUB_DESTINATIONS[5], label: "Settings", icon: "◈", color: "#CBD5E1", x: 18, y: 50, onActivate: () => navigate("/app/settings"), tourId: "tour-settings" },
     ];
 
     return (
