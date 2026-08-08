@@ -37,3 +37,8 @@
 - [x] Integrate the approved active and shutdown visual treatments with the existing fill-and-burst and shutdown-gating behavior.
 - [x] Validate iPhone-sized, tall-phone, and desktop rendering; then rebuild and synchronize iOS and Android assets.
 - [x] Save a checkpoint for the immersive full-screen crystal-hub implementation.
+- [x] Diagnose why the immersive app-bubble touch targets do not activate reliably on iPhone.
+- [x] Align and enlarge all six invisible app-bubble touch targets without changing approved graphics.
+- [x] Enlarge the sun/moon central touch target and ensure it responds reliably to a normal tap.
+- [x] Add automated coverage for target geometry and active versus shutdown interaction behavior.
+- [x] Validate all hub targets on mobile-sized scenes, rebuild hybrid assets, and save an interaction-fix checkpoint.

@@ -4,6 +4,7 @@ import {
   PERFORMANCE_HUB_DESTINATIONS,
   modeFromDndState,
   hubIsInteractive,
+  IMMERSIVE_HUB_TOUCH_TARGETS,
 } from "../client/src/components/ImageHub";
 
 describe("premium image hub configuration", () => {
@@ -37,5 +38,11 @@ describe("premium image hub configuration", () => {
   it("shuts down destination activation while owners are off the clock", () => {
     expect(hubIsInteractive("sun")).toBe(true);
     expect(hubIsInteractive("moon")).toBe(false);
+  });
+
+  it("keeps invisible iPhone touch targets forgiving without changing visual geometry", () => {
+    expect(IMMERSIVE_HUB_TOUCH_TARGETS.appBubblePercent).toBeGreaterThanOrEqual(24);
+    expect(IMMERSIVE_HUB_TOUCH_TARGETS.centerPercent).toBeGreaterThanOrEqual(38);
+    expect(IMMERSIVE_HUB_TOUCH_TARGETS.centerTopPercent).toBe(50);
   });
 });

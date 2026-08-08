@@ -747,6 +747,9 @@ body {
   aspect-ratio: 9 / 16;
   transform: translate(-50%, -50%);
   z-index: 1;
+  --hub-app-hit-size: 25%;
+  --hub-core-hit-size: 40%;
+  --hub-core-hit-top: 50%;
 }
 
 .image-hub__scene-art {
@@ -775,7 +778,7 @@ body {
 }
 
 .image-hub__scene-node {
-  width: 22%;
+  width: var(--hub-app-hit-size);
   aspect-ratio: 1;
   border-radius: 50%;
   transform: translate(-50%, -50%);
@@ -810,8 +813,8 @@ body {
 
 .image-hub__scene-core {
   left: 50%;
-  top: 52%;
-  width: 32%;
+  top: var(--hub-core-hit-top);
+  width: var(--hub-core-hit-size);
   aspect-ratio: 1;
   border-radius: 50%;
   transform: translate(-50%, -50%);

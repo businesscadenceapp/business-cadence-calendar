@@ -32,6 +32,14 @@ type ImageHubProps = {
 
 const MINIMUM_FILL_MS = 170;
 
+/** Touch sizes are intentionally larger than the visual crystals so iPhone taps
+ * remain forgiving without changing the approved graphic geometry. */
+export const IMMERSIVE_HUB_TOUCH_TARGETS = {
+  appBubblePercent: 25,
+  centerPercent: 40,
+  centerTopPercent: 50,
+} as const;
+
 function triggerLightFeedback() {
   if (typeof navigator !== "undefined" && typeof navigator.vibrate === "function") navigator.vibrate(8);
 }
@@ -132,7 +140,7 @@ export function ImageHub({
               key={node.id}
               ref={node.tourId && registerRef ? (element) => registerRef(node.tourId!, element) : undefined}
               type="button"
-              className={`image-hub__scene-node ${isPressing ? "is-pressing" : ""} ${isBursting ? "is-bursting" : ""}`}
+            className={`image-hub__scene-node ${isPressing ? "is-pressing" : ""} ${isBursting ? "is-bursting" : ""}`}
               style={nodeStyle}
               aria-label={isShutdown ? `${node.label} is unavailable while Off the Clock` : (node.ariaLabel ?? node.label)}
               aria-disabled={isShutdown}
