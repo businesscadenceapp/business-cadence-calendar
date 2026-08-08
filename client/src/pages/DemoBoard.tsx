@@ -6,7 +6,6 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
-import { ImageHub, type ImageHubNode, type HubMode } from "@/components/ImageHub";
 
 // ─── Types (mirrors Board.tsx Card type) ─────────────────────────────────────
 type CardType = "update" | "issue" | "task";
@@ -198,7 +197,6 @@ export default function DemoBoard() {
   const [, navigate] = useLocation();
   const [activeView, setActiveView] = useState<CategoryKey | "needs_attention" | null>(null);
   const [needsAttnSection, setNeedsAttnSection] = useState<"tasks" | "issues">("tasks");
-  const [hubMode, setHubMode] = useState<HubMode>("sun");
 
   const tasks = SAMPLE_CARDS.filter(c => c.type === "task");
   const updates = SAMPLE_CARDS.filter(c => c.type === "update");
@@ -277,22 +275,89 @@ export default function DemoBoard() {
         </div>
       ) : (
         <>
-          <div className="flex-1 min-h-0 px-0 py-0 flex flex-col">
-            <ImageHub
-              label="Command Center demo"
-              mode={hubMode}
-              images={{ sun: "/manus-storage/businesscadence-sun-reference-mockup-corrected_092616e8.png", moon: "/manus-storage/businesscadence-moon-ball-reference-mockup-corrected_0f768b56.png" }}
-              nodes={[
-                { id: "tasks", label: `Tasks — ${counts.tasks} sample items`, icon: "☑", color: "#F6C74D", x: 27, y: 27, onActivate: () => setActiveView("tasks") },
-                { id: "updates", label: `Updates — ${counts.updates} sample items`, icon: "✦", color: "#32D7D2", x: 73, y: 27, onActivate: () => setActiveView("updates") },
-                { id: "archive", label: "Archive", icon: "▱", color: "#F6C74D", x: 18, y: 52, onActivate: demoToast },
-                { id: "issues", label: `Issues — ${counts.issues} sample items`, icon: "!", color: "#F36A64", x: 82, y: 52, onActivate: () => setActiveView("issues") },
-                { id: "calendar", label: "Calendar", icon: "▣", color: "#32D7D2", x: 27, y: 75, onActivate: demoToast },
-                { id: "needs_attention", label: "Needs Attention", icon: "◌", color: "#C084FC", x: 73, y: 75, onActivate: () => { setNeedsAttnSection(counts.tasks > 0 ? "tasks" : "issues"); setActiveView("needs_attention"); } },
-              ] satisfies ImageHubNode[]}
-              layout="fullscreen"
-              onToggleMode={() => setHubMode(current => current === "sun" ? "moon" : "sun")}
-            />
+          {/* Hero */}
+          <div
+            className="flex-shrink-0 px-5 pt-4 pb-4"
+            style={{
+              background: "linear-gradient(160deg, #0D2035 0%, #0F2440 40%, #0D1F38 100%)",
+              position: "relative",
+              overflow: "hidden",
+            }}
+          >
+            <div style={{ position: "absolute", top: "-60px", right: "-60px", width: "240px", height: "240px", background: "radial-gradient(circle, rgba(51,162,219,0.06) 0%, transparent 70%)", pointerEvents: "none" }} />
+            <div className="flex items-center gap-2.5 mb-2">
+              <div style={{ width: 36, height: 36, borderRadius: "12px", background: "linear-gradient(135deg, rgba(51,162,219,0.2) 0%, rgba(51,162,219,0.08) 100%)", border: "1px solid rgba(51,162,219,0.3)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "18px" }}>⚡</div>
+              <span className="text-[11px] font-bold uppercase tracking-[0.15em]" style={{ color: "#33A2DB", fontFamily: "'Space Grotesk', sans-serif" }}>Command Center</span>
+            </div>
+            <h1 className="text-[22px] font-black text-white leading-tight mb-1" style={{ fontFamily: "'Space Grotesk', sans-serif", letterSpacing: "-0.02em" }}>
+              Your Business,<br />
+              <span style={{ background: "linear-gradient(90deg, #33A2DB, #A78BFA)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>In Sync.</span>
+            </h1>
+            <p className="text-[12px]" style={{ color: "rgba(255,255,255,0.45)", lineHeight: "1.4" }}>
+              Real-time updates between owners — no more missed conversations.
+            </p>
+          </div>
+
+          {/* Radial Hub Layout */}
+          <div className="flex-1 px-5 py-3 flex items-center justify-center">
+            <div
+              className="relative flex items-center justify-center"
+              style={{ width: "100%", aspectRatio: "1 / 1", maxWidth: 340, margin: "0 auto" }}
+            >
+              {/* Connector lines */}
+              <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none" }} viewBox="0 0 340 340">
+                {[
+                  { angle: -90 },
+                  { angle: -30 },
+                  { angle: 30 },
+                  { angle: 90 },
+                  { angle: 150 },
+                  { angle: 210 },
+                ].map(({ angle }, i) => {
+                  const rad = (angle * Math.PI) / 180;
+                  const r = 112;
+                  const x = 170 + r * Math.cos(rad);
+                  const y = 170 + r * Math.sin(rad);
+                  return <line key={i} x1="170" y1="170" x2={x} y2={y} stroke="rgba(51,162,219,0.12)" strokeWidth="1.5" strokeDasharray="4 4" />;
+                })}
+              </svg>
+
+              {/* Center hub */}
+              <div
+                style={{
+                  position: "absolute", left: "50%", top: "50%",
+                  transform: "translate(-50%, -50%)",
+                  width: 68, height: 68, borderRadius: "50%",
+                  background: "linear-gradient(135deg, rgba(51,162,219,0.22) 0%, rgba(51,162,219,0.08) 100%)",
+                  border: "2px solid rgba(51,162,219,0.45)",
+                  boxShadow: "0 0 32px rgba(51,162,219,0.25), 0 0 8px rgba(51,162,219,0.15)",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  zIndex: 2, animation: "hubCenterPulse 3s ease-in-out infinite",
+                }}
+              >
+                <span style={{ fontSize: 26 }}>⚡</span>
+              </div>
+
+              {/* Orbit nodes */}
+              {[
+                { cat: CATEGORIES[0], count: counts.tasks, angle: -90, onClick: () => setActiveView("tasks") },
+                { cat: CATEGORIES[1], count: counts.updates, angle: -30, onClick: () => setActiveView("updates") },
+                { cat: CATEGORIES[2], count: counts.issues, angle: 30, onClick: () => setActiveView("issues") },
+                { cat: { key: "needs_attention", label: "Needs Attention", icon: "❗", gradient: "linear-gradient(135deg, rgba(251,191,36,0.18) 0%, rgba(251,191,36,0.07) 100%)", border: "rgba(251,191,36,0.38)", glow: "rgba(251,191,36,0.14)", textColor: "#FDE68A" }, count: counts.tasks + counts.issues, angle: 90, onClick: () => { setNeedsAttnSection(counts.tasks > 0 ? "tasks" : "issues"); setActiveView("needs_attention"); } },
+                { cat: { key: "calendar", label: "Calendar", icon: "📅", gradient: "linear-gradient(135deg, rgba(20,184,166,0.18) 0%, rgba(20,184,166,0.07) 100%)", border: "rgba(20,184,166,0.35)", glow: "rgba(20,184,166,0.14)", textColor: "#33A2DB" }, count: -1, angle: 150, onClick: demoToast },
+                { cat: { key: "archive", label: "Archive", icon: "📁", gradient: "linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 100%)", border: "rgba(255,255,255,0.15)", glow: "rgba(255,255,255,0.05)", textColor: "rgba(255,255,255,0.7)" }, count: 0, angle: 210, onClick: demoToast },
+              ].map(({ cat, count, angle, onClick }, i) => {
+                const rad = (angle * Math.PI) / 180;
+                const r = 112;
+                const cx = 50 + (r / 340) * 100 * Math.cos(rad);
+                const cy = 50 + (r / 340) * 100 * Math.sin(rad);
+                return (
+                  <div key={cat.key} style={{ position: "absolute", left: `${cx}%`, top: `${cy}%`, transform: "translate(-50%, -50%)", zIndex: 3 }}>
+                    <DemoCategoryTile cat={cat} count={count} onClick={onClick} delay={i * 70} size={72} />
+                  </div>
+                );
+              })}
+            </div>
           </div>
 
           {/* FAB (disabled in demo) */}

@@ -12,13 +12,6 @@ import { usePerson } from "@/contexts/PersonContext";
 import { useIdentity } from "@/components/AppShell";
 import { useActiveBusiness } from "@/components/BusinessSwitcher";
 import { useTour, TOUR_STORAGE_KEY, TOUR_PENDING_KEY } from "@/contexts/TourContext";
-import {
-  COMMAND_HUB_DESTINATIONS,
-  ImageHub,
-  modeFromDndState,
-  PERFORMANCE_HUB_DESTINATIONS,
-  type ImageHubNode,
-} from "@/components/ImageHub";
 
 type Author = string;
 type CardType = "update" | "issue" | "task";
@@ -1342,26 +1335,6 @@ export default function Board() {
     // Restore the last active hub so "Back to Hub" always returns to the right one
     try { return (parseInt(sessionStorage.getItem("bcc_active_hub") ?? "0", 10) as 0 | 1) || 0; } catch { return 0; }
   });
-  const utils = trpc.useUtils();
-  const { data: hubBusinessHours } = trpc.businessHours.checkStatus.useQuery(
-    { accountId: person?.accountId ?? 0 },
-    { enabled: person?.accountId !== undefined, staleTime: 15_000 }
-  );
-  const toggleHubDnd = trpc.businessHours.toggleDnd.useMutation({
-    onSuccess: async (data) => {
-      await utils.businessHours.checkStatus.invalidate({ accountId: person?.accountId ?? 0 });
-      toast(data.active ? "Off the Clock — notifications paused" : "Business Active — notifications restored", {
-        icon: data.active ? "🌙" : "☀️",
-        duration: 3000,
-      });
-    },
-    onError: () => toast.error("Could not update your off-the-clock status"),
-  });
-  const hubMode = modeFromDndState(hubBusinessHours?.dndActive ?? false);
-  const toggleHubMode = useCallback(() => {
-    if (person?.accountId === undefined || toggleHubDnd.isPending) return;
-    toggleHubDnd.mutate({ accountId: person.accountId });
-  }, [person?.accountId, toggleHubDnd]);
 
   // Lock the AppShell scroll container when on the hub home view so the screen
   // feels native and stationary (like a real app). Restore scroll for sub-views.
@@ -1712,98 +1685,6 @@ export default function Board() {
                 : undefined
               } />
           </BottomSheet>,
-          document.body
-        )}
-      </div>
-    );
-  }
-
-  // ── Premium Image Hub Home ──────────────────────────────────────────────
-  if (!activeView) {
-    const commandNodes: ImageHubNode[] = [
-      { id: COMMAND_HUB_DESTINATIONS[0], label: "Tasks", icon: "☑", color: "#F6C74D", x: 27, y: 27, onActivate: () => setActiveView("tasks"), ariaLabel: `Tasks, ${counts.tasks} open`, tourId: "tour-hub-tasks" },
-      { id: COMMAND_HUB_DESTINATIONS[1], label: "Updates", icon: "✦", color: "#32D7D2", x: 73, y: 27, onActivate: () => setActiveView("updates"), ariaLabel: `Updates, ${counts.updates} unread`, tourId: "tour-hub-updates" },
-      { id: COMMAND_HUB_DESTINATIONS[5], label: "Archive", icon: "▱", color: "#F6C74D", x: 18, y: 52, onActivate: () => setActiveView("archive"), ariaLabel: `Archive, ${archivedCards.length} items`, tourId: "tour-hub-archive" },
-      { id: COMMAND_HUB_DESTINATIONS[2], label: "Issues", icon: "!", color: "#F36A64", x: 82, y: 52, onActivate: () => setActiveView("issues"), ariaLabel: `Issues, ${counts.issues}${issues.some(c => c.priority === "high") ? ", including high priority items" : ""}`, tourId: "tour-hub-issues" },
-      { id: COMMAND_HUB_DESTINATIONS[4], label: "Calendar", icon: "▣", color: "#32D7D2", x: 27, y: 75, onActivate: () => navigate("/app/calendar"), tourId: "tour-hub-calendar" },
-      { id: COMMAND_HUB_DESTINATIONS[3], label: "Needs Attention", icon: "◌", color: "#C084FC", x: 73, y: 75, onActivate: () => { setNeedsAttnSection((counts.tasks ?? 0) > 0 ? "tasks" : "issues"); setActiveView("needs_attention"); }, ariaLabel: `Needs attention, ${(counts.tasks ?? 0) + (counts.issues ?? 0)} items`, tourId: "tour-hub-needs-attention" },
-    ];
-    const performanceNodes: ImageHubNode[] = [
-      { id: PERFORMANCE_HUB_DESTINATIONS[0], label: "Goals", icon: "✦", color: "#C084FC", x: 27, y: 27, onActivate: () => navigate("/app/goals"), tourId: "tour-goals" },
-      { id: PERFORMANCE_HUB_DESTINATIONS[1], label: "Co-Owner Inbox", icon: "◌", color: "#56B8FF", x: 73, y: 27, onActivate: () => navigate("/app/messages"), tourId: "tour-inbox" },
-      { id: PERFORMANCE_HUB_DESTINATIONS[5], label: "Settings", icon: "◈", color: "#CBD5E1", x: 18, y: 52, onActivate: () => navigate("/app/settings"), tourId: "tour-settings" },
-      { id: PERFORMANCE_HUB_DESTINATIONS[2], label: "KPIs", icon: "↗", color: "#47D7EB", x: 82, y: 52, onActivate: () => navigate("/app/kpi"), tourId: "tour-kpis" },
-      { id: PERFORMANCE_HUB_DESTINATIONS[4], label: "Refer a Friend", icon: "✦", color: "#F6C74D", x: 27, y: 75, onActivate: () => setReferralOpen(true), tourId: "tour-refer" },
-      { id: PERFORMANCE_HUB_DESTINATIONS[3], label: "Reports", icon: "≡", color: "#62D9B4", x: 73, y: 75, onActivate: () => navigate("/app/reports"), tourId: "tour-reports" },
-    ];
-
-    return (
-      <div className="fixed inset-0 z-[60] flex flex-col overflow-hidden" style={{ backgroundColor: "#020713", fontFamily: "'Inter', sans-serif" }}>
-        <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
-          {isLoading ? (
-            <div className="flex flex-1 items-center justify-center">
-              <div className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: "rgba(51,162,219,0.5)", borderTopColor: "transparent" }} />
-            </div>
-          ) : (
-            <div className="flex-1 min-h-0 relative">
-              <div
-                ref={(element) => { registerRef("tour-hub-swipe", element); (hubScrollRef as React.MutableRefObject<HTMLDivElement | null>).current = element; }}
-                onScroll={(event) => {
-                  const element = event.currentTarget;
-                  const hub = Math.round(element.scrollLeft / element.offsetWidth) as 0 | 1;
-                  setActiveHub(hub);
-                  try { sessionStorage.setItem("bcc_active_hub", String(hub)); } catch { /* ignore */ }
-                }}
-                className="[&::-webkit-scrollbar]:hidden"
-                style={{ display: "flex", height: "100%", overflowX: "auto", overflowY: "hidden", scrollSnapType: "x mandatory", scrollBehavior: "smooth", WebkitOverflowScrolling: "touch", msOverflowStyle: "none", scrollbarWidth: "none", width: "100%", overscrollBehavior: "none", touchAction: "pan-x" }}
-              >
-                <div style={{ flex: "0 0 100%", scrollSnapAlign: "start", width: "100%", minHeight: 0, display: "flex", flexDirection: "column", alignItems: "center" }}>
-                  <ImageHub
-                    label="Command Center"
-                    mode={hubMode}
-                    images={{ sun: "/manus-storage/businesscadence-sun-reference-mockup-corrected_092616e8.png", moon: "/manus-storage/businesscadence-moon-ball-reference-mockup-corrected_0f768b56.png" }}
-                    nodes={commandNodes}
-                    layout="fullscreen"
-                    onToggleMode={toggleHubMode}
-                    registerRef={registerRef}
-                    centerTourId="tour-hub-center"
-                  />
-                </div>
-                <div style={{ flex: "0 0 100%", scrollSnapAlign: "start", width: "100%", minHeight: 0, display: "flex", flexDirection: "column", alignItems: "center" }}>
-                  <ImageHub
-                    label="Performance Hub"
-                    mode={hubMode}
-                    images={{ sun: "/manus-storage/businesscadence-performance-sun-immersive_3a48d577.png", moon: "/manus-storage/businesscadence-performance-moon-immersive_5a2c329c.png" }}
-                    nodes={performanceNodes}
-                    layout="fullscreen"
-                    onToggleMode={toggleHubMode}
-                    registerRef={registerRef}
-                    centerTourId="tour-perf-center"
-                  />
-                </div>
-              </div>
-              <div className="absolute bottom-[max(1.25rem,env(safe-area-inset-bottom))] left-0 right-0 flex items-center justify-center gap-2 pointer-events-none">
-                <div aria-hidden="true" style={{ width: activeHub === 0 ? 20 : 6, height: 5, borderRadius: 3, backgroundColor: activeHub === 0 ? "rgba(51,162,219,0.8)" : "rgba(255,255,255,0.2)", transition: "all 0.3s ease" }} />
-                <div aria-hidden="true" style={{ width: activeHub === 1 ? 20 : 6, height: 5, borderRadius: 3, backgroundColor: activeHub === 1 ? "rgba(167,139,250,0.85)" : "rgba(255,255,255,0.2)", transition: "all 0.3s ease" }} />
-              </div>
-            </div>
-          )}
-        </div>
-        {sheetOpen && createPortal(
-          <BottomSheet open={sheetOpen} onClose={() => setSheetOpen(false)}>
-            <AddCardForm currentUser={currentUser} onAdded={() => { refetch(); setSheetOpen(false); }} activeBusiness={filterBusiness === "all" ? (allowedBusinesses[0] ?? "general" as Business) : filterBusiness} bizLabels={dynamicBizLabels} assignablePersons={allPersons} accountId={accountId} />
-          </BottomSheet>,
-          document.body
-        )}
-        {referralOpen && createPortal(
-          <div className="fixed inset-0 z-50 flex items-end justify-center" style={{ backgroundColor: "rgba(0,0,0,0.7)" }} onClick={() => setReferralOpen(false)}>
-            <div className="w-full max-w-lg rounded-t-3xl p-6 flex flex-col gap-4" style={{ backgroundColor: "#0D2035", border: "1px solid rgba(251,191,36,0.25)", borderBottom: "none" }} onClick={(event) => event.stopPropagation()}>
-              <div className="w-10 h-1 rounded-full mx-auto" style={{ backgroundColor: "rgba(255,255,255,0.15)" }} />
-              <div><h2 className="text-[18px] font-bold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Refer a Friend</h2><p className="text-[12px] mt-1" style={{ color: "rgba(255,255,255,0.5)" }}>Share the love. Share the savings.</p></div>
-              <button onClick={() => { const message = "Hey! I've been using BusinessCadence to keep our business and relationship in sync. You should try it — we both get a free month! businesscadence.com"; if (navigator.share) { navigator.share({ title: "BusinessCadence — Free Month", text: message, url: "https://businesscadence.com" }); } else { navigator.clipboard.writeText(message).then(() => toast.success("Invitation copied to clipboard")); } }} className="w-full py-4 rounded-2xl font-bold text-[15px] active:scale-[0.97]" style={{ background: "linear-gradient(135deg, #F59E0B, #D97706)", color: "#0F2440", fontFamily: "'Space Grotesk', sans-serif" }}>Share with a Friend</button>
-              <button onClick={() => setReferralOpen(false)} className="w-full py-2 text-[13px] font-medium" style={{ color: "rgba(255,255,255,0.5)" }}>Maybe later</button>
-            </div>
-          </div>,
           document.body
         )}
       </div>
