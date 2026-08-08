@@ -1410,6 +1410,32 @@ export default function Board() {
     const stored = localStorage.getItem("bcc_account_id");
     return stored ? parseInt(stored, 10) : undefined;
   })();
+  const { data: hubBusinessHours, refetch: refetchHubBusinessHours } = trpc.businessHours.checkStatus.useQuery(
+    { accountId: accountId ?? 0 },
+    { enabled: accountId !== undefined, staleTime: 30_000 }
+  );
+  const notificationsPaused = hubBusinessHours?.dndActive ?? false;
+  const notificationSleepMutation = trpc.businessHours.toggleDnd.useMutation({
+    onSuccess: (data) => {
+      refetchHubBusinessHours();
+      toast(data.active ? "Sleep mode on — notifications paused" : "Business active — notifications restored", {
+        icon: data.active ? "🌙" : "☀️",
+        duration: 3000,
+      });
+    },
+    onError: () => toast.error("Could not update notification settings"),
+  });
+  const setNotificationSleepMode = useCallback((shouldPause: boolean) => {
+    if (accountId === undefined) {
+      toast.error("Your notification setting is still loading");
+      return;
+    }
+    if (notificationsPaused === shouldPause) {
+      toast(shouldPause ? "Sleep mode is already on — you can still use every hub." : "Notifications are already active.");
+      return;
+    }
+    notificationSleepMutation.mutate({ accountId });
+  }, [accountId, notificationSleepMutation, notificationsPaused]);
 
   // Quick onboarding defers goals/KPIs/meeting setup — surface a prompt to finish
   useEffect(() => {
@@ -1720,7 +1746,7 @@ export default function Board() {
             display: "flex", alignItems: "center", justifyContent: "center", fontSize: "18px",
             boxShadow: activeHub === 0 ? "0 0 16px rgba(51,162,219,0.15)" : "0 0 16px rgba(167,139,250,0.15)",
             transition: "all 0.3s ease",
-          }}>{activeHub === 0 ? "⚡" : "📈"}</div>
+          }}>{activeHub === 0 ? "☀" : "☾"}</div>
           <span
             className="text-[11px] font-bold uppercase tracking-[0.15em]"
             style={{ color: activeHub === 0 ? "#33A2DB" : "#A78BFA", fontFamily: "'Space Grotesk', sans-serif", transition: "color 0.3s ease" }}
@@ -1832,8 +1858,13 @@ export default function Board() {
                       return <line key={i} x1="180" y1="180" x2={180 + r * Math.cos(rad)} y2={180 + r * Math.sin(rad)} stroke="rgba(51,162,219,0.12)" strokeWidth="1.5" strokeDasharray="4 4" />;
                     })}
                   </svg>
-                  <div
+                  <button
                     ref={(el) => registerRef("tour-hub-center", el)}
+                    type="button"
+                    onClick={() => setNotificationSleepMode(false)}
+                    disabled={notificationSleepMutation.isPending}
+                    aria-label={notificationsPaused ? "Turn notifications back on" : "Notifications are active"}
+                    aria-pressed={!notificationsPaused}
                     style={{
                       position: "absolute", left: "50%", top: "50%",
                       transform: "translate(-50%, -50%)",
@@ -1842,11 +1873,12 @@ export default function Board() {
                       border: "2px solid rgba(51,162,219,0.45)",
                       boxShadow: "0 0 32px rgba(51,162,219,0.25), 0 0 8px rgba(51,162,219,0.15)",
                       display: "flex", alignItems: "center", justifyContent: "center",
-                      zIndex: 2, animation: "hubCenterPulse 3s ease-in-out infinite",
+                      zIndex: 2, animation: "hubCenterPulse 3s ease-in-out infinite", padding: 0,
+                      cursor: notificationSleepMutation.isPending ? "wait" : "pointer",
                     }}
                   >
-                    <span style={{ fontSize: 28 }}>⚡</span>
-                  </div>
+                    <span style={{ fontSize: 28, lineHeight: 1, color: "#FDE68A" }}>☀</span>
+                  </button>
                   {[
                     { cat: CATEGORIES.find(c => c.key === "tasks")!, count: counts.tasks, angle: -90, onClick: () => setActiveView("tasks"), tourId: "tour-hub-tasks", extra: {} },
                     { cat: CATEGORIES.find(c => c.key === "updates")!, count: counts.updates, angle: -30, onClick: () => setActiveView("updates"), tourId: "tour-hub-updates", extra: {} },
@@ -1891,8 +1923,13 @@ export default function Board() {
                     })}
                   </svg>
                   {/* Performance hub center */}
-                  <div
+                  <button
                     ref={(el) => registerRef("tour-perf-center", el)}
+                    type="button"
+                    onClick={() => setNotificationSleepMode(true)}
+                    disabled={notificationSleepMutation.isPending}
+                    aria-label={notificationsPaused ? "Sleep mode is on — notifications are paused" : "Turn on sleep mode and pause notifications"}
+                    aria-pressed={notificationsPaused}
                     style={{
                       position: "absolute", left: "50%", top: "50%",
                       transform: "translate(-50%, -50%)",
@@ -1901,11 +1938,12 @@ export default function Board() {
                       border: "2px solid rgba(167,139,250,0.45)",
                       boxShadow: "0 0 32px rgba(167,139,250,0.25), 0 0 8px rgba(167,139,250,0.15)",
                       display: "flex", alignItems: "center", justifyContent: "center",
-                      zIndex: 2, animation: "hubCenterPulse2 3s ease-in-out infinite",
+                      zIndex: 2, animation: "hubCenterPulse2 3s ease-in-out infinite", padding: 0,
+                      cursor: notificationSleepMutation.isPending ? "wait" : "pointer",
                     }}
                   >
-                    <span style={{ fontSize: 28 }}>📈</span>
-                  </div>
+                    <span style={{ fontSize: 28, lineHeight: 1, color: "#DDD6FE" }}>☾</span>
+                  </button>
                   {[
                     { key: "goals", label: "Goals", icon: "🎯", gradient: "linear-gradient(135deg, rgba(124,58,237,0.18) 0%, rgba(124,58,237,0.07) 100%)", border: "rgba(124,58,237,0.35)", glow: "rgba(124,58,237,0.14)", textColor: "#C4B5FD", countBg: "rgba(124,58,237,0.25)", angle: -90, onClick: () => navigate("/app/goals"), tourId: "tour-goals" },
                     { key: "kpis", label: "KPIs", icon: "📊", gradient: "linear-gradient(135deg, rgba(37,99,235,0.18) 0%, rgba(37,99,235,0.07) 100%)", border: "rgba(37,99,235,0.35)", glow: "rgba(37,99,235,0.14)", textColor: "#93C5FD", countBg: "rgba(37,99,235,0.25)", angle: 30, onClick: () => navigate("/app/kpi"), tourId: "tour-kpis" },
