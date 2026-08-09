@@ -1,0 +1,18 @@
+# Project TODO
+
+- [x] Inspect the existing iPhone and Android app-icon configuration and resource locations.
+- [x] Prepare a source-faithful master icon from the approved matte blue-and-orange heart.
+- [x] Update iPhone and Android app-icon resources and configuration to use the approved heart.
+- [x] Verify the approved heart remains within Android launcher safe margins at native icon size.
+- [x] Validate native asset dimensions and configuration with automated checks.
+- [x] Verify the byte-for-byte iPhone icon remains inside a conservative iOS rounded-square launcher mask.
+- [ ] Save and publish the verified mobile app-icon update.
+- [ ] Reconstruct the approved blue-and-orange heart as a reusable vector asset with transparent surroundings.
+- [ ] Export compact iPhone and Android launcher icons from the vector mark without changing the approved heart design.
+- [ ] Validate the vector-derived native exports and publish the mobile icon update.
+- [ ] Replace the earlier raster source with the newly approved background-removed heart before vectorizing.
+- [ ] Remove any remaining edge fringe from the approved source so the vector is clean on any background.
+- [ ] Replace the automatic vector trace with a clean final source that preserves the approved heart’s smooth 3D appearance without tracing artifacts.
+- [x] Use the newly approved transparent heart as the exact production source for compact native iPhone and Android icon exports.
+- [x] Generate the 1024 × 1024 iPhone icon and Android density variants on the existing Business Cadence navy background.
+- [x] Verify iPhone composition fidelity, iPhone mask clearance, Android density dimensions, Android adaptive configuration, and Android safe margins.
