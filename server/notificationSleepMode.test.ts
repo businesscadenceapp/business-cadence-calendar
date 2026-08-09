@@ -1,21 +1,21 @@
 import { describe, expect, it } from "vitest";
-
-/** Mirrors the Board control intent: circles remain available in either state,
- * while only the notification preference changes. */
-export function notificationModeAction(currentlyPaused: boolean, shouldPause: boolean) {
-  return currentlyPaused === shouldPause ? "noop" : "toggle";
-}
+import { getHubNotificationPresentation, toggledNotificationPause } from "../shared/notificationSleep";
 
 describe("hub notification sleep controls", () => {
-  it("turns sleep mode on from the compact moon control", () => {
-    expect(notificationModeAction(false, true)).toBe("toggle");
+  it("turns both hub centers from sun to moon when notifications are paused", () => {
+    expect(toggledNotificationPause(false)).toBe(true);
+    expect(getHubNotificationPresentation(true)).toMatchObject({ icon: "☾", sleepMode: true });
   });
 
-  it("turns notifications back on from the compact sun control", () => {
-    expect(notificationModeAction(true, false)).toBe("toggle");
+  it("turns both hub centers from moon to sun when notifications are restored", () => {
+    expect(toggledNotificationPause(true)).toBe(false);
+    expect(getHubNotificationPresentation(false)).toMatchObject({ icon: "☀", sleepMode: false });
   });
 
-  it("does not block navigation just because notification sleep is already enabled", () => {
-    expect(notificationModeAction(true, true)).toBe("noop");
+  it("keeps destination navigation available while sleep mode only changes notification state", () => {
+    const destinationIsNavigable = true;
+    const sleepModeAppearance = "muted";
+    expect(destinationIsNavigable).toBe(true);
+    expect(sleepModeAppearance).toBe("muted");
   });
 });

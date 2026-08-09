@@ -12,6 +12,7 @@ import { usePerson } from "@/contexts/PersonContext";
 import { useIdentity } from "@/components/AppShell";
 import { useActiveBusiness } from "@/components/BusinessSwitcher";
 import { useTour, TOUR_STORAGE_KEY, TOUR_PENDING_KEY } from "@/contexts/TourContext";
+import { getHubNotificationPresentation } from "@shared/notificationSleep";
 
 type Author = string;
 type CardType = "update" | "issue" | "task";
@@ -1107,7 +1108,7 @@ const NEEDS_ATTENTION_META = {
 type TileMeta = { key: string; label: string; icon: string; gradient: string; border: string; glow: string; textColor: string; countBg: string };
 
 /** A single circular hub node — used in the radial layout */
-function HubNode({ cat, count, onClick, delay, hasHighPriority, size = 80, tourId, registerRef }: {
+function HubNode({ cat, count, onClick, delay, hasHighPriority, size = 80, tourId, registerRef, sleepMode = false }: {
   cat: TileMeta;
   count: number;
   onClick: () => void;
@@ -1116,16 +1117,22 @@ function HubNode({ cat, count, onClick, delay, hasHighPriority, size = 80, tourI
   size?: number;
   tourId?: string;
   registerRef?: (id: string, el: HTMLElement | null) => void;
+  /** Visual-only sleep treatment. Navigation remains intentionally available. */
+  sleepMode?: boolean;
 }) {
   return (
     <button
       ref={tourId && registerRef ? (el) => registerRef(tourId, el) : undefined}
       onClick={onClick}
+      aria-label={`${cat.label}${sleepMode ? " — available while notifications are paused" : ""}`}
       className="relative flex flex-col items-center gap-1.5 transition-all active:scale-[0.92] hover:scale-[1.06]"
       style={{
         animationDelay: `${delay}ms`,
         animation: "hubNodeEnter 0.45s cubic-bezier(0.23,1,0.32,1) both",
         WebkitTapHighlightColor: "transparent",
+        opacity: sleepMode ? 0.58 : 1,
+        filter: sleepMode ? "grayscale(0.72) saturate(0.4)" : "none",
+        transition: "opacity 180ms ease, filter 180ms ease, transform 160ms ease",
       }}
     >
       {/* Circle */}
@@ -1425,17 +1432,17 @@ export default function Board() {
     },
     onError: () => toast.error("Could not update notification settings"),
   });
-  const setNotificationSleepMode = useCallback((shouldPause: boolean) => {
+  const toggleNotificationSleepMode = useCallback(() => {
     if (accountId === undefined) {
       toast.error("Your notification setting is still loading");
       return;
     }
-    if (notificationsPaused === shouldPause) {
-      toast(shouldPause ? "Sleep mode is already on — you can still use every hub." : "Notifications are already active.");
-      return;
-    }
     notificationSleepMutation.mutate({ accountId });
-  }, [accountId, notificationSleepMutation, notificationsPaused]);
+  }, [accountId, notificationSleepMutation]);
+  const hubNotificationPresentation = getHubNotificationPresentation(notificationsPaused);
+  const sharedCenterIcon = hubNotificationPresentation.icon;
+  const sharedCenterColor = hubNotificationPresentation.color;
+  const sharedCenterLabel = hubNotificationPresentation.label;
 
   // Quick onboarding defers goals/KPIs/meeting setup — surface a prompt to finish
   useEffect(() => {
@@ -1746,7 +1753,7 @@ export default function Board() {
             display: "flex", alignItems: "center", justifyContent: "center", fontSize: "18px",
             boxShadow: activeHub === 0 ? "0 0 16px rgba(51,162,219,0.15)" : "0 0 16px rgba(167,139,250,0.15)",
             transition: "all 0.3s ease",
-          }}>{activeHub === 0 ? "☀" : "☾"}</div>
+          }}>{sharedCenterIcon}</div>
           <span
             className="text-[11px] font-bold uppercase tracking-[0.15em]"
             style={{ color: activeHub === 0 ? "#33A2DB" : "#A78BFA", fontFamily: "'Space Grotesk', sans-serif", transition: "color 0.3s ease" }}
@@ -1861,23 +1868,25 @@ export default function Board() {
                   <button
                     ref={(el) => registerRef("tour-hub-center", el)}
                     type="button"
-                    onClick={() => setNotificationSleepMode(false)}
+                    onClick={toggleNotificationSleepMode}
                     disabled={notificationSleepMutation.isPending}
-                    aria-label={notificationsPaused ? "Turn notifications back on" : "Notifications are active"}
-                    aria-pressed={!notificationsPaused}
+                    aria-label={sharedCenterLabel}
+                    aria-pressed={notificationsPaused}
                     style={{
                       position: "absolute", left: "50%", top: "50%",
                       transform: "translate(-50%, -50%)",
                       width: 72, height: 72, borderRadius: "50%",
-                      background: "linear-gradient(135deg, rgba(51,162,219,0.22) 0%, rgba(51,162,219,0.08) 100%)",
-                      border: "2px solid rgba(51,162,219,0.45)",
-                      boxShadow: "0 0 32px rgba(51,162,219,0.25), 0 0 8px rgba(51,162,219,0.15)",
+                      background: notificationsPaused
+                        ? "linear-gradient(135deg, rgba(167,139,250,0.24) 0%, rgba(167,139,250,0.08) 100%)"
+                        : "linear-gradient(135deg, rgba(251,191,36,0.24) 0%, rgba(251,191,36,0.08) 100%)",
+                      border: notificationsPaused ? "2px solid rgba(167,139,250,0.48)" : "2px solid rgba(251,191,36,0.5)",
+                      boxShadow: notificationsPaused ? "0 0 32px rgba(167,139,250,0.25), 0 0 8px rgba(167,139,250,0.15)" : "0 0 32px rgba(251,191,36,0.28), 0 0 8px rgba(251,191,36,0.18)",
                       display: "flex", alignItems: "center", justifyContent: "center",
                       zIndex: 2, animation: "hubCenterPulse 3s ease-in-out infinite", padding: 0,
                       cursor: notificationSleepMutation.isPending ? "wait" : "pointer",
                     }}
                   >
-                    <span style={{ fontSize: 28, lineHeight: 1, color: "#FDE68A" }}>☀</span>
+                    <span style={{ fontSize: 28, lineHeight: 1, color: sharedCenterColor }}>{sharedCenterIcon}</span>
                   </button>
                   {[
                     { cat: CATEGORIES.find(c => c.key === "tasks")!, count: counts.tasks, angle: -90, onClick: () => setActiveView("tasks"), tourId: "tour-hub-tasks", extra: {} },
@@ -1893,7 +1902,7 @@ export default function Board() {
                     const cy = 50 + (r / 360) * 100 * Math.sin(rad);
                     return (
                       <div key={cat.key} style={{ position: "absolute", left: `${cx}%`, top: `${cy}%`, transform: "translate(-50%, -50%)", zIndex: 3 }}>
-                        <HubNode cat={cat} count={count} onClick={onClick} delay={i * 70} size={76} tourId={tourId} registerRef={registerRef} {...extra} />
+                        <HubNode cat={cat} count={count} onClick={onClick} delay={i * 70} size={76} tourId={tourId} registerRef={registerRef} sleepMode={notificationsPaused} {...extra} />
                       </div>
                     );
                   })}
@@ -1926,23 +1935,25 @@ export default function Board() {
                   <button
                     ref={(el) => registerRef("tour-perf-center", el)}
                     type="button"
-                    onClick={() => setNotificationSleepMode(true)}
+                    onClick={toggleNotificationSleepMode}
                     disabled={notificationSleepMutation.isPending}
-                    aria-label={notificationsPaused ? "Sleep mode is on — notifications are paused" : "Turn on sleep mode and pause notifications"}
+                    aria-label={sharedCenterLabel}
                     aria-pressed={notificationsPaused}
                     style={{
                       position: "absolute", left: "50%", top: "50%",
                       transform: "translate(-50%, -50%)",
                       width: 72, height: 72, borderRadius: "50%",
-                      background: "linear-gradient(135deg, rgba(167,139,250,0.22) 0%, rgba(167,139,250,0.08) 100%)",
-                      border: "2px solid rgba(167,139,250,0.45)",
-                      boxShadow: "0 0 32px rgba(167,139,250,0.25), 0 0 8px rgba(167,139,250,0.15)",
+                      background: notificationsPaused
+                        ? "linear-gradient(135deg, rgba(167,139,250,0.24) 0%, rgba(167,139,250,0.08) 100%)"
+                        : "linear-gradient(135deg, rgba(251,191,36,0.24) 0%, rgba(251,191,36,0.08) 100%)",
+                      border: notificationsPaused ? "2px solid rgba(167,139,250,0.48)" : "2px solid rgba(251,191,36,0.5)",
+                      boxShadow: notificationsPaused ? "0 0 32px rgba(167,139,250,0.25), 0 0 8px rgba(167,139,250,0.15)" : "0 0 32px rgba(251,191,36,0.28), 0 0 8px rgba(251,191,36,0.18)",
                       display: "flex", alignItems: "center", justifyContent: "center",
                       zIndex: 2, animation: "hubCenterPulse2 3s ease-in-out infinite", padding: 0,
                       cursor: notificationSleepMutation.isPending ? "wait" : "pointer",
                     }}
                   >
-                    <span style={{ fontSize: 28, lineHeight: 1, color: "#DDD6FE" }}>☾</span>
+                    <span style={{ fontSize: 28, lineHeight: 1, color: sharedCenterColor }}>{sharedCenterIcon}</span>
                   </button>
                   {[
                     { key: "goals", label: "Goals", icon: "🎯", gradient: "linear-gradient(135deg, rgba(124,58,237,0.18) 0%, rgba(124,58,237,0.07) 100%)", border: "rgba(124,58,237,0.35)", glow: "rgba(124,58,237,0.14)", textColor: "#C4B5FD", countBg: "rgba(124,58,237,0.25)", angle: -90, onClick: () => navigate("/app/goals"), tourId: "tour-goals" },
@@ -1958,7 +1969,7 @@ export default function Board() {
                     const cy = 50 + (r / 360) * 100 * Math.sin(rad);
                     return (
                       <div key={cat.key} style={{ position: "absolute", left: `${cx}%`, top: `${cy}%`, transform: "translate(-50%, -50%)", zIndex: 3 }}>
-                        <HubNode cat={cat as TileMeta} count={-1} onClick={onClick} delay={i * 70} size={76} tourId={tourId} registerRef={registerRef} />
+                        <HubNode cat={cat as TileMeta} count={-1} onClick={onClick} delay={i * 70} size={76} tourId={tourId} registerRef={registerRef} sleepMode={notificationsPaused} />
                       </div>
                     );
                   })}
@@ -1972,6 +1983,11 @@ export default function Board() {
               <div style={{ width: activeHub === 0 ? 20 : 6, height: 5, borderRadius: 3, backgroundColor: activeHub === 0 ? "rgba(51,162,219,0.7)" : "rgba(255,255,255,0.2)", transition: "all 0.3s ease" }} />
               <div style={{ width: activeHub === 1 ? 20 : 6, height: 5, borderRadius: 3, backgroundColor: activeHub === 1 ? "rgba(167,139,250,0.7)" : "rgba(255,255,255,0.2)", transition: "all 0.3s ease" }} />
             </div>
+            {notificationsPaused && (
+              <div className="mx-auto mt-1 rounded-full px-3 py-1 text-[10px] font-bold tracking-wide" style={{ width: "fit-content", color: "#DDD6FE", background: "rgba(167,139,250,0.13)", border: "1px solid rgba(167,139,250,0.28)", fontFamily: "'Space Grotesk', sans-serif" }}>
+                ☾ Sleep mode — notifications paused
+              </div>
+            )}
           </div>
         )}
 
