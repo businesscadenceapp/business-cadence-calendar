@@ -226,14 +226,10 @@ export default function BusinessSelector() {
 
   return (
     <div
-      className="fixed inset-0 flex flex-col items-center justify-center overflow-hidden overscroll-none"
+      className="min-h-screen flex flex-col items-center justify-center overflow-hidden"
       style={{
-        height: "100dvh",
-        minHeight: "100dvh",
-        maxHeight: "100dvh",
         background: "linear-gradient(160deg, #0A1929 0%, #0F2440 50%, #0A1929 100%)",
         fontFamily: "'Inter', sans-serif",
-        touchAction: "none",
       }}
     >
       {/* Header */}
@@ -258,7 +254,7 @@ export default function BusinessSelector() {
       {/* Card carousel */}
       <div
         className="relative w-full flex items-center justify-center"
-        style={{ height: "420px", touchAction: "none" }}
+        style={{ height: "420px", touchAction: "pan-y" }}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}

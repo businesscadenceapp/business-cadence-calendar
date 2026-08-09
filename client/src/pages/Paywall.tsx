@@ -123,7 +123,7 @@ function BillingToggle({
               : "text-white/45 hover:text-white/70",
           ].join(" ")}
         >
-          {b === "monthly" ? "Monthly" : "Annual · Save 20%"}
+          {b === "monthly" ? "Monthly" : "Annual · Save 25%"}
         </button>
       ))}
     </div>
@@ -274,13 +274,15 @@ export default function Paywall({ dismissible, onSubscribe, onDismiss }: Paywall
 
           {/* Headline */}
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-white leading-tight tracking-tight mb-3"
-              style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-              Unlock Seamless{" "}
-              <span className="text-[#33A2DB]">Co-Ownership</span>
+            <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-white/35 mb-2">
+              Run your business. Protect your life.
+            </p>
+            <h1 className="text-3xl font-bold text-white leading-tight tracking-tight mb-3">
+              Try free for{" "}
+              <span className="text-[#33A2DB]">14 days</span>
             </h1>
             <p className="text-white/55 text-base leading-relaxed">
-              14-day free trial. Full access. Cancel anytime.
+              Full access to everything. Cancel anytime — no charge until your trial ends.
             </p>
           </div>
 
