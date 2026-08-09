@@ -6,10 +6,10 @@
 - [x] Verify the approved heart remains within Android launcher safe margins at native icon size.
 - [x] Validate native asset dimensions and configuration with automated checks.
 - [x] Verify the byte-for-byte iPhone icon remains inside a conservative iOS rounded-square launcher mask.
-- [ ] Save and publish the verified mobile app-icon update.
+- [x] Save and publish the verified mobile app-icon update.
 - [x] Reconstruct the approved blue-and-orange heart as a reusable vector asset with transparent surroundings.
 - [x] Export compact iPhone and Android launcher icons from the vector mark without changing the approved heart design.
-- [ ] Validate the vector-derived native exports and publish the mobile icon update.
+- [x] Validate the vector-derived native exports and publish the mobile icon update.
 - [x] Replace the earlier raster source with the newly approved background-removed heart before vectorizing.
 - [x] Remove any remaining edge fringe from the approved source so the vector is clean on any background.
 - [x] Replace the automatic vector trace with a clean final source that preserves the approved heart’s smooth 3D appearance without tracing artifacts.
