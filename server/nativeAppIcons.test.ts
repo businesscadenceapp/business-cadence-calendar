@@ -25,7 +25,7 @@ describe("native mobile app icons", () => {
       encoding: "utf8",
     });
     expect(JSON.parse(report)).toMatchObject({
-      clean_heart_scale: 1.14,
+      clean_heart_scale: 1.22,
       composition: "exact",
       size: [1024, 1024],
     });

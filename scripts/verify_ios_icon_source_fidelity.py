@@ -12,7 +12,7 @@ IOS_ICON = Path(
     "AppIcon.appiconset/AppIcon-512@2x.png"
 )
 BACKGROUND_COLOR = "#0F2440"
-IOS_HEART_SCALE = 1.14
+IOS_HEART_SCALE = 1.22
 
 
 def main() -> None:

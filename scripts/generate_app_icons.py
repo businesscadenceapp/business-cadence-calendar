@@ -11,7 +11,7 @@ ANDROID_SAFE_MASTER = Path("/home/ubuntu/webdev-static-assets/business-cadence-a
 IOS_ICON = PROJECT_ROOT / "ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png"
 ANDROID_RES = PROJECT_ROOT / "android/app/src/main/res"
 BACKGROUND_COLOR = "#0F2440"
-IOS_HEART_SCALE = 1.14
+IOS_HEART_SCALE = 1.22
 ANDROID_SAFE_SCALE = 0.82
 
 ANDROID_ICON_SIZES = {

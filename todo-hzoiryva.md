@@ -37,3 +37,5 @@
 - [x] Validate and deliver the corrected transparent Splash image package for local Xcode replacement.
 - [x] Enlarge the clean heart within the iPhone and Android app-icon composition while preserving iOS and Android mask safe margins.
 - [x] Validate and deliver the larger AppIcon PNG with the corrected transparent Splash package.
+- [x] Increase the heart to a visibly larger AppIcon scale while retaining iPhone mask and Android launcher safety.
+- [x] Deliver the refreshed visibly larger AppIcon PNG and unchanged transparent Splash package.
