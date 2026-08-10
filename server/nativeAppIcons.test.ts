@@ -99,4 +99,12 @@ describe("native mobile app icons", () => {
     });
     expect(JSON.parse(report)).toMatchObject({ fidelity: "approved" });
   });
+
+  it("uses the clean approved heart in every Xcode Splash asset", () => {
+    const report = execFileSync("python3", ["scripts/validate_ios_splash_assets.py"], {
+      cwd: projectRoot,
+      encoding: "utf8",
+    });
+    expect(JSON.parse(report)).toMatchObject({ splash_assets: 6, clean_heart_composition: "exact" });
+  });
 });

@@ -29,3 +29,5 @@
 - [x] Replace the website branding asset with the corrected heart and verify the artifact is gone before publishing.
 - [x] Regenerate iPhone and Android launcher icons from the clean approved heart PNG used by the website.
 - [x] Verify native icon fidelity, safe dimensions, and artifact-free center connector before publishing the mobile parity update.
+- [x] Replace the Xcode Splash image set with correctly sized clean-heart assets.
+- [x] Confirm Xcode AppIcon and Splash asset catalogs both reference the new heart, then publish the native iPhone branding update.
