@@ -22,6 +22,10 @@
 - [x] AI summary uses item comments + notes combined
 - [x] Green dot indicator on calendar days with saved logs
 - [ ] ICS export for Google/Apple Calendar import (future enhancement)
+- [x] Tour cleanup: represent active tour state with one nullable step index so exactly one step can render.
+- [x] Tour cleanup: replace the coach-mark body with one vertical step wrapper containing title, copy, and a non-absolute Continue action.
+- [x] Tour cleanup: give the sole active Continue action an elevated interaction layer and one-step progression handler.
+- [x] Tour cleanup: add focused tests for state progression, final-step completion, and single-overlay markup.
 - [ ] Printable one-page yearly summary PDF (future enhancement)
 - [ ] Issues List tracker (shared notepad for mid-week issues) (future enhancement)
 - [ ] Per-business KPI scorecard templates (future enhancement)

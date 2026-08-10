@@ -11,11 +11,11 @@ import {
   createContext,
   useCallback,
   useContext,
-  useEffect,
   useRef,
   useState,
 } from "react";
 import type { ReactNode } from "react";
+import { advanceTourStep, isTourStepActive } from "@/lib/tour-flow";
 
 // ─── Tour Step Definitions ────────────────────────────────────────────────────
 
@@ -230,28 +230,32 @@ export function useTour() {
 // ─── Provider ─────────────────────────────────────────────────────────────────
 
 export function TourProvider({ children }: { children: ReactNode }) {
-  const [active, setActive] = useState(false);
-  const [stepIndex, setStepIndex] = useState(0);
+  // `null` means the tour is closed. A valid index is the one and only step
+  // allowed to render, which rules out overlapping coach marks by design.
+  const [activeStepIndex, setActiveStepIndex] = useState<number | null>(null);
+  const activeStepIndexRef = useRef<number | null>(null);
   const refsMap = useRef<Map<string, HTMLElement>>(new Map());
 
-  const complete = useCallback(() => {
-    setActive(false);
-    setStepIndex(0);
-    localStorage.setItem(TOUR_STORAGE_KEY, "true");
+  const setOnlyActiveStep = useCallback((nextStepIndex: number | null) => {
+    activeStepIndexRef.current = nextStepIndex;
+    setActiveStepIndex(nextStepIndex);
   }, []);
 
+  const complete = useCallback(() => {
+    setOnlyActiveStep(null);
+    localStorage.setItem(TOUR_STORAGE_KEY, "true");
+  }, [setOnlyActiveStep]);
+
   const next = useCallback(() => {
-    setStepIndex(prev => {
-      const nextIdx = prev + 1;
-      if (nextIdx >= TOUR_STEPS.length) {
-        // Last step — complete the tour
-        setActive(false);
-        localStorage.setItem(TOUR_STORAGE_KEY, "true");
-        return 0;
-      }
-      return nextIdx;
-    });
-  }, []);
+    const nextStepIndex = advanceTourStep(activeStepIndexRef.current, TOUR_STEPS.length);
+
+    if (nextStepIndex === activeStepIndexRef.current) return;
+    if (nextStepIndex === null) {
+      localStorage.setItem(TOUR_STORAGE_KEY, "true");
+    }
+
+    setOnlyActiveStep(nextStepIndex);
+  }, [setOnlyActiveStep]);
 
   const skip = useCallback(() => {
     complete();
@@ -259,20 +263,8 @@ export function TourProvider({ children }: { children: ReactNode }) {
 
   const replay = useCallback(() => {
     localStorage.removeItem(TOUR_STORAGE_KEY);
-    setStepIndex(0);
-    setActive(true);
-  }, []);
-
-  /** Called by Board page — starts tour if pending flag is set OR tour has never been seen */
-  const startIfPending = useCallback(() => {
-    const pending = localStorage.getItem(TOUR_PENDING_KEY);
-    const completed = localStorage.getItem(TOUR_STORAGE_KEY);
-    if (pending === "1" || !completed) {
-      localStorage.removeItem(TOUR_PENDING_KEY);
-      setStepIndex(0);
-      setActive(true);
-    }
-  }, []);
+    setOnlyActiveStep(0);
+  }, [setOnlyActiveStep]);
 
   const registerRef = useCallback((id: string, el: HTMLElement | null) => {
     if (el) {
@@ -286,7 +278,9 @@ export function TourProvider({ children }: { children: ReactNode }) {
     return refsMap.current.get(id) ?? null;
   }, []);
 
-  const currentStep = active ? (TOUR_STEPS[stepIndex] ?? null) : null;
+  const active = isTourStepActive(activeStepIndex, TOUR_STEPS.length);
+  const stepIndex = activeStepIndex ?? 0;
+  const currentStep = active ? TOUR_STEPS[stepIndex] : null;
 
   return (
     <TourContext.Provider
@@ -301,30 +295,9 @@ export function TourProvider({ children }: { children: ReactNode }) {
         getRef,
       }}
     >
-      {/* Expose startIfPending via a side-channel so Board can call it */}
-      <TourStartBridge startIfPending={startIfPending} />
       {children}
     </TourContext.Provider>
   );
-}
-
-// ─── Start Bridge ─────────────────────────────────────────────────────────────
-// Allows Board to trigger tour start without prop-drilling
-
-const TourStartContext = createContext<{ startIfPending: () => void }>({
-  startIfPending: () => {},
-});
-
-function TourStartBridge({ startIfPending }: { startIfPending: () => void }) {
-  return (
-    <TourStartContext.Provider value={{ startIfPending }}>
-      {/* no children — just provides the context value */}
-    </TourStartContext.Provider>
-  );
-}
-
-export function useTourStart() {
-  return useContext(TourStartContext);
 }
 
 // Re-export storage key for Settings page
