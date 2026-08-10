@@ -1,14 +1,12 @@
-"""Generate native app icons from the approved high-detail vector heart."""
+"""Generate native app icons from the clean approved heart PNG."""
 
-from io import BytesIO
 from pathlib import Path
 
-from cairosvg import svg2png
 from PIL import Image
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-VECTOR_HEART = Path("/home/ubuntu/webdev-static-assets/business-cadence-heart-high-fidelity.svg")
+CLEAN_HEART = Path("/home/ubuntu/webdev-static-assets/business-cadence-heart-clean.png")
 ANDROID_SAFE_MASTER = Path("/home/ubuntu/webdev-static-assets/business-cadence-app-icon-android-safe.png")
 IOS_ICON = PROJECT_ROOT / "ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png"
 ANDROID_RES = PROJECT_ROOT / "android/app/src/main/res"
@@ -25,20 +23,21 @@ ANDROID_ICON_SIZES = {
 }
 
 
-def render_vector_icon() -> Image.Image:
-    if not VECTOR_HEART.exists():
-        raise FileNotFoundError(f"Missing approved vector heart: {VECTOR_HEART}")
-    png = svg2png(
-        url=str(VECTOR_HEART),
-        output_width=1024,
-        output_height=1024,
-        background_color=BACKGROUND_COLOR,
-    )
-    return Image.open(BytesIO(png)).convert("RGBA")
+def compose_clean_icon() -> Image.Image:
+    if not CLEAN_HEART.exists():
+        raise FileNotFoundError(f"Missing approved clean heart: {CLEAN_HEART}")
+    with Image.open(CLEAN_HEART) as source:
+        heart = source.convert("RGBA")
+    if heart.size != (1024, 1024):
+        raise ValueError(f"Expected 1024 x 1024 clean heart; received {heart.size}")
+
+    canvas = Image.new("RGBA", heart.size, BACKGROUND_COLOR)
+    canvas.alpha_composite(heart)
+    return canvas
 
 
 def main() -> None:
-    ios_icon = render_vector_icon()
+    ios_icon = compose_clean_icon()
     if ios_icon.size != (1024, 1024):
         raise ValueError(f"Expected 1024 x 1024 rendered icon; received {ios_icon.size}")
 

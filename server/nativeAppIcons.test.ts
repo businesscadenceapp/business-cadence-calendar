@@ -16,7 +16,7 @@ function pngDimensions(relativePath: string) {
 }
 
 describe("native mobile app icons", () => {
-  it("uses a 1024 x 1024 iOS icon rendered exactly from the approved vector heart", () => {
+  it("uses a 1024 x 1024 iOS icon composed exactly from the clean approved heart", () => {
     expect(
       pngDimensions("ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png"),
     ).toEqual({ width: 1024, height: 1024 });
@@ -24,7 +24,7 @@ describe("native mobile app icons", () => {
       cwd: projectRoot,
       encoding: "utf8",
     });
-    expect(JSON.parse(report)).toMatchObject({ vector_render_fidelity: "exact", size: [1024, 1024] });
+    expect(JSON.parse(report)).toMatchObject({ clean_heart_composition: "exact", size: [1024, 1024] });
   });
 
   it("provides the selected launcher icon at every Android density", () => {

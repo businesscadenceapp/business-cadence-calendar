@@ -27,3 +27,5 @@
 - [x] Publish the complete website, app UI, and email branding replacement update.
 - [x] Remove the visible center-box artifact from the shared web heart logo while preserving the approved interlocking-heart geometry.
 - [x] Replace the website branding asset with the corrected heart and verify the artifact is gone before publishing.
+- [x] Regenerate iPhone and Android launcher icons from the clean approved heart PNG used by the website.
+- [x] Verify native icon fidelity, safe dimensions, and artifact-free center connector before publishing the mobile parity update.
