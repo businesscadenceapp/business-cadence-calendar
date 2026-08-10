@@ -13,6 +13,7 @@ import { trpc } from "@/lib/trpc";
 import { usePerson } from "@/contexts/PersonContext";
 import { toast } from "sonner";
 import { Users } from "lucide-react";
+import BrandLogo from "@/components/BrandLogo";
 
 export default function AcceptInvite() {
   const [, navigate] = useLocation();
@@ -149,12 +150,7 @@ export default function AcceptInvite() {
       <div className="w-full max-w-md relative z-10">
         {/* Logo */}
         <div className="flex justify-center mb-8">
-          <img
-            src="/manus-storage/businesscadence-logo-final-clean_3f67cebb.webp"
-            alt="BusinessCadence"
-            height={100}
-            style={{ height: 100, width: "auto", filter: "brightness(1.1)" }}
-          />
+          <BrandLogo size="xl" />
         </div>
 
         {tokenError ? (

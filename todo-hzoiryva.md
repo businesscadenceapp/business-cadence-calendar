@@ -19,3 +19,9 @@
 - [x] Verify the hand-built SVG mark renders reliably with its intended blue-and-orange heart geometry before using it as a reusable brand asset.
 - [x] Create and approve a higher-fidelity editable vector before replacing the exact transparent heart in any production-facing artwork.
 - [x] Validate the high-detail SVG against the cleaned approved heart for silhouette coverage and dimensional color fidelity.
+- [x] Locate and replace every website and app UI reference to the legacy crystal-heart artwork with the approved blue-and-orange heart.
+- [x] Prepare and use an optimized web-hosted version of the approved heart for interface branding.
+- [x] Verify the website and app UI no longer display the legacy crystal heart, then publish the update.
+- [x] Replace the remaining legacy crystal-heart image in branded email templates with the approved heart asset.
+- [x] Re-run a comprehensive project-wide legacy-branding search and verify key product surfaces before publishing.
+- [x] Publish the complete website, app UI, and email branding replacement update.

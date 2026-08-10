@@ -1,5 +1,5 @@
 /**
- * BrandLogo — BusinessCadence logo using the approved geometric faceted heart icon.
+ * BrandLogo — BusinessCadence logo using the approved blue-and-orange geometric heart.
  *
  * BrandIcon — Just the heart icon in a circle (no text).
  * Use this for compact spaces like login cards and sidebar headers.
@@ -7,7 +7,7 @@
  * BrandLogo — Full logo with heart icon + "BusinessCadence" text.
  */
 
-const LOGO_SRC = "/manus-storage/bc-logo-icon-1024_9039afef.png";
+const LOGO_SRC = "/manus-storage/business-cadence-heart-high-fidelity_d44c6838.svg";
 
 // ---------------------------------------------------------------------------
 // BrandIcon — circular icon only, no text
@@ -42,7 +42,7 @@ export function BrandIcon({
       <img
         src={LOGO_SRC}
         alt="BusinessCadence"
-        style={{ width: "100%", height: "100%", objectFit: "cover" }}
+        style={{ width: "100%", height: "100%", objectFit: "contain" }}
       />
     </div>
   );
@@ -98,7 +98,7 @@ export default function BrandLogo({
         <img
           src={LOGO_SRC}
           alt=""
-          style={{ width: "100%", height: "100%", objectFit: "cover" }}
+          style={{ width: "100%", height: "100%", objectFit: "contain" }}
         />
       </div>
       <span

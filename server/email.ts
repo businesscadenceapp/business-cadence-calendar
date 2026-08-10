@@ -39,8 +39,8 @@ export async function sendPasswordResetEmail({
           <!-- Logo -->
           <tr>
             <td align="center" style="padding-bottom:32px;">
-              <img src="https://businesscadence.com/manus-storage/businesscadence-logo-final-clean_3f67cebb.webp"
-                   alt="BusinessCadence" height="60" style="height:60px;width:auto;" />
+              <img src="https://businesscadence.com/manus-storage/business-cadence-heart-email_bad58bc7.png"
+                   alt="BusinessCadence" height="60" width="60" style="height:60px;width:60px;display:block;" />
             </td>
           </tr>
           <!-- Card -->
@@ -125,8 +125,8 @@ export async function sendPartnerSetupInviteEmail({
       <table width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;">
         <tr>
           <td align="center" style="padding-bottom:32px;">
-            <img src="https://businesscadence.com/manus-storage/businesscadence-logo-final-clean_3f67cebb.webp"
-                 alt="BusinessCadence" height="60" style="height:60px;width:auto;" />
+            <img src="https://businesscadence.com/manus-storage/business-cadence-heart-email_bad58bc7.png"
+                 alt="BusinessCadence" height="60" width="60" style="height:60px;width:60px;display:block;" />
           </td>
         </tr>
         <tr>
