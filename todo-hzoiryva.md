@@ -39,3 +39,6 @@
 - [x] Validate and deliver the larger AppIcon PNG with the corrected transparent Splash package.
 - [x] Increase the heart to a visibly larger AppIcon scale while retaining iPhone mask and Android launcher safety.
 - [x] Deliver the refreshed visibly larger AppIcon PNG and unchanged transparent Splash package.
+- [x] Locate the remaining duplicate native splash source that still displays the legacy crystal heart on iPhone startup.
+- [x] Replace or remove the legacy native splash reference so only the clean approved heart appears during startup.
+- [x] Validate the unified iPhone startup sequence and publish the duplicate-splash fix.

@@ -114,4 +114,14 @@ describe("native mobile app icons", () => {
       transparent_clean_heart_composition: "exact",
     });
   });
+
+  it("does not replay the Xcode launch storyboard through the Capacitor splash overlay", () => {
+    for (const relativePath of ["capacitor.config.json", "ios/App/App/capacitor.config.json"]) {
+      const config = JSON.parse(readFileSync(resolve(projectRoot, relativePath), "utf8")) as {
+        plugins?: { SplashScreen?: { launchShowDuration?: number } };
+      };
+
+      expect(config.plugins?.SplashScreen?.launchShowDuration).toBe(0);
+    }
+  });
 });
