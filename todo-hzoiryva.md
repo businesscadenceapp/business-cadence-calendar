@@ -25,3 +25,5 @@
 - [x] Replace the remaining legacy crystal-heart image in branded email templates with the approved heart asset.
 - [x] Re-run a comprehensive project-wide legacy-branding search and verify key product surfaces before publishing.
 - [x] Publish the complete website, app UI, and email branding replacement update.
+- [x] Remove the visible center-box artifact from the shared web heart logo while preserving the approved interlocking-heart geometry.
+- [x] Replace the website branding asset with the corrected heart and verify the artifact is gone before publishing.

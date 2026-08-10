@@ -3,7 +3,7 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
 const projectRoot = resolve(import.meta.dirname, "..");
-const approvedHeart = "/manus-storage/business-cadence-heart-high-fidelity_d44c6838.svg";
+const approvedHeart = "/manus-storage/business-cadence-heart-clean_7d2f6545.png";
 const approvedEmailHeart = "business-cadence-heart-email_bad58bc7.png";
 
 describe("approved Business Cadence heart branding", () => {

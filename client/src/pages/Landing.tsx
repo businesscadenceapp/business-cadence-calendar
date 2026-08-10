@@ -208,7 +208,7 @@ function Hero() {
         {/* Hero brand block: large heart centered, stacked wordmark below */}
         <div className="flex flex-col items-center mb-12 animate-fade-in">
           <img
-            src="/manus-storage/business-cadence-heart-high-fidelity_d44c6838.svg"
+            src="/manus-storage/business-cadence-heart-clean_7d2f6545.png"
             alt="Business Cadence geometric heart"
             style={{
               width: 180,

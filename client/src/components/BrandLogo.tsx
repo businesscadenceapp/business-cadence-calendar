@@ -7,7 +7,7 @@
  * BrandLogo — Full logo with heart icon + "BusinessCadence" text.
  */
 
-const LOGO_SRC = "/manus-storage/business-cadence-heart-high-fidelity_d44c6838.svg";
+const LOGO_SRC = "/manus-storage/business-cadence-heart-clean_7d2f6545.png";
 
 // ---------------------------------------------------------------------------
 // BrandIcon — circular icon only, no text
