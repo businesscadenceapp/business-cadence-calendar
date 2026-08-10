@@ -5,6 +5,7 @@
  */
 import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import { TOUR_STEPS, useTour } from "@/contexts/TourContext";
+import { getTourCardLayout } from "@/lib/tour-placement";
 
 interface SpotlightRect {
   x: number;
@@ -118,6 +119,10 @@ export default function TourOverlay() {
   const currentSpotlight = spotlight ?? fallbackSpotlight;
   const totalSteps = TOUR_STEPS.length;
   const isLastStep = stepIndex === totalSteps - 1;
+  const cardLayout = getTourCardLayout(currentSpotlight, viewportHeight, currentStep.id);
+  const cardAnchorStyle = cardLayout.placement === "below"
+    ? { top: cardLayout.anchorOffset }
+    : { bottom: cardLayout.anchorOffset };
 
   return (
     <div
@@ -174,11 +179,10 @@ export default function TourOverlay() {
         style={{
           position: "fixed",
           left: "50%",
-          bottom: "calc(env(safe-area-inset-bottom, 0px) + 12px)",
           transform: "translateX(-50%)",
           width: "calc(100vw - 32px)",
           maxWidth: 420,
-          maxHeight: "min(440px, calc(100dvh - 32px))",
+          maxHeight: cardLayout.maxHeight,
           display: "flex",
           flexDirection: "column",
           overflow: "hidden",
@@ -188,6 +192,7 @@ export default function TourOverlay() {
           boxShadow: "0 12px 42px rgba(0,0,0,0.56)",
           zIndex: 90,
           pointerEvents: "auto",
+          ...cardAnchorStyle,
         }}
       >
         <div
@@ -237,6 +242,8 @@ export default function TourOverlay() {
             display: "flex",
             flexDirection: "column",
             gap: 12,
+            flex: "1 1 auto",
+            minHeight: 0,
             overflowY: "auto",
             overscrollBehavior: "contain",
             padding: "16px 16px 12px",
