@@ -24,7 +24,11 @@ describe("native mobile app icons", () => {
       cwd: projectRoot,
       encoding: "utf8",
     });
-    expect(JSON.parse(report)).toMatchObject({ clean_heart_composition: "exact", size: [1024, 1024] });
+    expect(JSON.parse(report)).toMatchObject({
+      clean_heart_scale: 1.14,
+      composition: "exact",
+      size: [1024, 1024],
+    });
   });
 
   it("provides the selected launcher icon at every Android density", () => {
@@ -100,11 +104,14 @@ describe("native mobile app icons", () => {
     expect(JSON.parse(report)).toMatchObject({ fidelity: "approved" });
   });
 
-  it("uses the clean approved heart in every Xcode Splash asset", () => {
+  it("uses the clean approved transparent heart in every Xcode Splash asset", () => {
     const report = execFileSync("python3", ["scripts/validate_ios_splash_assets.py"], {
       cwd: projectRoot,
       encoding: "utf8",
     });
-    expect(JSON.parse(report)).toMatchObject({ splash_assets: 6, clean_heart_composition: "exact" });
+    expect(JSON.parse(report)).toMatchObject({
+      splash_assets: 6,
+      transparent_clean_heart_composition: "exact",
+    });
   });
 });

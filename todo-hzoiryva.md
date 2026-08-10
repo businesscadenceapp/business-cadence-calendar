@@ -31,3 +31,9 @@
 - [x] Verify native icon fidelity, safe dimensions, and artifact-free center connector before publishing the mobile parity update.
 - [x] Replace the Xcode Splash image set with correctly sized clean-heart assets.
 - [x] Confirm Xcode AppIcon and Splash asset catalogs both reference the new heart, then publish the native iPhone branding update.
+- [x] Deliver the clean teal-edge-free heart source and Xcode-ready AppIcon and Splash files for manual local replacement.
+- [x] Remove the incorrect manual SVG from the user-facing Xcode package and deliver only source-faithful clean PNG assets.
+- [x] Replace the navy-background Xcode Splash images with transparent clean-heart assets matching the prior launch-screen behavior.
+- [x] Validate and deliver the corrected transparent Splash image package for local Xcode replacement.
+- [x] Enlarge the clean heart within the iPhone and Android app-icon composition while preserving iOS and Android mask safe margins.
+- [x] Validate and deliver the larger AppIcon PNG with the corrected transparent Splash package.

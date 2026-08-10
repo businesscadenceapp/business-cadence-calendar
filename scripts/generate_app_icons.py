@@ -11,6 +11,7 @@ ANDROID_SAFE_MASTER = Path("/home/ubuntu/webdev-static-assets/business-cadence-a
 IOS_ICON = PROJECT_ROOT / "ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png"
 ANDROID_RES = PROJECT_ROOT / "android/app/src/main/res"
 BACKGROUND_COLOR = "#0F2440"
+IOS_HEART_SCALE = 1.14
 ANDROID_SAFE_SCALE = 0.82
 
 ANDROID_ICON_SIZES = {
@@ -32,7 +33,10 @@ def compose_clean_icon() -> Image.Image:
         raise ValueError(f"Expected 1024 x 1024 clean heart; received {heart.size}")
 
     canvas = Image.new("RGBA", heart.size, BACKGROUND_COLOR)
-    canvas.alpha_composite(heart)
+    scaled_size = round(heart.width * IOS_HEART_SCALE)
+    scaled_heart = heart.resize((scaled_size, scaled_size), Image.Resampling.LANCZOS)
+    offset = (heart.width - scaled_size) // 2
+    canvas.alpha_composite(scaled_heart, dest=(offset, offset))
     return canvas
 
 

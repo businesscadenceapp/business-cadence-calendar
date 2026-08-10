@@ -1,4 +1,4 @@
-"""Validate each Xcode Splash asset is the clean approved heart on its intended background."""
+"""Validate each Xcode Splash asset is the clean approved heart on transparency."""
 
 from pathlib import Path
 
@@ -11,14 +11,14 @@ SPLASH_DIRECTORY = PROJECT_ROOT / "ios/App/App/Assets.xcassets/Splash.imageset"
 SPLASH_SIZE = 2732
 HEART_SIZE = 920
 
-APPEARANCE_BACKGROUNDS = {
-    "Default@1x~universal~anyany.png": (15, 36, 64, 255),
-    "Default@2x~universal~anyany.png": (15, 36, 64, 255),
-    "Default@3x~universal~anyany.png": (15, 36, 64, 255),
-    "Default@1x~universal~anyany-dark.png": (10, 25, 41, 255),
-    "Default@2x~universal~anyany-dark.png": (10, 25, 41, 255),
-    "Default@3x~universal~anyany-dark.png": (10, 25, 41, 255),
-}
+SPLASH_FILENAMES = (
+    "Default@1x~universal~anyany.png",
+    "Default@2x~universal~anyany.png",
+    "Default@3x~universal~anyany.png",
+    "Default@1x~universal~anyany-dark.png",
+    "Default@2x~universal~anyany-dark.png",
+    "Default@3x~universal~anyany-dark.png",
+)
 
 
 def main() -> None:
@@ -27,18 +27,18 @@ def main() -> None:
     rendered_heart = heart.resize((HEART_SIZE, HEART_SIZE), Image.Resampling.LANCZOS)
     offset = (SPLASH_SIZE - HEART_SIZE) // 2
 
-    for filename, background in APPEARANCE_BACKGROUNDS.items():
+    for filename in SPLASH_FILENAMES:
         path = SPLASH_DIRECTORY / filename
         with Image.open(path) as image_file:
             actual = image_file.convert("RGBA")
         if actual.size != (SPLASH_SIZE, SPLASH_SIZE):
             raise ValueError(f"Unexpected splash size for {filename}: {actual.size}")
-        expected = Image.new("RGBA", actual.size, background)
+        expected = Image.new("RGBA", actual.size, (0, 0, 0, 0))
         expected.alpha_composite(rendered_heart, dest=(offset, offset))
         if ImageChops.difference(expected, actual).getbbox() is not None:
             raise ValueError(f"Splash asset differs from the clean approved heart: {filename}")
 
-    print('{"splash_assets": 6, "clean_heart_composition": "exact"}')
+    print('{"splash_assets": 6, "transparent_clean_heart_composition": "exact"}')
 
 
 if __name__ == "__main__":

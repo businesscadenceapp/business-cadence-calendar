@@ -12,13 +12,17 @@ IOS_ICON = Path(
     "AppIcon.appiconset/AppIcon-512@2x.png"
 )
 BACKGROUND_COLOR = "#0F2440"
+IOS_HEART_SCALE = 1.14
 
 
 def main() -> None:
     with Image.open(CLEAN_HEART) as heart_source:
         heart = heart_source.convert("RGBA")
     expected = Image.new("RGBA", heart.size, BACKGROUND_COLOR)
-    expected.alpha_composite(heart)
+    scaled_size = round(heart.width * IOS_HEART_SCALE)
+    scaled_heart = heart.resize((scaled_size, scaled_size), Image.Resampling.LANCZOS)
+    offset = (heart.width - scaled_size) // 2
+    expected.alpha_composite(scaled_heart, dest=(offset, offset))
     with Image.open(IOS_ICON) as ios_source:
         ios = ios_source.convert("RGBA")
 
@@ -27,7 +31,7 @@ def main() -> None:
     if ImageChops.difference(expected, ios).getbbox() is not None:
         raise ValueError("The iOS icon differs from the clean approved heart composition")
 
-    print(json.dumps({"size": [1024, 1024], "clean_heart_composition": "exact"}))
+    print(json.dumps({"size": [1024, 1024], "clean_heart_scale": IOS_HEART_SCALE, "composition": "exact"}))
 
 
 if __name__ == "__main__":

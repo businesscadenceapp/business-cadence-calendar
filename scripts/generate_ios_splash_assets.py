@@ -11,14 +11,14 @@ SPLASH_DIRECTORY = PROJECT_ROOT / "ios/App/App/Assets.xcassets/Splash.imageset"
 SPLASH_SIZE = 2732
 HEART_SIZE = 920
 
-APPEARANCE_BACKGROUNDS = {
-    "Default@1x~universal~anyany.png": (15, 36, 64, 255),
-    "Default@2x~universal~anyany.png": (15, 36, 64, 255),
-    "Default@3x~universal~anyany.png": (15, 36, 64, 255),
-    "Default@1x~universal~anyany-dark.png": (10, 25, 41, 255),
-    "Default@2x~universal~anyany-dark.png": (10, 25, 41, 255),
-    "Default@3x~universal~anyany-dark.png": (10, 25, 41, 255),
-}
+SPLASH_FILENAMES = (
+    "Default@1x~universal~anyany.png",
+    "Default@2x~universal~anyany.png",
+    "Default@3x~universal~anyany.png",
+    "Default@1x~universal~anyany-dark.png",
+    "Default@2x~universal~anyany-dark.png",
+    "Default@3x~universal~anyany-dark.png",
+)
 
 
 def main() -> None:
@@ -29,10 +29,10 @@ def main() -> None:
 
     rendered_heart = heart.resize((HEART_SIZE, HEART_SIZE), Image.Resampling.LANCZOS)
     offset = (SPLASH_SIZE - HEART_SIZE) // 2
-    for filename, background in APPEARANCE_BACKGROUNDS.items():
-        canvas = Image.new("RGBA", (SPLASH_SIZE, SPLASH_SIZE), background)
+    for filename in SPLASH_FILENAMES:
+        canvas = Image.new("RGBA", (SPLASH_SIZE, SPLASH_SIZE), (0, 0, 0, 0))
         canvas.alpha_composite(rendered_heart, dest=(offset, offset))
-        canvas.convert("RGB").save(SPLASH_DIRECTORY / filename, format="PNG", optimize=True)
+        canvas.save(SPLASH_DIRECTORY / filename, format="PNG", optimize=True)
 
 
 if __name__ == "__main__":
