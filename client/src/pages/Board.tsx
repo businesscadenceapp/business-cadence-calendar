@@ -1390,6 +1390,21 @@ export default function Board() {
   const [needsAttnSection, setNeedsAttnSection] = useState<"tasks" | "issues">("tasks");
   const { replay, registerRef, active: tourActive } = useTour();
   const [profileDeferred, setProfileDeferred] = useState(false);
+  const [offTheClock, setOffTheClock] = useState<boolean>(() => {
+    try { return localStorage.getItem("bc_off_the_clock") === "true"; } catch { return false; }
+  });
+  const toggleOffTheClock = () => {
+    setOffTheClock(prev => {
+      const next = !prev;
+      try { localStorage.setItem("bc_off_the_clock", String(next)); } catch {}
+      if (next) {
+        toast("You're Off the Clock 🌙 — your partner won't be notified.", { duration: 4000 });
+      } else {
+        toast("You're back in Work Mode ☀️ — notifications are on.", { duration: 3000 });
+      }
+      return next;
+    });
+  };
 
   // Start the tour only after person data has loaded (so the sun button is in the DOM)
   const tourStartedRef = useRef(false);
@@ -1845,7 +1860,13 @@ export default function Board() {
                       zIndex: 2, animation: "hubCenterPulse 3s ease-in-out infinite",
                     }}
                   >
-                    <span style={{ fontSize: 28 }}>⚡</span>
+                    <button
+                      onClick={toggleOffTheClock}
+                      title={offTheClock ? "Tap to go back to Work Mode" : "Tap to go Off the Clock"}
+                      style={{ background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 30, lineHeight: 1, transition: "transform 0.3s ease, filter 0.3s ease", transform: offTheClock ? "scale(1.15)" : "scale(1)", filter: offTheClock ? "drop-shadow(0 0 8px rgba(167,139,250,0.6))" : "drop-shadow(0 0 6px rgba(255,200,0,0.5))" }}
+                    >
+                      {offTheClock ? "🌙" : "☀️"}
+                    </button>
                   </div>
                   {[
                     { cat: CATEGORIES.find(c => c.key === "tasks")!, count: counts.tasks, angle: -90, onClick: () => setActiveView("tasks"), tourId: "tour-hub-tasks", extra: {} },
@@ -1860,7 +1881,7 @@ export default function Board() {
                     const cx = 50 + (r / 360) * 100 * Math.cos(rad);
                     const cy = 50 + (r / 360) * 100 * Math.sin(rad);
                     return (
-                      <div key={cat.key} style={{ position: "absolute", left: `${cx}%`, top: `${cy}%`, transform: "translate(-50%, -50%)", zIndex: 3 }}>
+                      <div key={cat.key} style={{ position: "absolute", left: `${cx}%`, top: `${cy}%`, transform: "translate(-50%, -50%)", zIndex: 3, opacity: offTheClock ? 0.35 : 1, transition: "opacity 0.5s ease", pointerEvents: offTheClock ? "none" : "auto" }}>
                         <HubNode cat={cat} count={count} onClick={onClick} delay={i * 70} size={76} tourId={tourId} registerRef={registerRef} {...extra} />
                       </div>
                     );
@@ -1904,7 +1925,13 @@ export default function Board() {
                       zIndex: 2, animation: "hubCenterPulse2 3s ease-in-out infinite",
                     }}
                   >
-                    <span style={{ fontSize: 28 }}>📈</span>
+                    <button
+                      onClick={toggleOffTheClock}
+                      title={offTheClock ? "Tap to go back to Work Mode" : "Tap to go Off the Clock"}
+                      style={{ background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 30, lineHeight: 1, transition: "transform 0.3s ease, filter 0.3s ease", transform: offTheClock ? "scale(1.15)" : "scale(1)", filter: offTheClock ? "drop-shadow(0 0 8px rgba(167,139,250,0.6))" : "drop-shadow(0 0 6px rgba(255,200,0,0.5))" }}
+                    >
+                      {offTheClock ? "🌙" : "☀️"}
+                    </button>
                   </div>
                   {[
                     { key: "goals", label: "Goals", icon: "🎯", gradient: "linear-gradient(135deg, rgba(124,58,237,0.18) 0%, rgba(124,58,237,0.07) 100%)", border: "rgba(124,58,237,0.35)", glow: "rgba(124,58,237,0.14)", textColor: "#C4B5FD", countBg: "rgba(124,58,237,0.25)", angle: -90, onClick: () => navigate("/app/goals"), tourId: "tour-goals" },
@@ -1919,7 +1946,7 @@ export default function Board() {
                     const cx = 50 + (r / 360) * 100 * Math.cos(rad);
                     const cy = 50 + (r / 360) * 100 * Math.sin(rad);
                     return (
-                      <div key={cat.key} style={{ position: "absolute", left: `${cx}%`, top: `${cy}%`, transform: "translate(-50%, -50%)", zIndex: 3 }}>
+                      <div key={cat.key} style={{ position: "absolute", left: `${cx}%`, top: `${cy}%`, transform: "translate(-50%, -50%)", zIndex: 3, opacity: offTheClock ? 0.35 : 1, transition: "opacity 0.5s ease", pointerEvents: offTheClock ? "none" : "auto" }}>
                         <HubNode cat={cat as TileMeta} count={-1} onClick={onClick} delay={i * 70} size={76} tourId={tourId} registerRef={registerRef} />
                       </div>
                     );
