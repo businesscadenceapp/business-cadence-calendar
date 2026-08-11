@@ -22,6 +22,16 @@
 - [x] AI summary uses item comments + notes combined
 - [x] Green dot indicator on calendar days with saved logs
 - [ ] ICS export for Google/Apple Calendar import (future enhancement)
+- [x] Tour cleanup: represent active tour state with one nullable step index so exactly one step can render.
+- [x] Tour cleanup: replace the coach-mark body with one vertical step wrapper containing title, copy, and a non-absolute Continue action.
+- [x] Tour cleanup: give the sole active Continue action an elevated interaction layer and one-step progression handler.
+- [x] Tour cleanup: add focused tests for state progression, final-step completion, and single-overlay markup.
+- [x] Tour placement: position the coach mark below the top three Command Center circles and above the bottom three circles.
+- [x] Tour placement: keep the Swipe Left transition card and its Continue control fully within the compact-phone viewport.
+- [x] Tour placement: validate the action row remains tappable for every Command Center and Performance Hub step.
+- [x] Tour placement correction: explicitly map Tasks, Archive, and Updates below; Calendar, Issues, and Needs Attention above; and retain a safe Swipe Left position.
+- [ ] Production release: identify the hosting path for businesscadence.com and deploy the latest tour repair from main.
+- [ ] Production release: confirm the hosted app serves the new hub-aware tour bundle before asking the user to refresh the iPhone app.
 - [ ] Printable one-page yearly summary PDF (future enhancement)
 - [ ] Issues List tracker (shared notepad for mid-week issues) (future enhancement)
 - [ ] Per-business KPI scorecard templates (future enhancement)
