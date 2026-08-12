@@ -1042,6 +1042,7 @@
 
 ## Aug 2026 Sprint — Hub Redesign + Refer a Friend
 
+- [x] Remove duplicate hub sun/moon controls while retaining one persistent app-header mode indicator
 - [x] Hold in-app notifications automatically when an individual partner is outside their configured work hours
 - [x] Add a Sleep Mode confirmation card with an optional persistent “don’t show this reminder again” checkbox
 - [x] Refine Sleep Mode visuals and wording: softly mute hub colors without disabling work, clarify whether the current user or their partner has notifications held

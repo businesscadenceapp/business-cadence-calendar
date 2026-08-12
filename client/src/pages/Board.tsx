@@ -11,9 +11,7 @@ import { toast } from "sonner";
 import { usePerson } from "@/contexts/PersonContext";
 import { useIdentity } from "@/components/AppShell";
 import { useActiveBusiness } from "@/components/BusinessSwitcher";
-import { SleepModeConfirmCard } from "@/components/SleepModeConfirmCard";
 import { useTour, TOUR_STORAGE_KEY, TOUR_PENDING_KEY } from "@/contexts/TourContext";
-import { hideSleepModeReminder, shouldShowSleepModeReminder } from "@/lib/sleepModeReminder";
 
 type Author = string;
 type CardType = "update" | "issue" | "task";
@@ -1402,7 +1400,6 @@ export default function Board() {
   const [needsAttnSection, setNeedsAttnSection] = useState<"tasks" | "issues">("tasks");
   const { replay, registerRef, active: tourActive } = useTour();
   const [profileDeferred, setProfileDeferred] = useState(false);
-  const [sleepModeConfirmOpen, setSleepModeConfirmOpen] = useState(false);
 
   // Start the tour only after person data has loaded (so the sun button is in the DOM)
   const tourStartedRef = useRef(false);
@@ -1424,34 +1421,13 @@ export default function Board() {
     return stored ? parseInt(stored, 10) : undefined;
   })();
   const personId = person?.id;
-  const { data: personalNotificationStatus, refetch: refetchPersonalNotificationStatus } = trpc.personHours.checkStatus.useQuery(
+  const { data: personalNotificationStatus } = trpc.personHours.checkStatus.useQuery(
     { accountId: accountId ?? 0, personId: personId ?? "" },
     { enabled: accountId !== undefined && !!personId, staleTime: 15_000 }
   );
   const offTheClock = personalNotificationStatus?.dndActive ?? false;
-  const setPersonalSleepMode = trpc.personHours.setDnd.useMutation({
-    onSuccess: ({ active }) => {
-      refetchPersonalNotificationStatus();
-      toast(
-        active
-          ? "Sleep Mode is on 🌙 — you will not receive notifications from your partner. You can still work anywhere in the app."
-          : "Work Mode is on ☀️ — held partner notifications are visible again.",
-        { duration: active ? 5500 : 3500 }
-      );
-    },
-  });
-  const toggleOffTheClock = () => {
-    if (accountId === undefined || !personId) return;
-    if (offTheClock) return setPersonalSleepMode.mutate({ accountId, personId, active: false });
-    if (shouldShowSleepModeReminder(personId)) return setSleepModeConfirmOpen(true);
-    setPersonalSleepMode.mutate({ accountId, personId, active: true });
-  };
-  const confirmSleepMode = (hideFutureReminder: boolean) => {
-    if (accountId === undefined || !personId) return;
-    if (hideFutureReminder) hideSleepModeReminder(personId);
-    setSleepModeConfirmOpen(false);
-    setPersonalSleepMode.mutate({ accountId, personId, active: true });
-  };
+  // Sleep Mode is controlled from the persistent header; hub centers are visual identities only.
+  const toggleOffTheClock = undefined;
 
   // Quick onboarding defers goals/KPIs/meeting setup — surface a prompt to finish
   useEffect(() => {
@@ -1864,6 +1840,7 @@ export default function Board() {
                   </svg>
                   <div
                     ref={(el) => registerRef("tour-hub-center", el)}
+                    data-hub-center="command"
                     style={{
                       position: "absolute", left: "50%", top: "50%",
                       transform: "translate(-50%, -50%)",
@@ -1929,6 +1906,7 @@ export default function Board() {
                   {/* Performance hub center */}
                   <div
                     ref={(el) => registerRef("tour-perf-center", el)}
+                    data-hub-center="performance"
                     style={{
                       position: "absolute", left: "50%", top: "50%",
                       transform: "translate(-50%, -50%)",
@@ -2079,14 +2057,20 @@ export default function Board() {
         document.body
       )}
 
-      <SleepModeConfirmCard
-        open={sleepModeConfirmOpen}
-        onCancel={() => setSleepModeConfirmOpen(false)}
-        onConfirm={confirmSleepMode}
-      />
-
       {/* Animations */}
       <style>{`
+        [data-hub-center] > button { display: none; }
+        [data-hub-center]::after {
+          position: absolute;
+          inset: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 30px;
+          line-height: 1;
+        }
+        [data-hub-center="command"]::after { content: "⚡"; filter: drop-shadow(0 0 6px rgba(51,162,219,0.55)); }
+        [data-hub-center="performance"]::after { content: "📈"; font-size: 28px; filter: drop-shadow(0 0 6px rgba(167,139,250,0.55)); }
         @keyframes hubNodeEnter {
           from { opacity: 0; transform: scale(0.6); }
           to { opacity: 1; transform: scale(1); }
