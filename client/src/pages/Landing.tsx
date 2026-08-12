@@ -22,7 +22,7 @@ function AppStoreButtons({ className = "" }: { className?: string }) {
         href="https://apps.apple.com/app/businesscadence/id6748498898"
         target="_blank"
         rel="noopener noreferrer"
-        aria-label="Download BusinessCadence on the App Store"
+        aria-label="Download TARSA on the App Store"
         className="flex items-center gap-3 bg-black border border-white/20 text-white px-5 py-3 rounded-xl hover:bg-white/10 transition-all active:scale-[0.97] w-full sm:w-auto justify-center"
         style={{ minWidth: "160px" }}
       >
@@ -40,7 +40,7 @@ function AppStoreButtons({ className = "" }: { className?: string }) {
         href="https://play.google.com/store/apps/details?id=com.businesscadence.app"
         target="_blank"
         rel="noopener noreferrer"
-        aria-label="Get BusinessCadence on Google Play"
+        aria-label="Get TARSA on Google Play"
         className="flex items-center gap-3 bg-black border border-white/20 text-white px-5 py-3 rounded-xl hover:bg-white/10 transition-all active:scale-[0.97] w-full sm:w-auto justify-center"
         style={{ minWidth: "160px" }}
       >
@@ -140,12 +140,12 @@ function WaitlistForm({ variant = "default" }: { variant?: "default" | "hero" | 
     onSuccess: (data) => {
       if (data.alreadyExists) {
         toast.info("You're already on the list!", {
-          description: "We'll reach out when BusinessCadence launches.",
+          description: "We'll reach out when TARSA launches.",
         });
       } else {
         setSubmitted(true);
         toast.success("You're on the list!", {
-          description: "We'll notify you the moment BusinessCadence launches.",
+          description: "We'll notify you the moment TARSA launches.",
         });
       }
       setEmail("");
@@ -209,7 +209,7 @@ function Hero() {
         <div className="flex flex-col items-center mb-12 animate-fade-in">
           <img
             src="/manus-storage/business-cadence-heart-clean_7d2f6545.png"
-            alt="Business Cadence geometric heart"
+            alt="TARSA geometric heart"
             style={{
               width: 180,
               height: 180,
@@ -222,19 +222,11 @@ function Hero() {
               <span style={{
                 fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
                 fontSize: "clamp(32px, 6vw, 52px)",
-                fontWeight: 300,
-                letterSpacing: "-0.03em",
+                fontWeight: 700,
+                letterSpacing: "0.08em",
                 color: "#FFFFFF",
                 lineHeight: 1.1,
-              }}>Business</span>
-              <span style={{
-                fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
-                fontSize: "clamp(32px, 6vw, 52px)",
-                fontWeight: 800,
-                letterSpacing: "-0.03em",
-                color: "#33A2DB",
-                lineHeight: 1.1,
-              }}>Cadence</span>
+              }}>TARSA</span>
             </div>
             <p style={{
               fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
@@ -261,7 +253,7 @@ function Hero() {
           </h1>
 
           <p className="text-lg sm:text-xl text-white/70 max-w-2xl mx-auto mb-10 leading-relaxed">
-            BusinessCadence is the app built for couples who own a business together. Structured meeting rhythms, a shared owner board, and goal tracking — so every business conversation happens at the right time, in the right place. Your business stays in the boardroom. Your life stays yours.
+            TARSA is the app built for couples who own a business together. Structured meeting rhythms, a shared owner board, and goal tracking — so every business conversation happens at the right time, in the right place. Your business stays in the boardroom. Your life stays yours.
           </p>
 
           {/* Download buttons */}
@@ -349,7 +341,7 @@ function ProblemSection() {
               <div className="text-3xl mb-4" aria-hidden="true">✅</div>
               <h3 className="font-semibold text-white mb-2 text-lg">There's a better way</h3>
               <p className="text-[#33A2DB]/80 text-sm leading-relaxed">
-                BusinessCadence gives you a proven meeting rhythm that keeps business conversations structured, productive, and out of your personal time.
+                TARSA gives you a proven meeting rhythm that keeps business conversations structured, productive, and out of your personal time.
               </p>
             </div>
             <button
@@ -483,7 +475,7 @@ function HowItWorksSection() {
             Four Meeting Types. One Proven Rhythm.
           </h2>
           <p className="text-white/60 max-w-xl mx-auto">
-            BusinessCadence is built around a time-tested meeting structure used by the world's most effective small business teams.
+            TARSA is built around a time-tested meeting structure used by the world's most effective small business teams.
           </p>
         </div>
 
@@ -593,7 +585,7 @@ function PricingSection() {
             One flat rate. Both owners included.
           </h2>
           <p className="text-white/60 max-w-xl mx-auto mb-6">
-            Most apps charge per seat — two people means two subscriptions. BusinessCadence is built for two. One price covers both co-owners, forever.
+            Most apps charge per seat — two people means two subscriptions. TARSA is built for two. One price covers both co-owners, forever.
           </p>
 
           {/* Trial banner */}
@@ -698,7 +690,7 @@ function PricingSection() {
           <div className="mt-4 inline-flex items-center gap-3 bg-white/5 border border-white/10 rounded-2xl px-6 py-3 text-sm">
             <span className="text-white/40 line-through">Other tools: $30–$40/mo per person</span>
             <span className="text-white/30">vs</span>
-            <span className="text-[#33A2DB] font-bold">BusinessCadence: one price for both</span>
+            <span className="text-[#33A2DB] font-bold">TARSA: one price for both</span>
           </div>
         </div>
       </div>
@@ -723,7 +715,7 @@ function StorySection() {
 
           <div className="space-y-5 text-white/70 leading-relaxed">
             <p>
-              We built Business Cadence because our communication had no rhythm.
+              We built TARSA because our communication had no rhythm.
             </p>
             <p>
               When an idea hit us it didn't matter what day — we could be on vacation — or what time — we could be lying in bed trying to fall asleep. We would discuss it. And most of the time the idea would be forgotten anyway, and all that bringing it up did was stress us out more.
@@ -732,18 +724,18 @@ function StorySection() {
               We realized we were <strong className="text-white">adding more stress to our relationship and partnership</strong> when the goal was to take it away.
             </p>
             <p>
-              Business Cadence aims to be that pressure release valve your partnership — and for some of you, your relationship — has been waiting for. No more ill-timed business questions that stress your partnership out. No more late-night texts that make it feel like boundaries have been crossed.
+              TARSA aims to be that pressure release valve your partnership — and for some of you, your relationship — has been waiting for. No more ill-timed business questions that stress your partnership out. No more late-night texts that make it feel like boundaries have been crossed.
             </p>
             <p>
-              Business Cadence gives you the tools you need to keep your business and relationship separate and distinct. It will keep you on task and create a rhythm that allows for strong business habits.
+              TARSA gives you the tools you need to keep your business and relationship separate and distinct. It will keep you on task and create a rhythm that allows for strong business habits.
             </p>
             <p className="text-white font-medium">
-              Business Cadence gives your ideas a place to land, your conversations a time and place to happen, and your relationship permission to be something other than a business meeting.
+              TARSA gives your ideas a place to land, your conversations a time and place to happen, and your relationship permission to be something other than a business meeting.
             </p>
           </div>
 
           <div className="mt-8 pt-6 border-t border-white/10 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-[#1E3A5F] border border-white/20 flex items-center justify-center text-[#33A2DB] font-bold text-lg flex-shrink-0" aria-hidden="true">BC</div>
+            <div className="w-12 h-12 rounded-full bg-[#1E3A5F] border border-white/20 flex items-center justify-center text-[#33A2DB] font-bold text-lg flex-shrink-0" aria-hidden="true">T</div>
             <div>
               <p className="font-semibold text-white">The Founders</p>
               <p className="text-sm text-white/50">Co-owners of three businesses, married 20+ years</p>
@@ -772,7 +764,7 @@ function DownloadSection() {
           <span className="text-[#33A2DB]">Start building a rhythm.</span>
         </h2>
         <p className="text-white/60 text-lg mb-10 leading-relaxed">
-          Download BusinessCadence free today. Start your trial, invite your co-owner, and have your first structured meeting this week.
+          Download TARSA free today. Start your trial, invite your co-owner, and have your first structured meeting this week.
         </p>
 
         <AppStoreButtons className="justify-center mb-8" />
@@ -845,7 +837,7 @@ function Footer() {
           </button>
         </div>
         <div className="flex items-center gap-4">
-          <p className="text-xs text-white/30">© {new Date().getFullYear()} BusinessCadence. All rights reserved.</p>
+          <p className="text-xs text-white/30">© {new Date().getFullYear()} TARSA. All rights reserved.</p>
         </div>
       </div>
     </footer>

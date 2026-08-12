@@ -1,10 +1,10 @@
 /**
- * BrandLogo — BusinessCadence logo using the approved blue-and-orange geometric heart.
+ * BrandLogo — TARSA logo using the approved blue-and-orange geometric heart.
  *
  * BrandIcon — Just the heart icon in a circle (no text).
  * Use this for compact spaces like login cards and sidebar headers.
  *
- * BrandLogo — Full logo with heart icon + "BusinessCadence" text.
+ * BrandLogo — Full logo with heart icon + "TARSA" text.
  */
 
 const LOGO_SRC = "/manus-storage/business-cadence-heart-clean_7d2f6545.png";
@@ -37,11 +37,11 @@ export function BrandIcon({
       }}
       className={className}
       role="img"
-      aria-label="BusinessCadence"
+      aria-label="TARSA"
     >
       <img
         src={LOGO_SRC}
-        alt="BusinessCadence"
+        alt="TARSA"
         style={{ width: "100%", height: "100%", objectFit: "contain" }}
       />
     </div>
@@ -49,7 +49,7 @@ export function BrandIcon({
 }
 
 // ---------------------------------------------------------------------------
-// BrandLogo — icon + "BusinessCadence" text side by side
+// BrandLogo — icon + "TARSA" text side by side
 // Accepts theme and showTagline props for backward compatibility
 // ---------------------------------------------------------------------------
 interface BrandLogoProps {
@@ -83,7 +83,7 @@ export default function BrandLogo({
         userSelect: "none",
       }}
       role="img"
-      aria-label="BusinessCadence"
+      aria-label="TARSA"
     >
       <div
         style={{
@@ -111,8 +111,7 @@ export default function BrandLogo({
           lineHeight: 1,
         }}
       >
-        Business
-        <span style={{ fontWeight: 700 }}>Cadence</span>
+        TARSA
       </span>
     </div>
   );

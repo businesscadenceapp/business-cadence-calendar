@@ -1,6 +1,6 @@
 {
-  "name": "BusinessCadence",
-  "short_name": "BizCadence",
+  "name": "TARSA",
+  "short_name": "TARSA",
   "description": "Structured meeting rhythm for co-owner teams",
   "start_url": "/app/board",
   "display": "standalone",
