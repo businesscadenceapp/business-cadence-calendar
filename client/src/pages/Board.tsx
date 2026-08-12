@@ -1449,7 +1449,6 @@ export default function Board() {
   const [referralOpen, setReferralOpen] = useState(false);
   const [showCompleted, setShowCompleted] = useState(false);
   const [archiveQuery, setArchiveQuery] = useState("");
-  const [needsAttnSection, setNeedsAttnSection] = useState<"tasks" | "issues">("tasks");
   const { replay, registerRef, active: tourActive } = useTour();
   const [profileDeferred, setProfileDeferred] = useState(false);
   const [sleepModeConfirmOpen, setSleepModeConfirmOpen] = useState(false);
@@ -1505,6 +1504,10 @@ export default function Board() {
 
   const { data: accountabilityData } = trpc.calendarAccountability.getDashboard.useQuery(
     { accountId: accountId ?? 0 },
+    { enabled: accountId !== undefined, staleTime: 60_000 },
+  );
+  const { data: performanceReminders } = trpc.attention.getPerformanceReminders.useQuery(
+    { accountId: accountId ?? 0, personId },
     { enabled: accountId !== undefined, staleTime: 60_000 },
   );
 
@@ -1589,6 +1592,14 @@ export default function Board() {
   const donePendingTasks = filtered.filter(c => c.type === "task" && !c.archivedAt && c.completedAt && !c.confirmedAt);
   const completedTasks = filtered.filter(c => c.type === "task" && c.archivedAt && c.confirmedAt);
   const archivedCards = filtered.filter(c => !!c.archivedAt);
+  const nowMs = Date.now();
+  const pastDueTasks = openTasks.filter(card => card.dueAt !== null && card.dueAt < nowMs);
+  const dueSoonTasks = openTasks.filter(card => card.dueAt !== null && card.dueAt >= nowMs && card.dueAt <= nowMs + 3 * 24 * 60 * 60 * 1000);
+  const unseenUpdates = updates.filter(card => !card.seenAt && card.author !== currentUser);
+  const missedMeetings = accountabilityData?.missedMeetings ?? [];
+  const overdueGoals = performanceReminders?.overdueGoals ?? [];
+  const lateKpis = performanceReminders?.lateKpis ?? [];
+  const attentionCount = pastDueTasks.length + missedMeetings.length + overdueGoals.length + lateKpis.length + dueSoonTasks.length + unseenUpdates.length;
   const normalizedArchiveQuery = archiveQuery.trim().toLowerCase();
   const searchedArchivedCards = normalizedArchiveQuery
     ? archivedCards.filter(card => [
@@ -1634,18 +1645,16 @@ export default function Board() {
         >
           {isNeedsAttn && (
             <>
-              {/* Unified combined list */}
-              {openTasks.length === 0 && donePendingTasks.length === 0 && issues.length === 0 ? (
-                <EmptyState icon="✅" title="Nothing needs attention" subtitle="You're all caught up — no open tasks or unresolved issues." />
+              {attentionCount === 0 ? (
+                <EmptyState icon="✅" title="Nothing needs attention" subtitle="You're all caught up. No past-due work, missed meetings, unread updates, or late check-ins." />
               ) : (
                 <>
-                  {/* Open tasks section */}
-                  {(openTasks.length > 0 || donePendingTasks.length > 0) && (
+                  {(pastDueTasks.length > 0 || missedMeetings.length > 0 || overdueGoals.length > 0 || lateKpis.length > 0) && (
                     <>
-                      <p className="text-[10px] font-bold uppercase tracking-widest px-1 mb-2" style={{ color: "rgba(255,255,255,0.35)", fontFamily: "'Space Grotesk', sans-serif" }}>
-                        ☑ Open Tasks ({openTasks.length + donePendingTasks.length})
+                      <p className="text-[10px] font-bold uppercase tracking-widest px-1 mb-2" style={{ color: "#FCA5A5", fontFamily: "'Space Grotesk', sans-serif" }}>
+                        ● Past Due ({pastDueTasks.length + missedMeetings.length + overdueGoals.length + lateKpis.length})
                       </p>
-                      {openTasks.map(card => (
+                      {pastDueTasks.map(card => (
                         <TaskCard key={card.id} card={card} currentUser={currentUser} accountId={accountId}
                           onMarkDone={id => currentUser && markDone.mutate({ id, completedBy: currentUser, ...(accountId ? { accountId } : {}) })}
                           onConfirmDone={id => currentUser && confirmDone.mutate({ id, confirmedBy: currentUser, ...(accountId ? { accountId } : {}) })}
@@ -1653,7 +1662,17 @@ export default function Board() {
                           onArchive={id => archive.mutate({ id })}
                           onDelete={id => deleteCard.mutate({ id })} />
                       ))}
-                      {donePendingTasks.map(card => (
+                      {missedMeetings.map(meeting => <AttentionNotice key={`${meeting.date}-${meeting.meetingType}`} icon="📅" tone="red" title={`${meeting.meetingType.charAt(0).toUpperCase() + meeting.meetingType.slice(1)} meeting was not logged`} detail={`Scheduled for ${meeting.date}. Record whether it was held, rescheduled, or not held.`} actionLabel="Open Calendar" onAction={() => navigate("/app/calendar")} />)}
+                      {overdueGoals.map(goal => <AttentionNotice key={`goal-${goal.id}`} icon="🎯" tone="red" title={`Goal follow-through: ${goal.title}`} detail={goal.status === "missed" ? "This goal is marked missed. Review it, defer it, or create the next step." : "This goal is past its planned period and still active."} actionLabel="Review Goals" onAction={() => navigate("/app/goals")} />)}
+                      {lateKpis.map(kpi => <AttentionNotice key={`kpi-${kpi.id}`} icon="📊" tone="red" title={`${kpi.name} check-in is overdue`} detail={`No ${kpi.frequency} KPI entry was submitted for ${kpi.periodKey}.`} actionLabel="Open KPIs" onAction={() => navigate("/app/kpi")} />)}
+                    </>
+                  )}
+                  {(dueSoonTasks.length > 0) && (
+                    <>
+                      <p className="text-[10px] font-bold uppercase tracking-widest px-1 mb-2 mt-5" style={{ color: "#FCD34D", fontFamily: "'Space Grotesk', sans-serif" }}>
+                        ● Due Soon ({dueSoonTasks.length})
+                      </p>
+                      {dueSoonTasks.map(card => (
                         <TaskCard key={card.id} card={card} currentUser={currentUser} accountId={accountId}
                           onMarkDone={id => currentUser && markDone.mutate({ id, completedBy: currentUser, ...(accountId ? { accountId } : {}) })}
                           onConfirmDone={id => currentUser && confirmDone.mutate({ id, confirmedBy: currentUser, ...(accountId ? { accountId } : {}) })}
@@ -1663,17 +1682,14 @@ export default function Board() {
                       ))}
                     </>
                   )}
-                  {/* Issues section */}
-                  {issues.length > 0 && (
+                  {unseenUpdates.length > 0 && (
                     <>
-                      <p className="text-[10px] font-bold uppercase tracking-widest px-1 mb-2 mt-4" style={{ color: "rgba(255,255,255,0.35)", fontFamily: "'Space Grotesk', sans-serif" }}>
-                        🔥 Issues ({issues.length})
+                      <p className="text-[10px] font-bold uppercase tracking-widest px-1 mb-2 mt-5" style={{ color: "#7DD3FC", fontFamily: "'Space Grotesk', sans-serif" }}>
+                        ● Waiting on You ({unseenUpdates.length})
                       </p>
-                      {issues.map(card => (
-                        <BoardCard key={card.id} card={card} currentUser={currentUser} accountId={accountId}
-                          onSeen={id => currentUser && markSeen.mutate({ id, seenBy: currentUser })}
-                          onArchive={id => archive.mutate({ id })} onDelete={id => deleteCard.mutate({ id })} />
-                      ))}
+                      {unseenUpdates.map(card => <BoardCard key={card.id} card={card} currentUser={currentUser} accountId={accountId}
+                        onSeen={id => currentUser && markSeen.mutate({ id, seenBy: currentUser })}
+                        onArchive={id => archive.mutate({ id })} onDelete={id => deleteCard.mutate({ id })} />)}
                     </>
                   )}
                 </>
@@ -1977,7 +1993,7 @@ export default function Board() {
                     { cat: CATEGORIES.find(c => c.key === "tasks")!, count: counts.tasks, angle: -90, onClick: () => setActiveView("tasks"), tourId: "tour-hub-tasks", extra: {} },
                     { cat: CATEGORIES.find(c => c.key === "updates")!, count: counts.updates, angle: -30, onClick: () => setActiveView("updates"), tourId: "tour-hub-updates", extra: {} },
                     { cat: CATEGORIES.find(c => c.key === "issues")!, count: counts.issues, angle: 30, onClick: () => setActiveView("issues"), tourId: "tour-hub-issues", extra: { hasHighPriority: issues.some(c => c.priority === "high") } },
-                    { cat: NEEDS_ATTENTION_META as unknown as TileMeta, count: (counts.tasks ?? 0) + (counts.issues ?? 0) + (accountabilityData?.showCheckIn ? 1 : 0), angle: 90, onClick: () => { setNeedsAttnSection((counts.tasks ?? 0) > 0 ? "tasks" : "issues"); setActiveView("needs_attention"); }, tourId: "tour-hub-needs-attention", extra: {} },
+                    { cat: NEEDS_ATTENTION_META as unknown as TileMeta, count: attentionCount, angle: 90, onClick: () => setActiveView("needs_attention"), tourId: "tour-hub-needs-attention", extra: {} },
                     { cat: { key: "calendar", label: "Calendar", icon: "📅", gradient: "linear-gradient(135deg, rgba(20,184,166,0.18) 0%, rgba(20,184,166,0.07) 100%)", border: "rgba(20,184,166,0.35)", glow: "rgba(20,184,166,0.14)", textColor: "#33A2DB", countBg: "rgba(20,184,166,0.25)" }, count: -1, angle: 150, onClick: () => navigate("/app/calendar"), tourId: "tour-hub-calendar", extra: {} },
                     { cat: { key: "archive", label: "Archive", icon: "📂", gradient: "linear-gradient(135deg, rgba(217,119,6,0.18) 0%, rgba(217,119,6,0.07) 100%)", border: "rgba(251,191,36,0.38)", glow: "rgba(251,191,36,0.14)", textColor: "#FDE68A", countBg: "rgba(217,119,6,0.28)" }, count: archivedCards.length, angle: 210, onClick: () => setActiveView("archive"), tourId: "tour-hub-archive", extra: {} },
                   ].map(({ cat, count, angle, onClick, tourId, extra }, i) => {
@@ -2233,6 +2249,33 @@ function EmptyState({ icon, title, subtitle }: { icon: string; title: string; su
       <div>
         <p className="text-[13px] font-semibold text-white">{title}</p>
         <p className="text-[11px] mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>{subtitle}</p>
+      </div>
+    </div>
+  );
+}
+
+function AttentionNotice({ icon, tone, title, detail, actionLabel, onAction }: {
+  icon: string;
+  tone: "red" | "amber" | "blue";
+  title: string;
+  detail: string;
+  actionLabel: string;
+  onAction: () => void;
+}) {
+  const colors = tone === "red"
+    ? { border: "rgba(248,113,113,0.35)", bg: "rgba(127,29,29,0.13)", text: "#FCA5A5" }
+    : tone === "amber"
+      ? { border: "rgba(251,191,36,0.35)", bg: "rgba(120,53,15,0.13)", text: "#FCD34D" }
+      : { border: "rgba(56,189,248,0.35)", bg: "rgba(3,105,161,0.13)", text: "#7DD3FC" };
+  return (
+    <div className="mb-2 rounded-2xl p-3.5 flex items-start gap-3" style={{ backgroundColor: colors.bg, border: `1px solid ${colors.border}` }}>
+      <span className="text-[20px] leading-none mt-0.5" aria-hidden="true">{icon}</span>
+      <div className="min-w-0 flex-1">
+        <p className="text-[13px] font-semibold leading-snug" style={{ color: "white" }}>{title}</p>
+        <p className="mt-1 text-[11px] leading-relaxed" style={{ color: "rgba(255,255,255,0.58)" }}>{detail}</p>
+        <button onClick={onAction} className="mt-2.5 text-[11px] font-semibold px-2.5 py-1.5 rounded-lg transition-opacity hover:opacity-80" style={{ color: colors.text, border: `1px solid ${colors.border}`, fontFamily: "'Space Grotesk', sans-serif" }}>
+          {actionLabel} →
+        </button>
       </div>
     </div>
   );

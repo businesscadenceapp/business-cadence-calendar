@@ -1223,6 +1223,62 @@ Keep the tone warm but professional. This summary will be saved under this speci
       }),
   }),
 
+  /** Action-required goal and KPI reminders for the Needs Attention dashboard. */
+  attention: router({
+    getPerformanceReminders: publicProcedure
+      .input(z.object({ accountId: z.number(), personId: z.string().optional() }))
+      .query(async ({ input }) => {
+        const now = new Date();
+        const currentYear = now.getFullYear();
+        const currentQuarter = Math.floor(now.getMonth() / 3) + 1;
+        let allowedBusinesses: string[] | null = null;
+
+        if (input.personId) {
+          const person = await getPersonById(input.personId);
+          if (person?.businessScope && person.businessScope !== "all") {
+            allowedBusinesses = person.businessScope.split(",").map(scope => scope.trim());
+          }
+        }
+
+        const allGoals = await getGoals(input.accountId);
+        const overdueGoals = allGoals
+          .filter(goal => allowedBusinesses === null || goal.business === "general" || allowedBusinesses.includes(goal.business))
+          .filter(goal => {
+            if (goal.status === "missed") return true;
+            if (goal.status !== "active") return false;
+            if (goal.year < currentYear) return true;
+            return goal.period === "quarterly" && goal.year === currentYear && (goal.quarter ?? 0) < currentQuarter;
+          })
+          .map(goal => ({ id: goal.id, title: goal.title, business: goal.business, period: goal.period, quarter: goal.quarter, status: goal.status }));
+
+        const categories = (await getKpiCategories(input.accountId))
+          .filter(category => allowedBusinesses === null || allowedBusinesses.includes(category.businessSlug));
+        const previousWeekPeriod = (() => {
+          const date = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+          const weekday = date.getUTCDay() || 7;
+          date.setUTCDate(date.getUTCDate() - weekday - 6);
+          const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
+          const week = Math.ceil((((date.getTime() - yearStart.getTime()) / 86400000) + yearStart.getUTCDay() + 1) / 7);
+          return `${date.getUTCFullYear()}-W${String(week).padStart(2, "0")}`;
+        })();
+        const previousMonthPeriod = `${now.getFullYear()}-${String(now.getMonth()).padStart(2, "0")}`;
+        const entriesByBusiness = new Map<string, Awaited<ReturnType<typeof getKpiEntries>>>();
+        await Promise.all(Array.from(new Set(categories.map(category => category.businessSlug))).map(async businessSlug => {
+          const weekly = await getKpiEntries(input.accountId, businessSlug, previousWeekPeriod);
+          const monthly = await getKpiEntries(input.accountId, businessSlug, previousMonthPeriod);
+          entriesByBusiness.set(businessSlug, [...weekly, ...monthly]);
+        }));
+        const lateKpis = categories
+          .filter(category => {
+            const periodKey = category.frequency === "weekly" ? previousWeekPeriod : previousMonthPeriod;
+            return !(entriesByBusiness.get(category.businessSlug) ?? []).some(entry => entry.categoryId === category.id && entry.periodKey === periodKey);
+          })
+          .map(category => ({ id: category.id, name: category.name, businessSlug: category.businessSlug, frequency: category.frequency, periodKey: category.frequency === "weekly" ? previousWeekPeriod : previousMonthPeriod }));
+
+        return { overdueGoals, lateKpis };
+      }),
+  }),
+
   /** Person auth — individual logins for owners and employees. */
   person: router({
     /** Login with email + password. Returns personId stored in localStorage. */

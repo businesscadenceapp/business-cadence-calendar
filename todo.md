@@ -1053,6 +1053,7 @@
 
 ## Aug 2026 Sprint — Hub Redesign + Refer a Friend
 
+- [x] Redesign Needs Attention into Past Due, Due Soon, and Waiting on You groups with tasks, meeting follow-through, unread updates, goal reminders, and late KPI check-ins
 - [x] Add concise titles to Tasks, Updates, and Issues while preserving legacy cards
 - [x] Add Archive search across titles, details, and archive metadata
 - [x] Standardize Updates and Tasks with Issues-style Seen, Archive, and Comment actions while retaining task completion status
