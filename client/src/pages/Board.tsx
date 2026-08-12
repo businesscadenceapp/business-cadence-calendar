@@ -1264,13 +1264,15 @@ const NAV_SECTIONS = [
   { key: "calendar", label: "Calendar", icon: "📅" },
 ];
 
-function SubCardView({ title, icon, accentColor, onBack, currentKey, onNavigate, children }: {
+function SubCardView({ title, icon, accentColor, onBack, currentKey, onNavigate, actionLabel, onAction, children }: {
   title: string;
   icon: string;
   accentColor: string;
   onBack: () => void;
   currentKey: string;
   onNavigate: (key: string) => void;
+  actionLabel?: string;
+  onAction?: () => void;
   children: React.ReactNode;
 }) {
   return (
@@ -1306,6 +1308,15 @@ function SubCardView({ title, icon, accentColor, onBack, currentKey, onNavigate,
           <span className="text-lg flex-shrink-0">{icon}</span>
           <h2 className="text-[16px] font-bold text-white truncate" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>{title}</h2>
         </div>
+        {actionLabel && onAction && (
+          <button
+            onClick={onAction}
+            className="px-3 py-2 rounded-xl transition-all active:scale-[0.95] flex-shrink-0 text-[12px] font-bold"
+            style={{ background: "rgba(51,162,219,0.14)", border: "1px solid rgba(51,162,219,0.38)", color: "#67C7F2", fontFamily: "'Space Grotesk', sans-serif" }}
+          >
+            {actionLabel}
+          </button>
+        )}
       </div>
       {/* Sub-card content */}
       <div className="flex-1 p-4 flex flex-col gap-3 overflow-y-auto">
@@ -1530,6 +1541,8 @@ export default function Board() {
           icon={catMeta.icon}
           accentColor={catMeta.border}
           onBack={() => setActiveView(null)}
+          actionLabel={activeView === "tasks" ? "Add Task" : activeView === "updates" ? "Post Update" : activeView === "issues" ? "Add Issue" : undefined}
+          onAction={activeView === "tasks" || activeView === "updates" || activeView === "issues" ? () => setSheetOpen(true) : undefined}
           currentKey={activeView}
           onNavigate={(key) => {
             if (key === "calendar") { navigate("/app/calendar"); }
@@ -1674,20 +1687,6 @@ export default function Board() {
           )}
         </SubCardView>
 
-        {/* FAB for post — hidden on archive/needs_attention, hidden when sheet is open */}
-        {!sheetOpen && activeView !== "archive" && activeView !== "needs_attention" && createPortal(
-          <button
-            onClick={() => setSheetOpen(true)}
-            className="fixed bottom-24 right-6 w-14 h-14 rounded-2xl flex items-center justify-center text-2xl font-bold transition-all active:scale-[0.9] hover:scale-[1.05] z-40"
-            style={{
-              background: "linear-gradient(135deg, #33A2DB, #38BDF8)",
-              color: "#0F2440",
-              boxShadow: "0 6px 24px rgba(51,162,219,0.4), 0 2px 8px rgba(0,0,0,0.3)",
-            }}
-          >+</button>,
-          document.body
-        )}
-
         {sheetOpen && createPortal(
           <BottomSheet open={sheetOpen} onClose={() => setSheetOpen(false)}>
             <AddCardForm currentUser={currentUser} onAdded={() => { refetch(); setSheetOpen(false); }}
@@ -1800,7 +1799,7 @@ export default function Board() {
           </div>
         ) : (
           /* ── Swipeable Dual-Hub Layout ── */
-          <div style={{ position: "relative", marginLeft: "-20px", marginRight: "-20px" }}>
+          <div ref={(el) => registerRef("tour-hub", el)} style={{ position: "relative", marginLeft: "-20px", marginRight: "-20px", flex: 1, minHeight: 0, display: "flex", flexDirection: "column", justifyContent: "center" }}>
             {/* Swipe container — negative margin breaks out of parent px-5 padding */}
             <div
               ref={(el) => { registerRef("tour-hub-swipe", el); (hubScrollRef as React.MutableRefObject<HTMLDivElement | null>).current = el; }}
@@ -1838,7 +1837,7 @@ export default function Board() {
               >
                 <div
                   className="relative flex items-center justify-center"
-                  style={{ width: "100%", aspectRatio: "1 / 1", maxWidth: 360, margin: "0 auto" }}
+                  style={{ width: "calc(100% - 8px)", aspectRatio: "1 / 1", maxWidth: 384, margin: "0 auto" }}
                 >
                   <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none" }} viewBox="0 0 360 360">
                     {[-90, -30, 30, 90, 150, 210].map((angle, i) => {
@@ -1852,7 +1851,7 @@ export default function Board() {
                     style={{
                       position: "absolute", left: "50%", top: "50%",
                       transform: "translate(-50%, -50%)",
-                      width: 72, height: 72, borderRadius: "50%",
+                      width: 78, height: 78, borderRadius: "50%",
                       background: "linear-gradient(135deg, rgba(51,162,219,0.22) 0%, rgba(51,162,219,0.08) 100%)",
                       border: "2px solid rgba(51,162,219,0.45)",
                       boxShadow: "0 0 32px rgba(51,162,219,0.25), 0 0 8px rgba(51,162,219,0.15)",
@@ -1882,7 +1881,7 @@ export default function Board() {
                     const cy = 50 + (r / 360) * 100 * Math.sin(rad);
                     return (
                       <div key={cat.key} style={{ position: "absolute", left: `${cx}%`, top: `${cy}%`, transform: "translate(-50%, -50%)", zIndex: 3, opacity: offTheClock ? 0.35 : 1, transition: "opacity 0.5s ease", pointerEvents: offTheClock ? "none" : "auto" }}>
-                        <HubNode cat={cat} count={count} onClick={onClick} delay={i * 70} size={76} tourId={tourId} registerRef={registerRef} {...extra} />
+                        <HubNode cat={cat} count={count} onClick={onClick} delay={i * 70} size={80} tourId={tourId} registerRef={registerRef} {...extra} />
                       </div>
                     );
                   })}
@@ -1902,7 +1901,7 @@ export default function Board() {
               >
                 <div
                   className="relative flex items-center justify-center"
-                  style={{ width: "100%", aspectRatio: "1 / 1", maxWidth: 360, margin: "0 auto" }}
+                  style={{ width: "calc(100% - 8px)", aspectRatio: "1 / 1", maxWidth: 384, margin: "0 auto" }}
                 >
                   <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none" }} viewBox="0 0 360 360">
                     {[-90, -30, 30, 90, 150, -150].map((angle, i) => {
@@ -1917,7 +1916,7 @@ export default function Board() {
                     style={{
                       position: "absolute", left: "50%", top: "50%",
                       transform: "translate(-50%, -50%)",
-                      width: 72, height: 72, borderRadius: "50%",
+                      width: 78, height: 78, borderRadius: "50%",
                       background: "linear-gradient(135deg, rgba(167,139,250,0.22) 0%, rgba(167,139,250,0.08) 100%)",
                       border: "2px solid rgba(167,139,250,0.45)",
                       boxShadow: "0 0 32px rgba(167,139,250,0.25), 0 0 8px rgba(167,139,250,0.15)",
@@ -1947,7 +1946,7 @@ export default function Board() {
                     const cy = 50 + (r / 360) * 100 * Math.sin(rad);
                     return (
                       <div key={cat.key} style={{ position: "absolute", left: `${cx}%`, top: `${cy}%`, transform: "translate(-50%, -50%)", zIndex: 3, opacity: offTheClock ? 0.35 : 1, transition: "opacity 0.5s ease", pointerEvents: offTheClock ? "none" : "auto" }}>
-                        <HubNode cat={cat as TileMeta} count={-1} onClick={onClick} delay={i * 70} size={76} tourId={tourId} registerRef={registerRef} />
+                        <HubNode cat={cat as TileMeta} count={-1} onClick={onClick} delay={i * 70} size={80} tourId={tourId} registerRef={registerRef} />
                       </div>
                     );
                   })}
@@ -1965,23 +1964,6 @@ export default function Board() {
         )}
 
       </div>
-
-      {/* Floating Action Button — portalled to body so fixed pos works inside overflow scroll */}
-      {!sheetOpen && createPortal(
-        <button
-          ref={(el) => registerRef("tour-hub", el)}
-          data-tour="tour-hub"
-          onClick={() => setSheetOpen(true)}
-          className="fixed bottom-24 right-6 w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-bold transition-all active:scale-[0.9] hover:scale-[1.05] z-40"
-          style={{
-            background: "linear-gradient(135deg, #33A2DB, #38BDF8)",
-            color: "#0F2440",
-            boxShadow: "0 6px 24px rgba(51,162,219,0.4), 0 2px 8px rgba(0,0,0,0.3)",
-            animation: "fabPulse 3s ease-in-out infinite",
-          }}
-        >+</button>,
-        document.body
-      )}
 
       {/* Bottom Sheet for posting — portalled to body so it covers the full screen including nav bar */}
       {sheetOpen && createPortal(
