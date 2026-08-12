@@ -14,6 +14,9 @@ describe("TARSA web branding preview", () => {
     expect(brandLogo).toContain("TARSA");
     expect(landing).toContain(">TARSA</span>");
     expect(landing).toContain("TARSA is the app built for couples");
+    expect(landing).toContain("üzlettárs");
+    expect(landing).toContain("élettárs");
+    expect(landing).toContain("partners in business, without losing the partnership in love");
     expect(landing).toContain("TARSA. All rights reserved.");
     expect(indexHtml).toContain("<title>TARSA — App for Couples Who Own a Business Together</title>");
     expect(manifest).toContain('"short_name": "TARSA"');

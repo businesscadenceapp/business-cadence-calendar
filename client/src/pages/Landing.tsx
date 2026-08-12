@@ -704,10 +704,34 @@ function StorySection() {
     <section id="story" className="py-20 px-4 bg-[#0F2440]" aria-labelledby="story-heading">
       <div className="max-w-3xl mx-auto">
         <div className="text-center mb-10">
-          <p className="text-[#33A2DB] text-sm font-semibold uppercase tracking-widest mb-3">Our Story</p>
+          <p className="text-[#33A2DB] text-sm font-semibold uppercase tracking-widest mb-3">Why TARSA</p>
           <h2 id="story-heading" className="text-3xl sm:text-4xl font-bold text-white">
-            We built this because we needed it.
+            Two roles. One partnership.
           </h2>
+        </div>
+
+        <div className="bg-gradient-to-br from-[#1E3A5F] to-[#132B47] rounded-2xl p-8 sm:p-10 border border-[#33A2DB]/25 mb-6">
+          <p className="text-white/75 text-lg leading-relaxed">
+            <strong className="text-white tracking-[0.12em]">TARSA</strong> is inspired by the Hungarian word <em className="text-[#67C5F3]">társ</em> — a partner or companion. In Hungarian, a prefix changes the context: <em className="text-white">üzlettárs</em> means business partner, while <em className="text-white">élettárs</em> means life partner.
+          </p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 my-7">
+            <div className="rounded-xl bg-white/7 border border-white/10 px-5 py-4">
+              <p className="text-[#67C5F3] text-lg font-semibold">üzlettárs</p>
+              <p className="text-white/50 text-sm mt-1">Business partner</p>
+            </div>
+            <div className="rounded-xl bg-white/7 border border-white/10 px-5 py-4">
+              <p className="text-[#F6A54A] text-lg font-semibold">élettárs</p>
+              <p className="text-white/50 text-sm mt-1">Life partner</p>
+            </div>
+          </div>
+
+          <p className="text-white/70 leading-relaxed">
+            The ending in <em className="text-[#67C5F3]">társa</em> gives the word a personal possessive form — “his or her partner.” For us, that is a reminder that a shared business is never only about strategy. It is also about trust, boundaries, and the life you are building together.
+          </p>
+          <p className="text-white font-medium text-lg leading-relaxed mt-5">
+            TARSA is built for the space where those two roles meet: partners in business, without losing the partnership in love.
+          </p>
         </div>
 
         <div className="bg-white/5 rounded-2xl p-8 sm:p-10 border border-white/10">
@@ -737,7 +761,7 @@ function StorySection() {
           <div className="mt-8 pt-6 border-t border-white/10 flex items-center gap-4">
             <div className="w-12 h-12 rounded-full bg-[#1E3A5F] border border-white/20 flex items-center justify-center text-[#33A2DB] font-bold text-lg flex-shrink-0" aria-hidden="true">T</div>
             <div>
-              <p className="font-semibold text-white">The Founders</p>
+              <p className="font-semibold text-white">Why we built it</p>
               <p className="text-sm text-white/50">Co-owners of three businesses, married 20+ years</p>
             </div>
           </div>
