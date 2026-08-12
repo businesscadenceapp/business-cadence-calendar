@@ -1042,6 +1042,7 @@
 
 ## Aug 2026 Sprint — Hub Redesign + Refer a Friend
 
+- [x] Correct Sleep Mode so all app functions remain usable while incoming partner notifications are silenced or held
 - [x] Remove the redundant floating blue add button and use the freed screen space to center and slightly enlarge both hubs
 - [x] Fix the expired-trial paywall loop so the existing New Beginnings Chiropractic account can open its dashboard safely
 - [x] Replace 2×3 square grid with circular hub layout on Command Board (Board.tsx + DemoBoard.tsx)

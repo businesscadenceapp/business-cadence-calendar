@@ -12,6 +12,7 @@ import { usePerson } from "@/contexts/PersonContext";
 import { useIdentity } from "@/components/AppShell";
 import { useActiveBusiness } from "@/components/BusinessSwitcher";
 import { useTour, TOUR_STORAGE_KEY, TOUR_PENDING_KEY } from "@/contexts/TourContext";
+import { getSleepMode, setSleepMode } from "@/lib/sleepMode";
 
 type Author = string;
 type CardType = "update" | "issue" | "task";
@@ -1401,17 +1402,14 @@ export default function Board() {
   const [needsAttnSection, setNeedsAttnSection] = useState<"tasks" | "issues">("tasks");
   const { replay, registerRef, active: tourActive } = useTour();
   const [profileDeferred, setProfileDeferred] = useState(false);
-  const [offTheClock, setOffTheClock] = useState<boolean>(() => {
-    try { return localStorage.getItem("bc_off_the_clock") === "true"; } catch { return false; }
-  });
+  const [offTheClock, setOffTheClock] = useState<boolean>(() => getSleepMode());
   const toggleOffTheClock = () => {
     setOffTheClock(prev => {
-      const next = !prev;
-      try { localStorage.setItem("bc_off_the_clock", String(next)); } catch {}
+      const next = setSleepMode(!prev);
       if (next) {
-        toast("You're Off the Clock 🌙 — your partner won't be notified.", { duration: 4000 });
+        toast("Sleep Mode is on 🌙 — incoming partner notifications are paused. You can still work anywhere in the app.", { duration: 5000 });
       } else {
-        toast("You're back in Work Mode ☀️ — notifications are on.", { duration: 3000 });
+        toast("Work Mode is on ☀️ — held partner notifications are visible again.", { duration: 3500 });
       }
       return next;
     });
@@ -1880,7 +1878,7 @@ export default function Board() {
                     const cx = 50 + (r / 360) * 100 * Math.cos(rad);
                     const cy = 50 + (r / 360) * 100 * Math.sin(rad);
                     return (
-                      <div key={cat.key} style={{ position: "absolute", left: `${cx}%`, top: `${cy}%`, transform: "translate(-50%, -50%)", zIndex: 3, opacity: offTheClock ? 0.35 : 1, transition: "opacity 0.5s ease", pointerEvents: offTheClock ? "none" : "auto" }}>
+                      <div key={cat.key} style={{ position: "absolute", left: `${cx}%`, top: `${cy}%`, transform: "translate(-50%, -50%)", zIndex: 3 }}>
                         <HubNode cat={cat} count={count} onClick={onClick} delay={i * 70} size={80} tourId={tourId} registerRef={registerRef} {...extra} />
                       </div>
                     );
@@ -1945,7 +1943,7 @@ export default function Board() {
                     const cx = 50 + (r / 360) * 100 * Math.cos(rad);
                     const cy = 50 + (r / 360) * 100 * Math.sin(rad);
                     return (
-                      <div key={cat.key} style={{ position: "absolute", left: `${cx}%`, top: `${cy}%`, transform: "translate(-50%, -50%)", zIndex: 3, opacity: offTheClock ? 0.35 : 1, transition: "opacity 0.5s ease", pointerEvents: offTheClock ? "none" : "auto" }}>
+                      <div key={cat.key} style={{ position: "absolute", left: `${cx}%`, top: `${cy}%`, transform: "translate(-50%, -50%)", zIndex: 3 }}>
                         <HubNode cat={cat as TileMeta} count={-1} onClick={onClick} delay={i * 70} size={80} tourId={tourId} registerRef={registerRef} />
                       </div>
                     );

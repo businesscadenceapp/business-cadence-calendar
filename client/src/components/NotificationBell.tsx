@@ -7,6 +7,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
+import { SLEEP_MODE_EVENT, getSleepMode } from "@/lib/sleepMode";
 
 // ─── Type icons & colours ────────────────────────────────────────────────────
 
@@ -39,22 +40,38 @@ interface Props {
 
 export function NotificationBell({ accountId, personId }: Props) {
   const [open, setOpen] = useState(false);
+  const [sleepMode, setSleepMode] = useState(() => getSleepMode());
   const panelRef = useRef<HTMLDivElement>(null);
   const [, navigate] = useLocation();
 
   const enabled = !!accountId && !!personId;
+  const presentationEnabled = enabled && !sleepMode;
+
+  useEffect(() => {
+    const syncSleepMode = () => setSleepMode(getSleepMode());
+    window.addEventListener(SLEEP_MODE_EVENT, syncSleepMode);
+    window.addEventListener("storage", syncSleepMode);
+    return () => {
+      window.removeEventListener(SLEEP_MODE_EVENT, syncSleepMode);
+      window.removeEventListener("storage", syncSleepMode);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (sleepMode) setOpen(false);
+  }, [sleepMode]);
 
   // Unread count — polled every 30 s for the badge
   const { data: countData, refetch: refetchCount } = trpc.notification.unreadCount.useQuery(
     { accountId: accountId ?? 0, personId: personId ?? "" },
-    { enabled, refetchInterval: 30_000, staleTime: 15_000 }
+    { enabled: presentationEnabled, refetchInterval: presentationEnabled ? 30_000 : false, staleTime: 15_000 }
   );
-  const unreadCount = countData?.count ?? 0;
+  const unreadCount = sleepMode ? 0 : (countData?.count ?? 0);
 
   // Full list — fetched when panel opens
   const { data: listData, refetch: refetchList } = trpc.notification.list.useQuery(
     { accountId: accountId ?? 0, personId: personId ?? "" },
-    { enabled: enabled && open, staleTime: 5_000 }
+    { enabled: presentationEnabled && open, staleTime: 5_000 }
   );
   const notifications = listData?.items ?? [];
 
@@ -100,8 +117,9 @@ export function NotificationBell({ accountId, personId }: Props) {
     <div ref={panelRef} style={{ position: "relative", display: "inline-block" }}>
       {/* Bell button */}
       <button
-        onClick={() => setOpen(v => !v)}
-        aria-label={`Notifications${unreadCount > 0 ? ` (${unreadCount} unread)` : ""}`}
+        onClick={() => { if (!sleepMode) setOpen(v => !v); }}
+        aria-label={sleepMode ? "Sleep Mode is on — notifications are held until Work Mode" : `Notifications${unreadCount > 0 ? ` (${unreadCount} unread)` : ""}`}
+        title={sleepMode ? "Sleep Mode is on — notifications are held until Work Mode" : "Notifications"}
         style={{
           position: "relative",
           background: open ? "rgba(124,58,237,0.12)" : "transparent",
@@ -119,11 +137,14 @@ export function NotificationBell({ accountId, personId }: Props) {
         onMouseEnter={e => { if (!open) (e.currentTarget as HTMLButtonElement).style.background = "rgba(124,58,237,0.08)"; }}
         onMouseLeave={e => { if (!open) (e.currentTarget as HTMLButtonElement).style.background = "transparent"; }}
       >
-        {/* Bell SVG */}
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={open ? "#7C3AED" : "#64748B"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-          <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-        </svg>
+        {sleepMode ? (
+          <span aria-hidden="true" style={{ fontSize: "17px", lineHeight: 1 }}>🌙</span>
+        ) : (
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={open ? "#7C3AED" : "#64748B"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+            <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+          </svg>
+        )}
 
         {/* Unread badge */}
         {unreadCount > 0 && (
