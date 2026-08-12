@@ -1042,6 +1042,7 @@
 
 ## Aug 2026 Sprint — Hub Redesign + Refer a Friend
 
+- [x] Fix the expired-trial paywall loop so the existing New Beginnings Chiropractic account can open its dashboard safely
 - [x] Replace 2×3 square grid with circular hub layout on Command Board (Board.tsx + DemoBoard.tsx)
 - [x] Add Performance Hub (Hub 2) with swipe-left gesture — Goals, KPIs, Reports nodes
 - [x] Add Refer a Friend (🎁) node to Performance Hub with referral sheet modal
