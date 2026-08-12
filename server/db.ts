@@ -226,7 +226,7 @@ export async function getBoardCards(includeArchived = false, audience?: "owner" 
 }
 
 export async function createBoardCard(
-  data: Pick<InsertBoardCard, "type" | "business" | "content"> & {
+  data: Pick<InsertBoardCard, "type" | "business" | "title" | "content"> & {
     author: string;
     assignedTo?: string;
     assignedToPersonId?: string;

@@ -648,6 +648,7 @@ Keep the tone warm but professional. This summary will be saved under this speci
         author: z.string().min(1).max(128),
         type: z.enum(["update", "issue", "task"]),
         business: z.enum(["chiropractic", "crossfit", "general"]),
+        title: z.string().trim().min(1).max(160),
         content: z.string().min(1).max(1000),
         assignedTo: z.string().min(1).max(128).optional(),
         assignedToPersonId: z.string().optional(),

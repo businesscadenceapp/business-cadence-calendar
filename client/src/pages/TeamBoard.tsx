@@ -28,6 +28,7 @@ type Card = {
   author: string;
   type: CardType;
   business: Business;
+  title: string | null;
   content: string;
   assignedTo: string | null;
   assignedToPersonId: string | null;
@@ -78,6 +79,12 @@ function timeAgo(date: Date): string {
   if (hrs < 24) return `${hrs}h ago`;
   const days = Math.floor(hrs / 24);
   return `${days}d ago`;
+}
+
+function getCardTitle(title: string | null | undefined, content: string): string {
+  const savedTitle = title?.trim();
+  if (savedTitle) return savedTitle;
+  return content.trim().split(/\n+/)[0]?.slice(0, 96) || "Untitled";
 }
 
 function formatDate(ms: number): string {
@@ -219,6 +226,7 @@ function TeamTaskCard({ card, currentUser, accountId, onMarkDone, onConfirmDone,
   const isDoer = currentUser === card.assignedTo;
   const isRequester = currentUser === card.author;
   const isOverdue = card.dueAt && !card.completedAt && Date.now() > card.dueAt;
+  const displayTitle = getCardTitle(card.title, card.content);
 
   return (
     <div
@@ -456,6 +464,7 @@ function TeamPostForm({ currentUser, accountId, employees, onAdded, allowedBusin
   defaultBusiness: string;
 }) {
   const [type, setType] = useState<"update" | "task">("update");
+  const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [assignedTo, setAssignedTo] = useState<string | null>(null);
   const [assignedToPersonId, setAssignedToPersonId] = useState<string | null>(null);
@@ -494,6 +503,7 @@ function TeamPostForm({ currentUser, accountId, employees, onAdded, allowedBusin
 
   const createCard = trpc.board.create.useMutation({
     onSuccess: () => {
+      setTitle("");
       setContent("");
       setAssignedTo(null);
       setAssignedToPersonId(null);
@@ -507,14 +517,15 @@ function TeamPostForm({ currentUser, accountId, employees, onAdded, allowedBusin
 
   const handleSubmit = () => {
     if (!currentUser) { toast.error("Not logged in"); return; }
-    if (!content.trim()) { toast.error("Please write something"); return; }
+    if (!title.trim()) { toast.error("Please add a title"); return; }
     if (type === "task" && !assignedTo) { toast.error("Please select who this task is for"); return; }
     const dueAt = dueDate ? new Date(dueDate + "T23:59:59").getTime() : undefined;
     createCard.mutate({
       author: currentUser,
       type,
       business: (business as "chiropractic" | "crossfit" | "general"),
-      content: content.trim(),
+      title: title.trim(),
+      content: content.trim() || title.trim(),
       audience: "team",
       ...(attachments.length > 0 ? { attachmentsJson: JSON.stringify(attachments) } : {}),
       ...(type === "task" && assignedTo ? { assignedTo, ...(assignedToPersonId ? { assignedToPersonId } : {}) } : {}),
@@ -630,7 +641,23 @@ function TeamPostForm({ currentUser, accountId, employees, onAdded, allowedBusin
         </div>
       )}
 
-      {/* Content */}
+      {/* Title */}
+      <div className="flex flex-col gap-1.5">
+        <p className="text-[10px] uppercase tracking-wider font-medium" style={{ color: "rgba(255,255,255,0.4)", fontFamily: "'Space Grotesk', sans-serif" }}>Title <span className="text-red-400">*</span></p>
+        <input
+          value={title}
+          onChange={e => setTitle(e.target.value)}
+          maxLength={160}
+          placeholder={type === "task" ? "What needs to be done?" : "What is the announcement?"}
+          className="w-full rounded-lg px-3 py-2 text-[13px] placeholder-white/30 focus:outline-none transition-colors"
+          style={inputStyle}
+          onFocus={e => (e.target.style.borderColor = "rgba(255,255,255,0.25)")}
+          onBlur={e => (e.target.style.borderColor = "rgba(255,255,255,0.12)")}
+        />
+      </div>
+
+      {/* Details */}
+      <p className="text-[10px] uppercase tracking-wider font-medium" style={{ color: "rgba(255,255,255,0.4)", fontFamily: "'Space Grotesk', sans-serif" }}>Details <span className="normal-case" style={{ color: "rgba(255,255,255,0.3)" }}>(optional)</span></p>
       <textarea
         value={content}
         onChange={e => setContent(e.target.value)}

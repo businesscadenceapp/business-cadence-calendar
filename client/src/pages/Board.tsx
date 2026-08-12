@@ -57,6 +57,12 @@ function timeAgo(date: Date): string {
   return `${days}d ago`;
 }
 
+function getCardTitle(title: string | null | undefined, content: string): string {
+  const savedTitle = title?.trim();
+  if (savedTitle) return savedTitle;
+  return content.trim().split(/\n+/)[0]?.slice(0, 96) || "Untitled";
+}
+
 type Priority = "high" | "medium" | "low";
 
 type Card = {
@@ -64,6 +70,7 @@ type Card = {
   author: Author;
   type: CardType;
   business: Business;
+  title: string | null;
   content: string;
   assignedTo: Author | null;
   dueAt: number | null;
@@ -338,6 +345,7 @@ function TaskCard({ card, currentUser, accountId, onMarkDone, onConfirmDone, onS
     confirmed:    { bg: "rgba(5,150,105,0.06)", border: "rgba(5,150,105,0.25)" },
   };
   const style = stateStyles[taskState];
+  const displayTitle = getCardTitle(card.title, card.content);
 
   const touchStartX = useRef<number | null>(null);
   const touchStartY = useRef<number | null>(null);
@@ -459,7 +467,8 @@ function TaskCard({ card, currentUser, accountId, onMarkDone, onConfirmDone, onS
                   );
                 })()}
               </div>
-              <p className="text-[13px] text-white leading-relaxed">{card.content}</p>
+              <p className="text-[14px] font-semibold text-white leading-snug">{displayTitle}</p>
+              {card.content !== displayTitle && <p className="mt-1 text-[12px] text-white/70 leading-relaxed">{card.content}</p>}
             </div>
           </div>
 
@@ -546,6 +555,7 @@ function BoardCard({ card, currentUser, accountId, onSeen, onArchive, onDelete }
   const biz = BUSINESS_LABELS[card.business] ?? { label: card.business, icon: "📋", bg: "rgba(255,255,255,0.08)", text: "rgba(255,255,255,0.6)", border: "rgba(255,255,255,0.15)" };
   const isOwnCard = card.author === currentUser;
   const alreadySeen = !!card.seenAt;
+  const displayTitle = getCardTitle(card.title, card.content);
 
   return (
     <div
@@ -569,7 +579,8 @@ function BoardCard({ card, currentUser, accountId, onSeen, onArchive, onDelete }
               <span className="text-[12px] font-bold" style={{ color: colors.badgeText, fontFamily: "'Space Grotesk', sans-serif" }}>{card.author}</span>
               <span className="text-[10px] ml-auto flex-shrink-0" style={{ color: "rgba(255,255,255,0.3)", fontFamily: "'JetBrains Mono', monospace" }}>{timeAgo(card.createdAt)}</span>
             </div>
-            <p className="text-[13px] text-white leading-relaxed">{card.content}</p>
+            <p className="text-[14px] font-semibold text-white leading-snug">{displayTitle}</p>
+            {card.content !== displayTitle && <p className="mt-1 text-[12px] text-white/70 leading-relaxed">{card.content}</p>}
             {card.attachmentsJson && (() => {
               try {
                 const atts: Array<{ key: string; url: string; name: string; mimeType: string; sizeBytes: number }> = JSON.parse(card.attachmentsJson);
@@ -646,6 +657,7 @@ function AddCardForm({ currentUser, onAdded, activeBusiness: activeBusinessProp,
   const [type, setType] = useState<CardType>(defaultType ?? "update");
   // Business is always the currently active business — never shown as a selector
   const business = activeBusinessProp;
+  const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [assignedTo, setAssignedTo] = useState<string | null>(null);
   const [dueDate, setDueDate] = useState("");
@@ -698,7 +710,7 @@ function AddCardForm({ currentUser, onAdded, activeBusiness: activeBusinessProp,
 
   const createCard = trpc.board.create.useMutation({
     onSuccess: (result) => {
-      setContent(""); setAssignedTo(null); setDueDate(""); setUpdateDate("");
+      setTitle(""); setContent(""); setAssignedTo(null); setDueDate(""); setUpdateDate("");
       setMeetingType(null); setScheduledDate(""); setNotifyPersonIds([]); setPriority("medium"); setPendingAttachments([]);
       // Reset tone check state so it works fresh on next post
       setToneCheckEnabled(true); setToneCheckResult(null); setShowToneModal(false); setIsCheckingTone(false);
@@ -728,6 +740,7 @@ function AddCardForm({ currentUser, onAdded, activeBusiness: activeBusinessProp,
       author: currentUser!,
       type,
       business,
+      title: title.trim(),
       content: finalContent.trim(),
       ...(type === "task" && assignedTo ? { assignedTo } : {}),
       ...(dueAt ? { dueAt } : {}),
@@ -744,15 +757,16 @@ function AddCardForm({ currentUser, onAdded, activeBusiness: activeBusinessProp,
 
   const handleSubmit = async () => {
     if (!currentUser) { toast.error("Please sign in first"); return; }
-    if (!content.trim()) { toast.error("Please write something"); return; }
+    if (!title.trim()) { toast.error("Please add a title"); return; }
     if (type === "task" && !assignedTo) { toast.error("Please select who this task is assigned to"); return; }
     if (type === "issue" && !meetingType) { toast.error("Please select which meeting to discuss this in"); return; }
+    const detailText = content.trim() || title.trim();
 
     // AI Tone Check — only if enabled
     if (toneCheckEnabled) {
       setIsCheckingTone(true);
       try {
-        const result = await toneCheckMutation.mutateAsync({ content: content.trim(), type });
+        const result = await toneCheckMutation.mutateAsync({ content: detailText, type });
         setIsCheckingTone(false);
         if (result.needsRewrite) {
           setToneCheckResult(result);
@@ -764,7 +778,7 @@ function AddCardForm({ currentUser, onAdded, activeBusiness: activeBusinessProp,
         // If tone check fails, post anyway
       }
     }
-    doPost(content);
+    doPost(detailText);
   };
 
   const inputStyle = { backgroundColor: "rgba(255,255,255,0.06)", border: "1.5px solid rgba(255,255,255,0.12)", color: "white", fontFamily: "'Inter', sans-serif" };
@@ -880,7 +894,18 @@ function AddCardForm({ currentUser, onAdded, activeBusiness: activeBusinessProp,
         </div>
       )}
 
-      {/* Content */}
+      {/* Title */}
+      <div className="flex flex-col gap-1.5">
+        <p className="text-[10px] uppercase tracking-wider font-medium" style={{ color: "rgba(255,255,255,0.4)", fontFamily: "'Space Grotesk', sans-serif" }}>Title <span className="text-red-400">*</span></p>
+        <input value={title} onChange={e => setTitle(e.target.value)} maxLength={160}
+          placeholder={type === "update" ? "What changed?" : type === "issue" ? "What needs a decision?" : "What needs to be done?"}
+          className="w-full rounded-lg px-3 py-2 text-[13px] placeholder-white/30 focus:outline-none transition-colors"
+          style={inputStyle}
+          onFocus={e => (e.target.style.borderColor = "rgba(255,255,255,0.25)")} onBlur={e => (e.target.style.borderColor = "rgba(255,255,255,0.12)")} />
+      </div>
+
+      {/* Details */}
+      <p className="text-[10px] uppercase tracking-wider font-medium" style={{ color: "rgba(255,255,255,0.4)", fontFamily: "'Space Grotesk', sans-serif" }}>Details <span className="normal-case" style={{ color: "rgba(255,255,255,0.3)" }}>(optional)</span></p>
       <textarea value={content} onChange={e => setContent(e.target.value)}
         placeholder={type === "update" ? "What did you do since the last meeting?" : type === "issue" ? "What do we need to discuss at the next meeting?" : assignedTo ? `What needs to be done by ${assignedTo}?` : "Describe the task…"}
         rows={3}
@@ -1423,6 +1448,7 @@ export default function Board() {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [referralOpen, setReferralOpen] = useState(false);
   const [showCompleted, setShowCompleted] = useState(false);
+  const [archiveQuery, setArchiveQuery] = useState("");
   const [needsAttnSection, setNeedsAttnSection] = useState<"tasks" | "issues">("tasks");
   const { replay, registerRef, active: tourActive } = useTour();
   const [profileDeferred, setProfileDeferred] = useState(false);
@@ -1563,6 +1589,18 @@ export default function Board() {
   const donePendingTasks = filtered.filter(c => c.type === "task" && !c.archivedAt && c.completedAt && !c.confirmedAt);
   const completedTasks = filtered.filter(c => c.type === "task" && c.archivedAt && c.confirmedAt);
   const archivedCards = filtered.filter(c => !!c.archivedAt);
+  const normalizedArchiveQuery = archiveQuery.trim().toLowerCase();
+  const searchedArchivedCards = normalizedArchiveQuery
+    ? archivedCards.filter(card => [
+        getCardTitle(card.title, card.content),
+        card.content,
+        card.author,
+        card.business,
+        card.type,
+        card.seenBy ?? "",
+        card.archivedAt ? new Date(card.archivedAt).toLocaleDateString() : "",
+      ].join(" ").toLowerCase().includes(normalizedArchiveQuery))
+    : archivedCards;
 
   const counts: Record<CategoryKey, number> = {
     tasks: openTasks.length + donePendingTasks.length,
@@ -1723,10 +1761,23 @@ export default function Board() {
 
           {activeView === "archive" && (
             <>
+              <div className="relative mb-3">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[14px]" aria-hidden="true">⌕</span>
+                <input
+                  value={archiveQuery}
+                  onChange={event => setArchiveQuery(event.target.value)}
+                  placeholder="Search archived tasks, updates, and issues"
+                  className="w-full rounded-xl py-2.5 pl-9 pr-9 text-[12px] placeholder-white/35 focus:outline-none"
+                  style={{ backgroundColor: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.12)", color: "white" }}
+                />
+                {archiveQuery && <button onClick={() => setArchiveQuery("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-[13px] text-white/50" aria-label="Clear archive search">✕</button>}
+              </div>
               {archivedCards.length === 0 ? (
                 <EmptyState icon="📁" title="Archive is empty" subtitle="Archived posts will appear here." />
+              ) : searchedArchivedCards.length === 0 ? (
+                <EmptyState icon="⌕" title="No archive matches" subtitle={`No archived cards match “${archiveQuery.trim()}”.`} />
               ) : (
-                archivedCards.map(card => (
+                searchedArchivedCards.map(card => (
                   card.type === "task" ? (
                     <TaskCard key={card.id} card={card} currentUser={currentUser} accountId={accountId}
                       onMarkDone={() => {}} onConfirmDone={() => {}} onDelete={id => deleteCard.mutate({ id })} />

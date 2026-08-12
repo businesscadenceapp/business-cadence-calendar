@@ -1053,6 +1053,8 @@
 
 ## Aug 2026 Sprint — Hub Redesign + Refer a Friend
 
+- [x] Add concise titles to Tasks, Updates, and Issues while preserving legacy cards
+- [x] Add Archive search across titles, details, and archive metadata
 - [x] Standardize Updates and Tasks with Issues-style Seen, Archive, and Comment actions while retaining task completion status
 - [x] Fix archive visibility so archived updates appear immediately and add a clear archive action for tasks
 - [x] Remove duplicate Sleep Mode control from individual work sub-screens while retaining hub-center toggles

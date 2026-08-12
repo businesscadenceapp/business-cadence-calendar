@@ -95,6 +95,7 @@ export const boardCards = mysqlTable("board_cards", {
   author: varchar("author", { length: 128 }).notNull(),
   type: mysqlEnum("type", ["update", "issue", "task"]).notNull(),
   business: mysqlEnum("business", ["chiropractic", "crossfit", "general"]).notNull().default("general"),
+  title: varchar("title", { length: 160 }),
   content: text("content").notNull(),
   // Task-specific fields
   assignedTo: varchar("assignedTo", { length: 128 }),       // display name of assignee (legacy)
