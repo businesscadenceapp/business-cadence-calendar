@@ -15,10 +15,6 @@ import { usePerson } from "@/contexts/PersonContext";
 import { clearAuth } from "@/components/PasswordGate";
 import { BrandIcon } from "@/components/BrandLogo";
 import { NotificationBell } from "@/components/NotificationBell";
-import { SleepModeConfirmCard } from "@/components/SleepModeConfirmCard";
-import { trpc } from "@/lib/trpc";
-import { hideSleepModeReminder, shouldShowSleepModeReminder } from "@/lib/sleepModeReminder";
-import { toast } from "sonner";
 import {
   useActiveBusiness,
   ActiveBusinessBadge,
@@ -260,7 +256,6 @@ export default function AppShell({ children }: AppShellProps) {
   const { person, setPerson } = usePerson();
   const [moreOpen, setMoreOpen] = useState(false);
   const [switcherOpen, setSwitcherOpen] = useState(false);
-  const [sleepModeConfirmOpen, setSleepModeConfirmOpen] = useState(false);
   const { registerRef } = useTour();
 
   const activePath = location === "/app" ? "/app/board" : location;
@@ -270,38 +265,6 @@ export default function AppShell({ children }: AppShellProps) {
   const hasMultipleBusinesses = available.length > 1;
   const isOwnerOrCoOwner = person?.role === "owner" || person?.role === "coowner";
   const showSwitchBusiness = isOwnerOrCoOwner && hasMultipleBusinesses;
-
-  // Sleep Mode is personal: one co-owner can pause incoming notifications without blocking the other.
-  const accountId = person?.accountId;
-  const personId = person?.id;
-  const { data: personalStatus, refetch: refetchPersonalStatus } = trpc.personHours.checkStatus.useQuery(
-    { accountId: accountId ?? 0, personId: personId ?? "" },
-    { enabled: accountId !== undefined && !!personId, staleTime: 15_000 }
-  );
-  const dndActive = personalStatus?.dndActive ?? false;
-
-  const toggleDndMutation = trpc.personHours.setDnd.useMutation({
-    onSuccess: (data) => {
-      refetchPersonalStatus();
-      toast(data.active ? "Sleep Mode is on — you will not receive notifications from your partner." : "Work Mode is on — held notifications are visible again.", {
-        icon: data.active ? "🌙" : "☀️",
-        duration: data.active ? 5000 : 3500,
-      });
-    },
-  });
-
-  const handleDndToggle = useCallback(() => {
-    if (accountId === undefined || !personId) return;
-    if (dndActive) return toggleDndMutation.mutate({ accountId, personId, active: false });
-    if (shouldShowSleepModeReminder(personId)) return setSleepModeConfirmOpen(true);
-    toggleDndMutation.mutate({ accountId, personId, active: true });
-  }, [accountId, personId, dndActive, toggleDndMutation]);
-  const confirmSleepMode = (hideFutureReminder: boolean) => {
-    if (accountId === undefined || !personId) return;
-    if (hideFutureReminder) hideSleepModeReminder(personId);
-    setSleepModeConfirmOpen(false);
-    toggleDndMutation.mutate({ accountId, personId, active: true });
-  };
 
   // Employees only see Board + KPIs; owners/co-owners see full nav
   // Admin panel is only visible to owners (not co-owners)
@@ -495,22 +458,6 @@ export default function AppShell({ children }: AppShellProps) {
                   <p className="text-[10px] truncate" style={{ color: "rgba(255,255,255,0.35)" }}>{roleLabel}</p>
                 </div>
                 <NotificationBell accountId={person?.accountId} personId={person?.id} />
-                {/* DND toggle — owners and co-owners only */}
-                {isOwnerOrCoOwner && (
-                  <button
-                    ref={(el) => registerRef("tour-sleep", el)}
-                    data-tour="tour-sleep"
-                    onClick={handleDndToggle}
-                    className="flex-shrink-0 w-7 h-7 rounded-lg flex items-center justify-center transition-all active:scale-95"
-                    style={{
-                      backgroundColor: dndActive ? "rgba(167,139,250,0.2)" : "rgba(255,255,255,0.06)",
-                      border: dndActive ? "1px solid rgba(167,139,250,0.4)" : "1px solid rgba(255,255,255,0.1)",
-                    }}
-                    title={dndActive ? "Sleep Mode is on — tap to return to Work Mode" : "Turn on Sleep Mode"}
-                  >
-                    <span className="text-[13px]">{dndActive ? "🌙" : "☀️"}</span>
-                  </button>
-                )}
                 <button
                   onClick={handleSignOut}
                   className="flex-shrink-0 text-[10px] transition-colors px-1.5 py-1 rounded"
@@ -599,23 +546,8 @@ export default function AppShell({ children }: AppShellProps) {
               </div>
             )}
 
-            {/* Right: DND toggle + notification bell + settings */}
+            {/* Right: notification bell + settings */}
             <div className="flex items-center gap-2 flex-shrink-0">
-              {person && isOwnerOrCoOwner && (
-                <button
-                  ref={(el) => registerRef("tour-sleep", el)}
-                  data-tour="tour-sleep"
-                  onClick={handleDndToggle}
-                  className="w-8 h-8 rounded-lg flex items-center justify-center transition-all active:scale-95"
-                  style={{
-                    backgroundColor: dndActive ? "rgba(167,139,250,0.2)" : "rgba(255,255,255,0.06)",
-                    border: dndActive ? "1px solid rgba(167,139,250,0.4)" : "1px solid rgba(255,255,255,0.1)",
-                  }}
-                  title={dndActive ? "Sleep Mode is on — tap to return to Work Mode" : "Turn on Sleep Mode"}
-                >
-                  <span className="text-sm">{dndActive ? "🌙" : "☀️"}</span>
-                </button>
-              )}
               {person && (
                 <NotificationBell accountId={person.accountId} personId={person.id} />
               )}
@@ -680,11 +612,6 @@ export default function AppShell({ children }: AppShellProps) {
         />
       )}
 
-      <SleepModeConfirmCard
-        open={sleepModeConfirmOpen}
-        onCancel={() => setSleepModeConfirmOpen(false)}
-        onConfirm={confirmSleepMode}
-      />
     </IdentityContext.Provider>
   );
 }

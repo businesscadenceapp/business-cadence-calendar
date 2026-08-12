@@ -1042,6 +1042,7 @@
 
 ## Aug 2026 Sprint — Hub Redesign + Refer a Friend
 
+- [x] Remove duplicate Sleep Mode control from individual work sub-screens while retaining hub-center toggles
 - [x] Restore the hub-center sun/moon control that was mistakenly removed
 - [x] Hold in-app notifications automatically when an individual partner is outside their configured work hours
 - [x] Add a Sleep Mode confirmation card with an optional persistent “don’t show this reminder again” checkbox
