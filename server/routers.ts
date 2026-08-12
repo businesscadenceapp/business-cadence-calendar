@@ -82,6 +82,8 @@ import {
   getMeetingNote,
   getRecentMeetingNotes,
   getPersonHours,
+  getPersonNotificationStatus,
+  getPersonalNotificationStatus,
   updatePersonHours,
   togglePersonDnd,
   setPersonDnd,
@@ -599,12 +601,17 @@ Keep the tone warm but professional. This summary will be saved under this speci
         }
         const card = await createBoardCard({ ...input, audience: input.audience ?? "owner", priority: input.priority ?? "medium" });
         // Generate notifications for relevant recipients
+        const heldNotificationRecipients: Array<{ name: string; holdReason: "sleep_mode" | "outside_work_hours" }> = [];
         if (input.accountId) {
           const allPersons = await getPersonsByAccount(input.accountId);
           if (input.type === "task" && input.assignedTo) {
             // Notify the assignee
             const recipient = allPersons.find(p => p.name === input.assignedTo);
             if (recipient) {
+              const status = await getPersonalNotificationStatus(input.accountId, recipient.id);
+              if (status.notificationsHeld && status.holdReason) {
+                heldNotificationRecipients.push({ name: recipient.name, holdReason: status.holdReason });
+              }
               await createNotification({
                 accountId: input.accountId,
                 recipientPersonId: recipient.id,
@@ -623,6 +630,10 @@ Keep the tone warm but professional. This summary will be saved under this speci
               : allPersons.filter(p => p.role === "owner" || p.role === "coowner");
             for (const p of recipients) {
               if (p.name !== input.author) {
+                const status = await getPersonalNotificationStatus(input.accountId, p.id);
+                if (status.notificationsHeld && status.holdReason) {
+                  heldNotificationRecipients.push({ name: p.name, holdReason: status.holdReason });
+                }
                 await createNotification({
                   accountId: input.accountId,
                   recipientPersonId: p.id,
@@ -635,7 +646,7 @@ Keep the tone warm but professional. This summary will be saved under this speci
             }
           }
         }
-        return { card };
+        return { card, heldNotificationRecipients };
       }),
 
     /** Doer marks a task as done (first step of two-step completion). */
@@ -2321,21 +2332,7 @@ Keep the tone warm but professional. This summary will be saved under this speci
     checkStatus: publicProcedure
       .input(z.object({ accountId: z.number(), personId: z.string() }))
       .query(async ({ input }) => {
-        const settings = await getPersonHours(input.accountId, input.personId);
-        const workDays: number[] = JSON.parse(settings.workDays || "[1,2,3,4,5]");
-        const tz = settings.timezone || "America/New_York";
-        const now = new Date();
-        const tzDate = new Date(now.toLocaleString("en-US", { timeZone: tz }));
-        const currentDay = tzDate.getDay();
-        const currentMins = tzDate.getHours() * 60 + tzDate.getMinutes();
-        const [startH, startM] = settings.startTime.split(":").map(Number);
-        const [endH, endM] = settings.endTime.split(":").map(Number);
-        const startMins = startH * 60 + startM;
-        const endMins = endH * 60 + endM;
-        const isWorkDay = workDays.includes(currentDay);
-        const isWithinTime = currentMins >= startMins && currentMins < endMins;
-        const withinHours = isWorkDay && isWithinTime;
-        return { withinHours, dndActive: settings.manualDndActive, settings };
+        return getPersonNotificationStatus(await getPersonHours(input.accountId, input.personId));
       }),
   }),
 

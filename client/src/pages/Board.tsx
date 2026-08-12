@@ -11,8 +11,9 @@ import { toast } from "sonner";
 import { usePerson } from "@/contexts/PersonContext";
 import { useIdentity } from "@/components/AppShell";
 import { useActiveBusiness } from "@/components/BusinessSwitcher";
+import { SleepModeConfirmCard } from "@/components/SleepModeConfirmCard";
 import { useTour, TOUR_STORAGE_KEY, TOUR_PENDING_KEY } from "@/contexts/TourContext";
-import { getSleepMode, setSleepMode } from "@/lib/sleepMode";
+import { hideSleepModeReminder, shouldShowSleepModeReminder } from "@/lib/sleepModeReminder";
 
 type Author = string;
 type CardType = "update" | "issue" | "task";
@@ -608,13 +609,14 @@ function BoardCard({ card, currentUser, accountId, onSeen, onArchive, onDelete }
 
 // ─── Add Card Form (Bottom Sheet) ────────────────────────────────────────────
 
-function AddCardForm({ currentUser, onAdded, activeBusiness: activeBusinessProp, bizLabels, assignablePersons, accountId, defaultType }: {
+function AddCardForm({ currentUser, onAdded, activeBusiness: activeBusinessProp, bizLabels, assignablePersons, accountId, personId, defaultType }: {
   currentUser: Author | null;
   onAdded: () => void;
   activeBusiness: Business;
   bizLabels?: Record<string, { label: string; icon: string; bg: string; text: string; border: string }>;
   assignablePersons?: { id: string; name: string }[];
   accountId?: number;
+  personId?: string;
   defaultType?: CardType;
 }) {
   const [type, setType] = useState<CardType>(defaultType ?? "update");
@@ -671,33 +673,30 @@ function AddCardForm({ currentUser, onAdded, activeBusiness: activeBusinessProp,
   };
 
   const createCard = trpc.board.create.useMutation({
-    onSuccess: () => {
+    onSuccess: (result) => {
       setContent(""); setAssignedTo(null); setDueDate(""); setUpdateDate("");
       setMeetingType(null); setScheduledDate(""); setNotifyPersonIds([]); setPriority("medium"); setPendingAttachments([]);
       // Reset tone check state so it works fresh on next post
       setToneCheckEnabled(true); setToneCheckResult(null); setShowToneModal(false); setIsCheckingTone(false);
       onAdded();
-      toast.success("Posted to the board");
+      const heldRecipients = result.heldNotificationRecipients ?? [];
+      if (heldRecipients.length > 0) {
+        const sleepModeHeld = heldRecipients.some(recipient => recipient.holdReason === "sleep_mode");
+        const afterHoursHeld = heldRecipients.some(recipient => recipient.holdReason === "outside_work_hours");
+        const timing = sleepModeHeld && afterHoursHeld
+          ? "until they leave Sleep Mode or their work hours resume"
+          : sleepModeHeld
+            ? "until they leave Sleep Mode"
+            : "until their work hours resume";
+        toast(`Your message was sent. Your partner will not receive a notification ${timing}.`, { icon: "🌙", duration: 6000 });
+      } else {
+        toast.success("Posted to the board");
+      }
     },
     onError: () => toast.error("Failed to post card"),
   });
 
-  const { data: bhStatus } = trpc.businessHours.checkStatus.useQuery(
-    { accountId: accountId! },
-    { enabled: accountId !== undefined, staleTime: 60_000 }
-  );
-
   const doPost = (finalContent: string) => {
-    const SESSION_KEY = "bh_after_hours_shown";
-    if (bhStatus && (!bhStatus.withinHours || bhStatus.dndActive) && !sessionStorage.getItem(SESSION_KEY)) {
-      sessionStorage.setItem(SESSION_KEY, "1");
-      const msg = bhStatus.dndActive
-        ? "You're Off the Clock. Your partner won't be notified until you go back online."
-        : bhStatus.nextStartTime
-          ? `You're posting after business hours. Your partner won't be notified until ${bhStatus.nextStartTime}.`
-          : "You're posting after business hours. Your partner won't be notified until business hours resume.";
-      toast(msg, { icon: "🌙", duration: 6000 });
-    }
     const dueAt = dueDate ? new Date(dueDate + "T23:59:59").getTime() : undefined;
     const updateDateMs = updateDate ? new Date(updateDate + "T12:00:00").getTime() : undefined;
     const scheduledDateMs = scheduledDate ? new Date(scheduledDate + "T12:00:00").getTime() : undefined;
@@ -712,6 +711,7 @@ function AddCardForm({ currentUser, onAdded, activeBusiness: activeBusinessProp,
       ...(type === "issue" && meetingType ? { meetingType } : {}),
       ...(type === "issue" && scheduledDateMs ? { scheduledDate: scheduledDateMs } : {}),
       ...(accountId ? { accountId } : {}),
+      ...(personId ? { personId } : {}),
       ...((type === "update" || type === "issue") && notifyPersonIds.length > 0 ? { notifyPersonIds } : {}),
       ...(pendingAttachments.length > 0 ? { attachmentsJson: JSON.stringify(pendingAttachments) } : {}),
       priority,
@@ -1402,18 +1402,7 @@ export default function Board() {
   const [needsAttnSection, setNeedsAttnSection] = useState<"tasks" | "issues">("tasks");
   const { replay, registerRef, active: tourActive } = useTour();
   const [profileDeferred, setProfileDeferred] = useState(false);
-  const [offTheClock, setOffTheClock] = useState<boolean>(() => getSleepMode());
-  const toggleOffTheClock = () => {
-    setOffTheClock(prev => {
-      const next = setSleepMode(!prev);
-      if (next) {
-        toast("Sleep Mode is on 🌙 — incoming partner notifications are paused. You can still work anywhere in the app.", { duration: 5000 });
-      } else {
-        toast("Work Mode is on ☀️ — held partner notifications are visible again.", { duration: 3500 });
-      }
-      return next;
-    });
-  };
+  const [sleepModeConfirmOpen, setSleepModeConfirmOpen] = useState(false);
 
   // Start the tour only after person data has loaded (so the sun button is in the DOM)
   const tourStartedRef = useRef(false);
@@ -1434,6 +1423,35 @@ export default function Board() {
     const stored = localStorage.getItem("bcc_account_id");
     return stored ? parseInt(stored, 10) : undefined;
   })();
+  const personId = person?.id;
+  const { data: personalNotificationStatus, refetch: refetchPersonalNotificationStatus } = trpc.personHours.checkStatus.useQuery(
+    { accountId: accountId ?? 0, personId: personId ?? "" },
+    { enabled: accountId !== undefined && !!personId, staleTime: 15_000 }
+  );
+  const offTheClock = personalNotificationStatus?.dndActive ?? false;
+  const setPersonalSleepMode = trpc.personHours.setDnd.useMutation({
+    onSuccess: ({ active }) => {
+      refetchPersonalNotificationStatus();
+      toast(
+        active
+          ? "Sleep Mode is on 🌙 — you will not receive notifications from your partner. You can still work anywhere in the app."
+          : "Work Mode is on ☀️ — held partner notifications are visible again.",
+        { duration: active ? 5500 : 3500 }
+      );
+    },
+  });
+  const toggleOffTheClock = () => {
+    if (accountId === undefined || !personId) return;
+    if (offTheClock) return setPersonalSleepMode.mutate({ accountId, personId, active: false });
+    if (shouldShowSleepModeReminder(personId)) return setSleepModeConfirmOpen(true);
+    setPersonalSleepMode.mutate({ accountId, personId, active: true });
+  };
+  const confirmSleepMode = (hideFutureReminder: boolean) => {
+    if (accountId === undefined || !personId) return;
+    if (hideFutureReminder) hideSleepModeReminder(personId);
+    setSleepModeConfirmOpen(false);
+    setPersonalSleepMode.mutate({ accountId, personId, active: true });
+  };
 
   // Quick onboarding defers goals/KPIs/meeting setup — surface a prompt to finish
   useEffect(() => {
@@ -1689,7 +1707,7 @@ export default function Board() {
           <BottomSheet open={sheetOpen} onClose={() => setSheetOpen(false)}>
             <AddCardForm currentUser={currentUser} onAdded={() => { refetch(); setSheetOpen(false); }}
               activeBusiness={filterBusiness === "all" ? (allowedBusinesses[0] ?? "general" as Business) : filterBusiness}
-              bizLabels={dynamicBizLabels} assignablePersons={allPersons} accountId={accountId}
+              bizLabels={dynamicBizLabels} assignablePersons={allPersons} accountId={accountId} personId={personId}
               defaultType={
                 activeView === "tasks" ? "task"
                 : activeView === "updates" ? "update"
@@ -1841,7 +1859,7 @@ export default function Board() {
                     {[-90, -30, 30, 90, 150, 210].map((angle, i) => {
                       const rad = (angle * Math.PI) / 180;
                       const r = 118;
-                      return <line key={i} x1="180" y1="180" x2={180 + r * Math.cos(rad)} y2={180 + r * Math.sin(rad)} stroke="rgba(51,162,219,0.12)" strokeWidth="1.5" strokeDasharray="4 4" />;
+                      return <line key={i} x1="180" y1="180" x2={180 + r * Math.cos(rad)} y2={180 + r * Math.sin(rad)} stroke={offTheClock ? "rgba(148,163,184,0.06)" : "rgba(51,162,219,0.12)"} strokeWidth="1.5" strokeDasharray="4 4" />;
                     })}
                   </svg>
                   <div
@@ -1878,7 +1896,7 @@ export default function Board() {
                     const cx = 50 + (r / 360) * 100 * Math.cos(rad);
                     const cy = 50 + (r / 360) * 100 * Math.sin(rad);
                     return (
-                      <div key={cat.key} style={{ position: "absolute", left: `${cx}%`, top: `${cy}%`, transform: "translate(-50%, -50%)", zIndex: 3 }}>
+                      <div key={cat.key} style={{ position: "absolute", left: `${cx}%`, top: `${cy}%`, transform: "translate(-50%, -50%)", zIndex: 3, filter: offTheClock ? "saturate(0.7) brightness(0.88)" : "saturate(1) brightness(1)", transition: "filter 0.45s ease" }}>
                         <HubNode cat={cat} count={count} onClick={onClick} delay={i * 70} size={80} tourId={tourId} registerRef={registerRef} {...extra} />
                       </div>
                     );
@@ -1905,7 +1923,7 @@ export default function Board() {
                     {[-90, -30, 30, 90, 150, -150].map((angle, i) => {
                       const rad = (angle * Math.PI) / 180;
                       const r = 118;
-                      return <line key={i} x1="180" y1="180" x2={180 + r * Math.cos(rad)} y2={180 + r * Math.sin(rad)} stroke="rgba(167,139,250,0.12)" strokeWidth="1.5" strokeDasharray="4 4" />;
+                      return <line key={i} x1="180" y1="180" x2={180 + r * Math.cos(rad)} y2={180 + r * Math.sin(rad)} stroke={offTheClock ? "rgba(148,163,184,0.06)" : "rgba(167,139,250,0.12)"} strokeWidth="1.5" strokeDasharray="4 4" />;
                     })}
                   </svg>
                   {/* Performance hub center */}
@@ -1943,7 +1961,7 @@ export default function Board() {
                     const cx = 50 + (r / 360) * 100 * Math.cos(rad);
                     const cy = 50 + (r / 360) * 100 * Math.sin(rad);
                     return (
-                      <div key={cat.key} style={{ position: "absolute", left: `${cx}%`, top: `${cy}%`, transform: "translate(-50%, -50%)", zIndex: 3 }}>
+                      <div key={cat.key} style={{ position: "absolute", left: `${cx}%`, top: `${cy}%`, transform: "translate(-50%, -50%)", zIndex: 3, filter: offTheClock ? "saturate(0.7) brightness(0.88)" : "saturate(1) brightness(1)", transition: "filter 0.45s ease" }}>
                         <HubNode cat={cat as TileMeta} count={-1} onClick={onClick} delay={i * 70} size={80} tourId={tourId} registerRef={registerRef} />
                       </div>
                     );
@@ -1968,7 +1986,7 @@ export default function Board() {
         <BottomSheet open={sheetOpen} onClose={() => setSheetOpen(false)}>
           <AddCardForm currentUser={currentUser} onAdded={() => { refetch(); setSheetOpen(false); }}
             activeBusiness={filterBusiness === "all" ? (allowedBusinesses[0] ?? "general" as Business) : filterBusiness}
-            bizLabels={dynamicBizLabels} assignablePersons={allPersons} accountId={accountId} />
+            bizLabels={dynamicBizLabels} assignablePersons={allPersons} accountId={accountId} personId={personId} />
         </BottomSheet>,
         document.body
       )}
@@ -2060,6 +2078,12 @@ export default function Board() {
         </div>,
         document.body
       )}
+
+      <SleepModeConfirmCard
+        open={sleepModeConfirmOpen}
+        onCancel={() => setSleepModeConfirmOpen(false)}
+        onConfirm={confirmSleepMode}
+      />
 
       {/* Animations */}
       <style>{`

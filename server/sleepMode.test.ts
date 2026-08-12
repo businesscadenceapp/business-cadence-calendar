@@ -1,25 +1,39 @@
 import { describe, expect, it } from "vitest";
-import { getSleepMode, setSleepMode } from "../client/src/lib/sleepMode";
+import { getPersonNotificationStatus } from "./db";
+import type { PersonHours } from "../drizzle/schema";
 
-function createStorage(initial: Record<string, string> = {}) {
-  const values = new Map(Object.entries(initial));
+function settings(overrides: Partial<PersonHours> = {}): PersonHours {
   return {
-    getItem: (key: string) => values.get(key) ?? null,
-    setItem: (key: string, value: string) => values.set(key, value),
-  } as Pick<Storage, "getItem" | "setItem">;
+    id: 1,
+    accountId: 1,
+    personId: "partner-1",
+    workDays: "[1,2,3,4,5]",
+    startTime: "09:00",
+    endTime: "17:00",
+    timezone: "America/New_York",
+    manualDndActive: false,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    ...overrides,
+  };
 }
 
-describe("Sleep Mode preference", () => {
-  it("defaults to Work Mode when no preference is saved", () => {
-    expect(getSleepMode(createStorage())).toBe(false);
+describe("personal Sleep Mode notification delivery", () => {
+  it("holds notifications when a partner manually enters Sleep Mode", () => {
+    const result = getPersonNotificationStatus(settings({ manualDndActive: true }), new Date("2026-08-10T15:00:00Z"));
+    expect(result.notificationsHeld).toBe(true);
+    expect(result.holdReason).toBe("sleep_mode");
   });
 
-  it("persists notification silencing independently from application access", () => {
-    const storage = createStorage();
-    setSleepMode(true, storage);
-    expect(getSleepMode(storage)).toBe(true);
+  it("holds notifications outside a partner's work hours", () => {
+    const result = getPersonNotificationStatus(settings(), new Date("2026-08-10T02:00:00Z"));
+    expect(result.notificationsHeld).toBe(true);
+    expect(result.holdReason).toBe("outside_work_hours");
+  });
 
-    setSleepMode(false, storage);
-    expect(getSleepMode(storage)).toBe(false);
+  it("allows notification presentation during a partner's active work hours", () => {
+    const result = getPersonNotificationStatus(settings(), new Date("2026-08-10T15:00:00Z"));
+    expect(result.notificationsHeld).toBe(false);
+    expect(result.holdReason).toBeNull();
   });
 });

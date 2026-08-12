@@ -1042,6 +1042,8 @@
 
 ## Aug 2026 Sprint — Hub Redesign + Refer a Friend
 
+- [x] Add a Sleep Mode confirmation card with an optional persistent “don’t show this reminder again” checkbox
+- [x] Refine Sleep Mode visuals and wording: softly mute hub colors without disabling work, clarify whether the current user or their partner has notifications held
 - [x] Correct Sleep Mode so all app functions remain usable while incoming partner notifications are silenced or held
 - [x] Remove the redundant floating blue add button and use the freed screen space to center and slightly enlarge both hubs
 - [x] Fix the expired-trial paywall loop so the existing New Beginnings Chiropractic account can open its dashboard safely

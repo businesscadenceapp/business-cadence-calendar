@@ -7,7 +7,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
-import { SLEEP_MODE_EVENT, getSleepMode } from "@/lib/sleepMode";
 
 // ─── Type icons & colours ────────────────────────────────────────────────────
 
@@ -40,22 +39,16 @@ interface Props {
 
 export function NotificationBell({ accountId, personId }: Props) {
   const [open, setOpen] = useState(false);
-  const [sleepMode, setSleepMode] = useState(() => getSleepMode());
   const panelRef = useRef<HTMLDivElement>(null);
   const [, navigate] = useLocation();
 
   const enabled = !!accountId && !!personId;
+  const { data: personalStatus } = trpc.personHours.checkStatus.useQuery(
+    { accountId: accountId ?? 0, personId: personId ?? "" },
+    { enabled, refetchInterval: 15_000, staleTime: 10_000 }
+  );
+  const sleepMode = personalStatus?.dndActive ?? false;
   const presentationEnabled = enabled && !sleepMode;
-
-  useEffect(() => {
-    const syncSleepMode = () => setSleepMode(getSleepMode());
-    window.addEventListener(SLEEP_MODE_EVENT, syncSleepMode);
-    window.addEventListener("storage", syncSleepMode);
-    return () => {
-      window.removeEventListener(SLEEP_MODE_EVENT, syncSleepMode);
-      window.removeEventListener("storage", syncSleepMode);
-    };
-  }, []);
 
   useEffect(() => {
     if (sleepMode) setOpen(false);

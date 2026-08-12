@@ -1454,6 +1454,30 @@ export async function getPersonHours(accountId: number, personId: string): Promi
   return created[0];
 }
 
+/** Determine whether a person's work-hours and manual Sleep Mode permit notification presentation. */
+export function getPersonNotificationStatus(settings: PersonHours, now = new Date()) {
+  const workDays: number[] = JSON.parse(settings.workDays || DEFAULT_PERSON_WORK_DAYS);
+  const tz = settings.timezone || DEFAULT_TIMEZONE;
+  const tzDate = new Date(now.toLocaleString("en-US", { timeZone: tz }));
+  const currentDay = tzDate.getDay();
+  const currentMins = tzDate.getHours() * 60 + tzDate.getMinutes();
+  const [startH, startM] = settings.startTime.split(":").map(Number);
+  const [endH, endM] = settings.endTime.split(":").map(Number);
+  const withinHours = workDays.includes(currentDay) && currentMins >= startH * 60 + startM && currentMins < endH * 60 + endM;
+  const notificationsHeld = settings.manualDndActive || !withinHours;
+  const holdReason: "sleep_mode" | "outside_work_hours" | null = settings.manualDndActive
+    ? "sleep_mode"
+    : !withinHours
+      ? "outside_work_hours"
+      : null;
+  return { withinHours, dndActive: settings.manualDndActive, notificationsHeld, holdReason, settings };
+}
+
+/** Return notification availability for one partner using their personal settings. */
+export async function getPersonalNotificationStatus(accountId: number, personId: string) {
+  return getPersonNotificationStatus(await getPersonHours(accountId, personId));
+}
+
 /** Update personal hours for a specific person. */
 export async function updatePersonHours(
   accountId: number,
