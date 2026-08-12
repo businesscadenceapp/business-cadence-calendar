@@ -107,10 +107,11 @@ type Comment = {
   createdAt: Date;
 };
 
-function CardComments({ cardId, currentUser, accountId }: {
+function CardComments({ cardId, currentUser, accountId, inline = false }: {
   cardId: number;
   currentUser: Author | null;
   accountId?: number;
+  inline?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [text, setText] = useState("");
@@ -178,7 +179,7 @@ function CardComments({ cardId, currentUser, accountId }: {
   };
 
   return (
-    <div className="mt-1">
+    <div className={inline ? "contents" : "mt-1"}>
       <button
         onClick={() => setOpen(o => !o)}
         className="flex items-center gap-1.5 text-[11px] px-2 py-1 rounded-lg transition-all"
@@ -196,8 +197,8 @@ function CardComments({ cardId, currentUser, accountId }: {
       </button>
 
       {open && (
-        <div
-          className="mt-2 flex flex-col gap-2 rounded-xl p-3"
+          <div
+            className={`${inline ? "basis-full mt-2" : "mt-2"} flex flex-col gap-2 rounded-xl p-3`}
           style={{ backgroundColor: "rgba(0,0,0,0.2)", border: "1px solid rgba(51,162,219,0.12)" }}
         >
           {comments.length > 0 && (
@@ -298,12 +299,14 @@ function CardComments({ cardId, currentUser, accountId }: {
 const SWIPE_THRESHOLD = 80;
 const SWIPE_MAX = 120;
 
-function TaskCard({ card, currentUser, accountId, onMarkDone, onConfirmDone, onDelete }: {
+function TaskCard({ card, currentUser, accountId, onMarkDone, onConfirmDone, onSeen, onArchive, onDelete }: {
   card: Card;
   currentUser: Author | null;
   accountId?: number;
   onMarkDone: (id: number) => void;
   onConfirmDone: (id: number) => void;
+  onSeen?: (id: number) => void;
+  onArchive?: (id: number) => void;
   onDelete: (id: number) => void;
 }) {
   const authorColors = getAuthorColors(card.author);
@@ -312,6 +315,8 @@ function TaskCard({ card, currentUser, accountId, onMarkDone, onConfirmDone, onD
   const isRequester = currentUser === card.author;
   const isDone = !!card.completedAt;
   const isConfirmed = !!card.confirmedAt;
+  const isOwnCard = card.author === currentUser;
+  const alreadySeen = !!card.seenAt;
 
   const taskState: "open" | "done_pending" | "confirmed" = isConfirmed
     ? "confirmed"
@@ -477,7 +482,18 @@ function TaskCard({ card, currentUser, accountId, onMarkDone, onConfirmDone, onD
               <span className="text-[10px] italic" style={{ color: "rgba(255,255,255,0.3)" }}>Waiting for {card.author} to confirm</span>
             )}
 
-            <div className="ml-auto flex items-center gap-2">
+            <div className="ml-auto flex items-center justify-end gap-2 flex-wrap">
+              {onSeen && (alreadySeen ? (
+                <span className="text-[11px] px-3 py-1.5 rounded-lg font-semibold" style={{ backgroundColor: "rgba(5,150,105,0.15)", border: "1px solid rgba(5,150,105,0.3)", color: "#6EE7B7", fontFamily: "'Space Grotesk', sans-serif" }}>
+                  ✓ Seen
+                </span>
+              ) : !isOwnCard && currentUser ? (
+                <button onClick={() => onSeen(card.id)}
+                  className="text-[11px] px-3 py-1.5 rounded-lg font-semibold transition-all active:scale-[0.97]"
+                  style={{ backgroundColor: "rgba(5,150,105,0.15)", border: "1px solid rgba(5,150,105,0.3)", color: "#6EE7B7", fontFamily: "'Space Grotesk', sans-serif" }}>
+                  ✓ Seen
+                </button>
+              ) : null)}
               {taskState === "open" && isDoer && (
                 <button onClick={() => onMarkDone(card.id)}
                   className="text-[11px] px-3 py-1.5 rounded-lg font-semibold transition-all active:scale-[0.97]"
@@ -492,7 +508,15 @@ function TaskCard({ card, currentUser, accountId, onMarkDone, onConfirmDone, onD
                   ✓ Confirm Done
                 </button>
               )}
-              {card.author === currentUser && (
+              {onArchive && !card.archivedAt && (
+                <button onClick={() => onArchive(card.id)}
+                  className="text-[11px] px-2.5 py-1.5 rounded-lg transition-all hover:opacity-80"
+                  style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.35)", fontFamily: "'Space Grotesk', sans-serif" }}>
+                  Archive
+                </button>
+              )}
+              <CardComments cardId={card.id} currentUser={currentUser} accountId={accountId} inline />
+              {isOwnCard && (
                 <button onClick={() => onDelete(card.id)}
                   className="text-[11px] px-2 py-1.5 rounded-lg transition-all"
                   style={{ color: "rgba(255,255,255,0.2)" }}
@@ -501,7 +525,6 @@ function TaskCard({ card, currentUser, accountId, onMarkDone, onConfirmDone, onD
               )}
             </div>
           </div>
-          <CardComments cardId={card.id} currentUser={currentUser} accountId={accountId} />
         </div>
       </div>
     </div>
@@ -579,7 +602,7 @@ function BoardCard({ card, currentUser, accountId, onSeen, onArchive, onDelete }
           {!alreadySeen && isOwnCard && (
             <span className="text-[10px] italic" style={{ color: "rgba(255,255,255,0.3)" }}>Awaiting acknowledgement</span>
           )}
-          <div className="ml-auto flex items-center gap-2">
+          <div className="ml-auto flex items-center justify-end gap-2 flex-wrap">
             {!isOwnCard && !alreadySeen && (
               <button onClick={() => onSeen(card.id)}
                 className="text-[11px] px-3 py-1.5 rounded-lg font-semibold transition-all active:scale-[0.97]"
@@ -587,11 +610,12 @@ function BoardCard({ card, currentUser, accountId, onSeen, onArchive, onDelete }
                 ✓ Seen
               </button>
             )}
-            <button onClick={() => onArchive(card.id)}
+            {!card.archivedAt && <button onClick={() => onArchive(card.id)}
               className="text-[11px] px-2.5 py-1.5 rounded-lg transition-all hover:opacity-80"
               style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.35)", fontFamily: "'Space Grotesk', sans-serif" }}>
               Archive
-            </button>
+            </button>}
+            <CardComments cardId={card.id} currentUser={currentUser} accountId={accountId} inline />
             {isOwnCard && (
               <button onClick={() => onDelete(card.id)}
                 className="text-[11px] px-2 py-1.5 rounded-lg transition-all"
@@ -600,7 +624,6 @@ function BoardCard({ card, currentUser, accountId, onSeen, onArchive, onDelete }
                 onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.2)")}>✕</button>
             )}
           </div>
-          <CardComments cardId={card.id} currentUser={currentUser} accountId={accountId} />
         </div>
       </div>
     </div>
@@ -1503,7 +1526,7 @@ export default function Board() {
     return labels;
   }, [dbBusinesses]);
 
-  const { data, refetch, isLoading } = trpc.board.list.useQuery({ audience: "owner", personId: person?.id }, {
+  const { data, refetch, isLoading } = trpc.board.list.useQuery({ audience: "owner", personId: person?.id, includeArchived: true }, {
     refetchInterval: 15_000,
   });
 
@@ -1582,12 +1605,16 @@ export default function Board() {
                         <TaskCard key={card.id} card={card} currentUser={currentUser} accountId={accountId}
                           onMarkDone={id => currentUser && markDone.mutate({ id, completedBy: currentUser, ...(accountId ? { accountId } : {}) })}
                           onConfirmDone={id => currentUser && confirmDone.mutate({ id, confirmedBy: currentUser, ...(accountId ? { accountId } : {}) })}
+                          onSeen={id => currentUser && markSeen.mutate({ id, seenBy: currentUser })}
+                          onArchive={id => archive.mutate({ id })}
                           onDelete={id => deleteCard.mutate({ id })} />
                       ))}
                       {donePendingTasks.map(card => (
                         <TaskCard key={card.id} card={card} currentUser={currentUser} accountId={accountId}
                           onMarkDone={id => currentUser && markDone.mutate({ id, completedBy: currentUser, ...(accountId ? { accountId } : {}) })}
                           onConfirmDone={id => currentUser && confirmDone.mutate({ id, confirmedBy: currentUser, ...(accountId ? { accountId } : {}) })}
+                          onSeen={id => currentUser && markSeen.mutate({ id, seenBy: currentUser })}
+                          onArchive={id => archive.mutate({ id })}
                           onDelete={id => deleteCard.mutate({ id })} />
                       ))}
                     </>
@@ -1619,6 +1646,8 @@ export default function Board() {
                     <TaskCard key={card.id} card={card} currentUser={currentUser} accountId={accountId}
                       onMarkDone={id => currentUser && markDone.mutate({ id, completedBy: currentUser, ...(accountId ? { accountId } : {}) })}
                       onConfirmDone={id => currentUser && confirmDone.mutate({ id, confirmedBy: currentUser, ...(accountId ? { accountId } : {}) })}
+                      onSeen={id => currentUser && markSeen.mutate({ id, seenBy: currentUser })}
+                      onArchive={id => archive.mutate({ id })}
                       onDelete={id => deleteCard.mutate({ id })} />
                   ))}
                   {donePendingTasks.length > 0 && (
@@ -1630,6 +1659,8 @@ export default function Board() {
                         <TaskCard key={card.id} card={card} currentUser={currentUser} accountId={accountId}
                           onMarkDone={id => currentUser && markDone.mutate({ id, completedBy: currentUser, ...(accountId ? { accountId } : {}) })}
                           onConfirmDone={id => currentUser && confirmDone.mutate({ id, confirmedBy: currentUser, ...(accountId ? { accountId } : {}) })}
+                          onSeen={id => currentUser && markSeen.mutate({ id, seenBy: currentUser })}
+                          onArchive={id => archive.mutate({ id })}
                           onDelete={id => deleteCard.mutate({ id })} />
                       ))}
                     </div>

@@ -1042,6 +1042,8 @@
 
 ## Aug 2026 Sprint — Hub Redesign + Refer a Friend
 
+- [x] Standardize Updates and Tasks with Issues-style Seen, Archive, and Comment actions while retaining task completion status
+- [x] Fix archive visibility so archived updates appear immediately and add a clear archive action for tasks
 - [x] Remove duplicate Sleep Mode control from individual work sub-screens while retaining hub-center toggles
 - [x] Restore the hub-center sun/moon control that was mistakenly removed
 - [x] Hold in-app notifications automatically when an individual partner is outside their configured work hours

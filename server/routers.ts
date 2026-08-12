@@ -552,9 +552,10 @@ Keep the tone warm but professional. This summary will be saved under this speci
       .input(z.object({
         audience: z.enum(["owner", "team"]).optional(),
         personId: z.string().optional(),
+        includeArchived: z.boolean().optional(),
       }).optional())
       .query(async ({ input }) => {
-        const cards = await getBoardCards(false, input?.audience);
+        const cards = await getBoardCards(input?.includeArchived ?? false, input?.audience);
         // Get the person record to check businessScope
         if (!input?.personId) return { cards };
         const person = await getPersonById(input.personId);
