@@ -1,6 +1,6 @@
-import { eq, and, desc, inArray, asc } from "drizzle-orm";
+import { eq, and, desc, inArray, asc, gte, lte } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, meetingLogs, agendaItems, MeetingLog, AgendaItem, boardCards, agendaTemplates, type BoardCard, type InsertBoardCard, waitlistEmails, businessProfiles, type BusinessProfile, closedPeriods, type ClosedPeriod, meetingScheduleOverrides, employees, employeeMetrics, weeklyReports, weeklyReportEntries, type Employee, type EmployeeMetric, type WeeklyReport, type WeeklyReportEntry, goals, type Goal, type InsertGoal, notifications, type Notification, businessHours, type BusinessHours, subscriptions, type Subscription, type InsertSubscription, partnerLinks, type PartnerLink, ownerMessages, type OwnerMessage, announcements, type Announcement, meetingNotes, type MeetingNote, personHours, type PersonHours } from "../drizzle/schema";
+import { InsertUser, users, meetingLogs, agendaItems, MeetingLog, AgendaItem, meetingAttendance, type MeetingAttendance, boardCards, agendaTemplates, type BoardCard, type InsertBoardCard, waitlistEmails, businessProfiles, type BusinessProfile, closedPeriods, type ClosedPeriod, meetingScheduleOverrides, employees, employeeMetrics, weeklyReports, weeklyReportEntries, type Employee, type EmployeeMetric, type WeeklyReport, type WeeklyReportEntry, goals, type Goal, type InsertGoal, notifications, type Notification, businessHours, type BusinessHours, subscriptions, type Subscription, type InsertSubscription, partnerLinks, type PartnerLink, ownerMessages, type OwnerMessage, announcements, type Announcement, meetingNotes, type MeetingNote, personHours, type PersonHours } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -127,6 +127,46 @@ export async function getAllLoggedDates(): Promise<string[]> {
   const seen = new Set<string>();
   rows.forEach(r => seen.add(r.dateKey));
   return Array.from(seen);
+}
+
+// ─── Calendar Accountability helpers ──────────────────────────────────────────
+
+export async function getMeetingAttendanceForRange(accountId: number, startDate: string, endDate: string): Promise<MeetingAttendance[]> {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(meetingAttendance).where(and(
+    eq(meetingAttendance.accountId, accountId),
+    gte(meetingAttendance.dateKey, startDate),
+    lte(meetingAttendance.dateKey, endDate),
+  ));
+}
+
+export async function upsertMeetingAttendance(data: {
+  accountId: number;
+  dateKey: string;
+  meetingType: MeetingAttendance["meetingType"];
+  status: MeetingAttendance["status"];
+  rescheduledDate?: string;
+  updatedByPersonId?: string;
+}): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const existing = await db.select().from(meetingAttendance).where(and(
+    eq(meetingAttendance.accountId, data.accountId),
+    eq(meetingAttendance.dateKey, data.dateKey),
+    eq(meetingAttendance.meetingType, data.meetingType),
+  )).limit(1);
+  const update = {
+    status: data.status,
+    rescheduledDate: data.rescheduledDate ?? null,
+    updatedByPersonId: data.updatedByPersonId ?? null,
+    updatedAt: new Date(),
+  };
+  if (existing[0]) {
+    await db.update(meetingAttendance).set(update).where(eq(meetingAttendance.id, existing[0].id));
+    return;
+  }
+  await db.insert(meetingAttendance).values({ ...data, rescheduledDate: data.rescheduledDate ?? null, updatedByPersonId: data.updatedByPersonId ?? null });
 }
 
 export async function saveSummary(

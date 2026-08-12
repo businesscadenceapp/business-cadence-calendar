@@ -87,6 +87,8 @@ import {
   updatePersonHours,
   togglePersonDnd,
   setPersonDnd,
+  getMeetingAttendanceForRange,
+  upsertMeetingAttendance,
 } from "./db";
 import {
   getSubscription,
@@ -104,6 +106,7 @@ import {
 import { persons as personsTable } from "../drizzle/schema";
 import { partnerLinks as partnerLinksTable } from "../drizzle/schema";
 import { generateMeetingSchedule } from "../shared/calendarEngine";
+import { dateKeyForLocalDate, DEFAULT_MEETING_IMPORTANCE, getMeetingImportance, getUnloggedOwnerMeetings, shouldShowCadenceCheckIn, type MeetingImportanceMap } from "../shared/calendarAccountability";
 import { notifyOwner } from "./_core/notification";
 import bcrypt from "bcryptjs";
 import { getDb } from "./db";
@@ -114,6 +117,7 @@ import { nanoid } from "nanoid";
 import { sendPasswordResetEmail, sendPartnerSetupInviteEmail } from "./email";
 
 const meetingTypeSchema = z.enum(["daily", "weekly", "monthly", "quarterly"]);
+const meetingImportanceSchema = z.enum(["essential", "important", "optional"]);
 
 export const appRouter = router({
   system: systemRouter,
@@ -410,6 +414,12 @@ Keep the tone warm but professional. This summary will be saved under this speci
           quarterlyEnabled: z.boolean().optional().default(true),
           teamDailyEnabled: z.boolean().optional().default(true),
           teamWeeklyEnabled: z.boolean().optional().default(true),
+          meetingImportance: z.object({
+            daily: meetingImportanceSchema.optional(),
+            weekly: meetingImportanceSchema.optional(),
+            monthly: meetingImportanceSchema.optional(),
+            quarterly: meetingImportanceSchema.optional(),
+          }).optional(),
         }),
         onboardingComplete: z.boolean(),
         meetingTimes: z.object({
@@ -443,6 +453,12 @@ Keep the tone warm but professional. This summary will be saved under this speci
           quarterlyEnabled: z.boolean().optional().default(true),
           teamDailyEnabled: z.boolean().optional().default(true),
           teamWeeklyEnabled: z.boolean().optional().default(true),
+          meetingImportance: z.object({
+            daily: meetingImportanceSchema.optional(),
+            weekly: meetingImportanceSchema.optional(),
+            monthly: meetingImportanceSchema.optional(),
+            quarterly: meetingImportanceSchema.optional(),
+          }).optional(),
         }),
         meetingTimes: z.object({
           ownerDaily: z.string().optional(),
@@ -497,6 +513,64 @@ Keep the tone warm but professional. This summary will be saved under this speci
           }
         }
         return { meetings, closedDates, workDays };
+      }),
+  }),
+
+  calendarAccountability: router({
+    /** Returns the next owner meeting and the current missed-meeting accountability state. */
+    getDashboard: publicProcedure
+      .input(z.object({ accountId: z.number() }))
+      .query(async ({ input }) => {
+        const profile = await getBusinessProfile(input.accountId);
+        if (!profile) return { nextMeeting: null, missedMeetings: [], showCheckIn: false, importance: DEFAULT_MEETING_IMPORTANCE };
+        const prefs = JSON.parse(profile.meetingDayPrefs);
+        const meetingTimes = profile.meetingTimes ? JSON.parse(profile.meetingTimes) : {};
+        const importance = { ...DEFAULT_MEETING_IMPORTANCE, ...(prefs.meetingImportance ?? {}) } as MeetingImportanceMap;
+        const now = new Date();
+        const todayKey = dateKeyForLocalDate(now);
+        const start = new Date(now);
+        start.setDate(start.getDate() - 90);
+        const closedPeriods = await getClosedPeriods(input.accountId);
+        const schedules = [now.getFullYear() - 1, now.getFullYear(), now.getFullYear() + 1]
+          .flatMap((year) => generateMeetingSchedule({
+            year,
+            workDays: JSON.parse(profile.workDays),
+            meetingDayPrefs: prefs,
+            closedPeriods,
+          }))
+          .filter((meeting) => meeting.layer === "owner" && meeting.date >= dateKeyForLocalDate(start))
+          .sort((a, b) => a.date.localeCompare(b.date));
+        const attendance = await getMeetingAttendanceForRange(input.accountId, dateKeyForLocalDate(start), dateKeyForLocalDate(new Date(now.getFullYear() + 1, 11, 31)));
+        const attendanceByKey = new Map(attendance.map((entry) => [`${entry.dateKey}:${entry.meetingType}`, entry.status]));
+        const missedMeetings = getUnloggedOwnerMeetings(schedules, attendanceByKey, todayKey).slice(0, 6);
+        const nextMeeting = schedules.find((meeting) => {
+          const status = attendanceByKey.get(`${meeting.date}:${meeting.meetingType}`);
+          return meeting.date >= todayKey && status !== "not_held";
+        }) ?? null;
+        return {
+          nextMeeting: nextMeeting && {
+            ...nextMeeting,
+            time: meetingTimes[{ daily: "ownerDaily", weekly: "ownerWeekly", monthly: "ownerMonthly", quarterly: "quarterly" }[nextMeeting.meetingType]] ?? "09:00",
+            importance: getMeetingImportance(importance, nextMeeting.meetingType),
+          },
+          missedMeetings: missedMeetings.map((meeting) => ({ ...meeting, importance: getMeetingImportance(importance, meeting.meetingType) })),
+          showCheckIn: shouldShowCadenceCheckIn(missedMeetings.length),
+          importance,
+        };
+      }),
+    setMeetingStatus: publicProcedure
+      .input(z.object({
+        accountId: z.number(),
+        personId: z.string().optional(),
+        dateKey: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+        meetingType: meetingTypeSchema,
+        status: z.enum(["held", "rescheduled", "not_held"]),
+        rescheduledDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { personId, ...attendance } = input;
+        await upsertMeetingAttendance({ ...attendance, updatedByPersonId: personId });
+        return { success: true };
       }),
   }),
 
