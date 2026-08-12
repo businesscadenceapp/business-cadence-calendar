@@ -160,6 +160,12 @@ type MeetingPrefs = {
   teamDaily: number[]; teamWeekly: number;
   ownerDailyEnabled: boolean; ownerWeeklyEnabled: boolean; ownerMonthlyEnabled: boolean;
   quarterlyEnabled: boolean; teamDailyEnabled: boolean; teamWeeklyEnabled: boolean;
+  meetingImportance?: {
+    daily?: "essential" | "important" | "optional";
+    weekly?: "essential" | "important" | "optional";
+    monthly?: "essential" | "important" | "optional";
+    quarterly?: "essential" | "important" | "optional";
+  };
 };
 
 type MeetingTimes = {
@@ -198,6 +204,12 @@ function MeetingScheduleSection({ accountId }: { accountId: number }) {
         quarterlyEnabled: raw.quarterlyEnabled !== false,
         teamDailyEnabled: raw.teamDailyEnabled !== false,
         teamWeeklyEnabled: raw.teamWeeklyEnabled !== false,
+        meetingImportance: {
+          daily: raw.meetingImportance?.daily ?? "important",
+          weekly: raw.meetingImportance?.weekly ?? "essential",
+          monthly: raw.meetingImportance?.monthly ?? "essential",
+          quarterly: raw.meetingImportance?.quarterly ?? "essential",
+        },
       });
       // Load saved meeting times if present
       if (statusData.profile.meetingTimes) {
@@ -250,7 +262,7 @@ function MeetingScheduleSection({ accountId }: { accountId: number }) {
 
   if (!prefs) return <div className="text-sm p-4" style={{ color: "rgba(255,255,255,0.4)" }}>Loading…</div>;
 
-  const MeetingRow = ({ label, desc, enabledKey, children }: { label: string; desc: string; enabledKey: keyof MeetingPrefs; children: React.ReactNode }) => (
+  const MeetingRow = ({ label, desc, enabledKey, importanceKey, children }: { label: string; desc: string; enabledKey: keyof MeetingPrefs; importanceKey?: "daily" | "weekly" | "monthly" | "quarterly"; children: React.ReactNode }) => (
     <div className="rounded-xl p-3 transition-all"
       style={{
         backgroundColor: prefs[enabledKey] ? "rgba(51,162,219,0.06)" : "rgba(255,255,255,0.03)",
@@ -266,6 +278,20 @@ function MeetingScheduleSection({ accountId }: { accountId: number }) {
       {prefs[enabledKey] && (
         <div className="mt-3 pt-3" style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }}>
           {children}
+          {importanceKey && (
+            <div className="flex items-center justify-between mt-3 pt-3" style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }}>
+              <span className="text-[11px] font-semibold" style={{ color: "rgba(255,255,255,0.48)" }}>Accountability importance</span>
+              <select
+                value={prefs.meetingImportance?.[importanceKey] ?? (importanceKey === "daily" ? "important" : "essential")}
+                onChange={e => upd({ meetingImportance: { ...prefs.meetingImportance, [importanceKey]: e.target.value as "essential" | "important" | "optional" } })}
+                style={{ backgroundColor: "rgba(255,255,255,0.06)", border: "1px solid rgba(251,191,36,0.25)", color: "#FCD34D", borderRadius: "6px", padding: "4px 8px", fontSize: "12px", fontWeight: "600" }}
+              >
+                <option value="essential" style={{ backgroundColor: "#0F2440", color: "white" }}>Essential</option>
+                <option value="important" style={{ backgroundColor: "#0F2440", color: "white" }}>Important</option>
+                <option value="optional" style={{ backgroundColor: "#0F2440", color: "white" }}>Optional</option>
+              </select>
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -277,22 +303,22 @@ function MeetingScheduleSection({ accountId }: { accountId: number }) {
         <h3 className="text-base font-bold text-white mb-1">Owner Meetings</h3>
         <p className="text-sm mb-3" style={{ color: "rgba(255,255,255,0.5)" }}>Toggle off any meeting type you don't want on your calendar.</p>
         <div className="flex flex-col gap-2">
-          <MeetingRow label="Daily Huddle" desc="Quick daily sync — 10–15 min" enabledKey="ownerDailyEnabled">
+          <MeetingRow label="Daily Huddle" desc="Quick daily sync — 10–15 min" enabledKey="ownerDailyEnabled" importanceKey="daily">
             <p className="text-[11px] mb-1" style={{ color: "rgba(255,255,255,0.4)" }}>Which days?</p>
             <MiniDayPickerMulti value={prefs.ownerDaily} onChange={v => upd({ ownerDaily: v })} />
             <TimePicker timeKey="ownerDaily" />
           </MeetingRow>
-          <MeetingRow label="Weekly Review" desc="Weekly business review — 60–90 min" enabledKey="ownerWeeklyEnabled">
+          <MeetingRow label="Weekly Review" desc="Weekly business review — 60–90 min" enabledKey="ownerWeeklyEnabled" importanceKey="weekly">
             <p className="text-[11px] mb-1" style={{ color: "rgba(255,255,255,0.4)" }}>Which day?</p>
             <MiniDayPicker value={prefs.ownerWeekly} onChange={v => upd({ ownerWeekly: v })} />
             <TimePicker timeKey="ownerWeekly" />
           </MeetingRow>
-          <MeetingRow label="Monthly Finance Review" desc="Monthly financial deep-dive — 60 min" enabledKey="ownerMonthlyEnabled">
+          <MeetingRow label="Monthly Finance Review" desc="Monthly financial deep-dive — 60 min" enabledKey="ownerMonthlyEnabled" importanceKey="monthly">
             <p className="text-[11px] mb-1" style={{ color: "rgba(255,255,255,0.4)" }}>Which day? (1st occurrence each month)</p>
             <MiniDayPicker value={prefs.ownerMonthly} onChange={v => upd({ ownerMonthly: v })} />
             <TimePicker timeKey="ownerMonthly" />
           </MeetingRow>
-          <MeetingRow label="Quarterly Offsite Meeting" desc="Quarterly strategic offsite — ~4 hrs" enabledKey="quarterlyEnabled">
+          <MeetingRow label="Quarterly Offsite Meeting" desc="Quarterly strategic offsite — ~4 hrs" enabledKey="quarterlyEnabled" importanceKey="quarterly">
             <p className="text-[11px] mb-1" style={{ color: "rgba(255,255,255,0.4)" }}>Which day? (first occurring day in Jan, Apr, Jul, Oct)</p>
             <MiniDayPicker value={prefs.quarterlyDay} onChange={v => upd({ quarterlyDay: v })} />
             <TimePicker timeKey="quarterly" />

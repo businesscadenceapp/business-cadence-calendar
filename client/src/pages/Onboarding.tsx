@@ -73,6 +73,12 @@ interface OnboardingData {
     quarterlyEnabled: boolean;
     teamDailyEnabled: boolean;
     teamWeeklyEnabled: boolean;
+    meetingImportance?: {
+      daily?: "essential" | "important" | "optional";
+      weekly?: "essential" | "important" | "optional";
+      monthly?: "essential" | "important" | "optional";
+      quarterly?: "essential" | "important" | "optional";
+    };
   };
   meetingTimes: {
     ownerDaily: string;
@@ -495,6 +501,15 @@ function MeetingCadenceStep({
   };
 
   const prefs = data.meetingDayPrefs;
+  const meetingImportance = {
+    daily: "important",
+    weekly: "essential",
+    monthly: "essential",
+    quarterly: "essential",
+    ...prefs.meetingImportance,
+  } as const;
+  const updateImportance = (key: keyof typeof meetingImportance, value: "essential" | "important" | "optional") =>
+    upd({ meetingImportance: { ...meetingImportance, [key]: value } });
   // Allow all 7 days for meetings — owners often meet on days the business isn't open
   const allowedDays = [0, 1, 2, 3, 4, 5, 6];
 
@@ -686,6 +701,24 @@ function MeetingCadenceStep({
                     </select>
                     <span className="text-xs" style={{ color: "rgba(255,255,255,0.35)" }}>— owners can adjust this in Settings later</span>
                   </div>
+                  {({ ownerDaily: "daily", ownerWeekly: "weekly", ownerMonthly: "monthly", quarterly: "quarterly" } as const)[key as "ownerDaily" | "ownerWeekly" | "ownerMonthly" | "quarterly"] && (() => {
+                    const importanceKey = ({ ownerDaily: "daily", ownerWeekly: "weekly", ownerMonthly: "monthly", quarterly: "quarterly" } as const)[key as "ownerDaily" | "ownerWeekly" | "ownerMonthly" | "quarterly"]!;
+                    return (
+                      <div className="flex items-center gap-3 mt-3">
+                        <span className="text-xs font-semibold uppercase tracking-wide" style={{ color: "rgba(255,255,255,0.35)" }}>Importance</span>
+                        <select
+                          value={meetingImportance[importanceKey]}
+                          onChange={e => updateImportance(importanceKey, e.target.value as "essential" | "important" | "optional")}
+                          style={{ backgroundColor: "rgba(255,255,255,0.06)", border: "1px solid rgba(251,191,36,0.28)", color: "#FCD34D", borderRadius: "8px", padding: "5px 10px", fontSize: "13px", fontWeight: "600", outline: "none" }}
+                        >
+                          <option value="essential" style={{ backgroundColor: "#0F2440", color: "white" }}>Essential</option>
+                          <option value="important" style={{ backgroundColor: "#0F2440", color: "white" }}>Important</option>
+                          <option value="optional" style={{ backgroundColor: "#0F2440", color: "white" }}>Optional</option>
+                        </select>
+                        <span className="text-[11px]" style={{ color: "rgba(255,255,255,0.35)" }}>Shapes reminder strength, not whether it counts.</span>
+                      </div>
+                    );
+                  })()}
                 </div>
               )}
             </div>

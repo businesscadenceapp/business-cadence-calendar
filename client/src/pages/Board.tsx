@@ -14,6 +14,7 @@ import { useActiveBusiness } from "@/components/BusinessSwitcher";
 import { SleepModeConfirmCard } from "@/components/SleepModeConfirmCard";
 import { useTour, TOUR_STORAGE_KEY, TOUR_PENDING_KEY } from "@/contexts/TourContext";
 import { hideSleepModeReminder, shouldShowSleepModeReminder } from "@/lib/sleepModeReminder";
+import { CalendarAccountability } from "@/components/CalendarAccountability";
 
 type Author = string;
 type CardType = "update" | "issue" | "task";
@@ -1453,6 +1454,11 @@ export default function Board() {
     setPersonalSleepMode.mutate({ accountId, personId, active: true });
   };
 
+  const { data: accountabilityData } = trpc.calendarAccountability.getDashboard.useQuery(
+    { accountId: accountId ?? 0 },
+    { enabled: accountId !== undefined, staleTime: 60_000 },
+  );
+
   // Quick onboarding defers goals/KPIs/meeting setup — surface a prompt to finish
   useEffect(() => {
     if (!accountId) return;
@@ -1736,6 +1742,7 @@ export default function Board() {
           overflow: "hidden",
         }}
       >
+        <CalendarAccountability accountId={accountId} showCheckIn={false} />
         {/* Ambient glow */}
         <div style={{ position: "absolute", top: "-60px", right: "-60px", width: "240px", height: "240px", background: "radial-gradient(circle, rgba(51,162,219,0.06) 0%, transparent 70%)", pointerEvents: "none" }} />
         <div style={{ position: "absolute", bottom: "-40px", left: "-40px", width: "180px", height: "180px", background: "radial-gradient(circle, rgba(124,58,237,0.05) 0%, transparent 70%)", pointerEvents: "none" }} />
@@ -1768,6 +1775,7 @@ export default function Board() {
 
       {/* Category Tiles Grid */}
       <div className="flex-1 px-5 py-3 overflow-hidden flex flex-col">
+        <CalendarAccountability accountId={accountId} showCorner={false} />
         {/* Complete your profile prompt (quick onboarding deferred full setup) */}
         {profileDeferred && (
           <div
@@ -1887,7 +1895,7 @@ export default function Board() {
                     { cat: CATEGORIES.find(c => c.key === "tasks")!, count: counts.tasks, angle: -90, onClick: () => setActiveView("tasks"), tourId: "tour-hub-tasks", extra: {} },
                     { cat: CATEGORIES.find(c => c.key === "updates")!, count: counts.updates, angle: -30, onClick: () => setActiveView("updates"), tourId: "tour-hub-updates", extra: {} },
                     { cat: CATEGORIES.find(c => c.key === "issues")!, count: counts.issues, angle: 30, onClick: () => setActiveView("issues"), tourId: "tour-hub-issues", extra: { hasHighPriority: issues.some(c => c.priority === "high") } },
-                    { cat: NEEDS_ATTENTION_META as unknown as TileMeta, count: (counts.tasks ?? 0) + (counts.issues ?? 0), angle: 90, onClick: () => { setNeedsAttnSection((counts.tasks ?? 0) > 0 ? "tasks" : "issues"); setActiveView("needs_attention"); }, tourId: "tour-hub-needs-attention", extra: {} },
+                    { cat: NEEDS_ATTENTION_META as unknown as TileMeta, count: (counts.tasks ?? 0) + (counts.issues ?? 0) + (accountabilityData?.showCheckIn ? 1 : 0), angle: 90, onClick: () => { setNeedsAttnSection((counts.tasks ?? 0) > 0 ? "tasks" : "issues"); setActiveView("needs_attention"); }, tourId: "tour-hub-needs-attention", extra: {} },
                     { cat: { key: "calendar", label: "Calendar", icon: "📅", gradient: "linear-gradient(135deg, rgba(20,184,166,0.18) 0%, rgba(20,184,166,0.07) 100%)", border: "rgba(20,184,166,0.35)", glow: "rgba(20,184,166,0.14)", textColor: "#33A2DB", countBg: "rgba(20,184,166,0.25)" }, count: -1, angle: 150, onClick: () => navigate("/app/calendar"), tourId: "tour-hub-calendar", extra: {} },
                     { cat: { key: "archive", label: "Archive", icon: "📂", gradient: "linear-gradient(135deg, rgba(217,119,6,0.18) 0%, rgba(217,119,6,0.07) 100%)", border: "rgba(251,191,36,0.38)", glow: "rgba(251,191,36,0.14)", textColor: "#FDE68A", countBg: "rgba(217,119,6,0.28)" }, count: archivedCards.length, angle: 210, onClick: () => setActiveView("archive"), tourId: "tour-hub-archive", extra: {} },
                   ].map(({ cat, count, angle, onClick, tourId, extra }, i) => {

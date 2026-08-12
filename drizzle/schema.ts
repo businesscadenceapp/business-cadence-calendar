@@ -1,4 +1,4 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, boolean, json, double, bigint } from "drizzle-orm/mysql-core";
+import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, boolean, json, double, bigint, uniqueIndex } from "drizzle-orm/mysql-core";
 
 /**
  * Core user table backing auth flow.
@@ -43,6 +43,28 @@ export const meetingLogs = mysqlTable("meeting_logs", {
 
 export type MeetingLog = typeof meetingLogs.$inferSelect;
 export type InsertMeetingLog = typeof meetingLogs.$inferInsert;
+
+/**
+ * Account-scoped attendance status for each scheduled owner meeting. This keeps
+ * the accountability signal separate from meeting notes, which can be saved
+ * later or remain intentionally blank after a meeting is held.
+ */
+export const meetingAttendance = mysqlTable("meeting_attendance", {
+  id: int("id").autoincrement().primaryKey(),
+  accountId: int("accountId").notNull(),
+  dateKey: varchar("dateKey", { length: 10 }).notNull(),
+  meetingType: mysqlEnum("meetingType", ["daily", "weekly", "monthly", "quarterly"]).notNull(),
+  status: mysqlEnum("status", ["held", "rescheduled", "not_held"]).notNull(),
+  rescheduledDate: varchar("rescheduledDate", { length: 10 }),
+  updatedByPersonId: varchar("updatedByPersonId", { length: 64 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => [
+  uniqueIndex("meeting_attendance_account_date_type_idx").on(table.accountId, table.dateKey, table.meetingType),
+]);
+
+export type MeetingAttendance = typeof meetingAttendance.$inferSelect;
+export type InsertMeetingAttendance = typeof meetingAttendance.$inferInsert;
 
 /**
  * Tracks individual agenda item completion for a meeting log.

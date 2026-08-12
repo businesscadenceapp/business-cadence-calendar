@@ -25,6 +25,57 @@ import { DEFAULT_MEETING_TIMES, formatMeetingTime, type MeetingTimes } from "@sh
 const DOW_LABELS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
 const MEETING_ORDER: MeetingType[] = ["quarterly", "monthly", "weekly", "daily"];
 
+function MeetingStatusActions({
+  accountId,
+  personId,
+  dateKey,
+  meetingType,
+}: {
+  accountId: number;
+  personId?: string;
+  dateKey: string;
+  meetingType: MeetingType;
+}) {
+  const utils = trpc.useUtils();
+  const [rescheduleOpen, setRescheduleOpen] = useState(false);
+  const [rescheduledDate, setRescheduledDate] = useState(dateKey);
+  const saveStatus = trpc.calendarAccountability.setMeetingStatus.useMutation({
+    onSuccess: () => {
+      utils.calendarAccountability.getDashboard.invalidate({ accountId });
+      setRescheduleOpen(false);
+    },
+  });
+
+  const updateStatus = (status: "held" | "rescheduled" | "not_held") => {
+    saveStatus.mutate({
+      accountId,
+      personId,
+      dateKey,
+      meetingType,
+      status,
+      ...(status === "rescheduled" ? { rescheduledDate } : {}),
+    });
+  };
+
+  return (
+    <div className="mx-3 rounded-xl p-3" style={{ background: "rgba(51,162,219,0.06)", border: "1px solid rgba(51,162,219,0.16)" }}>
+      <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.42)", fontFamily: "'Space Grotesk', sans-serif" }}>Meeting status</p>
+      <p className="mt-1 text-[11px]" style={{ color: "rgba(255,255,255,0.55)" }}>Log what happened so your shared cadence stays accurate.</p>
+      <div className="mt-2 flex flex-wrap gap-2">
+        <button type="button" onClick={() => updateStatus("held")} disabled={saveStatus.isPending} className="min-h-9 px-3 rounded-lg text-[11px] font-bold active:scale-[0.97] disabled:opacity-50" style={{ background: "#34D399", color: "#072518", position: "relative", zIndex: 20 }}>Held</button>
+        <button type="button" onClick={() => setRescheduleOpen((open) => !open)} disabled={saveStatus.isPending} className="min-h-9 px-3 rounded-lg text-[11px] font-bold active:scale-[0.97] disabled:opacity-50" style={{ background: "rgba(251,191,36,0.16)", border: "1px solid rgba(251,191,36,0.35)", color: "#FCD34D", position: "relative", zIndex: 20 }}>Reschedule</button>
+        <button type="button" onClick={() => updateStatus("not_held")} disabled={saveStatus.isPending} className="min-h-9 px-3 rounded-lg text-[11px] font-bold active:scale-[0.97] disabled:opacity-50" style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.14)", color: "rgba(255,255,255,0.72)", position: "relative", zIndex: 20 }}>Not held</button>
+      </div>
+      {rescheduleOpen && (
+        <div className="mt-3 flex items-center gap-2">
+          <input aria-label="Rescheduled meeting date" type="date" value={rescheduledDate} min={dateKey} onChange={(event) => setRescheduledDate(event.target.value)} className="min-h-9 rounded-lg px-2 text-[11px]" style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.16)", color: "white" }} />
+          <button type="button" onClick={() => updateStatus("rescheduled")} disabled={saveStatus.isPending || !rescheduledDate} className="min-h-9 px-3 rounded-lg text-[11px] font-bold active:scale-[0.97] disabled:opacity-50" style={{ background: "#38BDF8", color: "#08213A", position: "relative", zIndex: 20 }}>Save date</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // Shows active quarterly goals inline in the day detail panel when a quarterly meeting is selected
 function GoalsForMeeting({ date, accountId, personId, businessContext }: {
   date: Date;
@@ -421,13 +472,15 @@ const MEETING_TYPE_TO_TIME_KEY: Record<MeetingType, keyof MeetingTimes> = {
 };
 
 function MeetingSection({
-  type, day, dateKey, businessContext, meetingTimes,
+  type, day, dateKey, businessContext, meetingTimes, accountId, personId,
 }: {
   type: MeetingType;
   day: CalendarDay;
   dateKey: string;
   businessContext: BusinessSelection;
   meetingTimes: MeetingTimes;
+  accountId: number;
+  personId?: string;
 }) {
   const m = MEETING_TYPES[type];
   const [itemStates, setItemStates] = useState<Map<string, { completed: boolean; comment: string }>>(() => new Map());
@@ -576,6 +629,8 @@ function MeetingSection({
           </span>
         </div>
       </div>
+
+      <MeetingStatusActions accountId={accountId} personId={personId} dateKey={dateKey} meetingType={type} />
 
       <div className="px-3 flex flex-col gap-2">
         <p className="text-[9px] font-bold uppercase tracking-widest px-1" style={{ color: "rgba(255,255,255,0.3)", fontFamily: "'Space Grotesk', sans-serif" }}>
@@ -773,7 +828,7 @@ function DetailPanel({ day, onClose, businessContext, meetingTimes, accountId, p
         const boardMeetingType = CALENDAR_TO_BOARD_MEETING[type];
         return (
           <div key={type} className="flex flex-col gap-3">
-            <MeetingSection type={type} day={day} dateKey={dateKey} businessContext={businessContext} meetingTimes={meetingTimes} />
+            <MeetingSection type={type} day={day} dateKey={dateKey} businessContext={businessContext} meetingTimes={meetingTimes} accountId={accountId} personId={personId} />
             {boardMeetingType && (
               <div className="px-3">
                 <BoardIssuesForMeeting meetingType={boardMeetingType} dateMs={day.date.getTime()} />

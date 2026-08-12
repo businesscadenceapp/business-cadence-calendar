@@ -30,8 +30,19 @@
 - [x] Tour placement: keep the Swipe Left transition card and its Continue control fully within the compact-phone viewport.
 - [x] Tour placement: validate the action row remains tappable for every Command Center and Performance Hub step.
 - [x] Tour placement correction: explicitly map Tasks, Archive, and Updates below; Calendar, Issues, and Needs Attention above; and retain a safe Swipe Left position.
+- [x] Create a current-state onboarding storyboard before the significant tour redesign.
+- [x] Assess Calendar prominence and whether upcoming-meeting push notifications are currently implemented.
+- [x] Calendar accountability: show a next-meeting corner notification that opens a confirmation card and the relevant Calendar view.
+- [x] Calendar accountability: warn the couple after three unlogged scheduled meetings while using configured importance for reminder strength.
+- [ ] Calendar accountability: collect meeting importance during setup and allow later changes in Settings.
+- [x] Calendar accountability: collect and persist owner-meeting importance during full setup and schedule settings.
+- [x] Calendar accountability: add account-scoped attendance persistence and automatic missed-meeting evaluation.
+- [x] Calendar accountability: add meeting status choices for held, rescheduled, and not held.
+- [x] Calendar accountability: surface the automatic Cadence Check-in card above Command Center circles and retain a Needs Attention badge until resolved or snoozed.
 - [ ] Production release: identify the hosting path for businesscadence.com and deploy the latest tour repair from main.
 - [ ] Production release: confirm the hosted app serves the new hub-aware tour bundle before asking the user to refresh the iPhone app.
+- [ ] Production release blocker: verify and replace the still-served legacy tour bundle on businesscadence.com after publication.
+- [ ] Production release blocker: identify the separate published project or host serving businesscadence.com; the visible Manus Business Cadence Calendar card is explicitly unpublished.
 - [ ] Printable one-page yearly summary PDF (future enhancement)
 - [ ] Issues List tracker (shared notepad for mid-week issues) (future enhancement)
 - [ ] Per-business KPI scorecard templates (future enhancement)
