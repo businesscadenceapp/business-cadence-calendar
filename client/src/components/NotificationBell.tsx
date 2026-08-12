@@ -48,18 +48,22 @@ export function NotificationBell({ accountId, personId }: Props) {
     { enabled, refetchInterval: 15_000, staleTime: 10_000 }
   );
   const sleepMode = personalStatus?.dndActive ?? false;
-  const presentationEnabled = enabled && !sleepMode;
+  const notificationsHeld = personalStatus?.notificationsHeld ?? false;
+  const notificationHoldMessage = sleepMode
+    ? "Sleep Mode is on — notifications are held until Work Mode"
+    : "Notifications are held until your work hours resume";
+  const presentationEnabled = enabled && !notificationsHeld;
 
   useEffect(() => {
-    if (sleepMode) setOpen(false);
-  }, [sleepMode]);
+    if (notificationsHeld) setOpen(false);
+  }, [notificationsHeld]);
 
   // Unread count — polled every 30 s for the badge
   const { data: countData, refetch: refetchCount } = trpc.notification.unreadCount.useQuery(
     { accountId: accountId ?? 0, personId: personId ?? "" },
     { enabled: presentationEnabled, refetchInterval: presentationEnabled ? 30_000 : false, staleTime: 15_000 }
   );
-  const unreadCount = sleepMode ? 0 : (countData?.count ?? 0);
+  const unreadCount = notificationsHeld ? 0 : (countData?.count ?? 0);
 
   // Full list — fetched when panel opens
   const { data: listData, refetch: refetchList } = trpc.notification.list.useQuery(
@@ -110,9 +114,9 @@ export function NotificationBell({ accountId, personId }: Props) {
     <div ref={panelRef} style={{ position: "relative", display: "inline-block" }}>
       {/* Bell button */}
       <button
-        onClick={() => { if (!sleepMode) setOpen(v => !v); }}
-        aria-label={sleepMode ? "Sleep Mode is on — notifications are held until Work Mode" : `Notifications${unreadCount > 0 ? ` (${unreadCount} unread)` : ""}`}
-        title={sleepMode ? "Sleep Mode is on — notifications are held until Work Mode" : "Notifications"}
+        onClick={() => { if (!notificationsHeld) setOpen(v => !v); }}
+        aria-label={notificationsHeld ? notificationHoldMessage : `Notifications${unreadCount > 0 ? ` (${unreadCount} unread)` : ""}`}
+        title={notificationsHeld ? notificationHoldMessage : "Notifications"}
         style={{
           position: "relative",
           background: open ? "rgba(124,58,237,0.12)" : "transparent",
@@ -130,7 +134,7 @@ export function NotificationBell({ accountId, personId }: Props) {
         onMouseEnter={e => { if (!open) (e.currentTarget as HTMLButtonElement).style.background = "rgba(124,58,237,0.08)"; }}
         onMouseLeave={e => { if (!open) (e.currentTarget as HTMLButtonElement).style.background = "transparent"; }}
       >
-        {sleepMode ? (
+        {notificationsHeld ? (
           <span aria-hidden="true" style={{ fontSize: "17px", lineHeight: 1 }}>🌙</span>
         ) : (
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={open ? "#7C3AED" : "#64748B"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
