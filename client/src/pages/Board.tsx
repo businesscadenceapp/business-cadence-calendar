@@ -1475,23 +1475,30 @@ export default function Board() {
   const personId = person?.id;
   const { data: personalNotificationStatus, refetch: refetchPersonalNotificationStatus } = trpc.personHours.checkStatus.useQuery(
     { accountId: accountId ?? 0, personId: personId ?? "" },
-    { enabled: accountId !== undefined && !!personId, staleTime: 15_000 }
+    { enabled: accountId !== undefined && !!personId, staleTime: 15_000, refetchInterval: 30_000 }
   );
-  const offTheClock = personalNotificationStatus?.dndActive ?? false;
+  const manuallySleeping = personalNotificationStatus?.dndActive ?? false;
+  const offTheClock = personalNotificationStatus?.notificationsHeld ?? false;
+  const automaticallySleeping = offTheClock && !manuallySleeping;
   const setPersonalSleepMode = trpc.personHours.setDnd.useMutation({
-    onSuccess: ({ active }) => {
-      refetchPersonalNotificationStatus();
-      toast(
-        active
-          ? "Sleep Mode is on 🌙 — you will not receive notifications from your partner. You can still work anywhere in the app."
+    onSuccess: async ({ active }) => {
+      const status = await refetchPersonalNotificationStatus();
+      const stillHeld = status.data?.notificationsHeld ?? false;
+      toast(active
+        ? "Sleep Mode is on 🌙 — you will not receive notifications from your partner. You can still work anywhere in the app."
+        : stillHeld
+          ? "Manual Sleep Mode is off, but your business hours are closed. Notifications stay held until work hours resume."
           : "Work Mode is on ☀️ — held partner notifications are visible again.",
-        { duration: active ? 5500 : 3500 }
-      );
+      { duration: active ? 5500 : 4000 });
     },
   });
   const toggleOffTheClock = () => {
     if (accountId === undefined || !personId) return;
-    if (offTheClock) return setPersonalSleepMode.mutate({ accountId, personId, active: false });
+    if (manuallySleeping) return setPersonalSleepMode.mutate({ accountId, personId, active: false });
+    if (automaticallySleeping) {
+      toast("Your business hours are closed 🌙 — notifications will resume at your next work period. You can still use the entire app.", { duration: 5000 });
+      return;
+    }
     if (shouldShowSleepModeReminder(personId)) return setSleepModeConfirmOpen(true);
     setPersonalSleepMode.mutate({ accountId, personId, active: true });
   };
@@ -1983,7 +1990,7 @@ export default function Board() {
                   >
                     <button
                       onClick={toggleOffTheClock}
-                      title={offTheClock ? "Tap to go back to Work Mode" : "Tap to go Off the Clock"}
+                      title={manuallySleeping ? "Tap to return to Work Mode" : automaticallySleeping ? "Business hours are closed — Sleep Mode is active" : "Tap to turn on Sleep Mode"}
                       style={{ background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 30, lineHeight: 1, transition: "transform 0.3s ease, filter 0.3s ease", transform: offTheClock ? "scale(1.15)" : "scale(1)", filter: offTheClock ? "drop-shadow(0 0 8px rgba(167,139,250,0.6))" : "drop-shadow(0 0 6px rgba(255,200,0,0.5))" }}
                     >
                       {offTheClock ? "🌙" : "☀️"}
@@ -2048,7 +2055,7 @@ export default function Board() {
                   >
                     <button
                       onClick={toggleOffTheClock}
-                      title={offTheClock ? "Tap to go back to Work Mode" : "Tap to go Off the Clock"}
+                      title={manuallySleeping ? "Tap to return to Work Mode" : automaticallySleeping ? "Business hours are closed — Sleep Mode is active" : "Tap to turn on Sleep Mode"}
                       style={{ background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 30, lineHeight: 1, transition: "transform 0.3s ease, filter 0.3s ease", transform: offTheClock ? "scale(1.15)" : "scale(1)", filter: offTheClock ? "drop-shadow(0 0 8px rgba(167,139,250,0.6))" : "drop-shadow(0 0 6px rgba(255,200,0,0.5))" }}
                     >
                       {offTheClock ? "🌙" : "☀️"}
