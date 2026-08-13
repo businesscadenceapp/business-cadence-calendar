@@ -1056,6 +1056,7 @@
 - [x] Create the TARSA heart splash, definition screen, and transition to the Business Card selection page
 - [x] Keep the TARSA definition on screen until the user explicitly chooses Continue
 - [x] Open directly to the TARSA definition screen and enlarge its heart logo
+- [x] Match the native TARSA launch frame to the definition screen so there is no separate splash visual
 - [x] Verify and correct automatic Sleep Mode so closed personal business hours hold notifications and show moon mode
 - [x] Swap the Calendar and Archive positions in the Command Center hub only
 - [x] Redesign Needs Attention into Past Due, Due Soon, and Waiting on You groups with tasks, meeting follow-through, unread updates, goal reminders, and late KPI check-ins
