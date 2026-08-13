@@ -30,6 +30,7 @@ import TeamBoardArchive from "@/pages/TeamBoardArchive";
 import ForgotPassword from "@/pages/ForgotPassword";
 import ResetPassword from "@/pages/ResetPassword";
 import BusinessSelector from "@/pages/BusinessSelector";
+import TarsaOpening from "@/pages/TarsaOpening";
 import { Capacitor } from "@capacitor/core";
 import Paywall from "@/pages/Paywall";
 import SubscriptionOnboarding from "@/pages/SubscriptionOnboarding";
@@ -81,17 +82,11 @@ function detectNative(): boolean {
 }
 
 /**
- * NativeHome — When running in Capacitor, the "/" route should NOT show
- * the marketing Landing page. Instead:
- * - Route to /subscribe-intro (handles first-time onboarding + paywall)
- * - If already logged in → redirect to /select-business
+ * NativeHome — When running in Capacitor, the "/" route shows the branded
+ * TARSA opening sequence before continuing to Business Card selection.
  */
 function NativeHome() {
-  const authFlag = localStorage.getItem("bcc_auth_v1");
-  if (authFlag === "granted") {
-    return <Redirect to="/select-business" />;
-  }
-  return <Redirect to="/subscribe-intro" />;
+  return <TarsaOpening />;
 }
 
 function Router() {
