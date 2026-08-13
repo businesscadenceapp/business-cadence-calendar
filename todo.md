@@ -1058,6 +1058,7 @@
 - [x] Open directly to the TARSA definition screen and enlarge its heart logo
 - [x] Match the native TARSA launch frame to the definition screen so there is no separate splash visual
 - [x] Lock the TARSA definition page to the viewport with no vertical scroll or overscroll
+- [x] Align the TARSA definition screen’s bottom safe area with its deep navy surface
 - [x] Verify and correct automatic Sleep Mode so closed personal business hours hold notifications and show moon mode
 - [x] Swap the Calendar and Archive positions in the Command Center hub only
 - [x] Redesign Needs Attention into Past Due, Due Soon, and Waiting on You groups with tasks, meeting follow-through, unread updates, goal reminders, and late KPI check-ins

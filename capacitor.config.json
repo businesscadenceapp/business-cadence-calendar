@@ -11,7 +11,7 @@
     "SplashScreen": {
       "launchShowDuration": 0,
       "launchAutoHide": true,
-      "backgroundColor": "#0A1929",
+      "backgroundColor": "#08182D",
       "showSpinner": false,
       "splashFullScreen": true,
       "splashImmersive": true
@@ -23,7 +23,7 @@
   },
   "ios": {
     "contentInset": "automatic",
-    "backgroundColor": "#0A1929",
+    "backgroundColor": "#08182D",
     "preferredContentMode": "mobile"
   }
 }

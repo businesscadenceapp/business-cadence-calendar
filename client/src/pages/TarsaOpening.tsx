@@ -14,24 +14,30 @@ export default function TarsaOpening() {
       bodyPosition: body.style.position,
       bodyWidth: body.style.width,
       bodyHeight: body.style.height,
+      bodyBackground: body.style.backgroundColor,
       htmlOverflow: html.style.overflow,
       htmlOverscroll: html.style.overscrollBehavior,
+      htmlBackground: html.style.backgroundColor,
     };
 
     body.style.overflow = "hidden";
     body.style.position = "fixed";
     body.style.width = "100%";
     body.style.height = "100%";
+    body.style.backgroundColor = "#08182d";
     html.style.overflow = "hidden";
     html.style.overscrollBehavior = "none";
+    html.style.backgroundColor = "#08182d";
 
     return () => {
       body.style.overflow = previous.bodyOverflow;
       body.style.position = previous.bodyPosition;
       body.style.width = previous.bodyWidth;
       body.style.height = previous.bodyHeight;
+      body.style.backgroundColor = previous.bodyBackground;
       html.style.overflow = previous.htmlOverflow;
       html.style.overscrollBehavior = previous.htmlOverscroll;
+      html.style.backgroundColor = previous.htmlBackground;
     };
   }, []);
 
