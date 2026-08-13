@@ -1061,6 +1061,7 @@
 - [x] Align the TARSA definition screen’s bottom safe area with its deep navy surface
 - [x] Remove the standalone heart-only iOS launch visual before the TARSA definition page
 - [x] Remove any remaining heart-only native launch frame and eliminate TARSA opening-screen bounce
+- [x] Identify and remove the actual iOS launch source causing the old heart-only frame to persist on device
 - [x] Verify and correct automatic Sleep Mode so closed personal business hours hold notifications and show moon mode
 - [x] Swap the Calendar and Archive positions in the Command Center hub only
 - [x] Redesign Needs Attention into Past Due, Due Soon, and Waiting on You groups with tasks, meeting follow-through, unread updates, goal reminders, and late KPI check-ins
