@@ -1,9 +1,39 @@
+import { useEffect } from "react";
 import { useLocation } from "wouter";
 import { BrandIcon } from "@/components/BrandLogo";
 
 /** Native-only opening page shown immediately after the iOS launch frame. */
 export default function TarsaOpening() {
   const [, navigate] = useLocation();
+
+  useEffect(() => {
+    const body = document.body;
+    const html = document.documentElement;
+    const previous = {
+      bodyOverflow: body.style.overflow,
+      bodyPosition: body.style.position,
+      bodyWidth: body.style.width,
+      bodyHeight: body.style.height,
+      htmlOverflow: html.style.overflow,
+      htmlOverscroll: html.style.overscrollBehavior,
+    };
+
+    body.style.overflow = "hidden";
+    body.style.position = "fixed";
+    body.style.width = "100%";
+    body.style.height = "100%";
+    html.style.overflow = "hidden";
+    html.style.overscrollBehavior = "none";
+
+    return () => {
+      body.style.overflow = previous.bodyOverflow;
+      body.style.position = previous.bodyPosition;
+      body.style.width = previous.bodyWidth;
+      body.style.height = previous.bodyHeight;
+      html.style.overflow = previous.htmlOverflow;
+      html.style.overscrollBehavior = previous.htmlOverscroll;
+    };
+  }, []);
 
   const continueIntoApp = () => {
     const authFlag = localStorage.getItem("bcc_auth_v1");
@@ -14,14 +44,19 @@ export default function TarsaOpening() {
     <main
       className="min-h-[100dvh] overflow-hidden"
       style={{
+        position: "fixed",
+        inset: 0,
+        height: "100dvh",
         background: "radial-gradient(circle at 50% 24%, #18385e 0%, #0f2440 42%, #08182d 100%)",
         color: "#fff",
         fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
+        overscrollBehavior: "none",
+        touchAction: "pan-x",
       }}
     >
       <section
         style={{
-          minHeight: "100dvh",
+          height: "100dvh",
           display: "flex",
           flexDirection: "column",
           alignItems: "center",

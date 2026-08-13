@@ -15,6 +15,12 @@ describe("TARSA native opening sequence", () => {
     expect(openingSource).not.toContain("setTimeout(() => continueIntoApp");
   });
 
+  it("locks the opening page against vertical scroll and overscroll", () => {
+    expect(openingSource).toContain('body.style.overflow = "hidden"');
+    expect(openingSource).toContain('html.style.overscrollBehavior = "none"');
+    expect(openingSource).toContain('touchAction: "pan-x"');
+  });
+
   it("uses the branded opening sequence instead of sending native root directly to a route", () => {
     expect(appSource).toContain("function NativeHome() {");
     expect(appSource).toContain("return <TarsaOpening />;");
