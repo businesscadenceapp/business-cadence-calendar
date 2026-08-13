@@ -5,6 +5,10 @@ import { describe, expect, it } from "vitest";
 const projectRoot = path.resolve(import.meta.dirname, "..");
 const openingSource = fs.readFileSync(path.join(projectRoot, "client/src/pages/TarsaOpening.tsx"), "utf8");
 const appSource = fs.readFileSync(path.join(projectRoot, "client/src/App.tsx"), "utf8");
+const launchStoryboard = fs.readFileSync(
+  path.join(projectRoot, "ios/App/App/Base.lproj/LaunchScreen.storyboard"),
+  "utf8",
+);
 
 describe("TARSA native opening sequence", () => {
   it("presents the approved definition and waits for the user to continue", () => {
@@ -24,5 +28,10 @@ describe("TARSA native opening sequence", () => {
   it("uses the branded opening sequence instead of sending native root directly to a route", () => {
     expect(appSource).toContain("function NativeHome() {");
     expect(appSource).toContain("return <TarsaOpening />;");
+  });
+
+  it("uses a neutral native launch surface instead of a heart-only splash image", () => {
+    expect(launchStoryboard).not.toContain('image="Splash"');
+    expect(launchStoryboard).not.toContain("<imageView");
   });
 });
