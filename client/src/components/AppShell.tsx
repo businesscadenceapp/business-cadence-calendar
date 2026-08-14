@@ -8,7 +8,7 @@
  *          fixed bottom tab bar with "More" sheet.
  */
 
-import { useState, useCallback, useContext, createContext, useRef, useEffect } from "react";
+import { useState, useCallback, useContext, createContext } from "react";
 import type { ReactNode } from "react";
 import { Link, useLocation } from "wouter";
 import { usePerson } from "@/contexts/PersonContext";
@@ -71,39 +71,19 @@ const EMPLOYEE_NAV: NavItem[] = [
 // Mobile bottom bar: show first 4 items + "More" for the rest
 const MOBILE_PRIMARY_COUNT = 4;
 
-// ─── Page Transition ─────────────────────────────────────────────────────────
+// ─── Page Content ────────────────────────────────────────────────────────────
 
-function PageTransition({ children, locationKey }: { children: ReactNode; locationKey: string }) {
-  const [displayChildren, setDisplayChildren] = useState(children);
-  const [transitionState, setTransitionState] = useState<"in" | "out">("in");
-  const prevKeyRef = useRef(locationKey);
-
-  useEffect(() => {
-    if (locationKey !== prevKeyRef.current) {
-      setTransitionState("out");
-      const timer = setTimeout(() => {
-        setDisplayChildren(children);
-        prevKeyRef.current = locationKey;
-        setTransitionState("in");
-      }, 120);
-      return () => clearTimeout(timer);
-    } else {
-      setDisplayChildren(children);
-    }
-  }, [locationKey, children]);
-
+function PageContent({ children }: { children: ReactNode }) {
   return (
     <div
       style={{
-        opacity: transitionState === "out" ? 0 : 1,
-        transform: transitionState === "out" ? "translateX(6px)" : "translateX(0)",
-        transition: transitionState === "in"
-          ? "opacity 150ms cubic-bezier(0.23,1,0.32,1), transform 150ms cubic-bezier(0.23,1,0.32,1)"
-          : "opacity 100ms ease-in, transform 100ms ease-in",
         height: "100%",
+        opacity: 1,
+        transform: "none",
+        transition: "none",
       }}
     >
-      {displayChildren}
+      {children}
     </div>
   );
 }
@@ -574,9 +554,9 @@ export default function AppShell({ children }: AppShellProps) {
             id="app-main-scroll"
             data-scroll="auto"
           >
-            <PageTransition locationKey={activePath}>
+            <PageContent>
               {children}
-            </PageTransition>
+            </PageContent>
           </main>
 
           {/* Bottom nav removed — all navigation via hub circles + top-right settings gear */}

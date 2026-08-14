@@ -37,6 +37,7 @@ describe("TARSA native opening sequence", () => {
 
   it("hides the native splash only after the stationary TARSA screen is ready", () => {
     expect(capacitorConfig).toContain('"launchAutoHide": false');
+    expect(capacitorConfig).toContain('"contentInset": "never"');
     expect(openingSource).toContain("SplashScreen.hide({ fadeOutDuration: 0 })");
     expect(openingSource).toContain("window.requestAnimationFrame");
   });

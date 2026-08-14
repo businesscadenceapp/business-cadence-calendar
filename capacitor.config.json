@@ -22,7 +22,7 @@
     }
   },
   "ios": {
-    "contentInset": "automatic",
+    "contentInset": "never",
     "backgroundColor": "#08182D",
     "preferredContentMode": "mobile"
   }
