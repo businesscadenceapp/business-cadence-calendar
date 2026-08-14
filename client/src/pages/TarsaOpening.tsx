@@ -1,5 +1,6 @@
-import { useLayoutEffect } from "react";
+import { useEffect, useLayoutEffect } from "react";
 import { useLocation } from "wouter";
+import { SplashScreen } from "@capacitor/splash-screen";
 import { BrandIcon } from "@/components/BrandLogo";
 
 /** Native-only opening page shown immediately after the iOS launch frame. */
@@ -55,6 +56,17 @@ export default function TarsaOpening() {
       html.style.backgroundColor = previous.htmlBackground;
       html.style.scrollBehavior = previous.htmlScrollBehavior;
     };
+  }, []);
+
+  useEffect(() => {
+    // Keep the native navy splash in place until this stationary web screen
+    // has rendered, then remove it instantly. This avoids Capacitor hiding the
+    // native layer mid-load and making the TARSA page appear to drop into view.
+    const frameId = window.requestAnimationFrame(() => {
+      void SplashScreen.hide({ fadeOutDuration: 0 }).catch(() => undefined);
+    });
+
+    return () => window.cancelAnimationFrame(frameId);
   }, []);
 
   const continueIntoApp = () => {

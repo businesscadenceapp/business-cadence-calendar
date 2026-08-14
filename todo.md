@@ -1070,6 +1070,7 @@
 - [x] Create a complete Git backup of remaining Mac iOS changes and pull the corrected native launch commit
 - [x] Restore Mac project dependencies after the safety backup and complete the corrected iOS rebuild
 - [x] Diagnose and eliminate the automatic drop or scroll on the TARSA opening screen
+- [x] Diagnose and eliminate the native iPhone launch-to-web transition that still makes TARSA appear to drop into place
 - [x] Verify and correct automatic Sleep Mode so closed personal business hours hold notifications and show moon mode
 - [x] Swap the Calendar and Archive positions in the Command Center hub only
 - [x] Redesign Needs Attention into Past Due, Due Soon, and Waiting on You groups with tasks, meeting follow-through, unread updates, goal reminders, and late KPI check-ins
