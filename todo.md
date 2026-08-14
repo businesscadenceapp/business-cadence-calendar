@@ -1076,7 +1076,8 @@
 - [x] Hide all live Team-layer navigation, settings, wording, and routes while retaining the underlying Team code for future activation
 - [x] Move the Settings Replay tour control to the bottom of the Settings page
 - [x] Redesign the mobile Calendar page so a full month fits on an iPhone screen without vertical scrolling
-- [x] Make partner notifications clearly visible and actionable inside the iPhone app while preserving Sleep Mode rules
+- [x] Implement then remove the mistaken in-app notification banner after the user clarified that a Home Screen app-icon badge is required
+- [ ] Replace the unintended in-app notification banner with a standard red unread-count badge on the TARSA iPhone Home Screen
 - [x] Verify and correct automatic Sleep Mode so closed personal business hours hold notifications and show moon mode
 - [x] Swap the Calendar and Archive positions in the Command Center hub only
 - [x] Redesign Needs Attention into Past Due, Due Soon, and Waiting on You groups with tasks, meeting follow-through, unread updates, goal reminders, and late KPI check-ins

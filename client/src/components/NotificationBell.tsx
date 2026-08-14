@@ -1,7 +1,6 @@
 /**
  * NotificationBell — in-app notification centre
- * Shows a bell icon with an unread badge and a compact, actionable mobile banner
- * for the newest unread partner notification. Clicking the bell opens a panel
+ * Shows a bell icon with an unread badge. Clicking opens a dropdown panel
  * listing the most recent 50 notifications for the current person.
  */
 import { useState, useRef, useEffect, useCallback } from "react";
@@ -39,9 +38,7 @@ interface Props {
 
 export function NotificationBell({ accountId, personId }: Props) {
   const [open, setOpen] = useState(false);
-  const [bannerNotificationId, setBannerNotificationId] = useState<number | null>(null);
   const panelRef = useRef<HTMLDivElement>(null);
-  const dismissedBannerIds = useRef(new Set<number>());
   const [, navigate] = useLocation();
 
   const enabled = !!accountId && !!personId;
@@ -57,10 +54,7 @@ export function NotificationBell({ accountId, personId }: Props) {
   const presentationEnabled = enabled && !notificationsHeld;
 
   useEffect(() => {
-    if (notificationsHeld) {
-      setOpen(false);
-      setBannerNotificationId(null);
-    }
+    if (notificationsHeld) setOpen(false);
   }, [notificationsHeld]);
 
   // Unread count — polled every 30 s for the badge
@@ -70,19 +64,12 @@ export function NotificationBell({ accountId, personId }: Props) {
   );
   const unreadCount = notificationsHeld ? 0 : (countData?.count ?? 0);
 
-  // The current list powers both the bell panel and the visible mobile banner.
+  // Full list — fetched when panel opens.
   const { data: listData, refetch: refetchList } = trpc.notification.list.useQuery(
     { accountId: accountId ?? 0, personId: personId ?? "" },
-    { enabled: presentationEnabled, refetchInterval: presentationEnabled ? 15_000 : false, staleTime: 5_000 }
+    { enabled: presentationEnabled && open, staleTime: 5_000 }
   );
   const notifications = listData?.items ?? [];
-  const bannerNotification = notifications.find((notification) => notification.id === bannerNotificationId) ?? null;
-
-  useEffect(() => {
-    if (!presentationEnabled) return;
-    const newestUnread = notifications.find((notification) => !notification.isRead && !dismissedBannerIds.current.has(notification.id));
-    if (newestUnread) setBannerNotificationId(newestUnread.id);
-  }, [notifications, presentationEnabled]);
 
   const markAllRead = trpc.notification.markAllRead.useMutation({
     onSuccess: () => {
@@ -118,81 +105,12 @@ export function NotificationBell({ accountId, personId }: Props) {
 
   const handleNotifClick = useCallback((notif: { id: number; isRead: boolean; linkTo: string }) => {
     if (!notif.isRead) markRead.mutate({ id: notif.id });
-    dismissedBannerIds.current.add(notif.id);
-    setBannerNotificationId(null);
     setOpen(false);
     navigate(notif.linkTo);
   }, [navigate, markRead]);
 
-  const dismissBanner = useCallback((notificationId: number) => {
-    dismissedBannerIds.current.add(notificationId);
-    setBannerNotificationId(null);
-  }, []);
-
   return (
     <div ref={panelRef} style={{ position: "relative", display: "inline-block" }}>
-      {/* Mobile in-app alert — visible on iPhone while notification presentation is allowed. */}
-      {bannerNotification && (
-        <div
-          className="md:hidden"
-          role="status"
-          aria-live="polite"
-          style={{
-            position: "fixed",
-            top: "calc(env(safe-area-inset-top, 0px) + 58px)",
-            left: "12px",
-            right: "12px",
-            zIndex: 9998,
-            background: "#10263F",
-            border: `1px solid ${(TYPE_META[bannerNotification.type]?.accent ?? "#33A2DB")}70`,
-            borderRadius: "14px",
-            padding: "11px 12px",
-            boxShadow: "0 12px 28px rgba(0,0,0,0.32)",
-            display: "flex",
-            alignItems: "flex-start",
-            gap: "10px",
-            animation: "notif-banner-in 180ms cubic-bezier(0.23,1,0.32,1)",
-          }}
-        >
-          {(() => {
-            const meta = TYPE_META[bannerNotification.type] ?? { icon: "🔔", accent: "#33A2DB", label: "New activity" };
-            return (
-              <>
-                <span
-                  aria-hidden="true"
-                  style={{
-                    width: "32px", height: "32px", borderRadius: "10px", flexShrink: 0,
-                    background: `${meta.accent}20`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "15px",
-                  }}
-                >
-                  {meta.icon}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => handleNotifClick(bannerNotification)}
-                  style={{ flex: 1, minWidth: 0, textAlign: "left", background: "none", border: "none", padding: 0, cursor: "pointer" }}
-                >
-                  <p style={{ margin: 0, color: "white", fontSize: "12px", fontWeight: 700, fontFamily: "'Space Grotesk', sans-serif", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                    {bannerNotification.title}
-                  </p>
-                  <p style={{ margin: "2px 0 0", color: "rgba(255,255,255,0.62)", fontSize: "11px", lineHeight: 1.35, fontFamily: "'Inter', sans-serif", overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
-                    {bannerNotification.body}
-                  </p>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => dismissBanner(bannerNotification.id)}
-                  aria-label="Dismiss notification"
-                  style={{ width: "26px", height: "26px", border: "none", borderRadius: "8px", background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.65)", fontSize: "17px", lineHeight: 1, cursor: "pointer", flexShrink: 0 }}
-                >
-                  ×
-                </button>
-              </>
-            );
-          })()}
-        </div>
-      )}
-
       {/* Bell button */}
       <button
         onClick={() => { if (!notificationsHeld) setOpen(v => !v); }}
@@ -401,10 +319,6 @@ export function NotificationBell({ accountId, personId }: Props) {
         @keyframes notif-panel-in {
           from { opacity: 0; transform: scale(0.95); }
           to   { opacity: 1; transform: scale(1); }
-        }
-        @keyframes notif-banner-in {
-          from { opacity: 0; transform: translateY(-8px); }
-          to   { opacity: 1; transform: translateY(0); }
         }
       `}</style>
     </div>

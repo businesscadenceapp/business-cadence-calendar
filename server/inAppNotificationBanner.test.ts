@@ -7,18 +7,17 @@ const notificationBell = readFileSync(
   "utf8"
 );
 
-describe("in-app notification banner", () => {
-  it("presents the newest unread notification in a visible mobile banner", () => {
-    expect(notificationBell).toContain("bannerNotificationId");
-    expect(notificationBell).toContain("newestUnread");
-    expect(notificationBell).toContain('className="md:hidden"');
-    expect(notificationBell).toContain("notif-banner-in");
+describe("in-app notification bell", () => {
+  it("keeps the red unread count on the bell without adding an inline notification banner", () => {
+    expect(notificationBell).toContain("unreadCount > 0");
+    expect(notificationBell).toContain('backgroundColor: "#DC2626"');
+    expect(notificationBell).not.toContain("bannerNotificationId");
+    expect(notificationBell).not.toContain("notif-banner-in");
   });
 
-  it("keeps held notifications quiet and allows the banner to open the related activity", () => {
+  it("keeps held notifications quiet and opens the related activity from the bell panel", () => {
     expect(notificationBell).toContain("if (notificationsHeld)");
-    expect(notificationBell).toContain("setBannerNotificationId(null)");
-    expect(notificationBell).toContain("handleNotifClick(bannerNotification)");
-    expect(notificationBell).toContain("dismissBanner(bannerNotification.id)");
+    expect(notificationBell).toContain("notificationsHeld ? 0");
+    expect(notificationBell).toContain("handleNotifClick(notif)");
   });
 });
