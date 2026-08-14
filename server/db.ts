@@ -1,7 +1,8 @@
 import { eq, and, desc, inArray, asc, gte, lte } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, meetingLogs, agendaItems, MeetingLog, AgendaItem, meetingAttendance, type MeetingAttendance, boardCards, agendaTemplates, type BoardCard, type InsertBoardCard, waitlistEmails, businessProfiles, type BusinessProfile, closedPeriods, type ClosedPeriod, meetingScheduleOverrides, employees, employeeMetrics, weeklyReports, weeklyReportEntries, type Employee, type EmployeeMetric, type WeeklyReport, type WeeklyReportEntry, goals, type Goal, type InsertGoal, notifications, type Notification, businessHours, type BusinessHours, subscriptions, type Subscription, type InsertSubscription, partnerLinks, type PartnerLink, ownerMessages, type OwnerMessage, announcements, type Announcement, meetingNotes, type MeetingNote, personHours, type PersonHours } from "../drizzle/schema";
+import { InsertUser, users, meetingLogs, agendaItems, MeetingLog, AgendaItem, meetingAttendance, type MeetingAttendance, boardCards, agendaTemplates, type BoardCard, type InsertBoardCard, waitlistEmails, businessProfiles, type BusinessProfile, closedPeriods, type ClosedPeriod, meetingScheduleOverrides, employees, employeeMetrics, weeklyReports, weeklyReportEntries, type Employee, type EmployeeMetric, type WeeklyReport, type WeeklyReportEntry, goals, type Goal, type InsertGoal, notifications, type Notification, pushDevices, businessHours, type BusinessHours, subscriptions, type Subscription, type InsertSubscription, partnerLinks, type PartnerLink, ownerMessages, type OwnerMessage, announcements, type Announcement, meetingNotes, type MeetingNote, personHours, type PersonHours } from "../drizzle/schema";
 import { ENV } from './_core/env';
+import { updateIosBadge } from "./apns";
 
 let _db: ReturnType<typeof drizzle> | null = null;
 
@@ -1077,6 +1078,50 @@ export async function createNotification(data: {
     body: data.body,
     linkTo: data.linkTo ?? "/app/board",
   });
+  void syncIosPushBadge(data.accountId, data.recipientPersonId);
+}
+
+/** Register or refresh one native device token. Device tokens are write-only. */
+export async function upsertPushDevice(data: {
+  accountId: number;
+  personId: string;
+  platform: "ios" | "android";
+  token: string;
+}): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  await db.insert(pushDevices).values(data).onDuplicateKeyUpdate({
+    set: {
+      accountId: data.accountId,
+      personId: data.personId,
+      platform: data.platform,
+      lastSeenAt: new Date(),
+    },
+  });
+}
+
+async function getIosPushTokensForPerson(accountId: number, personId: string) {
+  const db = await getDb();
+  if (!db) return [];
+  const rows = await db.select({ token: pushDevices.token })
+    .from(pushDevices)
+    .where(and(
+      eq(pushDevices.accountId, accountId),
+      eq(pushDevices.personId, personId),
+      eq(pushDevices.platform, "ios"),
+    ));
+  return rows.map((row) => row.token);
+}
+
+/** Update only the native Home Screen badge; no in-app or native alert is shown. */
+export async function syncIosPushBadge(accountId: number, personId: string): Promise<void> {
+  const status = await getPersonalNotificationStatus(accountId, personId);
+  if (status.notificationsHeld) return;
+  const [unreadCount, tokens] = await Promise.all([
+    countUnreadNotifications(accountId, personId),
+    getIosPushTokensForPerson(accountId, personId),
+  ]);
+  await Promise.all(tokens.map((token) => updateIosBadge(token, unreadCount)));
 }
 
 /** Get the most recent 50 notifications for a person, newest first. */
@@ -1123,7 +1168,9 @@ export async function countUnreadNotifications(
 export async function markNotificationRead(id: number): Promise<void> {
   const db = await getDb();
   if (!db) return;
+  const [notification] = await db.select().from(notifications).where(eq(notifications.id, id)).limit(1);
   await db.update(notifications).set({ isRead: true }).where(eq(notifications.id, id));
+  if (notification) void syncIosPushBadge(notification.accountId, notification.recipientPersonId);
 }
 
 /** Mark all notifications as read for a person. */
@@ -1143,6 +1190,7 @@ export async function markAllNotificationsRead(
         eq(notifications.isRead, false)
       )
     );
+  void syncIosPushBadge(accountId, recipientPersonId);
 }
 
 // ─── Business Hours helpers ─────────────────────────────────────────────────

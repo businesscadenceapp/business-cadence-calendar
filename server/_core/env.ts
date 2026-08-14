@@ -10,4 +10,7 @@ export const ENV = {
   sitePassword: process.env.SITE_PASSWORD ?? "",
   revenueCatWebhookSecret: process.env.REVENUECAT_WEBHOOK_SECRET ?? "",
   revenueCatApiKey: process.env.REVENUECAT_API_KEY ?? "",
+  apnsAuthKey: process.env.APNS_AUTH_KEY ?? "",
+  apnsKeyId: process.env.APNS_KEY_ID ?? "",
+  apnsTeamId: process.env.APNS_TEAM_ID ?? "",
 };

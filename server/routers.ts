@@ -69,6 +69,8 @@ import {
   countUnreadNotifications,
   markNotificationRead,
   markAllNotificationsRead,
+  upsertPushDevice,
+  syncIosPushBadge,
   getBusinessHours,
   updateBusinessHours,
   toggleDnd,
@@ -1825,6 +1827,26 @@ Keep the tone warm but professional. This summary will be saved under this speci
       .input(z.object({ accountId: z.number(), personId: z.string() }))
       .mutation(async ({ input }) => {
         await markAllNotificationsRead(input.accountId, input.personId);
+        return { success: true };
+      }),
+  }),
+
+  /** Native device registration for private Home Screen unread-count badges. */
+  pushDevice: router({
+    register: publicProcedure
+      .input(z.object({
+        accountId: z.number().int().positive(),
+        personId: z.string().min(1).max(64),
+        platform: z.enum(["ios", "android"]),
+        token: z.string().min(32).max(512),
+      }))
+      .mutation(async ({ input }) => {
+        const person = await getPersonById(input.personId);
+        if (!person || person.accountId !== input.accountId) {
+          throw new Error("Device registration does not match this account");
+        }
+        await upsertPushDevice(input);
+        if (input.platform === "ios") await syncIosPushBadge(input.accountId, input.personId);
         return { success: true };
       }),
   }),

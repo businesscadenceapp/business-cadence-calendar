@@ -15,6 +15,7 @@ import { usePerson } from "@/contexts/PersonContext";
 import { clearAuth } from "@/components/PasswordGate";
 import { BrandIcon } from "@/components/BrandLogo";
 import { NotificationBell } from "@/components/NotificationBell";
+import { NativePushRegistration } from "@/components/NativePushRegistration";
 import {
   useActiveBusiness,
   ActiveBusinessBadge,
@@ -276,6 +277,7 @@ export default function AppShell({ children }: AppShellProps) {
 
   return (
     <IdentityContext.Provider value={{ currentUser: person?.name ?? null }}>
+      {person && <NativePushRegistration accountId={person.accountId} personId={person.id} />}
       <div
         className="flex h-screen overflow-hidden app-shell-root"
         style={{ backgroundColor: "#0F2440", fontFamily: "'Inter', sans-serif" }}

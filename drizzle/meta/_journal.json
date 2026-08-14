@@ -302,6 +302,13 @@
       "when": 1786513500000,
       "tag": "0042_add_board_card_title",
       "breakpoints": true
+    },
+    {
+      "idx": 43,
+      "version": "5",
+      "when": 1786679338809,
+      "tag": "0043_light_betty_ross",
+      "breakpoints": true
     }
   ]
 }

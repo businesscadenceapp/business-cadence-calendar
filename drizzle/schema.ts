@@ -517,6 +517,25 @@ export type Notification = typeof notifications.$inferSelect;
 export type InsertNotification = typeof notifications.$inferInsert;
 
 /**
+ * Registered native devices used only to deliver a notification badge to the
+ * account holder’s own iPhone or Android device. Tokens are never sent to the
+ * browser or exposed through a read procedure.
+ */
+export const pushDevices = mysqlTable("push_devices", {
+  id: int("id").autoincrement().primaryKey(),
+  accountId: int("accountId").notNull(),
+  personId: varchar("personId", { length: 64 }).notNull(),
+  platform: mysqlEnum("platform", ["ios", "android"]).notNull(),
+  token: varchar("token", { length: 512 }).notNull(),
+  lastSeenAt: timestamp("lastSeenAt").defaultNow().onUpdateNow().notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (table) => [
+  uniqueIndex("push_devices_token_idx").on(table.token),
+  uniqueIndex("push_devices_person_platform_token_idx").on(table.personId, table.platform, table.token),
+]);
+export type PushDevice = typeof pushDevices.$inferSelect;
+
+/**
  * Board card comments — threaded comments on Tasks, Issues, and Updates.
  * cardId: references board_cards.id
  * authorName: display name of the commenter (e.g. "Lynn", "Matt")
