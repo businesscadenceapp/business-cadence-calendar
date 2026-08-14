@@ -1062,6 +1062,14 @@
 - [x] Remove the standalone heart-only iOS launch visual before the TARSA definition page
 - [x] Remove any remaining heart-only native launch frame and eliminate TARSA opening-screen bounce
 - [x] Identify and remove the actual iOS launch source causing the old heart-only frame to persist on device
+- [x] Verify the Mac’s local iOS project and Xcode target are using the corrected native launch configuration
+- [x] Safely clear generated iOS merge blockers on the Mac and pull the corrected native launch commit
+- [ ] Stash the remaining generated iOS app-icon file so the corrected native commit can be pulled
+- [ ] Back up the ignored generated iOS app-icon file outside the project and complete the native update pull
+- [ ] Restore the missing generated iOS app-icon file to clear the final Git pull blocker
+- [x] Create a complete Git backup of remaining Mac iOS changes and pull the corrected native launch commit
+- [x] Restore Mac project dependencies after the safety backup and complete the corrected iOS rebuild
+- [x] Diagnose and eliminate the automatic drop or scroll on the TARSA opening screen
 - [x] Verify and correct automatic Sleep Mode so closed personal business hours hold notifications and show moon mode
 - [x] Swap the Calendar and Archive positions in the Command Center hub only
 - [x] Redesign Needs Attention into Past Due, Due Soon, and Waiting on You groups with tasks, meeting follow-through, unread updates, goal reminders, and late KPI check-ins

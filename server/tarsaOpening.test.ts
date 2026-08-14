@@ -25,6 +25,15 @@ describe("TARSA native opening sequence", () => {
     expect(openingSource).toContain('touchAction: "pan-x"');
   });
 
+  it("pins the opening screen before paint without dynamic viewport movement", () => {
+    expect(openingSource).toContain("useLayoutEffect");
+    expect(openingSource).toContain('html.style.scrollBehavior = "auto"');
+    expect(openingSource).toContain("window.scrollTo(0, 0)");
+    expect(openingSource).toContain('height: "100%"');
+    expect(openingSource).not.toContain("min-h-[100dvh]");
+    expect(openingSource).not.toContain('height: "100dvh"');
+  });
+
   it("uses the branded opening sequence instead of sending native root directly to a route", () => {
     expect(appSource).toContain("function NativeHome() {");
     expect(appSource).toContain("return <TarsaOpening />;");

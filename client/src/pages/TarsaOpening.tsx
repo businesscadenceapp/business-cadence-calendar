@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useLayoutEffect } from "react";
 import { useLocation } from "wouter";
 import { BrandIcon } from "@/components/BrandLogo";
 
@@ -6,7 +6,7 @@ import { BrandIcon } from "@/components/BrandLogo";
 export default function TarsaOpening() {
   const [, navigate] = useLocation();
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const body = document.body;
     const html = document.documentElement;
     const previous = {
@@ -14,30 +14,46 @@ export default function TarsaOpening() {
       bodyPosition: body.style.position,
       bodyWidth: body.style.width,
       bodyHeight: body.style.height,
+      bodyTop: body.style.top,
+      bodyRight: body.style.right,
+      bodyBottom: body.style.bottom,
+      bodyLeft: body.style.left,
       bodyBackground: body.style.backgroundColor,
       htmlOverflow: html.style.overflow,
       htmlOverscroll: html.style.overscrollBehavior,
       htmlBackground: html.style.backgroundColor,
+      htmlScrollBehavior: html.style.scrollBehavior,
     };
 
     body.style.overflow = "hidden";
     body.style.position = "fixed";
     body.style.width = "100%";
     body.style.height = "100%";
+    body.style.top = "0";
+    body.style.right = "0";
+    body.style.bottom = "0";
+    body.style.left = "0";
     body.style.backgroundColor = "#08182d";
     html.style.overflow = "hidden";
     html.style.overscrollBehavior = "none";
     html.style.backgroundColor = "#08182d";
+    html.style.scrollBehavior = "auto";
+    window.scrollTo(0, 0);
 
     return () => {
       body.style.overflow = previous.bodyOverflow;
       body.style.position = previous.bodyPosition;
       body.style.width = previous.bodyWidth;
       body.style.height = previous.bodyHeight;
+      body.style.top = previous.bodyTop;
+      body.style.right = previous.bodyRight;
+      body.style.bottom = previous.bodyBottom;
+      body.style.left = previous.bodyLeft;
       body.style.backgroundColor = previous.bodyBackground;
       html.style.overflow = previous.htmlOverflow;
       html.style.overscrollBehavior = previous.htmlOverscroll;
       html.style.backgroundColor = previous.htmlBackground;
+      html.style.scrollBehavior = previous.htmlScrollBehavior;
     };
   }, []);
 
@@ -48,21 +64,23 @@ export default function TarsaOpening() {
 
   return (
     <main
-      className="min-h-[100dvh] overflow-hidden"
+      className="overflow-hidden"
       style={{
         position: "fixed",
         inset: 0,
-        height: "100dvh",
+        height: "100%",
         background: "radial-gradient(circle at 50% 24%, #18385e 0%, #0f2440 42%, #08182d 100%)",
         color: "#fff",
         fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
         overscrollBehavior: "none",
         touchAction: "pan-x",
+        transition: "none",
+        transform: "none",
       }}
     >
       <section
         style={{
-          height: "100dvh",
+          height: "100%",
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
