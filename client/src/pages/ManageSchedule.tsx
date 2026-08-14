@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { TIME_OPTIONS, DEFAULT_MEETING_TIMES, formatMeetingTime } from "@shared/industryDefaults";
+import { TEAM_ENABLED } from "@/featureFlags";
 
 const MONTH_NAMES = [
   "January", "February", "March", "April", "May", "June",
@@ -325,7 +326,7 @@ function MeetingScheduleSection({ accountId }: { accountId: number }) {
           </MeetingRow>
         </div>
       </div>
-      <div>
+      {TEAM_ENABLED && <div>
         <h3 className="text-base font-bold text-white mb-1">Team Meetings</h3>
         <p className="text-sm mb-3" style={{ color: "rgba(255,255,255,0.5)" }}>Meetings that include your full team.</p>
         <div className="flex flex-col gap-2">
@@ -340,7 +341,7 @@ function MeetingScheduleSection({ accountId }: { accountId: number }) {
             <TimePicker timeKey="teamWeekly" />
           </MeetingRow>
         </div>
-      </div>
+      </div>}
       {dirty && (
         <button onClick={() => { if (prefs) { updatePrefs.mutate({ accountId, meetingDayPrefs: prefs, meetingTimes: times }); setDirty(false); } }}
           disabled={updatePrefs.isPending}

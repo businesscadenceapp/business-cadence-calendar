@@ -13,6 +13,7 @@ import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { usePerson } from "@/contexts/PersonContext";
 import { useActiveBusiness } from "@/components/BusinessSwitcher";
+import { TEAM_ENABLED } from "@/featureFlags";
 
 // ── Week helpers ──────────────────────────────────────────────────────────────
 
@@ -847,11 +848,13 @@ export default function WeeklyReports() {
           <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M9 2L4 7L9 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
           Back to Hub
         </button>
-        <Link href="/app/employees"
-          className="text-xs px-3 py-1.5 rounded-lg transition-all"
-          style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.6)" }}>
-          👥 Manage Staff
-        </Link>
+        {TEAM_ENABLED && (
+          <Link href="/app/employees"
+            className="text-xs px-3 py-1.5 rounded-lg transition-all"
+            style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.6)" }}>
+            👥 Manage Staff
+          </Link>
+        )}
       </div>
 
       {/* Tabs */}

@@ -57,7 +57,7 @@ const OWNER_NAV: NavItem[] = [
   { path: "/app/board",    label: "Board",    icon: "📋", activeColor: "#33A2DB" },
   // Goals, KPIs, Reports now live in the Performance Hub (swipe left on Board)
   { path: "/app/calendar", label: "Calendar", icon: "📅", activeColor: "#33A2DB" },
-  { path: "/app/admin",    label: "Admin",    icon: "🔑", activeColor: "#F87171" },
+  ...(TEAM_ENABLED ? [{ path: "/app/admin", label: "Admin", icon: "🔑", activeColor: "#F87171" }] : []),
 ];
 
 const EMPLOYEE_NAV: NavItem[] = [

@@ -17,6 +17,7 @@ import {
 import { generateMeetingSchedule } from "@shared/calendarEngine";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
+import { TEAM_ENABLED } from "@/featureFlags";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -1790,7 +1791,9 @@ export default function Onboarding() {
   const isPartnerFlow = !!partnerToken;
   // Quick mode (default): 3 essential steps. Full mode via ?full=1 or the
   // "Complete your profile" prompt on the Board.
-  const isFullFlow = searchParams.get("full") === "1";
+  // The retained full flow includes future Team setup. Until that layer launches,
+  // always use the co-owner quick flow even if an old full-flow URL is opened.
+  const isFullFlow = TEAM_ENABLED && searchParams.get("full") === "1";
 
   const notifyPartnerJoined = trpc.subscription.notifyPartnerJoined.useMutation();
 

@@ -144,7 +144,7 @@ function Router() {
         <Protected component={ManageSchedule} />
       </Route>
       <Route path={"/app/employees"}>
-        <Protected component={EmployeeSetup} />
+        {TEAM_ENABLED ? <Protected component={EmployeeSetup} /> : <Redirect to="/app/board" />}
       </Route>
       <Route path={"/app/kpi"}>
         <Protected component={KpiReporting} />
@@ -159,7 +159,7 @@ function Router() {
         <Protected component={Messages} />
       </Route>
       <Route path={"/app/admin"}>
-        <Protected component={AdminPanel} />
+        {TEAM_ENABLED ? <Protected component={AdminPanel} /> : <Redirect to="/app/board" />}
       </Route>
       {/* /app root redirects to board */}
       <Route path={"/app"}>

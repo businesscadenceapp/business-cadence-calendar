@@ -13,7 +13,7 @@ import { usePerson } from "@/contexts/PersonContext";
 import { personScopeToBusinessSelection } from "@/lib/businessScope";
 import type { MeetingType, BusinessKey } from "@/lib/calendarData";
 import PartnerInviteSheet from "@/components/PartnerInviteSheet";
-import { useTour, TOUR_PENDING_KEY } from "@/contexts/TourContext";
+import { TOUR_PENDING_KEY } from "@/contexts/TourContext";
 import { useActiveBusiness } from "@/components/BusinessSwitcher";
 import { TEAM_ENABLED } from "@/featureFlags";
 
@@ -60,6 +60,40 @@ const darkInput = {
   border: "1.5px solid rgba(255,255,255,0.12)",
   color: "white",
 };
+
+function TourReplayCard({ onReplay }: { onReplay: () => void }) {
+  return (
+    <div
+      className="mx-4 sm:mx-6 mt-4 mb-8 rounded-2xl px-5 py-4 flex items-center justify-between gap-4"
+      style={{ backgroundColor: "rgba(51,162,219,0.05)", border: "1px solid rgba(51,162,219,0.15)" }}
+    >
+      <div className="flex items-center gap-3 min-w-0">
+        <div style={{
+          width: 36, height: 36, borderRadius: "10px", flexShrink: 0,
+          background: "linear-gradient(135deg, rgba(51,162,219,0.2) 0%, rgba(51,162,219,0.08) 100%)",
+          border: "1px solid rgba(51,162,219,0.3)",
+          display: "flex", alignItems: "center", justifyContent: "center", fontSize: "17px",
+        }}>🗺️</div>
+        <div className="min-w-0">
+          <p className="text-[13px] font-bold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>App Tour</p>
+          <p className="text-[11px]" style={{ color: "rgba(255,255,255,0.4)" }}>Replay the feature walkthrough</p>
+        </div>
+      </div>
+      <button
+        onClick={onReplay}
+        className="flex-shrink-0 px-4 py-2 rounded-xl text-[12px] font-bold transition-all active:scale-[0.97]"
+        style={{
+          background: "linear-gradient(135deg, rgba(51,162,219,0.2) 0%, rgba(51,162,219,0.1) 100%)",
+          border: "1px solid rgba(51,162,219,0.35)",
+          color: "#33A2DB",
+          fontFamily: "'Space Grotesk', sans-serif",
+        }}
+      >
+        Replay tour →
+      </button>
+    </div>
+  );
+}
 
 const AUTHOR_PALETTE = ["#2563EB", "#E11D48", "#059669", "#D97706", "#7C3AED"];
 
@@ -463,7 +497,6 @@ export default function Settings() {
     const stored = localStorage.getItem("bcc_account_id");
     return stored ? parseInt(stored, 10) : undefined;
   })();
-  const { replay } = useTour();
   const [, navigate] = useLocation();
 
   const { data: dbBusinesses = [] } = trpc.business.list.useQuery(
@@ -508,7 +541,7 @@ export default function Settings() {
   // Team Calendar visibility settings
   const { data: teamCalSettings, refetch: refetchTeamCal } = trpc.teamCalendar.getSettings.useQuery(
     { accountId: accountId ?? 0 },
-    { enabled: accountId !== undefined }
+    { enabled: TEAM_ENABLED && accountId !== undefined }
   );
   const [teamCalToggles, setTeamCalToggles] = useState({ showDaily: true, showWeekly: true, showMonthly: true, showQuarterly: true });
   useEffect(() => {
@@ -593,42 +626,6 @@ export default function Settings() {
             <p className="text-[11px]" style={{ color: "rgba(255,255,255,0.4)" }}>Customize agenda items per meeting type</p>
           </div>
         </div>
-      </div>
-
-      {/* ── App Tour ─────────────────────────────────────────────────────────── */}
-      <div
-        className="mx-4 sm:mx-6 mt-6 mb-2 rounded-2xl px-5 py-4 flex items-center justify-between gap-4"
-        style={{ backgroundColor: "rgba(51,162,219,0.05)", border: "1px solid rgba(51,162,219,0.15)" }}
-      >
-        <div className="flex items-center gap-3 min-w-0">
-          <div style={{
-            width: 36, height: 36, borderRadius: "10px", flexShrink: 0,
-            background: "linear-gradient(135deg, rgba(51,162,219,0.2) 0%, rgba(51,162,219,0.08) 100%)",
-            border: "1px solid rgba(51,162,219,0.3)",
-            display: "flex", alignItems: "center", justifyContent: "center", fontSize: "17px",
-          }}>🗺️</div>
-          <div className="min-w-0">
-            <p className="text-[13px] font-bold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>App Tour</p>
-            <p className="text-[11px]" style={{ color: "rgba(255,255,255,0.4)" }}>Replay the feature walkthrough</p>
-          </div>
-        </div>
-        <button
-          onClick={() => {
-            // Navigate to Board first, THEN start the tour after a short delay
-            // so the tour runs on the Board page, not the Settings page
-            localStorage.setItem(TOUR_PENDING_KEY, "1");
-            navigate("/app/board");
-          }}
-          className="flex-shrink-0 px-4 py-2 rounded-xl text-[12px] font-bold transition-all active:scale-[0.97]"
-          style={{
-            background: "linear-gradient(135deg, rgba(51,162,219,0.2) 0%, rgba(51,162,219,0.1) 100%)",
-            border: "1px solid rgba(51,162,219,0.35)",
-            color: "#33A2DB",
-            fontFamily: "'Space Grotesk', sans-serif",
-          }}
-        >
-          Replay tour →
-        </button>
       </div>
 
       <div className="relative z-10 max-w-4xl mx-auto px-4 py-6">
@@ -719,7 +716,7 @@ export default function Settings() {
         <EmployeeInvitePanel accountId={accountId ?? 0} />
       )}
 
-      {(person?.role === "owner" || person?.role === "coowner") && (
+      {TEAM_ENABLED && (person?.role === "owner" || person?.role === "coowner") && (
         <ReportQuestionsPanel accountId={accountId ?? 0} businesses={visibleBusinesses} />
       )}
 
@@ -765,8 +762,8 @@ export default function Settings() {
         </div>
       )}
 
-      {/* ── Team Calendar Visibility ──────────────────────────────────────── */}
-      {(person?.role === "owner" || person?.role === "coowner") && (
+      {/* ── Team Calendar Visibility — retained for a future Team release ───── */}
+      {TEAM_ENABLED && (person?.role === "owner" || person?.role === "coowner") && (
         <div
           className="mx-4 sm:mx-6 mb-8 rounded-2xl p-5"
           style={{ backgroundColor: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}
@@ -851,6 +848,13 @@ export default function Settings() {
           </button>
         </div>
       )}
+
+      <TourReplayCard
+        onReplay={() => {
+          localStorage.setItem(TOUR_PENDING_KEY, "1");
+          navigate("/app/board");
+        }}
+      />
 
       {pendingSave && (
         <PasswordModal
