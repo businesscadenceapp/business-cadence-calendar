@@ -1075,6 +1075,7 @@
 - [ ] Pause further opening-motion changes until the user explicitly chooses whether to retain or roll back the unsuccessful experiments
 - [x] Hide all live Team-layer navigation, settings, wording, and routes while retaining the underlying Team code for future activation
 - [x] Move the Settings Replay tour control to the bottom of the Settings page
+- [x] Redesign the mobile Calendar page so a full month fits on an iPhone screen without vertical scrolling
 - [x] Verify and correct automatic Sleep Mode so closed personal business hours hold notifications and show moon mode
 - [x] Swap the Calendar and Archive positions in the Command Center hub only
 - [x] Redesign Needs Attention into Past Due, Due Soon, and Waiting on You groups with tasks, meeting follow-through, unread updates, goal reminders, and late KPI check-ins

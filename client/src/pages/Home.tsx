@@ -979,7 +979,7 @@ export default function Home() {
   const isViewingToday = viewMonthIndex === todayMonthIndex && viewYear === todayYear;
 
   return (
-    <div style={{ backgroundColor: "#0F2440", fontFamily: "'Inter', sans-serif" }}>
+    <div className="h-full min-h-0 overflow-hidden flex flex-col" style={{ backgroundColor: "#0F2440", fontFamily: "'Inter', sans-serif" }}>
       {/* Header with back button */}
       <div
         className="px-4 py-2.5 flex items-center justify-between flex-shrink-0 relative z-30"
@@ -1011,18 +1011,18 @@ export default function Home() {
         </div>
       </div>
 
-      <div className="flex flex-1 min-h-0">
+      <div className="flex flex-1 min-h-0 overflow-hidden">
         {/* Main Calendar — full width, no sidebar */}
-        <main className="flex-1 p-3 sm:p-5 flex flex-col gap-3 sm:gap-4">
+        <main className="flex-1 min-h-0 overflow-hidden p-2 sm:p-5 flex flex-col gap-2 sm:gap-4">
           {/* Summary Strip */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
+          <div className="grid grid-cols-4 gap-1.5 sm:gap-3">
             {(["daily", "weekly", "monthly", "quarterly"] as MeetingType[]).map((type) => {
               const m = MEETING_TYPES[type];
               const count = meetingCounts[type];
               return (
                 <div
                   key={type}
-                  className="rounded-xl p-3.5 flex flex-col gap-1.5 cursor-pointer transition-all duration-150"
+                  className="rounded-lg p-1.5 sm:rounded-xl sm:p-3.5 flex flex-col gap-0.5 sm:gap-1.5 cursor-pointer transition-all duration-150"
                   style={{
                     backgroundColor: "rgba(255,255,255,0.04)",
                     border: highlightType === type ? `1.5px solid ${m.color}` : `1.5px solid ${m.color}25`,
@@ -1033,40 +1033,41 @@ export default function Home() {
                 >
                   <div className="flex items-center gap-1.5">
                     <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: m.color }} />
-                    <span className="text-[11px] font-semibold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-                      {m.label}
+                    <span className="text-[8px] sm:text-[11px] font-semibold text-white truncate" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+                      <span className="sm:hidden">{m.shortLabel}</span>
+                      <span className="hidden sm:inline">{m.label}</span>
                     </span>
                   </div>
                   <div className="flex items-baseline gap-1.5 mt-0.5">
-                    <span className="text-3xl font-bold text-white leading-none" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+                    <span className="text-xl sm:text-3xl font-bold text-white leading-none" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
                       {count}
                     </span>
-                    <span className="text-xs" style={{ color: "rgba(255,255,255,0.35)" }}>per year</span>
+                    <span className="hidden sm:inline text-xs" style={{ color: "rgba(255,255,255,0.35)" }}>per year</span>
                   </div>
-                  <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.35)" }}>{m.totalDuration} each session</span>
+                  <span className="hidden sm:inline text-[10px]" style={{ color: "rgba(255,255,255,0.35)" }}>{m.totalDuration} each session</span>
                 </div>
               );
             })}
           </div>
 
           {/* Calendar Navigation Bar */}
-          <div className="flex items-center justify-between gap-2 flex-wrap" style={{ position: "relative", zIndex: 10 }}>
+          <div className="flex items-center justify-between gap-2 flex-nowrap" style={{ position: "relative", zIndex: 10 }}>
             {viewMode === "month" ? (
               <div className="flex items-center gap-2 flex-shrink-0">
                 <button
                   onClick={goToPrevMonth}
-                  className="w-9 h-9 flex items-center justify-center rounded-lg transition-all active:scale-95"
+                  className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded-lg transition-all active:scale-95"
                   style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: "rgba(255,255,255,0.7)", flexShrink: 0 }}
                   aria-label="Previous month"
                 >
                   <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 11L5 7l4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
                 </button>
-                <h2 className="text-sm font-bold text-white text-center" style={{ fontFamily: "'Space Grotesk', sans-serif", minWidth: "110px" }}>
+                <h2 className="text-sm font-bold text-white text-center" style={{ fontFamily: "'Space Grotesk', sans-serif", minWidth: "104px" }}>
                   {calendar[viewMonthIndex]?.name ?? ""} {viewYear}
                 </h2>
                 <button
                   onClick={goToNextMonth}
-                  className="w-9 h-9 flex items-center justify-center rounded-lg transition-all active:scale-95"
+                  className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded-lg transition-all active:scale-95"
                   style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: "rgba(255,255,255,0.7)", flexShrink: 0 }}
                   aria-label="Next month"
                 >
@@ -1082,7 +1083,7 @@ export default function Home() {
               {viewMode === "month" && !isViewingToday && (
                 <button
                   onClick={goToToday}
-                  className="text-[11px] font-semibold px-3 py-2 rounded-lg transition-all active:scale-95"
+                  className="hidden sm:inline-flex text-[11px] font-semibold px-3 py-2 rounded-lg transition-all active:scale-95"
                   style={{ background: "rgba(51,162,219,0.1)", border: "1px solid rgba(51,162,219,0.25)", color: "#33A2DB", minHeight: "36px" }}
                 >
                   Today
@@ -1104,7 +1105,7 @@ export default function Home() {
 
           {/* Calendar Grid */}
           {viewMode === "month" ? (
-            <div>
+            <div className="min-h-0">
               {calendar[viewMonthIndex] && (
                 <MonthGrid
                   month={calendar[viewMonthIndex]}
@@ -1147,7 +1148,7 @@ export default function Home() {
       </div>
 
       {/* Footer */}
-      <footer className="px-5 py-2.5 flex items-center justify-between flex-shrink-0" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+      <footer className="hidden sm:flex px-5 py-2.5 items-center justify-between flex-shrink-0" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
         <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.2)", fontFamily: "'JetBrains Mono', monospace" }}>
           Framework: EOS Meeting Pulse + Rockefeller Habits
         </span>
