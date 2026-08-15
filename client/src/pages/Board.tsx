@@ -1397,32 +1397,21 @@ export default function Board() {
     try { return (parseInt(sessionStorage.getItem("bcc_active_hub") ?? "0", 10) as 0 | 1) || 0; } catch { return 0; }
   });
 
-  // Lock the AppShell scroll container when on the hub home view so the screen
-  // feels native and stationary (like a real app). Restore scroll for sub-views.
+  // Lock only the AppShell scroll container while on the hub home view. Keeping
+  // the container in normal flex flow preserves the mobile header and safe area.
   useEffect(() => {
     const mainEl = document.getElementById("app-main-scroll");
     if (!mainEl) return;
     if (!activeView) {
-      // Hub home — lock scroll on the container AND prevent iOS rubber-band
+      // Hub home — prevent vertical scrolling without fixing the container to
+      // the viewport (which would place it underneath the AppShell header).
       mainEl.setAttribute("data-scroll", "locked");
-      document.body.style.overflow = "hidden";
-      document.body.style.position = "fixed";
-      document.body.style.width = "100%";
-      document.documentElement.style.overflow = "hidden";
     } else {
       // Sub-view (tasks, updates, etc.) — allow scroll
       mainEl.setAttribute("data-scroll", "auto");
-      document.body.style.overflow = "";
-      document.body.style.position = "";
-      document.body.style.width = "";
-      document.documentElement.style.overflow = "";
     }
     return () => {
       mainEl.setAttribute("data-scroll", "auto");
-      document.body.style.overflow = "";
-      document.body.style.position = "";
-      document.body.style.width = "";
-      document.documentElement.style.overflow = "";
     };
   }, [activeView]);
 
