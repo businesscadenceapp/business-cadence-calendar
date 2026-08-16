@@ -1088,6 +1088,8 @@
 - [x] Explain that Sleep Mode activates automatically outside personal business hours and can be manually changed through the center sun-to-moon control
 - [x] Add a concise benefits overview for the Productivity Hub, including Goals, KPIs, Reports, Settings, and referral tools
 - [x] Redesign the detailed tour structure before replacing the current live tour
+- [x] Synchronize the approved progressive onboarding redesign to the GitHub branch used by the user’s Mac
+- [x] Add first-use guidance for KPI and Reports actions in the Productivity Hub
 - [x] Verify and correct automatic Sleep Mode so closed personal business hours hold notifications and show moon mode
 - [x] Swap the Calendar and Archive positions in the Command Center hub only
 - [x] Redesign Needs Attention into Past Due, Due Soon, and Waiting on You groups with tasks, meeting follow-through, unread updates, goal reminders, and late KPI check-ins

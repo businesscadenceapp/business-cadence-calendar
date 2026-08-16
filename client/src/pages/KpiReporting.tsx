@@ -7,6 +7,7 @@ import { trpc } from "@/lib/trpc";
 import { usePerson } from "@/contexts/PersonContext";
 import { useActiveBusiness } from "@/components/BusinessSwitcher";
 import { toast } from "sonner";
+import { FirstUseGuide } from "@/components/FirstUseGuide";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -671,6 +672,13 @@ function OwnerKpiDashboard({ accountId, forcedBusiness }: { accountId: number; f
             + Add Category
           </button>
         </div>
+
+        <FirstUseGuide
+          guideId="kpi"
+          icon="📊"
+          title="First KPI: choose the number that keeps you honest."
+          body="Add one category at a time, choose how it is measured, and set a target. The Productivity Hub turns weekly entries into a shared conversation based on facts."
+        />
 
         {showAddCategory && (
           <div className="rounded-xl p-4 flex flex-col gap-3"

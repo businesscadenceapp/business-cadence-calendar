@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import { usePerson } from "@/contexts/PersonContext";
 import { useActiveBusiness } from "@/components/BusinessSwitcher";
 import { TEAM_ENABLED } from "@/featureFlags";
+import { FirstUseGuide } from "@/components/FirstUseGuide";
 
 // ── Week helpers ──────────────────────────────────────────────────────────────
 
@@ -882,6 +883,12 @@ export default function WeeklyReports() {
 
       {/* Tab content */}
       <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-6 max-w-5xl w-full mx-auto">
+        <FirstUseGuide
+          guideId="report"
+          icon="📋"
+          title="First report: use the meeting to look forward, not argue backward."
+          body="Start with the Weekly view, then use Monthly and Quarterly to spot the trend. Reports bring your goals and KPIs into one shared picture before the conversation begins."
+        />
         {activeTab === "weekly"    && <WeeklyTab    accountId={aid} forcedBusiness={activeDbSlug} />}
         {activeTab === "monthly"   && <MonthlyTab   accountId={aid} forcedBusiness={activeDbSlug} />}
         {activeTab === "quarterly" && <QuarterlyTab accountId={aid} forcedBusiness={activeDbSlug} />}
