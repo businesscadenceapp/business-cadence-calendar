@@ -1,6 +1,6 @@
 {
   "appId": "com.businesscadence.calendar",
-  "appName": "Business Cadence Command Center",
+  "appName": "TARSA",
   "webDir": "dist/public",
   "server": {
     "url": "https://businesscadence.com",

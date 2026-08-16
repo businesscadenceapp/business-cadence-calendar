@@ -1093,6 +1093,12 @@
 - [x] Extend the bottom-of-Settings Explore TARSA area with replay controls for the five-stop map and contextual feature guides
 - [x] Supersede the temporary-only Task guidance view with the approved permanent Settings-based guide previews
 - [x] Add a Settings replay control for contextual first-action guidance previews
+- [x] Synchronize the Settings Explore TARSA replay checkpoint to the GitHub branch used by the user’s Mac
+- [ ] Complete a fresh-user TARSA onboarding validation before controlled beta invitations
+- [ ] Complete a live partner notification and iPhone Home Screen badge validation before controlled beta invitations
+- [ ] Enable Lynn as TARSA Beta Tester #1 with secure sign-in recovery and validate her fresh-user experience
+- [ ] Prepare the TARSA iOS build for TestFlight so Lynn can install the native beta app
+- [x] Rename the native iPhone display name to TARSA before TestFlight distribution while preserving the existing bundle identity
 - [x] Synchronize the Productivity Hub first-use guidance checkpoint to the GitHub branch used by the user’s Mac
 - [x] Verify and correct automatic Sleep Mode so closed personal business hours hold notifications and show moon mode
 - [x] Swap the Calendar and Archive positions in the Command Center hub only
