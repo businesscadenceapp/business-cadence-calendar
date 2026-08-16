@@ -75,8 +75,8 @@ function TourReplayCard({ onReplay }: { onReplay: () => void }) {
           display: "flex", alignItems: "center", justifyContent: "center", fontSize: "17px",
         }}>🗺️</div>
         <div className="min-w-0">
-          <p className="text-[13px] font-bold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>App Tour</p>
-          <p className="text-[11px]" style={{ color: "rgba(255,255,255,0.4)" }}>Replay the feature walkthrough</p>
+          <p className="text-[13px] font-bold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Explore TARSA</p>
+          <p className="text-[11px]" style={{ color: "rgba(255,255,255,0.4)" }}>Take the five-stop map of your two hubs</p>
         </div>
       </div>
       <button
@@ -89,7 +89,7 @@ function TourReplayCard({ onReplay }: { onReplay: () => void }) {
           fontFamily: "'Space Grotesk', sans-serif",
         }}
       >
-        Replay tour →
+        Explore →
       </button>
     </div>
   );

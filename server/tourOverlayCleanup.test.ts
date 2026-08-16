@@ -10,20 +10,20 @@ const overlaySource = readFileSync(
 
 describe("Tour flow state", () => {
   it("advances one consecutive step at a time", () => {
-    expect(advanceTourStep(0, 20)).toBe(1);
-    expect(advanceTourStep(11, 20)).toBe(12);
+    expect(advanceTourStep(0, 5)).toBe(1);
+    expect(advanceTourStep(3, 5)).toBe(4);
   });
 
   it("closes on the final step and remains closed once dismissed", () => {
-    expect(advanceTourStep(19, 20)).toBeNull();
-    expect(advanceTourStep(null, 20)).toBeNull();
+    expect(advanceTourStep(4, 5)).toBeNull();
+    expect(advanceTourStep(null, 5)).toBeNull();
   });
 
   it("accepts only one valid active index", () => {
     expect(isTourStepActive(0, 20)).toBe(true);
-    expect(isTourStepActive(19, 20)).toBe(true);
+    expect(isTourStepActive(4, 5)).toBe(true);
     expect(isTourStepActive(null, 20)).toBe(false);
-    expect(isTourStepActive(20, 20)).toBe(false);
+    expect(isTourStepActive(5, 5)).toBe(false);
   });
 });
 

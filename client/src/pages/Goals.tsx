@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { useLocation } from "wouter";
 import { usePerson } from "@/contexts/PersonContext";
 import { useActiveBusiness } from "@/components/BusinessSwitcher";
+import { FirstUseGuide } from "@/components/FirstUseGuide";
 
 type Period = "annual" | "quarterly";
 type Status = "active" | "achieved" | "missed" | "deferred";
@@ -237,6 +238,13 @@ function AddGoalForm({
             onMouseLeave={e => (e.currentTarget.style.backgroundColor = "transparent")}
           >✕</button>
         </div>
+
+        <FirstUseGuide
+          guideId="goal"
+          icon="🎯"
+          title="First goal: name the outcome you both want."
+          body="Choose a clear result, a shared owner when it matters to both of you, and a quarter or year. TARSA keeps progress visible between meetings."
+        />
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">

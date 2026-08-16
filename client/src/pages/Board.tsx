@@ -12,9 +12,11 @@ import { usePerson } from "@/contexts/PersonContext";
 import { useIdentity } from "@/components/AppShell";
 import { useActiveBusiness } from "@/components/BusinessSwitcher";
 import { SleepModeConfirmCard } from "@/components/SleepModeConfirmCard";
-import { useTour, TOUR_STORAGE_KEY, TOUR_PENDING_KEY } from "@/contexts/TourContext";
+import { useTour, TOUR_PENDING_KEY } from "@/contexts/TourContext";
 import { hideSleepModeReminder, shouldShowSleepModeReminder } from "@/lib/sleepModeReminder";
 import { CalendarAccountability } from "@/components/CalendarAccountability";
+import { FirstUseGuide } from "@/components/FirstUseGuide";
+import { TarsaBenefitsOverview, TARSA_OVERVIEW_STORAGE_KEY } from "@/components/TarsaBenefitsOverview";
 
 type Author = string;
 type CardType = "update" | "issue" | "task";
@@ -822,6 +824,13 @@ function AddCardForm({ currentUser, onAdded, activeBusiness: activeBusinessProp,
         </div>
       )}
 
+      <FirstUseGuide
+        guideId={type}
+        icon={type === "task" ? "☑" : type === "update" ? "✦" : "💬"}
+        title={type === "task" ? "First task: give the thought a home." : type === "update" ? "First update: share it without interrupting." : "First issue: keep it off the dinner table."}
+        body={type === "task" ? "Give it a clear title, assign it, and add a due date when it matters. TARSA keeps it out of your personal texts." : type === "update" ? "Share the important fact now. If your partner is in Sleep Mode, TARSA holds the notice until work time." : "Capture the problem and choose the meeting where it belongs. It can wait here until you are both ready."}
+      />
+
       {/* Assign to (tasks) */}
       {type === "task" && (
         <div className="flex flex-col gap-1.5">
@@ -1441,6 +1450,12 @@ export default function Board() {
   const { replay, registerRef, active: tourActive } = useTour();
   const [profileDeferred, setProfileDeferred] = useState(false);
   const [sleepModeConfirmOpen, setSleepModeConfirmOpen] = useState(false);
+  const [showBenefitsOverview, setShowBenefitsOverview] = useState(false);
+
+  useEffect(() => {
+    if (!person) return;
+    try { setShowBenefitsOverview(localStorage.getItem(TARSA_OVERVIEW_STORAGE_KEY) !== "seen"); } catch { /* ignore */ }
+  }, [person]);
 
   // Start the tour only after person data has loaded (so the sun button is in the DOM)
   const tourStartedRef = useRef(false);
@@ -1448,8 +1463,7 @@ export default function Board() {
     if (!person) return; // wait for person data — sun button is conditionally rendered on person
     if (tourStartedRef.current) return; // prevent double-fire
     const pending = localStorage.getItem(TOUR_PENDING_KEY);
-    const completed = localStorage.getItem(TOUR_STORAGE_KEY);
-    if (pending === "1" || !completed) {
+    if (pending === "1") {
       tourStartedRef.current = true;
       localStorage.removeItem(TOUR_PENDING_KEY);
       // 1.5s delay: ensures header, nav tabs, and all conditional elements are fully painted
@@ -1827,6 +1841,7 @@ export default function Board() {
       className="flex flex-col h-full overflow-hidden"
       style={{ backgroundColor: "#0A1929", fontFamily: "'Inter', sans-serif" }}
     >
+      {showBenefitsOverview && <TarsaBenefitsOverview onComplete={() => setShowBenefitsOverview(false)} />}
       {/* Hero */}
       <div
         className="flex-shrink-0 px-5 pt-4 pb-4"
