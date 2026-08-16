@@ -61,10 +61,55 @@ const darkInput = {
   color: "white",
 };
 
-function TourReplayCard({ onReplay }: { onReplay: () => void }) {
+const FEATURE_TIPS = [
+  { id: "task", icon: "☑", label: "Task", title: "First task: give the thought a home.", body: "Give it a clear title, assign it, and add a due date when it matters. TARSA keeps it out of your personal texts." },
+  { id: "update", icon: "✦", label: "Update", title: "First update: share it without interrupting.", body: "Share the important fact now. If your partner is in Sleep Mode, TARSA holds the notice until work time." },
+  { id: "issue", icon: "💬", label: "Issue", title: "First issue: keep it off the dinner table.", body: "Capture the problem and choose the meeting where it belongs. It can wait here until you are both ready." },
+  { id: "goal", icon: "🎯", label: "Goal", title: "First goal: name the outcome you both want.", body: "Choose a clear result, a shared owner when it matters to both of you, and a quarter or year. TARSA keeps progress visible between meetings." },
+  { id: "kpi", icon: "📊", label: "KPI", title: "First KPI: choose the number that keeps you honest.", body: "Add one category at a time, choose how it is measured, and set a target. The Productivity Hub turns weekly entries into a shared conversation based on facts." },
+  { id: "report", icon: "📋", label: "Reports", title: "First report: use the meeting to look forward, not argue backward.", body: "Start with the Weekly view, then use Monthly and Quarterly to spot the trend. Reports bring your goals and KPIs into one shared picture before the conversation begins." },
+] as const;
+
+function FeatureTipPreview({ onClose }: { onClose: () => void }) {
+  const [activeId, setActiveId] = useState<typeof FEATURE_TIPS[number]["id"]>("task");
+  const active = FEATURE_TIPS.find((tip) => tip.id === activeId) ?? FEATURE_TIPS[0];
+
+  return (
+    <div className="fixed inset-0 z-[70] flex items-end sm:items-center justify-center" style={{ backgroundColor: "rgba(0,0,0,0.62)" }}>
+      <div className="w-full max-w-md rounded-t-3xl sm:rounded-3xl p-5" style={{ backgroundColor: "#0D2035", border: "1px solid rgba(125,211,252,0.24)", boxShadow: "0 24px 64px rgba(0,0,0,0.5)" }}>
+        <div className="flex items-start justify-between gap-4 mb-4">
+          <div>
+            <p className="text-[15px] font-bold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Feature guide previews</p>
+            <p className="text-[11px] mt-1" style={{ color: "rgba(255,255,255,0.45)" }}>See the exact guidance a new user receives. This does not reset or change anyone’s progress.</p>
+          </div>
+          <button onClick={onClose} className="text-[12px] font-bold px-2.5 py-1.5 rounded-lg" style={{ color: "#7DD3FC", background: "rgba(51,162,219,0.13)" }}>Done</button>
+        </div>
+
+        <div className="grid grid-cols-3 gap-2 mb-4">
+          {FEATURE_TIPS.map((tip) => (
+            <button key={tip.id} onClick={() => setActiveId(tip.id)} className="px-2 py-2 rounded-xl text-[11px] font-bold transition-all active:scale-[0.97]" style={{ backgroundColor: activeId === tip.id ? "rgba(51,162,219,0.18)" : "rgba(255,255,255,0.05)", border: `1px solid ${activeId === tip.id ? "rgba(125,211,252,0.42)" : "rgba(255,255,255,0.08)"}`, color: activeId === tip.id ? "#7DD3FC" : "rgba(255,255,255,0.6)" }}>
+              <span className="mr-1">{tip.icon}</span>{tip.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="rounded-xl px-3.5 py-3 flex items-start gap-3" style={{ background: "rgba(51,162,219,0.10)", border: "1px solid rgba(125,211,252,0.28)" }}>
+          <span className="text-lg leading-none mt-0.5" aria-hidden="true">{active.icon}</span>
+          <div className="min-w-0 flex-1">
+            <p className="text-[12px] font-bold text-white mb-1" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>{active.title}</p>
+            <p className="text-[11px] leading-relaxed" style={{ color: "rgba(255,255,255,0.66)" }}>{active.body}</p>
+          </div>
+          <span className="flex-shrink-0 text-[11px] font-bold px-2.5 py-1.5 rounded-lg" style={{ color: "#7DD3FC", background: "rgba(51,162,219,0.13)" }}>Got it</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function TourReplayCard({ onReplay, onPreview }: { onReplay: () => void; onPreview: () => void }) {
   return (
     <div
-      className="mx-4 sm:mx-6 mt-4 mb-8 rounded-2xl px-5 py-4 flex items-center justify-between gap-4"
+      className="mx-4 sm:mx-6 mt-4 mb-8 rounded-2xl px-5 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
       style={{ backgroundColor: "rgba(51,162,219,0.05)", border: "1px solid rgba(51,162,219,0.15)" }}
     >
       <div className="flex items-center gap-3 min-w-0">
@@ -79,18 +124,21 @@ function TourReplayCard({ onReplay }: { onReplay: () => void }) {
           <p className="text-[11px]" style={{ color: "rgba(255,255,255,0.4)" }}>Take the five-stop map of your two hubs</p>
         </div>
       </div>
-      <button
-        onClick={onReplay}
-        className="flex-shrink-0 px-4 py-2 rounded-xl text-[12px] font-bold transition-all active:scale-[0.97]"
-        style={{
-          background: "linear-gradient(135deg, rgba(51,162,219,0.2) 0%, rgba(51,162,219,0.1) 100%)",
-          border: "1px solid rgba(51,162,219,0.35)",
-          color: "#33A2DB",
-          fontFamily: "'Space Grotesk', sans-serif",
-        }}
-      >
-        Explore →
-      </button>
+      <div className="flex w-full sm:w-auto gap-2">
+        <button onClick={onPreview} className="flex-1 sm:flex-none px-3 py-2 rounded-xl text-[12px] font-bold transition-all active:scale-[0.97]" style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.12)", color: "rgba(255,255,255,0.72)", fontFamily: "'Space Grotesk', sans-serif" }}>Feature tips</button>
+        <button
+          onClick={onReplay}
+          className="flex-1 sm:flex-none px-4 py-2 rounded-xl text-[12px] font-bold transition-all active:scale-[0.97]"
+          style={{
+            background: "linear-gradient(135deg, rgba(51,162,219,0.2) 0%, rgba(51,162,219,0.1) 100%)",
+            border: "1px solid rgba(51,162,219,0.35)",
+            color: "#33A2DB",
+            fontFamily: "'Space Grotesk', sans-serif",
+          }}
+        >
+          Explore →
+        </button>
+      </div>
     </div>
   );
 }
@@ -498,6 +546,7 @@ export default function Settings() {
     return stored ? parseInt(stored, 10) : undefined;
   })();
   const [, navigate] = useLocation();
+  const [showFeatureTips, setShowFeatureTips] = useState(false);
 
   const { data: dbBusinesses = [] } = trpc.business.list.useQuery(
     { accountId: accountId ?? 0 },
@@ -854,7 +903,10 @@ export default function Settings() {
           localStorage.setItem(TOUR_PENDING_KEY, "1");
           navigate("/app/board");
         }}
+        onPreview={() => setShowFeatureTips(true)}
       />
+
+      {showFeatureTips && <FeatureTipPreview onClose={() => setShowFeatureTips(false)} />}
 
       {pendingSave && (
         <PasswordModal

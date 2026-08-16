@@ -1090,6 +1090,10 @@
 - [x] Redesign the detailed tour structure before replacing the current live tour
 - [x] Synchronize the approved progressive onboarding redesign to the GitHub branch used by the user’s Mac
 - [x] Add first-use guidance for KPI and Reports actions in the Productivity Hub
+- [x] Extend the bottom-of-Settings Explore TARSA area with replay controls for the five-stop map and contextual feature guides
+- [x] Supersede the temporary-only Task guidance view with the approved permanent Settings-based guide previews
+- [x] Add a Settings replay control for contextual first-action guidance previews
+- [x] Synchronize the Productivity Hub first-use guidance checkpoint to the GitHub branch used by the user’s Mac
 - [x] Verify and correct automatic Sleep Mode so closed personal business hours hold notifications and show moon mode
 - [x] Swap the Calendar and Archive positions in the Command Center hub only
 - [x] Redesign Needs Attention into Past Due, Due Soon, and Waiting on You groups with tasks, meeting follow-through, unread updates, goal reminders, and late KPI check-ins
