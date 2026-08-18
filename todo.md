@@ -1098,7 +1098,11 @@
 - [ ] Complete a live partner notification and iPhone Home Screen badge validation before controlled beta invitations
 - [ ] Enable Lynn as TARSA Beta Tester #1 with secure sign-in recovery and validate her fresh-user experience
 - [ ] Prepare the TARSA iOS build for TestFlight so Lynn can install the native beta app
+- [x] Create a privacy-safe limited reviewer login for Apple’s external TARSA TestFlight review
+- [x] Create and validate the user-approved isolated Apple reviewer account with no real co-owner data
 - [x] Rename the native iPhone display name to TARSA before TestFlight distribution while preserving the existing bundle identity
+- [x] Rename the App Store Connect listing to TARSA while retaining the established bundle ID
+- [x] Synchronize the TARSA native display-name checkpoint to the GitHub branch used for TestFlight archiving
 - [x] Synchronize the Productivity Hub first-use guidance checkpoint to the GitHub branch used by the user’s Mac
 - [x] Verify and correct automatic Sleep Mode so closed personal business hours hold notifications and show moon mode
 - [x] Swap the Calendar and Archive positions in the Command Center hub only
@@ -1128,3 +1132,12 @@
 - [x] Performance Hub is now default view; swipe right to reach Command Center
 - [x] Swipe hint updated to point right with "COMMAND CENTER" label
 - [x] Header label updated to "Performance Hub" with purple 📈 icon
+- [ ] Preserve TARSA as a native iPhone and Android app only; do not position or ship it as a browser-based web application.
+- [ ] After iPhone TestFlight validation, prepare the existing Android Capacitor wrapper with TARSA branding, Firebase Cloud Messaging, Android notification permission, and real-device testing.
+- [ ] Create a Google Play internal beta release using a signed Android App Bundle, then determine the account-specific path from internal testing to public production release.
+- [ ] Finalize a single business-level TARSA subscription structure that supports mixed iPhone/Android co-owner couples without charging each partner separately.
+- [ ] Before public mobile launch, implement and validate cross-platform subscription entitlement handling so an active TARSA business subscription works for its authorized co-owners on both iPhone and Android.
+- [ ] Resolve the TestFlight version conflict: Lynn’s installed TARSA 1.0 (12) is an older build, while the approved external beta is labelled 1.0 (1); publish a correctly incremented replacement build if the approved build is not available to her.
+- [ ] Resend Lynn’s approved TARSA Beta — Lynn external TestFlight invitation and confirm delivery before rebuilding or replacing the beta build.
+- [ ] Create and upload a clearly newer TARSA TestFlight replacement build, targeted as version 1.0.1 build 13, because Lynn’s accepted tester record is pinned to older build 1.0 (12) and cannot receive 1.0 (1) as an update.
+- [x] Configure the TARSA iOS Debug and Release targets as version 1.0.1 build 13 and add regression coverage for the replacement TestFlight identity.
