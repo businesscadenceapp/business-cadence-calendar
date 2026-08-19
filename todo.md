@@ -1145,3 +1145,4 @@
 - [ ] Preserve and inspect the Mac’s local `ios/App/App.xcodeproj/project.pbxproj` changes before resolving the GitHub pull conflict for the TARSA 1.0.1 (13) build.
 - [x] Fix the new-user TARSA onboarding redirect loop that sends Christian to “Welcome back” before he can complete initial account and business information.
 - [x] Prevent consulting-business calendars from inheriting chiropractic-specific preset meetings, labels, or cadence content.
+- [x] Fix the post-registration setup loop that prompts a new owner to create a second business and returns them to the same onboarding flow.

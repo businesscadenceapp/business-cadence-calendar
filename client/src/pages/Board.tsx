@@ -1521,12 +1521,13 @@ export default function Board() {
     { enabled: accountId !== undefined, staleTime: 60_000 },
   );
 
-  // Quick onboarding defers goals/KPIs/meeting setup — surface a prompt to finish
+  // The streamlined owner setup now completes industry, hours, and cadence in one
+  // pass. Clear the legacy deferred-profile flag so it cannot reopen onboarding
+  // and prompt the owner to create a second business.
   useEffect(() => {
     if (!accountId) return;
-    try {
-      setProfileDeferred(localStorage.getItem("bcc_profile_deferred_" + accountId) === "1");
-    } catch { /* ignore */ }
+    try { localStorage.removeItem("bcc_profile_deferred_" + accountId); } catch { /* ignore */ }
+    setProfileDeferred(false);
   }, [accountId]);
 
   const dismissProfilePrompt = () => {

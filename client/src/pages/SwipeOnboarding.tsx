@@ -193,7 +193,9 @@ export default function SwipeOnboarding() {
         await startTrialMutation.mutateAsync({ accountId, personId });
       } catch { /* non-fatal */ }
 
-      localStorage.setItem("bcc_profile_deferred_" + accountId, "1");
+      // This setup flow is complete. Do not leave the legacy “finish setup” flag
+      // behind, or Command Center will send the owner into a duplicate business flow.
+      localStorage.removeItem("bcc_profile_deferred_" + accountId);
       setIsSaving(false);
       setDonePartnerName(invitedName ?? "");
       setIsDone(true);
