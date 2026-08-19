@@ -1139,5 +1139,8 @@
 - [ ] Before public mobile launch, implement and validate cross-platform subscription entitlement handling so an active TARSA business subscription works for its authorized co-owners on both iPhone and Android.
 - [ ] Resolve the TestFlight version conflict: Lynn’s installed TARSA 1.0 (12) is an older build, while the approved external beta is labelled 1.0 (1); publish a correctly incremented replacement build if the approved build is not available to her.
 - [ ] Resend Lynn’s approved TARSA Beta — Lynn external TestFlight invitation and confirm delivery before rebuilding or replacing the beta build.
-- [ ] Create and upload a clearly newer TARSA TestFlight replacement build, targeted as version 1.0.1 build 13, because Lynn’s accepted tester record is pinned to older build 1.0 (12) and cannot receive 1.0 (1) as an update.
+- [x] Create and upload a clearly newer TARSA TestFlight replacement build, targeted as version 1.0.1 build 13, because Lynn’s accepted tester record is pinned to older build 1.0 (12) and cannot receive 1.0 (1) as an update.
 - [x] Configure the TARSA iOS Debug and Release targets as version 1.0.1 build 13 and add regression coverage for the replacement TestFlight identity.
+- [x] Push the corrected TARSA 1.0.1 (13) native build settings to the GitHub `main` branch because the Mac’s `github/main` currently stops at 39dd1504.
+- [ ] Preserve and inspect the Mac’s local `ios/App/App.xcodeproj/project.pbxproj` changes before resolving the GitHub pull conflict for the TARSA 1.0.1 (13) build.
+- [x] Fix the new-user TARSA onboarding redirect loop that sends Christian to “Welcome back” before he can complete initial account and business information.
