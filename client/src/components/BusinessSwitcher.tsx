@@ -78,10 +78,22 @@ export function useActiveBusiness(businessScope: string | undefined) {
 interface ActiveBusinessBadgeProps {
   businessKey: BusinessKey;
   compact?: boolean;
+  businessIdentity?: {
+    name: string;
+    color?: string;
+    icon?: string;
+  };
 }
 
-export function ActiveBusinessBadge({ businessKey, compact = false }: ActiveBusinessBadgeProps) {
-  const biz = BUSINESSES[businessKey];
+export function ActiveBusinessBadge({ businessKey, compact = false, businessIdentity }: ActiveBusinessBadgeProps) {
+  const fallbackBusiness = BUSINESSES[businessKey];
+  const biz = businessIdentity
+    ? {
+        shortName: businessIdentity.name,
+        color: businessIdentity.color || "#33A2DB",
+        icon: businessIdentity.icon || "💼",
+      }
+    : fallbackBusiness;
   if (!biz) return null;
 
   if (compact) {

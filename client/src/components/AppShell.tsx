@@ -24,6 +24,7 @@ import {
 } from "@/components/BusinessSwitcher";
 import { useTour } from "@/contexts/TourContext";
 import { TEAM_ENABLED } from "@/featureFlags";
+import { trpc } from "@/lib/trpc";
 
 // ─── Identity Context ─────────────────────────────────────────────────────────
 
@@ -243,7 +244,14 @@ export default function AppShell({ children }: AppShellProps) {
 
   // Active business state
   const { activeBusiness, setActiveBusiness, available } = useActiveBusiness(person?.businessScope);
-  const hasMultipleBusinesses = available.length > 1;
+  const { data: accountBusinesses = [] } = trpc.business.list.useQuery(
+    { accountId: person?.accountId ?? 0 },
+    { enabled: !!person?.accountId, staleTime: 60_000 },
+  );
+  const activeBusinessIdentity = accountBusinesses.length === 1
+    ? accountBusinesses[0]
+    : undefined;
+  const hasMultipleBusinesses = accountBusinesses.length > 1 || available.length > 1;
   const isOwnerOrCoOwner = person?.role === "owner" || person?.role === "coowner";
   const showSwitchBusiness = isOwnerOrCoOwner && hasMultipleBusinesses;
 
@@ -319,7 +327,7 @@ export default function AppShell({ children }: AppShellProps) {
                 <span style={{ fontSize: "10px" }}>←</span>
                 All Businesses
               </button>
-              <ActiveBusinessBadge businessKey={activeBusiness} />
+              <ActiveBusinessBadge businessKey={activeBusiness} businessIdentity={activeBusinessIdentity} />
             </div>
           )}
 
@@ -482,7 +490,7 @@ export default function AppShell({ children }: AppShellProps) {
             <div className="flex items-center gap-2 min-w-0 flex-shrink">
               <BrandIcon size={28} variant="teal" className="flex-shrink-0" />
               {isOwnerOrCoOwner && (
-                <ActiveBusinessBadge businessKey={activeBusiness} compact />
+                <ActiveBusinessBadge businessKey={activeBusiness} compact businessIdentity={activeBusinessIdentity} />
               )}
             </div>
 
