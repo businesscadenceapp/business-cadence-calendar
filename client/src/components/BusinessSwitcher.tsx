@@ -99,10 +99,10 @@ export function ActiveBusinessBadge({ businessKey, compact = false, businessIden
   if (compact) {
     // Mobile: just icon + short name
     return (
-      <div className="flex items-center gap-1.5">
+      <div className="flex items-center gap-1.5 min-w-0">
         <span className="text-sm leading-none">{biz.icon}</span>
         <span
-          className="text-[11px] font-bold truncate max-w-[80px]"
+          className="text-[10px] font-bold leading-tight whitespace-normal max-w-[155px]"
           style={{ color: biz.color, fontFamily: "'Space Grotesk', sans-serif" }}
         >
           {biz.shortName}

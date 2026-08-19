@@ -487,7 +487,7 @@ export default function AppShell({ children }: AppShellProps) {
             }}
           >
             {/* Left: brand icon + active business name (compact) */}
-            <div className="flex items-center gap-2 min-w-0 flex-shrink">
+            <div className="flex flex-1 items-center gap-2 min-w-0">
               <BrandIcon size={28} variant="teal" className="flex-shrink-0" />
               {isOwnerOrCoOwner && (
                 <ActiveBusinessBadge businessKey={activeBusiness} compact businessIdentity={activeBusinessIdentity} />
