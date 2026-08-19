@@ -20,7 +20,7 @@ import {
   type CalendarMonth,
   YEAR,
 } from "@/lib/calendarData";
-import { DEFAULT_MEETING_TIMES, formatMeetingTime, type MeetingTimes } from "@shared/industryDefaults";
+import { DEFAULT_MEETING_TIMES, formatMeetingTime, OWNER_AGENDA_DEFAULTS, type IndustryType, type MeetingTimes } from "@shared/industryDefaults";
 
 const DOW_LABELS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
 const MEETING_ORDER: MeetingType[] = ["quarterly", "monthly", "weekly", "daily"];
@@ -364,7 +364,11 @@ function BusinessBlock({
   onCommentChange: (itemKey: string, comment: string) => void;
 }) {
   const [expanded, setExpanded] = useState(true);
-  const biz = BUSINESSES[block.business as keyof typeof BUSINESSES];
+  const biz = BUSINESSES[block.business as keyof typeof BUSINESSES] ?? {
+    shortName: block.business === "professional" ? "Consulting" : "Your Business",
+    color: "#33A2DB",
+    icon: "💼",
+  };
   const completedCount = block.items.filter((_, i) => itemStates.get(`${meetingType}-${block.business}-${i}`)?.completed).length;
 
   return (
@@ -472,7 +476,7 @@ const MEETING_TYPE_TO_TIME_KEY: Record<MeetingType, keyof MeetingTimes> = {
 };
 
 function MeetingSection({
-  type, day, dateKey, businessContext, meetingTimes, accountId, personId,
+  type, day, dateKey, businessContext, meetingTimes, accountId, personId, industry,
 }: {
   type: MeetingType;
   day: CalendarDay;
@@ -481,6 +485,7 @@ function MeetingSection({
   meetingTimes: MeetingTimes;
   accountId: number;
   personId?: string;
+  industry?: string;
 }) {
   const m = MEETING_TYPES[type];
   const [itemStates, setItemStates] = useState<Map<string, { completed: boolean; comment: string }>>(() => new Map());
@@ -491,16 +496,30 @@ function MeetingSection({
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const commentTimers = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
 
+  const usesIndustryDefaults = industry && industry in OWNER_AGENDA_DEFAULTS;
+  const industryItems = usesIndustryDefaults
+    ? OWNER_AGENDA_DEFAULTS[industry as IndustryType][type]
+    : null;
+
   const templateQueries = m.timeBlocks.map((block) => {
-    const dbBiz = BIZ_TO_DB[block.business] ?? "chiropractic";
+    const dbBiz = BIZ_TO_DB[block.business];
     // eslint-disable-next-line react-hooks/rules-of-hooks
     return trpc.agendaTemplate.get.useQuery(
-      { business: dbBiz, meetingType: type as "daily" | "weekly" | "monthly" | "quarterly" },
-      { staleTime: 60_000 }
+      { business: dbBiz ?? "crossfit", meetingType: type as "daily" | "weekly" | "monthly" | "quarterly" },
+      { enabled: !industryItems && !!dbBiz, staleTime: 60_000 }
     );
   });
 
-  const effectiveBlocks = m.timeBlocks
+  const effectiveBlocks = industryItems
+    ? [{
+        business: industry === "professional" ? "professional" : "your-business",
+        duration: m.totalDuration,
+        startOffset: "0:00",
+        endOffset: m.totalDuration,
+        focus: industry === "professional" ? "Client work, pipeline, and delivery" : "Your business priorities",
+        items: industryItems,
+      }]
+    : m.timeBlocks
     .map((block, i) => {
       const customItems = templateQueries[i]?.data?.items;
       if (customItems && customItems.length > 0) {
@@ -574,7 +593,8 @@ function MeetingSection({
   const handleGenerateSummary = useCallback(() => {
     const items: { label: string; completed: boolean; comment?: string }[] = [];
     effectiveBlocks.forEach(block => {
-      const bizName = BUSINESSES[block.business as keyof typeof BUSINESSES].shortName;
+      const bizName = BUSINESSES[block.business as keyof typeof BUSINESSES]?.shortName
+        ?? (block.business === "professional" ? "Consulting" : "Your Business");
       block.items.forEach((item, i) => {
         const itemKey = `${type}-${block.business}-${i}`;
         const state = itemStates.get(itemKey);
@@ -634,7 +654,7 @@ function MeetingSection({
 
       <div className="px-3 flex flex-col gap-2">
         <p className="text-[9px] font-bold uppercase tracking-widest px-1" style={{ color: "rgba(255,255,255,0.3)", fontFamily: "'Space Grotesk', sans-serif" }}>
-          Time Breakdown by Business
+          {industryItems ? "Your Agenda" : "Time Breakdown by Business"}
         </p>
         {effectiveBlocks.map((block, i) => (
           <BusinessBlock
@@ -798,7 +818,7 @@ function BoardIssuesForMeeting({ meetingType, dateMs }: { meetingType: "daily_hu
   );
 }
 
-function DetailPanel({ day, onClose, businessContext, meetingTimes, accountId, personId }: { day: CalendarDay; onClose: () => void; businessContext: BusinessSelection; meetingTimes: MeetingTimes; accountId: number; personId?: string }) {
+function DetailPanel({ day, onClose, businessContext, meetingTimes, accountId, personId, industry }: { day: CalendarDay; onClose: () => void; businessContext: BusinessSelection; meetingTimes: MeetingTimes; accountId: number; personId?: string; industry?: string }) {
   const dateStr = day.date.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
   const dateKey = `${day.date.getFullYear()}-${String(day.date.getMonth() + 1).padStart(2, "0")}-${String(day.date.getDate()).padStart(2, "0")}`;
   const sortedMeetings = MEETING_ORDER.filter((t) => day.meetings.includes(t));
@@ -828,7 +848,7 @@ function DetailPanel({ day, onClose, businessContext, meetingTimes, accountId, p
         const boardMeetingType = CALENDAR_TO_BOARD_MEETING[type];
         return (
           <div key={type} className="flex flex-col gap-3">
-            <MeetingSection type={type} day={day} dateKey={dateKey} businessContext={businessContext} meetingTimes={meetingTimes} accountId={accountId} personId={personId} />
+            <MeetingSection type={type} day={day} dateKey={dateKey} businessContext={businessContext} meetingTimes={meetingTimes} accountId={accountId} personId={personId} industry={industry} />
             {boardMeetingType && (
               <div className="px-3">
                 <BoardIssuesForMeeting meetingType={boardMeetingType} dateMs={day.date.getTime()} />
@@ -1141,7 +1161,7 @@ export default function Home() {
             style={{ backgroundColor: "#0A1929", borderLeft: "1px solid rgba(255,255,255,0.08)" }}
           >
             <div className="p-4">
-              <DetailPanel day={selectedDay} onClose={() => setSelectedDay(null)} businessContext={businessContext} meetingTimes={meetingTimes} accountId={accountId ?? 0} personId={person?.id ? String(person.id) : undefined} />
+              <DetailPanel day={selectedDay} onClose={() => setSelectedDay(null)} businessContext={businessContext} meetingTimes={meetingTimes} accountId={accountId ?? 0} personId={person?.id ? String(person.id) : undefined} industry={profileStatus?.profile?.industry} />
             </div>
           </aside>
         )}

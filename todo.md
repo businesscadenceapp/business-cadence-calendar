@@ -1144,3 +1144,4 @@
 - [x] Push the corrected TARSA 1.0.1 (13) native build settings to the GitHub `main` branch because the Mac’s `github/main` currently stops at 39dd1504.
 - [ ] Preserve and inspect the Mac’s local `ios/App/App.xcodeproj/project.pbxproj` changes before resolving the GitHub pull conflict for the TARSA 1.0.1 (13) build.
 - [x] Fix the new-user TARSA onboarding redirect loop that sends Christian to “Welcome back” before he can complete initial account and business information.
+- [x] Prevent consulting-business calendars from inheriting chiropractic-specific preset meetings, labels, or cadence content.

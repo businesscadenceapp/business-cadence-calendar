@@ -145,7 +145,7 @@ export const MEETING_TYPES: Record<MeetingType, Meeting> = {
       "Segue (0:00–0:05): Each share 1 personal win + 1 business win",
       "Scorecard overview (0:05–0:10): Are overall numbers on or off track?",
       "To-Do review (0:10–0:15): Did last week's action items get done?",
-      "Wrap-up (1:45–1:30): Recap all action items, rate the meeting 1–10",
+      "Wrap-up (1:30–1:45): Recap all action items, rate the meeting 1–10",
     ],
   },
 
