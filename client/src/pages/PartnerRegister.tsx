@@ -50,7 +50,7 @@ export default function PartnerRegister() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // ─── Mutations ───────────────────────────────────────────────────────────────
-  const registerMutation = trpc.person.register.useMutation({
+  const activatePartnerMutation = trpc.subscription.activatePartnerInvite.useMutation({
     onSuccess: (data) => {
       setIsSubmitting(false);
       if (data.success && data.person) {
@@ -71,9 +71,11 @@ export default function PartnerRegister() {
         navigate(`/onboarding?partnerToken=${encodeURIComponent(partnerToken)}`);
       } else {
         const reason = (data as any).reason;
-        if (reason === "already_exists") {
-          toast.error("An account with that email already exists. Please sign in instead.");
+        if (reason === "already_accepted") {
+          toast.error("This co-owner account already has a password. Please sign in instead.");
           setMode("login");
+        } else if (reason === "email_in_use") {
+          toast.error("That email is already linked to another TARSA account.");
         } else {
           toast.error("Could not create your account. Please try again.");
         }
@@ -126,13 +128,11 @@ export default function PartnerRegister() {
       return;
     }
     setIsSubmitting(true);
-    registerMutation.mutate({
-      accountId: inviteData.accountId,
+    activatePartnerMutation.mutate({
+      token: partnerToken,
       name: name.trim(),
       email: email.trim().toLowerCase(),
       password,
-      role: "coowner",
-      businessScope: "all",
     });
   };
 

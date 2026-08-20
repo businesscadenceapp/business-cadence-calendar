@@ -1150,3 +1150,4 @@
 - [ ] Add a safe owner-facing path to remove empty duplicate business dashboards without deleting the selected active business or data-bearing businesses.
 - [x] Replace the Command Center header’s legacy “Chiropractic” fallback with the active account’s real business name and industry identity on mobile.
 - [x] Make the full active business name readable in the narrow mobile Command Center header without hiding Sleep Mode or the menu.
+- [x] Repair Ashley’s co-owner activation path so an invited partner can create a password and join the owner’s existing business without an erroneous existing-account login prompt.

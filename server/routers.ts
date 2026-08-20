@@ -2150,6 +2150,77 @@ Keep the tone warm but professional. This summary will be saved under this speci
       }),
 
     /**
+     * Activate a co-owner from the owner's partner invite link. A co-owner may
+     * already have been provisioned during owner setup, but not yet have a
+     * password. In that case, activate the pending record rather than treating
+     * the email as an existing login that must already have a password.
+     */
+    activatePartnerInvite: publicProcedure
+      .input(z.object({
+        token: z.string(),
+        name: z.string().min(1),
+        email: z.string().email(),
+        password: z.string().min(8),
+      }))
+      .mutation(async ({ input }) => {
+        const db = await getDb();
+        if (!db) return { success: false as const, reason: "db_unavailable" as const };
+
+        const [owner] = await db.select().from(personsTable)
+          .where(eq(personsTable.partnerInviteToken, input.token))
+          .limit(1);
+        if (!owner) return { success: false as const, reason: "invalid_token" as const };
+
+        const normalizedEmail = input.email.trim().toLowerCase();
+        const existing = await getPersonByEmail(normalizedEmail);
+        let partner;
+
+        if (existing) {
+          if (existing.accountId !== owner.accountId || existing.role !== "coowner") {
+            return { success: false as const, reason: "email_in_use" as const };
+          }
+          if (existing.inviteAccepted || existing.passwordHash) {
+            return { success: false as const, reason: "already_accepted" as const };
+          }
+
+          const passwordHash = await bcrypt.hash(input.password, 10);
+          await updatePerson(existing.id, {
+            name: input.name.trim(),
+            passwordHash,
+            inviteAccepted: true,
+            inviteToken: null,
+            businessScope: "all",
+          });
+          partner = { ...existing, name: input.name.trim(), passwordHash, inviteAccepted: true, inviteToken: null, businessScope: "all" };
+        } else {
+          const passwordHash = await bcrypt.hash(input.password, 10);
+          partner = await createPerson({
+            accountId: owner.accountId,
+            name: input.name.trim(),
+            email: normalizedEmail,
+            role: "coowner",
+            businessScope: "all",
+            inviteToken: null,
+            inviteAccepted: true,
+            passwordHash,
+          });
+        }
+
+        await createPartnerLink(owner.accountId, owner.id, partner.id);
+        return {
+          success: true as const,
+          person: {
+            id: partner.id,
+            name: partner.name,
+            email: partner.email,
+            role: partner.role,
+            businessScope: partner.businessScope,
+            accountId: partner.accountId,
+          },
+        };
+      }),
+
+    /**
      * Accept a partner invite — links the new person to the owner's subscription.
      * Called from AcceptInvite page when ?partner=1 is in the URL.
      * The partner gets access without going through RevenueCat.
