@@ -16,7 +16,7 @@
  *   → /onboarding (business profile setup)
  */
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useLocation } from "wouter";
 import { BrandIcon } from "@/components/BrandLogo";
 import { ONBOARDING_STEP_BADGES } from "@shared/subscriptionPlans";
@@ -144,6 +144,14 @@ export default function SubscriptionOnboarding() {
   const partnerToken = params.get("token") ?? "";
   const isPartnerInvite = params.get("partner") === "1" && !!partnerToken;
 
+  // Legacy partner links previously opened this owner-oriented introduction.
+  // Preserve their token, but send the partner straight to account activation.
+  useEffect(() => {
+    if (isPartnerInvite) {
+      navigate(`/partner-register?token=${encodeURIComponent(partnerToken)}`);
+    }
+  }, [isPartnerInvite, navigate, partnerToken]);
+
   const { data: partnerInviteData } = trpc.subscription.lookupPartnerInvite.useQuery(
     { token: partnerToken },
     { enabled: isPartnerInvite, retry: false, staleTime: 60_000 }
@@ -153,6 +161,8 @@ export default function SubscriptionOnboarding() {
   const businessName: string | null = partnerInviteData?.valid
     ? (partnerInviteData.businessName ?? partnerInviteData.ownerName ?? null)
     : null;
+
+  if (isPartnerInvite) return null;
 
   const totalSteps = STEPS.length;
 

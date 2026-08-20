@@ -7,7 +7,7 @@
  *   1. Validate the token via lookupPartnerInvite
  *   2. If the partner already has an account → show sign-in form
  *   3. If no account → show registration form (name + email + password)
- *   4. On success → navigate to /onboarding?partnerToken=<token>
+ *   4. On success → enter the shared Command Center
  *
  * The partner is registered as a co-owner on the same accountId as the owner.
  * After onboarding completes, the partner link is created and the owner is notified.
@@ -28,10 +28,10 @@ export default function PartnerRegister() {
   const params = new URLSearchParams(window.location.search);
   const partnerToken = params.get("token") ?? "";
 
-  // ─── Already logged in? Skip straight to onboarding ─────────────────────────
+  // ─── Already logged in? Enter the shared workspace ──────────────────────────
   useEffect(() => {
     if (person && partnerToken) {
-      navigate(`/onboarding?partnerToken=${encodeURIComponent(partnerToken)}`);
+      navigate("/app/board");
     }
   }, [person, partnerToken, navigate]);
 
@@ -67,8 +67,8 @@ export default function PartnerRegister() {
           localStorage.setItem("bcc_account_id", String(p.accountId));
           localStorage.setItem("bcc_auth_v1", "granted");
         } catch { /* ignore */ }
-        toast.success(`Welcome, ${p.name}! Let's finish setting up your workspace.`);
-        navigate(`/onboarding?partnerToken=${encodeURIComponent(partnerToken)}`);
+        toast.success(`Welcome, ${p.name}! You're connected to your shared workspace.`);
+        navigate("/app/board");
       } else {
         const reason = (data as any).reason;
         if (reason === "already_accepted") {
@@ -105,7 +105,7 @@ export default function PartnerRegister() {
           localStorage.setItem("bcc_auth_v1", "granted");
         } catch { /* ignore */ }
         toast.success(`Welcome back, ${p.name}!`);
-        navigate(`/onboarding?partnerToken=${encodeURIComponent(partnerToken)}`);
+        navigate("/app/board");
       } else {
         toast.error("Incorrect email or password. Please try again.");
       }

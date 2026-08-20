@@ -2124,8 +2124,9 @@ Keep the tone warm but professional. This summary will be saved under this speci
           partnerInviteToken: token,
           partnerInviteBusinessName: input.businessName ?? null,
         }).where(eq(personsTable.id, input.ownerPersonId));
-        // Route partner to /subscribe-intro so they see the 4-card onboarding before account creation
-        const inviteUrl = `${input.origin}/subscribe-intro?token=${token}&partner=1`;
+        // A partner must activate their own account, not enter the owner's
+        // business-creation flow. Send the shared link directly to password setup.
+        const inviteUrl = `${input.origin}/partner-register?token=${token}`;
         return { success: true, inviteUrl, token };
       }),
 
