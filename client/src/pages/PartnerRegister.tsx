@@ -342,7 +342,7 @@ export default function PartnerRegister() {
                 </>
               ) : (
                 <>
-                  New to BusinessCadence?{" "}
+                  New to TARSA?{" "}
                   <button
                     onClick={() => setMode("register")}
                     className="underline"

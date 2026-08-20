@@ -6,6 +6,7 @@ const root = process.cwd();
 const routerSource = readFileSync(resolve(root, "server/routers.ts"), "utf8");
 const partnerRegisterSource = readFileSync(resolve(root, "client/src/pages/PartnerRegister.tsx"), "utf8");
 const subscriptionOnboardingSource = readFileSync(resolve(root, "client/src/pages/SubscriptionOnboarding.tsx"), "utf8");
+const tarsaOpeningSource = readFileSync(resolve(root, "client/src/pages/TarsaOpening.tsx"), "utf8");
 
 describe("pending co-owner activation", () => {
   it("activates a pending co-owner record through the owner’s partner invite token", () => {
@@ -26,5 +27,12 @@ describe("pending co-owner activation", () => {
     expect(subscriptionOnboardingSource).toContain("navigate(`/partner-register?token=${encodeURIComponent(partnerToken)}`)");
     expect(partnerRegisterSource).not.toContain("navigate(`/onboarding?partnerToken=");
     expect(partnerRegisterSource).toContain('navigate("/app/board")');
+  });
+
+  it("gives an activated co-owner an explicit TARSA sign-in path in the native app", () => {
+    expect(tarsaOpeningSource).toContain('const signInToExistingAccount = () => navigate("/login")');
+    expect(tarsaOpeningSource).toContain("Already have a TARSA account? Sign in");
+    expect(partnerRegisterSource).toContain("New to TARSA?");
+    expect(partnerRegisterSource).not.toContain("New to BusinessCadence?");
   });
 });

@@ -74,6 +74,8 @@ export default function TarsaOpening() {
     navigate(authFlag === "granted" ? "/select-business" : "/subscribe-intro");
   };
 
+  const signInToExistingAccount = () => navigate("/login");
+
   return (
     <main
       className="overflow-hidden"
@@ -168,6 +170,24 @@ export default function TarsaOpening() {
           }}
         >
           Continue
+        </button>
+        <button
+          type="button"
+          onClick={signInToExistingAccount}
+          style={{
+            marginTop: 14,
+            border: "none",
+            background: "transparent",
+            color: "rgba(255,255,255,0.68)",
+            fontSize: "14px",
+            fontWeight: 650,
+            fontFamily: "inherit",
+            cursor: "pointer",
+            textDecoration: "underline",
+            textUnderlineOffset: 4,
+          }}
+        >
+          Already have a TARSA account? Sign in
         </button>
       </section>
     </main>
